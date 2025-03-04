@@ -282,11 +282,11 @@ export default function AdvancedSyllabusPage() {
                               <div className="flex justify-between mb-2">
                                 <div className="flex items-start gap-3">
                                   <div className={`mt-1 h-5 w-5 rounded-full flex items-center justify-center ${
-                                    unit.locked ? "bg-gray-100 text-gray-400" :
+                                    'locked' in unit && unit.locked ? "bg-gray-100 text-gray-400" :
                                     unit.completed ? "bg-green-100 text-green-600" : 
                                     "bg-gray-100 text-gray-500"
                                   }`}>
-                                    {unit.locked ? (
+                                    {('locked' in unit && unit.locked) ? (
                                       <Lock className="h-3 w-3" />
                                     ) : unit.completed ? (
                                       <Check className="h-3 w-3" />
@@ -297,7 +297,7 @@ export default function AdvancedSyllabusPage() {
                                     <p className="text-sm text-gray-500 mt-1">{unit.description}</p>
                                   </div>
                                 </div>
-                                {unit.locked ? (
+                                {('locked' in unit && unit.locked) ? (
                                   <Badge variant="outline" className="border-gray-300 text-gray-500">
                                     Bloqueado
                                   </Badge>
@@ -308,13 +308,13 @@ export default function AdvancedSyllabusPage() {
                                 )}
                               </div>
                               
-                              {!unit.locked && (
+                              {!('locked' in unit && unit.locked) && (
                                 <div className="mt-4 space-y-2">
                                   {unit.resources.map((resource, i) => (
                                     <div 
                                       key={i} 
                                       className={`p-3 rounded-md border flex items-center justify-between ${
-                                        resource.locked ? "bg-gray-50 opacity-75" :
+                                        'locked' in resource && resource.locked ? "bg-gray-50 opacity-75" :
                                         resource.completed ? "bg-gray-50" : "bg-white"
                                       }`}
                                     >
@@ -328,12 +328,13 @@ export default function AdvancedSyllabusPage() {
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        {resource.locked ? (
+                                        {('locked' in resource && resource.locked) ? (
                                           <Badge variant="outline" className="border-gray-300 text-gray-500">
                                             <Lock className="h-3 w-3 mr-1" />
                                             Bloqueado
                                           </Badge>
-                                        ) : resource.completed ? (
+                                        ) : null}
+                                        {resource.completed ? (
                                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                                             <Check className="h-3 w-3 mr-1" />
                                             Completado

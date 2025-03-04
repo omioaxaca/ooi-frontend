@@ -123,8 +123,10 @@ npx tailwindcss init -p</code></pre>
   },
 ];
 
-export default function BlogPost({ params }: { params: { slug: string } }) {
-  const post = blogPosts.find((post) => post.slug === params.slug);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function BlogPost({ params }: any) {
+  const { slug } = params as { slug: string };
+  const post = blogPosts.find((post) => post.slug === slug);
   
   if (!post) {
     notFound();

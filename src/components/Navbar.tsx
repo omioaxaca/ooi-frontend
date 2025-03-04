@@ -106,41 +106,41 @@ export default function Navbar() {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <a 
+            <Link 
               href="/#home" 
               onClick={handleNavigation('home')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Inicio
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/#what-is" 
               onClick={handleNavigation('what-is')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               ¿Qué es?
-            </a>
-            <a 
+            </Link>
+            <Link
               href="/#benefits" 
               onClick={handleNavigation('benefits')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Beneficios
-            </a>
-            <a 
+            </Link>
+            <Link
               href="/#convocatoria" 
               onClick={handleNavigation('convocatoria')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Convocatoria
-            </a>
-            <a 
+            </Link>
+            <Link
               href="/#faq" 
               onClick={handleNavigation('faq')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               FAQ
-            </a>
+            </Link>
           </div>
 
           {/* Auth buttons or user menu */}
@@ -200,41 +200,41 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg z-50">
           <div className="py-4 px-6 flex flex-col space-y-4">
-            <a 
+            <Link 
               href="/#home" 
               onClick={handleNavigation('home')}
               className="hover:text-blue-600 py-2"
             >
               Inicio
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/#what-is" 
               onClick={handleNavigation('what-is')}
               className="hover:text-blue-600 py-2"
             >
               ¿Qué es?
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/#benefits" 
               onClick={handleNavigation('benefits')}
               className="hover:text-blue-600 py-2"
             >
               Beneficios
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/#convocatoria" 
               onClick={handleNavigation('convocatoria')}
               className="hover:text-blue-600 py-2"
             >
               Convocatoria
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/#faq" 
               onClick={handleNavigation('faq')}
               className="hover:text-blue-600 py-2"
             >
               FAQ
-            </a>
+            </Link>
 
             <div className="pt-4 border-t">
               {user ? (

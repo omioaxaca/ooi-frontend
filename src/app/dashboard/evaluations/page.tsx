@@ -20,6 +20,21 @@ import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { FileText, Calendar, CheckCircle, AlertCircle, Clock, ExternalLink, Award } from "lucide-react";
 
+// Update the type definition to allow null values
+type Evaluation = {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  deadline: string;
+  submitDate: string | null;
+  score: number | null;
+  maxScore: number;
+  feedback: string | null;
+  description: string;
+  url: string;
+};
+
 export default function EvaluationsPage() {
   const [activeTab, setActiveTab] = useState("all");
   
@@ -92,18 +107,18 @@ export default function EvaluationsPage() {
     }
   ];
 
-  // Get filtered evaluations based on tab
-  const getFilteredEvaluations = (tabValue) => {
+  // Then fix the function that uses the tabValue parameter
+  const getFilteredEvaluations = (tabValue: string) => {
     return tabValue === "all"
       ? evaluations
-      : evaluations.filter(item => item.type === tabValue || (tabValue === "upcoming" && item.status === "upcoming"));
+      : evaluations.filter((item: Evaluation) => item.type === tabValue || (tabValue === "upcoming" && item.status === "upcoming"));
   };
 
   // Reusable component for rendering evaluation cards
-  const EvaluationsList = ({ evaluations }) => (
+  const EvaluationsList = ({ evaluations }: { evaluations: Evaluation[] }) => (
     <>
       {evaluations.length > 0 ? (
-        evaluations.map((evaluation) => (
+        evaluations.map((evaluation: Evaluation) => (
           <Card
             key={evaluation.id}
             className={`mb-4 overflow-hidden border-l-4 ${
@@ -164,7 +179,7 @@ export default function EvaluationsPage() {
                         {evaluation.score}/{evaluation.maxScore}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {(evaluation.score / evaluation.maxScore * 100).toFixed(1)}%
+                        {(evaluation.score ?? 0 / evaluation.maxScore ?? 0 * 100).toFixed(1)}%
                       </div>
                     </>
                   ) : (

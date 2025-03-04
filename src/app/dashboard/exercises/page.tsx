@@ -205,10 +205,10 @@ export default function ExercisesPage() {
     switch (sortBy) {
       case "difficulty-asc":
         const difficultyOrder = { "easy": 1, "medium": 2, "hard": 3 };
-        return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+        return difficultyOrder[a.difficulty as keyof typeof difficultyOrder] - difficultyOrder[b.difficulty as keyof typeof difficultyOrder];
       case "difficulty-desc":
         const difficultyOrderDesc = { "easy": 1, "medium": 2, "hard": 3 };
-        return difficultyOrderDesc[b.difficulty] - difficultyOrderDesc[a.difficulty];
+        return difficultyOrderDesc[b.difficulty as keyof typeof difficultyOrderDesc] - difficultyOrderDesc[a.difficulty as keyof typeof difficultyOrderDesc];
       case "acceptance-asc":
         return parseInt(a.acceptanceRate) - parseInt(b.acceptanceRate);
       case "acceptance-desc":
@@ -219,7 +219,7 @@ export default function ExercisesPage() {
   });
   
   // Helper function to get color based on difficulty
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy": return "bg-green-100 text-green-800";
       case "medium": return "bg-yellow-100 text-yellow-800";
@@ -229,7 +229,7 @@ export default function ExercisesPage() {
   };
   
   // Helper function to get status display
-  const getStatusDisplay = (status) => {
+  const getStatusDisplay = (status: string) => {
     switch (status) {
       case "completed": return { text: "Completado", icon: <CheckCircle className="h-4 w-4 text-green-500" /> };
       case "attempted": return { text: "Intentado", icon: <Star className="h-4 w-4 text-yellow-500" /> };

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { 
@@ -22,15 +23,49 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ChevronLeft, PlayCircle, Code, BookOpen, CheckCircle, Clock, AlertCircle, Save, ExternalLink, Video, FileText } from "lucide-react";
 
+// Add this type definition
+type ExerciseData = {
+  id: number;
+  title: string;
+  difficulty: string;
+  acceptanceRate: string;
+  description: string;
+  examples: { 
+    input: string; 
+    output: string; 
+    explanation: string; 
+  }[];
+  constraints: string[];
+  solution: { 
+    approach: string; 
+    complexity: { 
+      time: string;
+      space: string;
+    }; 
+    code: string; 
+  };
+};
+
+// Add this type definition near your other types
+type TestResult = {
+  success: boolean;
+  results: Array<{
+    input: string;
+    expectedOutput: string;
+    actualOutput: string;
+    passed: boolean;
+  }>;
+};
+
 export default function ExercisePage() {
   const params = useParams();
   const id = params.id;
   const [activeTab, setActiveTab] = useState("description");
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [code, setCode] = useState("");
-  const [testResults, setTestResults] = useState(null);
+  const [testResults, setTestResults] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [exerciseData, setExerciseData] = useState(null);
+  const [exerciseData, setExerciseData] = useState<ExerciseData | null>(null);
   
   // Sample template code for different languages
   const templateCode = {
@@ -99,10 +134,10 @@ export default function ExercisePage() {
     setExerciseData(mockExercise);
     
     // Set initial code based on selected language
-    setCode(templateCode[selectedLanguage]);
+    setCode(templateCode[selectedLanguage as keyof typeof templateCode]);
   }, [selectedLanguage]);
   
-  const handleCodeChange = (newCode) => {
+  const handleCodeChange = (newCode: string) => {
     setCode(newCode);
   };
   
@@ -218,10 +253,10 @@ export default function ExercisePage() {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" className="text-xs" asChild>
-                    <a href="/dashboard/exercises">
+                    <Link href="/dashboard/exercises">
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Volver a ejercicios
-                    </a>
+                    </Link>
                   </Button>
                 </CardHeader>
                 <Separator />

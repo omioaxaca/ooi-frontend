@@ -20,6 +20,25 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Video, Search, FileText, ExternalLink, Download, Clock } from "lucide-react";
 
+// Update the type to match the actual data structure
+type Recording = {
+  id: number;
+  title: string;
+  date: string;
+  duration: string;
+  instructor: string;
+  description: string;
+  youtubeLink: string;
+  slidesLink: string;
+  pdfLink: string;
+  module: string;
+  tags: string[];
+  // Optional properties that might not be in all recordings
+  url?: string;
+  thumbnail?: string;
+  category?: string;
+};
+
 export default function RecordingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -214,7 +233,7 @@ export default function RecordingsPage() {
 }
 
 // RecordingCard component to display each recording
-function RecordingCard({ recording }) {
+function RecordingCard({ recording }: { recording: Recording }) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <div className="flex flex-col md:flex-row">

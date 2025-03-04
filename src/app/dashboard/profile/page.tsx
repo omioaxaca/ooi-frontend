@@ -81,7 +81,7 @@ export default function ProfilePage() {
         email: user.email || prev.email,
         profileImage: user.profileImage || prev.profileImage,
         // Add other fields from user object if they exist
-        ...(user.profile && user.profile)
+        // ...(user.profile && user.profile)
       }))
     }
   }, [user])

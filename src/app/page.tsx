@@ -44,7 +44,17 @@ export default function Home() {
   };
 
   // Counter animation
-  const Counter = ({ from = 0, to, duration = 2, className = "" }) => {
+  const Counter = ({ 
+    from = 0, 
+    to, 
+    duration = 2, 
+    className = "" 
+  }: { 
+    from?: number; 
+    to: number; 
+    duration?: number; 
+    className?: string 
+  }) => {
     const [count, setCount] = useState(from);
     const nodeRef = useRef(null);
     const isInView = useInView(nodeRef, { once: true, amount: 0.5 });

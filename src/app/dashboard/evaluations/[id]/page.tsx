@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { 
@@ -23,129 +24,159 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { ChevronLeft, FileText, Calendar, CheckCircle, AlertCircle, Clock, Upload, Award, Download, ExternalLink } from "lucide-react";
+import { ChevronLeft, FileText, Calendar, CheckCircle, AlertCircle, Clock, Upload, Award, Download, ExternalLink, Video } from "lucide-react";
+
+type EvaluationData = {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  deadline: string;
+  submitDate: string;
+  score: number;
+  maxScore: number;
+  feedback: string;
+  description: string;
+  instructions: string;
+  sections: Array<{
+    title: string;
+    points: number;
+    earned: number;
+    questions: Array<{
+      id: number;
+      question: string;
+      points: number;
+      earned: number;
+      feedback: string;
+    }>;
+  }>;
+  resources: Array<{
+    title: string;
+    type: string;
+    url: string;
+  }>;
+};
+
+const sampleEvaluation = {
+  id: 2,
+  title: "Evaluación: Fundamentos de programación",
+  type: "exam",
+  status: "completed",
+  deadline: "10 abril, 2025 - 23:59",
+  submitDate: "10 abril, 2025 - 17:45",
+  score: 85,
+  maxScore: 100,
+  feedback: "Buen dominio de los conceptos fundamentales. Necesitas mejorar en recursividad y análisis de algoritmos. Tu implementación de estructuras de datos es correcta pero podría ser más eficiente. Sigue así, vas por buen camino.",
+  description: "Examen que cubre los temas de las primeras 3 clases: introducción, algoritmos básicos y estructuras de control.",
+  instructions: `<p>Este examen evalúa tu comprensión de los fundamentos de programación vistos en las primeras 3 semanas del curso.</p>
+  <p>Instrucciones:</p>
+  <ul>
+    <li>Tienes 2 horas para completar el examen.</li>
+    <li>Puedes consultar la documentación oficial pero no buscar soluciones directas.</li>
+    <li>Implementa todas las funciones solicitadas siguiendo las especificaciones.</li>
+    <li>Entrega el examen en un único archivo .zip con todos tus archivos de solución.</li>
+  </ul>`,
+  sections: [
+    {
+      title: "Parte 1: Conceptos Básicos",
+      points: 30,
+      earned: 28,
+      questions: [
+        {
+          id: 1,
+          question: "Explica la diferencia entre compilación e interpretación.",
+          points: 10,
+          earned: 10,
+          feedback: "Respuesta completa y precisa."
+        },
+        {
+          id: 2,
+          question: "Describe los tipos de datos primitivos en C++.",
+          points: 10,
+          earned: 10,
+          feedback: "Excelente descripción de todos los tipos."
+        },
+        {
+          id: 3,
+          question: "Explica el concepto de variable y constante.",
+          points: 10,
+          earned: 8,
+          feedback: "Faltó mencionar el ámbito de las variables."
+        }
+      ]
+    },
+    {
+      title: "Parte 2: Estructuras de Control",
+      points: 30,
+      earned: 27,
+      questions: [
+        {
+          id: 4,
+          question: "Implementa un algoritmo que determine si un número es primo.",
+          points: 15,
+          earned: 15,
+          feedback: "Implementación correcta y eficiente."
+        },
+        {
+          id: 5,
+          question: "Escribe un programa que genere la secuencia de Fibonacci hasta n términos.",
+          points: 15,
+          earned: 12,
+          feedback: "La implementación es correcta pero podría ser más eficiente."
+        }
+      ]
+    },
+    {
+      title: "Parte 3: Algoritmos",
+      points: 40,
+      earned: 30,
+      questions: [
+        {
+          id: 6,
+          question: "Implementa el algoritmo de ordenamiento por selección.",
+          points: 20,
+          earned: 18,
+          feedback: "Buen algoritmo, pero falta analizar su complejidad."
+        },
+        {
+          id: 7,
+          question: "Implementa una función recursiva para calcular el factorial de un número.",
+          points: 20,
+          earned: 12,
+          feedback: "La implementación no maneja correctamente los casos base."
+        }
+      ]
+    }
+  ],
+  resources: [
+    {
+      title: "Guía de estudio",
+      type: "pdf",
+      url: "#" 
+    },
+    {
+      title: "Clase grabada: Algoritmos básicos",
+      type: "video",
+      url: "#"
+    }
+  ]
+};
 
 export default function EvaluationDetailPage() {
   const params = useParams();
   const id = params.id;
   const [activeTab, setActiveTab] = useState("overview");
-  const [evaluationData, setEvaluationData] = useState(null);
-  const [fileUpload, setFileUpload] = useState(null);
+  const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(null);
+  const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  
-  // Sample evaluation data
-  const sampleEvaluation = {
-    id: 2,
-    title: "Evaluación: Fundamentos de programación",
-    type: "exam",
-    status: "completed",
-    deadline: "10 abril, 2025 - 23:59",
-    submitDate: "10 abril, 2025 - 17:45",
-    score: 85,
-    maxScore: 100,
-    feedback: "Buen dominio de los conceptos fundamentales. Necesitas mejorar en recursividad y análisis de algoritmos. Tu implementación de estructuras de datos es correcta pero podría ser más eficiente. Sigue así, vas por buen camino.",
-    description: "Examen que cubre los temas de las primeras 3 clases: introducción, algoritmos básicos y estructuras de control.",
-    instructions: `<p>Este examen evalúa tu comprensión de los fundamentos de programación vistos en las primeras 3 semanas del curso.</p>
-    <p>Instrucciones:</p>
-    <ul>
-      <li>Tienes 2 horas para completar el examen.</li>
-      <li>Puedes consultar la documentación oficial pero no buscar soluciones directas.</li>
-      <li>Implementa todas las funciones solicitadas siguiendo las especificaciones.</li>
-      <li>Entrega el examen en un único archivo .zip con todos tus archivos de solución.</li>
-    </ul>`,
-    sections: [
-      {
-        title: "Parte 1: Conceptos Básicos",
-        points: 30,
-        earned: 28,
-        questions: [
-          {
-            id: 1,
-            question: "Explica la diferencia entre compilación e interpretación.",
-            points: 10,
-            earned: 10,
-            feedback: "Respuesta completa y precisa."
-          },
-          {
-            id: 2,
-            question: "Describe los tipos de datos primitivos en C++.",
-            points: 10,
-            earned: 10,
-            feedback: "Excelente descripción de todos los tipos."
-          },
-          {
-            id: 3,
-            question: "Explica el concepto de variable y constante.",
-            points: 10,
-            earned: 8,
-            feedback: "Faltó mencionar el ámbito de las variables."
-          }
-        ]
-      },
-      {
-        title: "Parte 2: Estructuras de Control",
-        points: 30,
-        earned: 27,
-        questions: [
-          {
-            id: 4,
-            question: "Implementa un algoritmo que determine si un número es primo.",
-            points: 15,
-            earned: 15,
-            feedback: "Implementación correcta y eficiente."
-          },
-          {
-            id: 5,
-            question: "Escribe un programa que genere la secuencia de Fibonacci hasta n términos.",
-            points: 15,
-            earned: 12,
-            feedback: "La implementación es correcta pero podría ser más eficiente."
-          }
-        ]
-      },
-      {
-        title: "Parte 3: Algoritmos",
-        points: 40,
-        earned: 30,
-        questions: [
-          {
-            id: 6,
-            question: "Implementa el algoritmo de ordenamiento por selección.",
-            points: 20,
-            earned: 18,
-            feedback: "Buen algoritmo, pero falta analizar su complejidad."
-          },
-          {
-            id: 7,
-            question: "Implementa una función recursiva para calcular el factorial de un número.",
-            points: 20,
-            earned: 12,
-            feedback: "La implementación no maneja correctamente los casos base."
-          }
-        ]
-      }
-    ],
-    resources: [
-      {
-        title: "Guía de estudio",
-        type: "pdf",
-        url: "#" 
-      },
-      {
-        title: "Clase grabada: Algoritmos básicos",
-        type: "video",
-        url: "#"
-      }
-    ]
-  };
   
   useEffect(() => {
     // Simulate fetching evaluation data
     setEvaluationData(sampleEvaluation);
   }, [id]);
   
-  const handleFileChange = (e) => {
-    setFileUpload(e.target.files[0]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileUpload(e.target.files?.[0] || null);
   };
   
   const handleSubmit = () => {
@@ -221,10 +252,10 @@ export default function EvaluationDetailPage() {
           >
             <div className="mb-4">
               <Button variant="outline" size="sm" className="mb-4" asChild>
-                <a href="/dashboard/evaluations">
+                <Link href="/dashboard/evaluations">
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Volver a evaluaciones
-                </a>
+                </Link>
               </Button>
               
               <div className="flex flex-col md:flex-row justify-between md:items-center">

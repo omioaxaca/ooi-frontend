@@ -27,7 +27,6 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setErrors({ email: false, password: false });
-    setErrors({});
     
     // Basic validation
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
