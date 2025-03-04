@@ -21,7 +21,7 @@ interface AuthContextType {
 const defaultUser = {
   name: "Carlos Rodriguez",
   email: "carlos@example.com",
-  profileImage: "/images/avatar.png"
+  profileImage: "/images/profile-default.png"
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const mockUser = {
         name: email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         email,
-        profileImage: "/images/avatar.png"
+        profileImage: "/images/profile-default.png"
       }
       
       // Store user in localStorage

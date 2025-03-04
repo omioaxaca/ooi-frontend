@@ -47,7 +47,7 @@ export default function ProfilePage() {
     email: "",
     phone: "",
     birthday: "",
-    profileImage: "/images/avatar.png",
+    profileImage: "/images/profile-default.png",
     
     // Academic info
     school: "",
