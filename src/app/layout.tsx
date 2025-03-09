@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleTagManager } from "@/components/google-tag-manager";
+import MetaPixel from "@/components/meta-pixel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,11 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head />
       <body className={inter.className}>
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID || ""} />
         <AuthProvider>
           {children}
           <Toaster position="top-right" />
+          <MetaPixel />
         </AuthProvider>
       </body>
     </html>
