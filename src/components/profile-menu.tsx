@@ -42,19 +42,17 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <div className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-gray-100 transition-colors cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="relative h-10 w-10 rounded-full overflow-hidden border border-gray-200">
-                <Image
-                  src={user.profileImage}
-                  alt="Profile"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.firstName}</span>
-                <span className="text-xs text-gray-500">{user.email}</span>
-              </div>
+            <div className="relative h-10 w-10 rounded-full overflow-hidden border border-gray-200">
+              <Image
+                src={user.profileImage}
+                alt="Profile"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{user.firstName}</span>
+              <span className="text-xs text-gray-500">{user.email}</span>
             </div>
             <ChevronUp className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-0' : 'rotate-180'}`} />
           </div>
@@ -63,7 +61,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">
-                Hello, {user.firstName ? user.firstName.split(' ')[0] : 'User'}!
+                Hola, {user.firstName ? user.firstName.split(' ')[0] : 'Usuario'}!
               </p>
             </div>
           </DropdownMenuLabel>
@@ -71,20 +69,20 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
           <DropdownMenuItem asChild>
             <Link href="/dashboard/progress" className="cursor-pointer flex items-center gap-2">
               <BarChart2 className="h-4 w-4" />
-              <span>Your Progress</span>
+              <span>Tu Progreso</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/profile" className="cursor-pointer flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span>My Information</span>
+              <span>Mis Datos</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 hover:text-red-600">
             <div className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
-              <span>Log Out</span>
+              <span>Cerrar Sesión</span>
             </div>
           </DropdownMenuItem>
         </DropdownMenuContent>

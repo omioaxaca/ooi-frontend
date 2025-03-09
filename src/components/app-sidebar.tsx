@@ -30,60 +30,60 @@ export function AppSidebar() {
   // Navigation groups
   const navItems = [
     {
-      title: "Class 2025",
+      title: "Selección 2025",
       items: [
         {
-          title: "Welcome",
+          title: "Bienvenido",
           href: "/dashboard",
           icon: Home,
         },
         {
-          title: "Notifications",
+          title: "Notificaciones",
           href: "/dashboard/notifications",
           icon: Bell,
         },
         {
-          title: "Calendar",
+          title: "Calendario",
           href: "/dashboard/calendar",
           icon: Calendar,
         },
         {
-          title: "Your Progress",
+          title: "Tu Progreso",
           href: "/dashboard/progress",
           icon: BarChart2,
         },
         {
-          title: "Class Recordings",
+          title: "Grabaciones de Clases",
           href: "/dashboard/recordings",
           icon: Video,
         },
         {
-          title: "Evaluations",
+          title: "Evaluaciones",
           href: "/dashboard/evaluations",
           icon: FileText,
         },
       ],
     },
     {
-      title: "Syllabus",
+      title: "Temario",
       items: [
         {
-          title: "Beginner",
+          title: "Principiante",
           href: "/dashboard/syllabus/beginner",
           icon: Book,
         },
         {
-          title: "Advanced",
-          href: "/dashboard/syllabus/advanced",
+          title: "Intermedio",
+          href: "/dashboard/syllabus/intermediate",
           icon: GraduationCap,
         },
       ],
     },
     {
-      title: "Exercises",
+      title: "Ejercicios",
       items: [
         {
-          title: "All Problems",
+          title: "Todos los Problemas",
           href: "/dashboard/exercises",
           icon: Code,
         },
@@ -144,7 +144,7 @@ export function AppSidebar() {
             onClick={() => logout()}
           >
             <LogOut className="h-4 w-4" />
-            Log Out
+            Cerrar Sesión
           </Button>
         </div>
       </SidebarFooter>

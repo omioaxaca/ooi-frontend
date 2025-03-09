@@ -38,7 +38,7 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
-  signup: (newUser: NewUser) => Promise<User | null>
+  signup: (newUser: NewUser) => Promise<void>
   logout: () => void
   updateUser: (user: User) => void
   isAuthenticated: () => boolean
@@ -86,8 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(newUser)
       })
 
-      if (!response.ok) { 
-        throw new Error("Failed to sign up")
+      if (!response.ok) {
+        const data = await response.json()
+        const errorMessage = data.error.message
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
@@ -107,7 +109,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     } finally { 
       setIsLoading(false)
-      return user
     }
   }
 
@@ -157,7 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (!response.ok) {
-        throw new Error("Invalid credentials")
+        const data = await response.json()
+        const errorMessage = data.error.message
+        throw new Error(errorMessage)
       }
       
       const data = await response.json()

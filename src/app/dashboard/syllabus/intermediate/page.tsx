@@ -14,7 +14,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Accordion, 
+  Accordion,
   AccordionContent, 
   AccordionItem, 
   AccordionTrigger 

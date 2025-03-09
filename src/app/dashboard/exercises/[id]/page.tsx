@@ -135,7 +135,7 @@ export default function ExercisePage() {
     
     // Set initial code based on selected language
     setCode(templateCode[selectedLanguage as keyof typeof templateCode]);
-  }, [selectedLanguage]);
+  }, [mockExercise, templateCode]);
   
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);

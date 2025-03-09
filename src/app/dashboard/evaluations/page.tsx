@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
 import { FileText, Calendar, CheckCircle, AlertCircle, Clock, ExternalLink, Award } from "lucide-react";
+import { ConstructionBanner } from "@/components/construction-banner";
+import { WithConstructionBanner } from "@/components/with-construction-banner";
 
 // Update the type definition to allow null values
 type Evaluation = {
@@ -222,70 +224,73 @@ export default function EvaluationsPage() {
   );
 
   return (
-    <SidebarProvider>
+    <>
       <SidebarTrigger />
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-col gap-4 p-4 md:p-8">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Evaluaciones</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl text-ooi-dark-blue">Evaluaciones</CardTitle>
-                <CardDescription>
-                  Tareas, exámenes, proyectos y otras actividades evaluativas del curso
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="all">Todas</TabsTrigger>
-                    <TabsTrigger value="homework">Tareas</TabsTrigger>
-                    <TabsTrigger value="exam">Exámenes</TabsTrigger>
-                    <TabsTrigger value="project">Proyectos</TabsTrigger>
-                    <TabsTrigger value="upcoming">Próximas</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="all" className="mt-0">
-                    <EvaluationsList evaluations={getFilteredEvaluations("all")} />
-                  </TabsContent>
-                  
-                  <TabsContent value="homework" className="mt-0">
-                    <EvaluationsList evaluations={getFilteredEvaluations("homework")} />
-                  </TabsContent>
-                  
-                  <TabsContent value="exam" className="mt-0">
-                    <EvaluationsList evaluations={getFilteredEvaluations("exam")} />
-                  </TabsContent>
-                  
-                  <TabsContent value="project" className="mt-0">
-                    <EvaluationsList evaluations={getFilteredEvaluations("project")} />
-                  </TabsContent>
-                  
-                  <TabsContent value="upcoming" className="mt-0">
-                    <EvaluationsList evaluations={getFilteredEvaluations("upcoming")} />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+        <WithConstructionBanner>
+          <div className="container mx-auto p-6">
+            <Breadcrumb className="mb-6">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Evaluaciones</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl text-ooi-dark-blue">Evaluaciones</CardTitle>
+                  <CardDescription>
+                    Tareas, exámenes, proyectos y otras actividades evaluativas del curso
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="all">Todas</TabsTrigger>
+                      <TabsTrigger value="homework">Tareas</TabsTrigger>
+                      <TabsTrigger value="exam">Exámenes</TabsTrigger>
+                      <TabsTrigger value="project">Proyectos</TabsTrigger>
+                      <TabsTrigger value="upcoming">Próximas</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="all" className="mt-0">
+                      <EvaluationsList evaluations={getFilteredEvaluations("all")} />
+                    </TabsContent>
+                    
+                    <TabsContent value="homework" className="mt-0">
+                      <EvaluationsList evaluations={getFilteredEvaluations("homework")} />
+                    </TabsContent>
+                    
+                    <TabsContent value="exam" className="mt-0">
+                      <EvaluationsList evaluations={getFilteredEvaluations("exam")} />
+                    </TabsContent>
+                    
+                    <TabsContent value="project" className="mt-0">
+                      <EvaluationsList evaluations={getFilteredEvaluations("project")} />
+                    </TabsContent>
+                    
+                    <TabsContent value="upcoming" className="mt-0">
+                      <EvaluationsList evaluations={getFilteredEvaluations("upcoming")} />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </WithConstructionBanner>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 } 

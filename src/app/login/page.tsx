@@ -45,7 +45,8 @@ export default function Login() {
     } catch (error) {
       console.error('Login error:', error);
       toast.error("Error de inicio de sesión", {
-        description: error instanceof Error ? error.message : "Por favor verifica tus credenciales e intenta nuevamente."
+        description: error instanceof Error ? error.message : "Por favor verifica tus credenciales e intenta nuevamente.",
+        duration: 5000
       });
     } finally {
       setIsLoading(false);
@@ -89,7 +90,7 @@ export default function Login() {
                   
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="email" className={errors.email ? "text-red-500" : ""}>
+                      <Label htmlFor="email" className={errors.email ? "text-red-500 pb-2" : "pb-2"}>
                         Correo Electrónico *
                       </Label>
                       <Input
@@ -113,12 +114,12 @@ export default function Login() {
                     
                     <div>
                       <div className="flex justify-between">
-                        <Label htmlFor="password" className={errors.password ? "text-red-500" : ""}>
+                        <Label htmlFor="password" className={errors.password ? "text-red-500 pb-2" : "pb-2"}>
                           Contraseña *
                         </Label>
-                        <Link href="/recuperar-contrasena" className="text-sm text-ooi-second-blue hover:underline">
+                        {/* <Link href="/recuperar-contrasena" className="text-sm text-ooi-second-blue hover:underline">
                           ¿Olvidaste tu contraseña?
-                        </Link>
+                        </Link> */}
                       </div>
                       <Input
                         id="password"

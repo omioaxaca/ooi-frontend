@@ -174,14 +174,12 @@ export default function Registro() {
       console.log("Sending user data:", userData); // For debugging
       
       // Make the API request to Strapi
-      const newUser = await signup(userData);
-
-      console.log("Response from API:", newUser); // For debugging
+      await signup(userData);
       
       toast.success("¡Registro exitoso!", {
         description: "Tu cuenta ha sido creada correctamente."
       });
-      
+
       // Redirect to homepage or login
       setTimeout(() => {
         router.push('/');
@@ -190,7 +188,8 @@ export default function Registro() {
     } catch (error) {
       console.error('Registration error:', error);
       toast.error("Error en el registro", {
-        description: error instanceof Error ? error.message : "Por favor intenta nuevamente más tarde."
+        description: error instanceof Error ? error.message : "Por favor intenta nuevamente más tarde.",
+        duration: 5000
       });
     } finally {
       setIsLoading(false);
@@ -235,7 +234,7 @@ export default function Registro() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label htmlFor="email" className={errors.email ? "text-red-500" : ""}>
+                      <Label htmlFor="email" className={errors.email ? "text-red-500 pb-2" : "pb-2"}>
                         Correo Electrónico *
                       </Label>
               <Input
@@ -255,7 +254,7 @@ export default function Registro() {
             </div>
 
                     <div>
-                      <Label htmlFor="password" className={errors.password ? "text-red-500" : ""}>
+                      <Label htmlFor="password" className={errors.password ? "text-red-500 pb-2" : "pb-2"}>
                         Contraseña *
                       </Label>
               <Input
@@ -276,7 +275,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="confirmPassword" className={errors.confirmPassword ? "text-red-500" : ""}>
+                      <Label htmlFor="confirmPassword" className={errors.confirmPassword ? "text-red-500 pb-2" : "pb-2"}>
                         Confirmar Contraseña *
                       </Label>
                       <Input
@@ -309,7 +308,7 @@ export default function Registro() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName" className={errors.firstName ? "text-red-500" : ""}>
+                      <Label htmlFor="firstName" className={errors.firstName ? "text-red-500 pb-2" : "pb-2"}>
                         Nombre(s) *
                       </Label>
                       <Input
@@ -329,7 +328,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="lastName" className={errors.lastName ? "text-red-500" : ""}>
+                      <Label htmlFor="lastName" className={errors.lastName ? "text-red-500 pb-2" : "pb-2"}>
                         Apellido(s) *
                       </Label>
                       <Input
@@ -349,7 +348,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="phoneNumber" className={errors.phoneNumber ? "text-red-500" : ""}>
+                      <Label htmlFor="phoneNumber" className={errors.phoneNumber ? "text-red-500 pb-2" : "pb-2"}>
                         Número de Teléfono *
                       </Label>
                       <Input
@@ -369,7 +368,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="birthDate" className={errors.birthDate ? "text-red-500" : ""}>
+                      <Label htmlFor="birthDate" className={errors.birthDate ? "text-red-500 pb-2" : "pb-2"}>
                         Fecha de Nacimiento *
                       </Label>
                       <Input
@@ -401,7 +400,7 @@ export default function Registro() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label htmlFor="schoolName" className={errors.schoolName ? "text-red-500" : ""}>
+                      <Label htmlFor="schoolName" className={errors.schoolName ? "text-red-500 pb-2" : "pb-2"}>
                         Nombre de la Escuela *
                       </Label>
                       <Input
@@ -410,7 +409,7 @@ export default function Registro() {
                         value={schoolName}
                         onChange={(e) => setSchoolName(e.target.value)}
                         className={errors.schoolName ? "border-red-500" : ""}
-                        placeholder="Escuela Secundaria / Preparatoria..."
+                        placeholder="Escuela Primaria / Secundaria / Preparatoria"
                         required
                       />
                       {errors.schoolName && (
@@ -421,7 +420,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="schoolLevel" className={errors.schoolLevel ? "text-red-500" : ""}>
+                      <Label htmlFor="schoolLevel" className={errors.schoolLevel ? "text-red-500 pb-2" : "pb-2"}>
                         Nivel Educativo *
                       </Label>
                       <Select
@@ -445,7 +444,7 @@ export default function Registro() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="schoolGrade" className={errors.schoolGrade ? "text-red-500" : ""}>
+                      <Label htmlFor="schoolGrade" className={errors.schoolGrade ? "text-red-500 pb-2" : "pb-2"}>
                         Grado Escolar *
                       </Label>
                       <Select

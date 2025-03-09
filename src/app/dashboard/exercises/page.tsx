@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { Code, Search, CheckCircle, Star, ArrowRight, Filter, SortAsc, SortDesc, ChevronRight } from "lucide-react";
+import { WithConstructionBanner } from "@/components/with-construction-banner";
 
 export default function ExercisesPage() {
   // Filter and search state
@@ -239,312 +240,315 @@ export default function ExercisesPage() {
   };
 
   return (
-    <SidebarProvider>
+    <>
+      <SidebarTrigger />
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">
-                    Dashboard
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Ejercicios</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-between items-center mb-4"
-          >
-            <div className="flex items-center gap-2">
-              <Code className="h-5 w-5 text-ooi-second-blue" />
-              <h1 className="text-2xl font-semibold text-ooi-dark-blue">Ejercicios</h1>
+        <WithConstructionBanner>
+          <header className="flex h-16 shrink-0 items-center gap-2">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/dashboard">
+                      Dashboard
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Ejercicios</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center">
-                <div className="h-3 w-3 rounded-full bg-green-500 mr-1"></div>
-                <span className="text-xs text-gray-600">Fácil</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-3 w-3 rounded-full bg-yellow-500 mr-1"></div>
-                <span className="text-xs text-gray-600">Medio</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-3 w-3 rounded-full bg-red-500 mr-1"></div>
-                <span className="text-xs text-gray-600">Difícil</span>
-              </div>
-            </div>
-          </motion.div>
+          </header>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-                      <Input
-                        placeholder="Buscar ejercicios por título o descripción..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-between items-center mb-4"
+            >
+              <div className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-ooi-second-blue" />
+                <h1 className="text-2xl font-semibold text-ooi-dark-blue">Ejercicios</h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-green-500 mr-1"></div>
+                  <span className="text-xs text-gray-600">Fácil</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-yellow-500 mr-1"></div>
+                  <span className="text-xs text-gray-600">Medio</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-red-500 mr-1"></div>
+                  <span className="text-xs text-gray-600">Difícil</span>
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                        <Input
+                          placeholder="Buscar ejercicios por título o descripción..."
+                          className="pl-8"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                        <SelectTrigger className="w-[140px]">
+                          <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4" />
+                            <span>Dificultad</span>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas</SelectItem>
+                          <SelectItem value="easy">Fácil</SelectItem>
+                          <SelectItem value="medium">Medio</SelectItem>
+                          <SelectItem value="hard">Difícil</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={topicFilter} onValueChange={setTopicFilter}>
+                        <SelectTrigger className="w-[140px]">
+                          <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4" />
+                            <span>Tema</span>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          {allTopics.map(topic => (
+                            <SelectItem key={topic} value={topic}>{topic}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[140px]">
+                          <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4" />
+                            <span>Estado</span>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="completed">Completados</SelectItem>
+                          <SelectItem value="attempted">Intentados</SelectItem>
+                          <SelectItem value="not-attempted">No intentados</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-[140px]">
+                          <div className="flex items-center gap-2">
+                            {sortBy.includes('asc') ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                            <span>Ordenar</span>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="difficulty-asc">Dificultad ↑</SelectItem>
+                          <SelectItem value="difficulty-desc">Dificultad ↓</SelectItem>
+                          <SelectItem value="acceptance-asc">Aceptación ↑</SelectItem>
+                          <SelectItem value="acceptance-desc">Aceptación ↓</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                      <SelectTrigger className="w-[140px]">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4" />
-                          <span>Dificultad</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todas</SelectItem>
-                        <SelectItem value="easy">Fácil</SelectItem>
-                        <SelectItem value="medium">Medio</SelectItem>
-                        <SelectItem value="hard">Difícil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={topicFilter} onValueChange={setTopicFilter}>
-                      <SelectTrigger className="w-[140px]">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4" />
-                          <span>Tema</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        {allTopics.map(topic => (
-                          <SelectItem key={topic} value={topic}>{topic}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[140px]">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4" />
-                          <span>Estado</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="completed">Completados</SelectItem>
-                        <SelectItem value="attempted">Intentados</SelectItem>
-                        <SelectItem value="not-attempted">No intentados</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-[140px]">
-                        <div className="flex items-center gap-2">
-                          {sortBy.includes('asc') ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                          <span>Ordenar</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="difficulty-asc">Dificultad ↑</SelectItem>
-                        <SelectItem value="difficulty-desc">Dificultad ↓</SelectItem>
-                        <SelectItem value="acceptance-asc">Aceptación ↑</SelectItem>
-                        <SelectItem value="acceptance-desc">Aceptación ↓</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-2">
-                  {sortedExercises.length > 0 ? (
-                    sortedExercises.map((exercise) => (
-                      <motion.div 
-                        key={exercise.id}
-                        whileHover={{ x: 2 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Card className="border overflow-hidden">
-                          <div className="flex items-stretch">
-                            <div className={`w-2 ${
-                              exercise.difficulty === 'easy' ? 'bg-green-500' :
-                              exercise.difficulty === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}></div>
-                            
-                            <div className="flex-1 flex items-center p-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-medium">{exercise.title}</h3>
-                                  <Badge className={getDifficultyColor(exercise.difficulty)}>
-                                    {exercise.difficulty === 'easy' ? 'Fácil' :
-                                     exercise.difficulty === 'medium' ? 'Medio' : 'Difícil'}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
-                                
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {exercise.topics.map((topic, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs bg-gray-50">
-                                      {topic}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-2">
+                    {sortedExercises.length > 0 ? (
+                      sortedExercises.map((exercise) => (
+                        <motion.div 
+                          key={exercise.id}
+                          whileHover={{ x: 2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Card className="border overflow-hidden">
+                            <div className="flex items-stretch">
+                              <div className={`w-2 ${
+                                exercise.difficulty === 'easy' ? 'bg-green-500' :
+                                exercise.difficulty === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}></div>
                               
-                              <div className="flex flex-col items-end gap-2 ml-4">
-                                <div className="flex items-center">
-                                  {getStatusDisplay(exercise.status).icon}
-                                  <span className="text-sm text-gray-600 ml-1">
-                                    {getStatusDisplay(exercise.status).text}
-                                  </span>
+                              <div className="flex-1 flex items-center p-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-medium">{exercise.title}</h3>
+                                    <Badge className={getDifficultyColor(exercise.difficulty)}>
+                                      {exercise.difficulty === 'easy' ? 'Fácil' :
+                                       exercise.difficulty === 'medium' ? 'Medio' : 'Difícil'}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
+                                  
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {exercise.topics.map((topic, i) => (
+                                      <Badge key={i} variant="outline" className="text-xs bg-gray-50">
+                                        {topic}
+                                      </Badge>
+                                    ))}
+                                  </div>
                                 </div>
                                 
-                                <div className="text-xs text-gray-500">
-                                  Aceptación: {exercise.acceptanceRate}
+                                <div className="flex flex-col items-end gap-2 ml-4">
+                                  <div className="flex items-center">
+                                    {getStatusDisplay(exercise.status).icon}
+                                    <span className="text-sm text-gray-600 ml-1">
+                                      {getStatusDisplay(exercise.status).text}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="text-xs text-gray-500">
+                                    Aceptación: {exercise.acceptanceRate}
+                                  </div>
+                                  
+                                  <Button size="sm" asChild>
+                                    <a href={exercise.url} className="mt-2">
+                                      {exercise.status === 'completed' ? 'Revisar' : 'Resolver'}
+                                      <ChevronRight className="h-4 w-4 ml-1" />
+                                    </a>
+                                  </Button>
                                 </div>
-                                
-                                <Button size="sm" asChild>
-                                  <a href={exercise.url} className="mt-2">
-                                    {exercise.status === 'completed' ? 'Revisar' : 'Resolver'}
-                                    <ChevronRight className="h-4 w-4 ml-1" />
-                                  </a>
-                                </Button>
                               </div>
                             </div>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center text-gray-500">
-                      No se encontraron ejercicios que coincidan con los filtros aplicados.
-                    </div>
-                  )}
-                </div>
-                
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    Mostrando {sortedExercises.length} de {exercises.length} ejercicios
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" disabled>
-                      Anterior
-                    </Button>
-                    <Button size="sm" variant="outline" disabled>
-                      Siguiente
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-4"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-ooi-dark-blue">
-                  Estadísticas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex flex-col items-center p-4 border rounded-lg">
-                    <div className="text-3xl font-bold text-ooi-second-blue mb-2">
-                      {exercises.filter(ex => ex.status === 'completed').length}
-                    </div>
-                    <div className="text-sm text-gray-600">Problemas resueltos</div>
-                  </div>
-                  
-                  <div className="flex flex-col items-center p-4 border rounded-lg">
-                    <div className="text-3xl font-bold text-yellow-500 mb-2">
-                      {exercises.filter(ex => ex.status === 'attempted').length}
-                    </div>
-                    <div className="text-sm text-gray-600">Problemas intentados</div>
-                  </div>
-                  
-                  <div className="flex flex-col items-center p-4 border rounded-lg">
-                    <div className="text-3xl font-bold text-gray-700 mb-2">
-                      {exercises.filter(ex => ex.status === 'not-attempted').length}
-                    </div>
-                    <div className="text-sm text-gray-600">Problemas pendientes</div>
-                  </div>
-                </div>
-                
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium mb-2">Progreso por dificultad</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between mb-1 text-xs">
-                        <span>Fácil</span>
-                        <span>{exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'easy').length}</span>
+                          </Card>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        No se encontraron ejercicios que coincidan con los filtros aplicados.
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
-                          style={{ width: `${(exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'easy').length)) * 100}%` }}
-                        ></div>
-                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Mostrando {sortedExercises.length} de {exercises.length} ejercicios
                     </div>
                     
-                    <div>
-                      <div className="flex justify-between mb-1 text-xs">
-                        <span>Medio</span>
-                        <span>{exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'medium').length}</span>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" disabled>
+                        Anterior
+                      </Button>
+                      <Button size="sm" variant="outline" disabled>
+                        Siguiente
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-4"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg text-ooi-dark-blue">
+                    Estadísticas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-3xl font-bold text-ooi-second-blue mb-2">
+                        {exercises.filter(ex => ex.status === 'completed').length}
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-yellow-500 h-2 rounded-full" 
-                          style={{ width: `${(exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'medium').length)) * 100}%` }}
-                        ></div>
-                      </div>
+                      <div className="text-sm text-gray-600">Problemas resueltos</div>
                     </div>
                     
-                    <div>
-                      <div className="flex justify-between mb-1 text-xs">
-                        <span>Difícil</span>
-                        <span>{exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'hard').length}</span>
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-3xl font-bold text-yellow-500 mb-2">
+                        {exercises.filter(ex => ex.status === 'attempted').length}
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-red-500 h-2 rounded-full" 
-                          style={{ width: `${(exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'hard').length)) * 100}%` }}
-                        ></div>
+                      <div className="text-sm text-gray-600">Problemas intentados</div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-3xl font-bold text-gray-700 mb-2">
+                        {exercises.filter(ex => ex.status === 'not-attempted').length}
+                      </div>
+                      <div className="text-sm text-gray-600">Problemas pendientes</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium mb-2">Progreso por dificultad</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between mb-1 text-xs">
+                          <span>Fácil</span>
+                          <span>{exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'easy').length}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${(exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'easy').length)) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-xs">
+                          <span>Medio</span>
+                          <span>{exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'medium').length}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-yellow-500 h-2 rounded-full" 
+                            style={{ width: `${(exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'medium').length)) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-xs">
+                          <span>Difícil</span>
+                          <span>{exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'hard').length}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-red-500 h-2 rounded-full" 
+                            style={{ width: `${(exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'hard').length)) * 100}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </WithConstructionBanner>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 } 

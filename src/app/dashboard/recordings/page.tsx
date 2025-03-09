@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Video, Search, FileText, ExternalLink, Download, Clock } from "lucide-react";
+import { WithConstructionBanner } from "@/components/with-construction-banner";
 
 // Update the type to match the actual data structure
 type Recording = {
@@ -121,114 +122,116 @@ export default function RecordingsPage() {
   );
 
   return (
-    <SidebarProvider>
+    <>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Grabaciones de Clases</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-between items-center mb-6"
-          >
-            <div className="flex items-center gap-2">
-              <Video className="h-5 w-5 text-ooi-second-blue" />
-              <h1 className="text-2xl font-semibold text-ooi-dark-blue">Grabaciones de Clases</h1>
+        <WithConstructionBanner>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Grabaciones de Clases</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="Buscar grabaciones..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </motion.div>
+          </header>
+          
+          <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-between items-center mb-6"
+            >
+              <div className="flex items-center gap-2">
+                <Video className="h-5 w-5 text-ooi-second-blue" />
+                <h1 className="text-2xl font-semibold text-ooi-dark-blue">Grabaciones de Clases</h1>
+              </div>
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Buscar grabaciones..."
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-              <TabsList className="mb-6">
-                <TabsTrigger value="all">Todas</TabsTrigger>
-                <TabsTrigger value="beginner">Principiante</TabsTrigger>
-                <TabsTrigger value="intermediate">Intermedio</TabsTrigger>
-                <TabsTrigger value="advanced">Avanzado</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all" className="space-y-6">
-                {filteredRecordings.length > 0 ? (
-                  filteredRecordings.map((recording) => (
-                    <RecordingCard key={recording.id} recording={recording} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No se encontraron grabaciones que coincidan con tu búsqueda
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="beginner" className="space-y-6">
-                {filteredRecordings.length > 0 ? (
-                  filteredRecordings.map((recording) => (
-                    <RecordingCard key={recording.id} recording={recording} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No se encontraron grabaciones para este nivel
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="intermediate" className="space-y-6">
-                {filteredRecordings.length > 0 ? (
-                  filteredRecordings.map((recording) => (
-                    <RecordingCard key={recording.id} recording={recording} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No se encontraron grabaciones para este nivel
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="advanced" className="space-y-6">
-                {filteredRecordings.length > 0 ? (
-                  filteredRecordings.map((recording) => (
-                    <RecordingCard key={recording.id} recording={recording} />
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No se encontraron grabaciones para este nivel
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+                <TabsList className="mb-6">
+                  <TabsTrigger value="all">Todas</TabsTrigger>
+                  <TabsTrigger value="beginner">Principiante</TabsTrigger>
+                  <TabsTrigger value="intermediate">Intermedio</TabsTrigger>
+                  <TabsTrigger value="advanced">Avanzado</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="all" className="space-y-6">
+                  {filteredRecordings.length > 0 ? (
+                    filteredRecordings.map((recording) => (
+                      <RecordingCard key={recording.id} recording={recording} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      No se encontraron grabaciones que coincidan con tu búsqueda
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="beginner" className="space-y-6">
+                  {filteredRecordings.length > 0 ? (
+                    filteredRecordings.map((recording) => (
+                      <RecordingCard key={recording.id} recording={recording} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      No se encontraron grabaciones para este nivel
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="intermediate" className="space-y-6">
+                  {filteredRecordings.length > 0 ? (
+                    filteredRecordings.map((recording) => (
+                      <RecordingCard key={recording.id} recording={recording} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      No se encontraron grabaciones para este nivel
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="advanced" className="space-y-6">
+                  {filteredRecordings.length > 0 ? (
+                    filteredRecordings.map((recording) => (
+                      <RecordingCard key={recording.id} recording={recording} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      No se encontraron grabaciones para este nivel
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </motion.div>
+          </div>
+        </WithConstructionBanner>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
 
