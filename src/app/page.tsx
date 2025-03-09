@@ -117,7 +117,7 @@ export default function Home() {
                   ¡Vuélvete el/la mejor programador(a) del estado de Oaxaca!
                 </p>
                 <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
-                  Inicio de clases: <span className="text-ooi-yellow">24 de Marzo 2025</span>
+                  Inicio de clases: <span className="text-ooi-yellow">7 de Abril 2025</span>
                 </p>
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link href="/registro">
