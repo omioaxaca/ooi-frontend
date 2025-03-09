@@ -52,7 +52,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.name}</span>
+                <span className="text-sm font-medium">{user.firstName}</span>
                 <span className="text-xs text-gray-500">{user.email}</span>
               </div>
             </div>
@@ -63,7 +63,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">
-                Hello, {user?.name ? user.name.split(' ')[0] : 'User'}!
+                Hello, {user.firstName ? user.firstName.split(' ')[0] : 'User'}!
               </p>
             </div>
           </DropdownMenuLabel>
@@ -110,7 +110,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.name}</p>
+            <p className="text-sm font-medium">{user.firstName}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
           </div>
         </DropdownMenuLabel>

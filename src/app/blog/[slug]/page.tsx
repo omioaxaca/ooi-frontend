@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 
 // Mock blog posts data - in a real app, this would come from a database or CMS

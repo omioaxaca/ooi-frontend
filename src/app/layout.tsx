@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "My Next.js App",
-  description: "Created with Next.js, Tailwind CSS and shadcn/ui",
+  title: "Olimpiada Oaxaqueña de Informática",
+  description: "Forma parte de la Olimpiada Oaxaqueña de Informática y aprende más sobre la programación.",
 };
 
 export default function RootLayout({

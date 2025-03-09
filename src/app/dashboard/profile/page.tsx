@@ -36,6 +36,7 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { useAuth } from "@/contexts/auth-context"
 import { Checkbox } from "@/components/ui/checkbox"
+import { User as UserType } from "@/contexts/auth-context"
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth()
@@ -43,33 +44,22 @@ export default function ProfilePage() {
   // Expanded user state with signup fields
   const [userData, setUserData] = useState({
     // Basic info
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
-    phone: "",
-    birthday: "",
+    phoneNumber: "",
+    birthDate: "",
     profileImage: "/images/profile-default.png",
     
     // Academic info
-    school: "",
-    gradeLevel: "",
-    program: "",
-    student_id: "",
-    
-    // Address info
-    address: "",
-    city: "",
-    state: "Oaxaca",
-    zip: "",
+    schoolGrade: "",
+    schoolLevel: "",
+    schoolName: "",
     
     // Additional info
-    bio: "",
-    skills: [],
-    previousExperience: "",
-    
-    // Preferences & settings
-    notificationsEnabled: true,
-    agreedToTerms: true,
-    preferredLanguage: "cpp"
+    aboutYou: "",
+    hobbies: [] as string[],
+    pastExperience: "",
   })
   
   // Load user data on mount
@@ -77,11 +67,18 @@ export default function ProfilePage() {
     if (user) {
       setUserData(prev => ({
         ...prev,
-        name: user.name || prev.name,
+        firstName: user.firstName || prev.firstName,
+        lastName: user.lastName || prev.lastName,
         email: user.email || prev.email,
         profileImage: user.profileImage || prev.profileImage,
-        // Add other fields from user object if they exist
-        // ...(user.profile && user.profile)
+        phoneNumber: user.phoneNumber || prev.phoneNumber,
+        birthDate: user.birthDate || prev.birthDate,  
+        schoolGrade: user.schoolGrade || prev.schoolGrade,
+        schoolLevel: user.schoolLevel || prev.schoolLevel,
+        schoolName: user.schoolName || prev.schoolName,
+        aboutYou: user.aboutYou || prev.aboutYou,
+        hobbies: user.hobbies || prev.hobbies,
+        pastExperience: user.pastExperience || prev.pastExperience,
       }))
     }
   }, [user])
@@ -134,28 +131,22 @@ export default function ProfilePage() {
       await new Promise(resolve => setTimeout(resolve, 1500))
       
       // In a real app, you would upload the image and update the profile
-      const updatedUser = {
-        ...user,
-        name: userData.name,
+      const updatedUser: UserType = {
+        ...user, 
+        id: user?.id || "",
+        firstName: userData.firstName,
+        lastName: userData.lastName,
         email: userData.email,
         profileImage: previewImage || userData.profileImage,
-        profile: {
-          phone: userData.phone,
-          birthday: userData.birthday,
-          school: userData.school,
-          gradeLevel: userData.gradeLevel,
-          program: userData.program,
-          student_id: userData.student_id,
-          address: userData.address,
-          city: userData.city,
-          state: userData.state,
-          zip: userData.zip,
-          bio: userData.bio,
-          skills: userData.skills,
-          previousExperience: userData.previousExperience,
-          notificationsEnabled: userData.notificationsEnabled,
-          preferredLanguage: userData.preferredLanguage
-        }
+        phoneNumber: userData.phoneNumber,
+        birthDate: userData.birthDate,
+        schoolGrade: userData.schoolGrade,
+        schoolLevel: userData.schoolLevel,
+        schoolName: userData.schoolName,
+        aboutYou: userData.aboutYou,
+        hobbies: userData.hobbies,
+        pastExperience: userData.pastExperience,
+        roleType: user?.roleType || "STUDENT",
       }
       
       // Update local storage
@@ -252,7 +243,7 @@ export default function ProfilePage() {
                             <Input 
                               id="name" 
                               name="name" 
-                              value={userData.name} 
+                              value={userData.firstName + " " + userData.lastName} 
                               onChange={handleInputChange}
                               className="pl-10"
                               placeholder="Tu nombre completo"
@@ -285,7 +276,7 @@ export default function ProfilePage() {
                             <Input 
                               id="phone" 
                               name="phone" 
-                              value={userData.phone} 
+                              value={userData.phoneNumber} 
                               onChange={handleInputChange}
                               className="pl-10"
                               placeholder="+52 (000) 000-0000"
@@ -301,7 +292,7 @@ export default function ProfilePage() {
                               id="birthday" 
                               name="birthday" 
                               type="date"
-                              value={userData.birthday} 
+                              value={userData.birthDate} 
                               onChange={handleInputChange}
                               className="pl-10"
                             />
@@ -325,7 +316,7 @@ export default function ProfilePage() {
                           <Input 
                             id="school" 
                             name="school" 
-                            value={userData.school} 
+                            value={userData.schoolName} 
                             onChange={handleInputChange}
                             className="pl-10"
                             placeholder="Nombre de tu escuela"
@@ -334,126 +325,64 @@ export default function ProfilePage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="gradeLevel">Grado Escolar</Label>
+                        <Label htmlFor="schoolLevel">Nivel Escolar</Label>
                         <Select 
-                          value={userData.gradeLevel} 
-                          onValueChange={(value) => handleSelectChange("gradeLevel", value)}
+                          value={userData.schoolLevel}
+                          onValueChange={(value) => handleSelectChange("schoolLevel", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona tu nivel escolar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="secundaria">Secundaria</SelectItem>
+                            <SelectItem value="preparatoria">Preparatoria</SelectItem>
+                            <SelectItem value="universidad">Universidad</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="schoolGrade">Grado Escolar</Label>
+                        <Select
+                          value={userData.schoolGrade}
+                          onValueChange={(value) => handleSelectChange("schoolGrade", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Selecciona tu grado" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="secundaria1">1° de Secundaria</SelectItem>
-                            <SelectItem value="secundaria2">2° de Secundaria</SelectItem>
-                            <SelectItem value="secundaria3">3° de Secundaria</SelectItem>
-                            <SelectItem value="preparatoria1">1° de Preparatoria</SelectItem>
-                            <SelectItem value="preparatoria2">2° de Preparatoria</SelectItem>
-                            <SelectItem value="preparatoria3">3° de Preparatoria</SelectItem>
-                            <SelectItem value="universidad">Universidad</SelectItem>
+                            {userData.schoolLevel === "secundaria" && (
+                              <>
+                                <SelectItem value="1">1° Grado</SelectItem>
+                                <SelectItem value="2">2° Grado</SelectItem>
+                                <SelectItem value="3">3° Grado</SelectItem>
+                              </>
+                            )}
+                            {userData.schoolLevel === "preparatoria" && (
+                              <>
+                                <SelectItem value="1">1° Grado</SelectItem>
+                                <SelectItem value="2">2° Grado</SelectItem>
+                                <SelectItem value="3">3° Grado</SelectItem>
+                              </>
+                            )}
+                            {userData.schoolLevel === "universidad" && (
+                              <>
+                                <SelectItem value="1">1° Semestre</SelectItem>
+                                <SelectItem value="2">2° Semestre</SelectItem>
+                                <SelectItem value="3">3° Semestre</SelectItem>
+                                <SelectItem value="4">4° Semestre</SelectItem>
+                                <SelectItem value="5">5° Semestre</SelectItem>
+                                <SelectItem value="6">6° Semestre</SelectItem>
+                                <SelectItem value="7">7° Semestre</SelectItem>
+                                <SelectItem value="8">8° Semestre</SelectItem>
+                              </>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="program">Programa/Carrera</Label>
-                        <div className="relative">
-                          <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                          <Input 
-                            id="program" 
-                            name="program" 
-                            value={userData.program} 
-                            onChange={handleInputChange}
-                            className="pl-10"
-                            placeholder="Tu programa o carrera"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="student_id">Matrícula/ID Estudiantil</Label>
-                        <div className="relative">
-                          <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                          <Input 
-                            id="student_id" 
-                            name="student_id" 
-                            value={userData.student_id} 
-                            onChange={handleInputChange}
-                            className="pl-10"
-                            placeholder="Tu ID de estudiante"
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                   
-                  <Separator />
-                  
-                  {/* Address Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-ooi-dark-blue">Dirección</h3>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Dirección Completa</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                        <Input 
-                          id="address" 
-                          name="address" 
-                          value={userData.address} 
-                          onChange={handleInputChange}
-                          className="pl-10"
-                          placeholder="Calle, número, colonia"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">Ciudad</Label>
-                        <Input 
-                          id="city" 
-                          name="city" 
-                          value={userData.city} 
-                          onChange={handleInputChange}
-                          placeholder="Ciudad"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="state">Estado</Label>
-                        <Select 
-                          value={userData.state} 
-                          onValueChange={(value) => handleSelectChange("state", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un estado" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Oaxaca">Oaxaca</SelectItem>
-                            <SelectItem value="Puebla">Puebla</SelectItem>
-                            <SelectItem value="Veracruz">Veracruz</SelectItem>
-                            <SelectItem value="Chiapas">Chiapas</SelectItem>
-                            <SelectItem value="Guerrero">Guerrero</SelectItem>
-                            <SelectItem value="CDMX">Ciudad de México</SelectItem>
-                            <SelectItem value="Otro">Otro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="zip">Código Postal</Label>
-                        <Input 
-                          id="zip" 
-                          name="zip" 
-                          value={userData.zip} 
-                          onChange={handleInputChange}
-                          placeholder="Código Postal"
-                        />
-                      </div>
-                    </div>
-                  </div>
                   
                   <Separator />
                   
@@ -466,7 +395,7 @@ export default function ProfilePage() {
                       <Textarea 
                         id="bio" 
                         name="bio" 
-                        value={userData.bio} 
+                        value={userData.aboutYou} 
                         onChange={handleInputChange}
                         rows={3}
                         placeholder="Cuéntanos un poco sobre ti, tus intereses y metas..."
@@ -480,48 +409,13 @@ export default function ProfilePage() {
                         <Textarea 
                           id="previousExperience" 
                           name="previousExperience" 
-                          value={userData.previousExperience} 
+                          value={userData.pastExperience} 
                           onChange={handleInputChange}
                           className="pl-10"
                           rows={3}
                           placeholder="Describe tu experiencia previa en programación, si tienes alguna..."
                         />
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Lenguaje de Programación Preferido</Label>
-                      <Select 
-                        value={userData.preferredLanguage} 
-                        onValueChange={(value) => handleSelectChange("preferredLanguage", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un lenguaje" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cpp">C++</SelectItem>
-                          <SelectItem value="java">Java</SelectItem>
-                          <SelectItem value="python">Python</SelectItem>
-                          <SelectItem value="javascript">JavaScript</SelectItem>
-                          <SelectItem value="csharp">C#</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="notificationsEnabled" 
-                        checked={userData.notificationsEnabled}
-                        onCheckedChange={(checked) => 
-                          handleCheckboxChange("notificationsEnabled", checked as boolean)
-                        }
-                      />
-                      <label
-                        htmlFor="notificationsEnabled"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Recibir notificaciones por correo electrónico
-                      </label>
                     </div>
                   </div>
                 </CardContent>

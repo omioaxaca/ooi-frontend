@@ -154,19 +154,19 @@ export default function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer">
                       <AvatarFallback>
-                        {user.name?.slice(0, 2).toUpperCase() || "U"}
+                        {user.firstName?.slice(0, 2).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="cursor-pointer">
+                    {/* <DropdownMenuItem className="cursor-pointer">
                       Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer">
                       Settings
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-                      Logout
+                      Cerrar Sesión
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

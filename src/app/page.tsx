@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

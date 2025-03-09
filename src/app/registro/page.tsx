@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,10 +18,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { NewUser, useAuth } from "@/contexts/auth-context";
 
 export default function Registro() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { signup } = useAuth();
   
   // Account Details
   const [email, setEmail] = useState("");
@@ -156,11 +158,10 @@ export default function Registro() {
     
     try {
       // Format data EXACTLY as required by Strapi
-      const userData = {
-        username: email, // Required by Strapi
+      const userData: NewUser = {
+        username: email,
         email: email,
         password: password,
-        // Make sure these match exactly what Strapi expects
         firstName: firstName,
         lastName: lastName,
         phoneNumber: phoneNumber,
@@ -173,20 +174,9 @@ export default function Registro() {
       console.log("Sending user data:", userData); // For debugging
       
       // Make the API request to Strapi
-      const response = await fetch('https://api.omioaxaca.org/api/auth/local/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      const data = await response.json();
-      console.log("Response from API:", data); // For debugging
-      
-      if (!response.ok) {
-        throw new Error(data.error?.message || data.message || 'Error en el registro');
-      }
+      const newUser = await signup(userData);
+
+      console.log("Response from API:", newUser); // For debugging
       
       toast.success("¡Registro exitoso!", {
         description: "Tu cuenta ha sido creada correctamente."
