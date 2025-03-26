@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "copybackendtypes": "node copyBackendStrapiTypes.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.2",
@@ -47,7 +46,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@strapi/strapi": "^5.11.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
