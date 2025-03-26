@@ -36,10 +36,18 @@ export default function Dashboard() {
 
   const announcements = [
     {
+      title: "Examen de evaluación diagnóstico",
+      description: "El examen de evaluación diagnóstico ya está disponible. Puedes realizarlo en cualquier momento desde ahora hasta el 7 de abril.",
+      date: "27 de marzo - 7 de abril, 2025",
+      priority: "high",
+      link: "/dashboard/evaluations",
+    },
+    {
       title: "Sesión de bienvenida",
       description: "La sesión de bienvenida será el 4 de Abril, 4:00 P.M. El link para unirse será publicado con anterioridad.",
       date: "4 de Abril, 2025",
-      priority: "high",
+      priority: "medium",
+      link: "/dashboard/calendar",
     },
   ];
 
@@ -118,6 +126,11 @@ export default function Dashboard() {
                             {announcement.date}
                           </p>
                         </div>
+                        {announcement.link && (
+                          <Link href={announcement.link} className="text-sm text-ooi-second-blue hover:underline flex items-center">
+                            Ver más <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -316,23 +329,23 @@ export default function Dashboard() {
                           2
                         </div>
                         <div>
-                          <h3 className="font-medium text-ooi-dark-blue">Examen de clasificación en línea</h3>
-                          <p className="text-xs text-gray-600">17-30 de marzo de 2025 • Requerido</p>
+                          <h3 className="font-medium text-ooi-dark-blue">Examen de evaluación diagnóstica en línea</h3>
+                          <p className="text-xs text-gray-600">27 de marzo - 7 de abril de 2025 • Requerido</p>
                         </div>
                       </div>
                       <div className="p-3">
                         <p className="text-sm text-gray-700 mb-2">
                           Este examen es exclusivamente de lógica. El objetivo es evaluar tus habilidades lógicas y matemáticas al resolver problemas computacionales.
-                          Podras realizar el examen en cualquier momento desde que se encuentre disponible hasta el 31 de marzo.
+                          Podras realizar el examen en cualquier momento desde que se encuentre disponible hasta el 7 de abril.
                         </p>
                         <ul className="text-xs text-gray-600 space-y-1 mb-3">
                           <li>• Ingresa el mismo correo electrónico que usaste en tu registro a la olimpiada.</li>
                           <li>• El examen contiene 20 preguntas. Debes contestar correctamente al menos 13 preguntas para continuar en la olimpiada.</li>
                           <li>• Debes realizar el examen por tu cuenta, sin ayuda de nadie más.</li>
                         </ul>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" disabled>
-                          <a href="" target="_blank" rel="noopener noreferrer">
-                            (Link disponible el 17 de marzo)
+                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
+                          <a href="/dashboard/evaluations" target="_blank" rel="noopener noreferrer">
+                            Realizar examen
                           </a>
                         </Button>
                       </div>

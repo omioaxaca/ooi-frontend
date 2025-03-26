@@ -36,7 +36,7 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { useAuth } from "@/contexts/auth-context"
 import { Checkbox } from "@/components/ui/checkbox"
-import { User as UserType } from "@/contexts/auth-context"
+import { User as UserType } from "@/types/user"
 import { WithConstructionBanner } from "@/components/with-construction-banner"
 
 export default function ProfilePage() {

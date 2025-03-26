@@ -18,7 +18,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { NewUser, useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/auth-context";
+import { NewUser } from "@/types/user";
 
 export default function Registro() {
   const router = useRouter();

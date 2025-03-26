@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -25,177 +25,204 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ChevronLeft, FileText, Calendar, CheckCircle, AlertCircle, Clock, Upload, Award, Download, ExternalLink, Video } from "lucide-react";
-
-type EvaluationData = {
-  id: number;
-  title: string;
-  type: string;
-  status: string;
-  deadline: string;
-  submitDate: string;
-  score: number;
-  maxScore: number;
-  feedback: string;
-  description: string;
-  instructions: string;
-  sections: Array<{
-    title: string;
-    points: number;
-    earned: number;
-    questions: Array<{
-      id: number;
-      question: string;
-      points: number;
-      earned: number;
-      feedback: string;
-    }>;
-  }>;
-  resources: Array<{
-    title: string;
-    type: string;
-    url: string;
-  }>;
-};
-
-const sampleEvaluation = {
-  id: 2,
-  title: "Evaluación: Fundamentos de programación",
-  type: "exam",
-  status: "completed",
-  deadline: "10 abril, 2025 - 23:59",
-  submitDate: "10 abril, 2025 - 17:45",
-  score: 85,
-  maxScore: 100,
-  feedback: "Buen dominio de los conceptos fundamentales. Necesitas mejorar en recursividad y análisis de algoritmos. Tu implementación de estructuras de datos es correcta pero podría ser más eficiente. Sigue así, vas por buen camino.",
-  description: "Examen que cubre los temas de las primeras 3 clases: introducción, algoritmos básicos y estructuras de control.",
-  instructions: `<p>Este examen evalúa tu comprensión de los fundamentos de programación vistos en las primeras 3 semanas del curso.</p>
-  <p>Instrucciones:</p>
-  <ul>
-    <li>Tienes 2 horas para completar el examen.</li>
-    <li>Puedes consultar la documentación oficial pero no buscar soluciones directas.</li>
-    <li>Implementa todas las funciones solicitadas siguiendo las especificaciones.</li>
-    <li>Entrega el examen en un único archivo .zip con todos tus archivos de solución.</li>
-  </ul>`,
-  sections: [
-    {
-      title: "Parte 1: Conceptos Básicos",
-      points: 30,
-      earned: 28,
-      questions: [
-        {
-          id: 1,
-          question: "Explica la diferencia entre compilación e interpretación.",
-          points: 10,
-          earned: 10,
-          feedback: "Respuesta completa y precisa."
-        },
-        {
-          id: 2,
-          question: "Describe los tipos de datos primitivos en C++.",
-          points: 10,
-          earned: 10,
-          feedback: "Excelente descripción de todos los tipos."
-        },
-        {
-          id: 3,
-          question: "Explica el concepto de variable y constante.",
-          points: 10,
-          earned: 8,
-          feedback: "Faltó mencionar el ámbito de las variables."
-        }
-      ]
-    },
-    {
-      title: "Parte 2: Estructuras de Control",
-      points: 30,
-      earned: 27,
-      questions: [
-        {
-          id: 4,
-          question: "Implementa un algoritmo que determine si un número es primo.",
-          points: 15,
-          earned: 15,
-          feedback: "Implementación correcta y eficiente."
-        },
-        {
-          id: 5,
-          question: "Escribe un programa que genere la secuencia de Fibonacci hasta n términos.",
-          points: 15,
-          earned: 12,
-          feedback: "La implementación es correcta pero podría ser más eficiente."
-        }
-      ]
-    },
-    {
-      title: "Parte 3: Algoritmos",
-      points: 40,
-      earned: 30,
-      questions: [
-        {
-          id: 6,
-          question: "Implementa el algoritmo de ordenamiento por selección.",
-          points: 20,
-          earned: 18,
-          feedback: "Buen algoritmo, pero falta analizar su complejidad."
-        },
-        {
-          id: 7,
-          question: "Implementa una función recursiva para calcular el factorial de un número.",
-          points: 20,
-          earned: 12,
-          feedback: "La implementación no maneja correctamente los casos base."
-        }
-      ]
-    }
-  ],
-  resources: [
-    {
-      title: "Guía de estudio",
-      type: "pdf",
-      url: "#" 
-    },
-    {
-      title: "Clase grabada: Algoritmos básicos",
-      type: "video",
-      url: "#"
-    }
-  ]
-};
+import { 
+  fetchEvaluationById, 
+  fetchUserEvaluationAttempts,
+  submitEvaluationAttempt 
+} from "@/services/evaluationService";
+import { format } from "date-fns";
+import { 
+  RadioGroup, 
+  RadioGroupItem 
+} from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { Evaluation, EvaluationAttempt, NewEvaluationAttempt } from "@/types/dashboard/evaluations";
+import { EvaluationQuestion } from "@/components/evaluation/EvaluationQuestion";
 
 export default function EvaluationDetailPage() {
   const params = useParams();
-  const id = params.id;
+  const router = useRouter();
+  const id = params.id as string;
   const [activeTab, setActiveTab] = useState("overview");
-  const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(null);
-  const [fileUpload, setFileUpload] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [attempt, setAttempt] = useState<EvaluationAttempt | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string | string[] | number | boolean>>({});
+  const [submitting, setSubmitting] = useState(false);
   
   useEffect(() => {
-    // Simulate fetching evaluation data
-    setEvaluationData(sampleEvaluation);
+    const loadEvaluation = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch evaluation details
+        const evaluationData = await fetchEvaluationById(id);
+        setEvaluation(evaluationData);
+        
+        // Fetch user's attempts
+        const attempts = await fetchUserEvaluationAttempts();
+        const currentAttempt = attempts.find(a => a.evaluation.documentId === id) || null;
+        setAttempt(currentAttempt);
+        
+        // If there's a previous attempt, populate answers
+        if (currentAttempt) {
+          const savedAnswers: Record<string, string | string[] | number | boolean> = {};
+          currentAttempt.answeredQuestions.forEach((answer) => {
+            savedAnswers[answer.questionIdentifier] = answer.answerIdentifier;
+          });
+          setAnswers(savedAnswers);
+        }
+        
+      } catch (err) {
+        console.error("Error loading evaluation details:", err);
+        setError("Failed to load evaluation. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadEvaluation();
   }, [id]);
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFileUpload(e.target.files?.[0] || null);
+  const handleAnswerChange = (questionIdentifier: string, answerIdentifier: string | string[] | number | boolean) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionIdentifier]: answerIdentifier
+    }));
   };
   
-  const handleSubmit = () => {
-    if (!fileUpload) {
-      toast.error("Por favor selecciona un archivo para entregar");
-      return;
+  const handleSubmit = async () => {
+    if (!evaluation) return;
+
+    try {
+      setSubmitting(true);
+      
+      // Format answers for submission
+      const formattedAnswers = Object.entries(answers).map(([questionIdentifier, value]) => ({
+        questionIdentifier: evaluation.questions.find(q => q.identifier === questionIdentifier)?.identifier || '',
+        answerIdentifier: value.toString()
+      }));  
+      
+      // Create submission data
+      const submissionData: NewEvaluationAttempt = {
+        deliveredDate: new Date().toISOString(),
+        user: getCurrentUserId(),
+        answeredQuestions: formattedAnswers,
+        contestCycle: 1, // hardcoded for now, todo: get from context
+        evaluation: evaluation.id
+      };
+      
+      // Submit attempt
+      await submitEvaluationAttempt(submissionData);
+      toast.success("Evaluación enviada correctamente");
+      
+      // Refresh data
+      const attempts = await fetchUserEvaluationAttempts();
+      const currentAttempt = attempts.find(a => a.evaluation.documentId === id) || null;
+      setAttempt(currentAttempt);
+      setActiveTab("results");
+      
+    } catch (err) {
+      console.error("Error submitting evaluation:", err);
+      toast.error("Error al enviar la evaluación. Por favor intenta nuevamente.");
+    } finally {
+      setSubmitting(false);
     }
-    
-    setLoading(true);
-    
-    // Simulate API call to submit assignment
-    setTimeout(() => {
-      toast.success("Evaluación entregada correctamente");
-      setLoading(false);
-      setFileUpload(null);
-    }, 1500);
   };
   
-  if (!evaluationData) {
+  // Helper function to get current user ID
+  const getCurrentUserId = (): number => {
+    if (typeof window !== "undefined") {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      return user.id;
+    }
+    return 0;
+  };
+  
+  // Helper to format dates
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'No disponible';
+    
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+      return format(date, "dd MMMM, yyyy - HH:mm");
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Fecha inválida';
+    }
+  };
+  
+  // Helper to check if evaluation can be submitted
+  const canSubmit = () => {
+    if (!evaluation) return false;
+    
+    try {
+      // Check date constraints
+      const now = new Date();
+      const startDate = evaluation.availableDate ? new Date(evaluation.availableDate) : now;
+      const deadline = evaluation.deadlineDate ? new Date(evaluation.deadlineDate) : now;
+      
+      // Validate dates
+      if (isNaN(startDate.getTime()) || isNaN(deadline.getTime())) {
+        return false;
+      }
+      
+      // Check if attempt already exists and is graded
+      if (attempt && attempt.reviewStatus === 'completed') return false;
+      
+      // Check if within the valid date range
+      const isWithinDateRange = startDate <= now && now <= deadline;
+      if (!isWithinDateRange) return false;
+
+      // Check if all required questions have been answered
+      const allQuestionsAnswered = evaluation.questions.every(question => {
+        // All questions are required for now (as per renderQuestions where required is hardcoded to true)
+        const answer = answers[question.identifier];
+        return answer !== undefined && answer !== null && answer !== '';
+      });
+
+      return allQuestionsAnswered;
+      
+    } catch (error) {
+      console.error('Error checking submission status:', error);
+      return false;
+    }
+  };
+
+  const renderQuestions = (questions: Evaluation['questions'], evaluationStatus: string) => {
+    return questions.map((question, index) => (
+      <EvaluationQuestion
+        key={question.identifier}
+        identifier={question.identifier}
+        label={question.label}
+        description={question.description}
+        photoUrl={question.photo?.url}
+        answerOptions={question.answerOptions}
+        answerSelectedIdentifier={answers[question.identifier] as string | undefined}
+        required={true} // hardcoded for now, todo: get from evaluation
+        isReadOnly={evaluationStatus !== 'in-progress'}
+        onAnswerChange={handleAnswerChange}
+        index={index}
+        type="radio_group"
+        isCorrect={attempt?.answeredQuestions.find(a => a.questionIdentifier === question.identifier)?.isRightAnswer}
+      />
+    ));
+  };
+
+  // Loading state
+  if (loading) {
     return (
       <SidebarProvider>
         <AppSidebar />
@@ -211,6 +238,54 @@ export default function EvaluationDetailPage() {
     );
   }
   
+  // Error state
+  if (error || !evaluation) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+              <p className="mt-4 text-gray-600">{error || "No se pudo cargar la evaluación"}</p>
+              <Button variant="outline" className="mt-4" onClick={() => router.push('/dashboard/evaluations')}>
+                Volver a evaluaciones
+              </Button>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+  
+  // Determine evaluation status
+  const getEvaluationStatus = () => {
+    if (!evaluation) return "loading";
+    
+    if (attempt?.reviewStatus === 'evaluated') return "completed";
+    if (attempt) return "submitted";
+    
+    try {
+      const now = new Date();
+      const startDate = evaluation.availableDate ? new Date(evaluation.availableDate) : now;
+      const deadline = evaluation.deadlineDate ? new Date(evaluation.deadlineDate) : now;
+      
+      // Validate dates
+      if (isNaN(startDate.getTime()) || isNaN(deadline.getTime())) {
+        return "in-progress"; // Default to in-progress if dates are invalid
+      }
+      
+      if (now < startDate) return "upcoming";
+      if (now > deadline) return "expired";
+      return "in-progress";
+    } catch (error) {
+      console.error('Error determining evaluation status:', error);
+      return "in-progress"; // Default to in-progress if there's an error
+    }
+  };
+  
+  const evaluationStatus = getEvaluationStatus();
+  
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -225,19 +300,15 @@ export default function EvaluationDetailPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">
-                    Dashboard
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard/evaluations">
-                    Evaluaciones
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard/evaluations">Evaluaciones</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{evaluationData.title}</BreadcrumbPage>
+                  <BreadcrumbPage>{evaluation.name}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -260,49 +331,46 @@ export default function EvaluationDetailPage() {
               
               <div className="flex flex-col md:flex-row justify-between md:items-center">
                 <div>
-                  <h1 className="text-2xl font-bold text-ooi-dark-blue">{evaluationData.title}</h1>
+                  <h1 className="text-2xl font-bold text-ooi-dark-blue">{evaluation.name}</h1>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Badge className={
-                      evaluationData.type === 'homework' ? 'bg-green-100 text-green-800' :
-                      evaluationData.type === 'exam' ? 'bg-red-100 text-red-800' :
+                      evaluation.type === 'homework' ? 'bg-green-100 text-green-800' :
+                      evaluation.type === 'exam' ? 'bg-red-100 text-red-800' :
                       'bg-blue-100 text-blue-800'
                     }>
-                      {evaluationData.type === 'homework' ? 'Tarea' :
-                       evaluationData.type === 'exam' ? 'Examen' : 'Cuestionario'}
+                      {evaluation.type === 'homework' ? 'Tarea' :
+                       evaluation.type === 'exam' ? 'Examen' : 'Práctica'}
                     </Badge>
                     
                     <div className="flex items-center gap-1 text-sm text-gray-500">
                       <Calendar className="h-4 w-4" />
-                      <span>Fecha límite: {evaluationData.deadline}</span>
+                      <span>Fecha límite: {formatDate(evaluation.deadlineDate)}</span>
                     </div>
                     
-                    {evaluationData.status === 'completed' && (
-                      <div className="flex items-center gap-1 text-sm text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Completado</span>
-                      </div>
-                    )}
+                    <Badge className={
+                      evaluationStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                      evaluationStatus === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                      evaluationStatus === 'in-progress' ? 'bg-yellow-100 text-yellow-800' : 
+                      evaluationStatus === 'expired' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }>
+                      {evaluationStatus === 'completed' && 'Completado'}
+                      {evaluationStatus === 'submitted' && 'Enviado'}
+                      {evaluationStatus === 'in-progress' && 'En progreso'}
+                      {evaluationStatus === 'expired' && 'Expirado'}
+                      {evaluationStatus === 'upcoming' && 'Próximamente'}
+                    </Badge>
                   </div>
                 </div>
                 
-                {evaluationData.status === 'completed' ? (
+                {evaluationStatus === 'completed' && attempt?.score !== undefined && (
                   <div className="p-2 rounded-md bg-green-50 border border-green-200 text-center mt-4 md:mt-0">
                     <div className="text-2xl font-bold text-green-600">
-                      {evaluationData.score}/{evaluationData.maxScore}
+                      {attempt.score}/{evaluation.maxScore}
                     </div>
                     <div className="text-sm text-green-700">
-                      {(evaluationData.score / evaluationData.maxScore * 100).toFixed(1)}%
+                      {((Number(attempt.score) / evaluation.maxScore) * 100).toFixed(1)}%
                     </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 md:mt-0">
-                    <Button 
-                      size="sm" 
-                      className="bg-ooi-second-blue hover:bg-ooi-blue-hover"
-                      onClick={() => setActiveTab('submit')}
-                    >
-                      Entregar evaluación
-                    </Button>
                   </div>
                 )}
               </div>
@@ -315,257 +383,184 @@ export default function EvaluationDetailPage() {
             transition={{ duration: 0.3, delay: 0.1 }}
           >
             <Card>
-              <CardHeader className="px-6 py-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <CardHeader className="px-6 py-4">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview" className="flex items-center gap-1">
-                      <FileText className="h-4 w-4" />
-                      <span>Descripción</span>
+                    <TabsTrigger value="overview">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Descripción
                     </TabsTrigger>
-                    <TabsTrigger value="results" className="flex items-center gap-1">
-                      <Award className="h-4 w-4" />
-                      <span>Resultados</span>
+                    <TabsTrigger value="questions">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Preguntas
                     </TabsTrigger>
-                    <TabsTrigger value="submit" className="flex items-center gap-1">
-                      <Upload className="h-4 w-4" />
-                      <span>Entregar</span>
+                    <TabsTrigger value="results">
+                      <Award className="h-4 w-4 mr-2" />
+                      Resultados
                     </TabsTrigger>
                   </TabsList>
-                </Tabs>
-              </CardHeader>
-              
-              <CardContent className="px-6">
-                <TabsContent value="overview" className="mt-0 space-y-4">
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">Descripción</h2>
-                    <p className="text-gray-700">{evaluationData.description}</p>
-                  </div>
-                  
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">Instrucciones</h2>
-                    <div 
-                      className="text-gray-700"
-                      dangerouslySetInnerHTML={{ __html: evaluationData.instructions }}
-                    />
-                  </div>
-                  
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">Recursos</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {evaluationData.resources.map((resource, i) => (
-                        <a 
-                          key={i}
-                          href={resource.url}
-                          className="p-3 border rounded-md hover:bg-gray-50 flex items-center gap-3"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <div className={`h-9 w-9 rounded-full flex items-center justify-center ${
-                            resource.type === 'pdf' ? 'bg-red-100 text-red-600' : 
-                            resource.type === 'video' ? 'bg-blue-100 text-blue-600' : 
-                            'bg-green-100 text-green-600'
-                          }`}>
-                            {resource.type === 'pdf' ? (
-                              <FileText className="h-5 w-5" />
-                            ) : resource.type === 'video' ? (
-                              <Video className="h-5 w-5" />
-                            ) : (
-                              <Download className="h-5 w-5" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">{resource.title}</p>
-                            <p className="text-xs text-gray-500 capitalize">{resource.type}</p>
-                          </div>
-                          <ExternalLink className="h-4 w-4 ml-auto text-gray-400" />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </TabsContent>
+                </CardHeader>
                 
-                <TabsContent value="results" className="mt-0 space-y-6">
-                  {evaluationData.status === 'completed' ? (
-                    <>
-                      <div>
-                        <h2 className="text-lg font-semibold mb-2">Calificación</h2>
-                        <div className="rounded-md overflow-hidden border">
-                          <div className="bg-gray-50 p-3 border-b">
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium">Puntaje total</span>
-                              <div className="text-xl font-bold text-ooi-dark-blue">
-                                {evaluationData.score}/{evaluationData.maxScore}
-                                <span className="text-sm text-gray-500 ml-2">
-                                  ({(evaluationData.score / evaluationData.maxScore * 100).toFixed(1)}%)
-                                </span>
+                <CardContent className="px-6">
+                  <TabsContent value="overview" className="mt-0 space-y-4">
+                    <div>
+                      <h2 className="text-lg font-semibold mb-2">Descripción</h2>
+                      <p className="text-gray-700">{evaluation.description}</p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="questions" className="mt-0 space-y-6">
+                    {evaluationStatus === 'in-progress' ? (
+                      <>
+                        <div className="mb-4">
+                          <h2 className="text-lg font-semibold mb-2">Preguntas de la evaluación</h2>
+                          <p className="text-gray-600">
+                            Responde a todas las preguntas marcadas con * (obligatorias) antes de enviar.
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {renderQuestions(evaluation.questions || [], evaluationStatus)}
+                        </div>
+                        
+                        <div className="pt-4 border-t flex justify-between items-center">
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            Fecha límite: {formatDate(evaluation.deadlineDate)}
+                          </div>
+                          
+                          <Button 
+                              className="bg-ooi-second-blue hover:bg-ooi-blue-hover"
+                              onClick={() => {
+                                handleSubmit();
+                              }}
+                              disabled={submitting || !canSubmit()}
+                            >
+                              {submitting ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Enviando...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 mr-1" />
+                                  Enviar evaluación
+                                </>
+                              )}
+                            </Button>
+                        </div>
+                      </>
+                    ) : evaluationStatus === 'submitted' || evaluationStatus === 'completed' ? (
+                      <div className="space-y-6">
+                        <div className="rounded-md overflow-hidden border p-4 bg-blue-50">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <h3 className="font-medium text-blue-800">Evaluación enviada</h3>
+                              <p className="text-sm text-blue-600 mt-1">
+                                {evaluationStatus === 'completed' ? 
+                                  'Tu evaluación ha sido calificada. Puedes revisar tus respuestas y resultados a continuación.' : 
+                                  'Tu evaluación ha sido enviada y está pendiente de calificación.'}
+                              </p>
+                              {attempt && (
+                                <p className="text-sm text-blue-600 mt-1">
+                                  Fecha de envío: {formatDate(attempt.deliveredDate)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {renderQuestions(evaluation.questions || [], evaluationStatus)}
+                        </div>
+                      </div>
+                    ) : evaluationStatus === 'upcoming' ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Clock className="h-12 w-12 text-blue-500 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Esta evaluación aún no está disponible</h3>
+                        <p className="text-gray-500 max-w-md">
+                          Podrás acceder a las preguntas a partir del {formatDate(evaluation.availableDate)}.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Esta evaluación ha expirado</h3>
+                        <p className="text-gray-500 max-w-md">
+                          El plazo para enviar esta evaluación terminó el {formatDate(evaluation.deadlineDate)}.
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="results" className="mt-0 space-y-6">
+                    {evaluationStatus === 'completed' ? (
+                      <>
+                        <div>
+                          <h2 className="text-lg font-semibold mb-2">Calificación</h2>
+                          <div className="rounded-md overflow-hidden border">
+                            <div className="bg-gray-50 p-3 border-b">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium">Puntaje total</span>
+                                <div className="text-xl font-bold text-ooi-dark-blue">
+                                  {attempt?.score || 0}/{evaluation.maxScore}
+                                  <span className="text-sm text-gray-500 ml-2">
+                                    ({((Number(attempt?.score) || 0) / evaluation.maxScore * 100).toFixed(1)}%)
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="mt-2">
+                                <Progress 
+                                  value={((Number(attempt?.score) || 0) / evaluation.maxScore) * 100} 
+                                  className="h-2" 
+                                />
                               </div>
                             </div>
-                            <div className="mt-2">
-                              <Progress value={(evaluationData.score / evaluationData.maxScore) * 100} className="h-2" />
-                            </div>
-                          </div>
-                          
-                          <div className="p-4">
-                            <h3 className="font-medium mb-3">Retroalimentación</h3>
-                            <p className="text-gray-700 p-3 bg-gray-50 rounded-md border">
-                              {evaluationData.feedback}
-                            </p>
+                            
+                            {attempt?.notes && (
+                              <div className="p-4">
+                                <h3 className="font-medium mb-3">Retroalimentación</h3>
+                                <p className="text-gray-700 p-3 bg-gray-50 rounded-md border">
+                                  {attempt.notes}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                      
-                      <div>
-                        <h2 className="text-lg font-semibold mb-2">Detalles por sección</h2>
-                        <div className="space-y-4">
-                          {evaluationData.sections.map((section, i) => (
-                            <Card key={i}>
-                              <CardHeader className="px-4 py-3">
-                                <div className="flex justify-between items-center">
-                                  <CardTitle className="text-base font-medium">{section.title}</CardTitle>
-                                  <div className="text-sm">
-                                    <span className="font-bold">{section.earned}</span>
-                                    <span className="text-gray-500">/{section.points}</span>
-                                  </div>
-                                </div>
-                                <Progress 
-                                  value={(section.earned / section.points) * 100} 
-                                  className="h-1.5 mt-2" 
-                                />
-                              </CardHeader>
-                              <CardContent className="px-4 py-3">
-                                <div className="space-y-4">
-                                  {section.questions.map((question, j) => (
-                                    <div key={j} className="p-3 border rounded-md">
-                                      <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                          <p className="font-medium">{question.question}</p>
-                                        </div>
-                                        <div className="ml-4 text-right">
-                                          <Badge className={
-                                            question.earned === question.points ? 'bg-green-100 text-green-800' : 
-                                            question.earned > 0 ? 'bg-yellow-100 text-yellow-800' : 
-                                            'bg-red-100 text-red-800'
-                                          }>
-                                            {question.earned}/{question.points}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                      
-                                      {question.feedback && (
-                                        <div className="mt-2 text-sm bg-gray-50 p-2 rounded-md">
-                                          <span className="font-medium">Comentario:</span> {question.feedback}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Aún no hay resultados disponibles</h3>
-                      <p className="text-gray-500 max-w-md">
-                        Los resultados estarán disponibles después de que entregues la evaluación y sea calificada por el instructor.
-                      </p>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="submit" className="mt-0">
-                  {evaluationData.status === 'completed' ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-                      <h3 className="text-lg font-medium mb-2">Evaluación ya entregada</h3>
-                      <p className="text-gray-500 max-w-md">
-                        Esta evaluación ya ha sido completada y calificada. Puedes revisar tus resultados en la pestaña correspondiente.
-                      </p>
-                      <Button
-                        className="mt-4"
-                        variant="outline"
-                        onClick={() => setActiveTab('results')}
-                      >
-                        Ver resultados
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 py-4">
-                      <div>
-                        <h2 className="text-lg font-semibold mb-2">Entregar evaluación</h2>
-                        <p className="text-gray-700 mb-4">
-                          Sube tu archivo con la solución siguiendo las instrucciones proporcionadas.
-                        </p>
                         
-                        <div className="space-y-4">
-                          <div className="border-2 border-dashed rounded-md p-6 text-center">
-                            <div className="mb-3">
-                              <Upload className="h-8 w-8 mx-auto text-gray-400" />
-                            </div>
-                            <p className="text-sm text-gray-500 mb-3">
-                              Arrastra y suelta tu archivo aquí, o
-                            </p>
-                            <Input
-                              type="file"
-                              id="file-upload"
-                              className="hidden"
-                              onChange={handleFileChange}
-                            />
-                            <Label htmlFor="file-upload" className="cursor-pointer">
-                              <Button variant="outline" type="button">
-                                Seleccionar archivo
-                              </Button>
-                            </Label>
-                            {fileUpload && (
-                              <p className="mt-2 text-sm text-green-600">
-                                Archivo seleccionado: {fileUpload.name}
-                              </p>
-                            )}
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor="notes">Notas adicionales (opcional)</Label>
-                            <Textarea
-                              id="notes"
-                              placeholder="Si tienes alguna nota o comentario para el instructor, escríbelo aquí."
-                              className="mt-1"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="pt-4 border-t">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-gray-500">
-                            <Clock className="inline-block h-4 w-4 mr-1" />
-                            Fecha límite: {evaluationData.deadline}
-                          </div>
-                          <Button 
-                            className="bg-ooi-second-blue hover:bg-ooi-blue-hover"
-                            onClick={handleSubmit}
-                            disabled={loading || !fileUpload}
-                          >
-                            {loading ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Procesando...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="h-4 w-4 mr-1" />
-                                Entregar evaluación
-                              </>
-                            )}
+                        <div>
+                          <h2 className="text-lg font-semibold mb-2">Detalles de tus respuestas</h2>
+                          <p className="text-gray-600 mb-4">
+                            Puedes ver cada una de tus respuestas y la retroalimentación en la pestaña "Preguntas".
+                          </p>
+                          <Button variant="outline" onClick={() => setActiveTab('questions')}>
+                            Ver tus respuestas
                           </Button>
                         </div>
+                      </>
+                    ) : evaluationStatus === 'submitted' ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Clock className="h-12 w-12 text-blue-500 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Evaluación pendiente de calificación</h3>
+                        <p className="text-gray-500 max-w-md">
+                          Tu evaluación ha sido enviada y está pendiente de calificación.
+                          Los resultados estarán disponibles cuando el instructor complete la revisión.
+                        </p>
                       </div>
-                    </div>
-                  )}
-                </TabsContent>
-              </CardContent>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No hay resultados disponibles</h3>
+                        <p className="text-gray-500 max-w-md">
+                          Los resultados estarán disponibles después de que completes y envíes 
+                          la evaluación, y sea revisada por el instructor.
+                        </p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </CardContent>
+              </Tabs>
             </Card>
           </motion.div>
         </div>
