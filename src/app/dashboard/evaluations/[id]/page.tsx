@@ -216,7 +216,7 @@ export default function EvaluationDetailPage() {
         onAnswerChange={handleAnswerChange}
         index={index}
         type="radio_group"
-        isCorrect={attempt?.answeredQuestions.find(a => a.questionIdentifier === question.identifier)?.isRightAnswer}
+        // isCorrect={attempt?.answeredQuestions.find(a => a.questionIdentifier === question.identifier)?.isRightAnswer}
       />
     ));
   };

@@ -114,7 +114,7 @@ export const fetchUserEvaluationAttempts = async (): Promise<EvaluationAttempt[]
             fields: "id"
           },
           answeredQuestions: {
-            fields: "*"
+            fields: "answerIdentifier, questionIdentifier"
           },
           contestCycle: {
             fields: "id"
