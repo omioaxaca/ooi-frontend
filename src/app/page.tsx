@@ -125,7 +125,7 @@ export default function Home() {
                       Registrarme Ahora
                     </Button>
                 </Link>
-                  <Link href="https://discord.gg/Es3RBxup" target="_blank" rel="noopener noreferrer">
+                  <Link href="https://discord.gg/VjHmAqKfwh" target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="lg" className="bg-ooi-purple flex items-center gap-2 border-2 border-white text-ooi-text-white hover:bg-ooi-light-blue/90 hover:scale-105 transition-all duration-300">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                       Unirse a Discord
@@ -1190,7 +1190,7 @@ export default function Home() {
                   {[
                     {
                       title: "Únete a nuestro Discord",
-                      url: "https://discord.gg/sT4V7V9V"
+                      url: "https://discord.gg/VjHmAqKfwh"
                     },
                     {
                       title: "Fechas Importantes",
@@ -1296,7 +1296,7 @@ export default function Home() {
                     {
                       name: "Discord",
                       icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-discord"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 7.2c3.4-1 5.6-1 9 0"/><path d="M7.5 16.8c3.4 1 5.6 1 9 0"/><path d="M3 7.2v9.6c0 1 .8 1.8 1.8 1.8h3l1.8 3h4.8l1.8-3h3c1 0 1.8-.8 1.8-1.8V7.2c0-1-.8-1.8-1.8-1.8H4.8C3.8 5.4 3 6.2 3 7.2z"/></svg>,
-                      url: "https://discord.gg/sT4V7V9V"
+                      url: "https://discord.gg/VjHmAqKfwh"
                     },
                     {
                       name: "Github",
