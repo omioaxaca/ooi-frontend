@@ -369,7 +369,7 @@ export default function Dashboard() {
                         <p className="text-xs text-gray-600 italic mb-3">
                           Nota: Por temas de logística no podemos asegurar que el horario que elijas sea el horario final de las clases, se contabilizaran los votos y el horario con mayor votación será el elegido.
                         </p>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" disabled>
+                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
                           <a href="https://forms.office.com/e/xSbdtdWBBH" target="_blank" rel="noopener noreferrer">
                             Seleccionar horario
                           </a>
@@ -392,7 +392,7 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-700 mb-3">
                           Te esperamos para la sesión de bienvenida en línea donde conocerás más sobre la olimpiada.
                         </p>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" disabled>
+                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
                           <a href="https://omioaxaca.org/bienvenida-2025" target="_blank" rel="noopener noreferrer">
                             Unirse a la bienvenida 2025
                           </a>
