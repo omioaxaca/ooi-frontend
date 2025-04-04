@@ -44,10 +44,10 @@ export default function Dashboard() {
     },
     {
       title: "Sesión de bienvenida",
-      description: "La sesión de bienvenida será el 4 de Abril, 4:00 P.M. El link para unirse será publicado con anterioridad.",
+      description: "La sesión de bienvenida será el 4 de Abril, 4:00 P.M. Unete a la sesión de bienvenida en línea en el siguiente link.",
       date: "4 de Abril, 2025",
       priority: "medium",
-      link: "/dashboard/calendar",
+      link: "https://omioaxaca.com/bienvenida-2025",
     },
   ];
 
@@ -367,11 +367,11 @@ export default function Dashboard() {
                           Llena el formulario para elegir el horario de clases de tu preferencia.
                         </p>
                         <p className="text-xs text-gray-600 italic mb-3">
-                          Nota: Los horarios están sujetos a cambios y serán definitivos una semana antes del primer día de clases.
+                          Nota: Por temas de logística no podemos asegurar que el horario que elijas sea el horario final de las clases, se contabilizaran los votos y el horario con mayor votación será el elegido.
                         </p>
                         <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" disabled>
-                          <a href="" target="_blank" rel="noopener noreferrer">
-                            (Seleccionar horario el 31 de Marzo)
+                          <a href="https://forms.office.com/e/xSbdtdWBBH" target="_blank" rel="noopener noreferrer">
+                            Seleccionar horario
                           </a>
                         </Button>
                       </div>
@@ -393,8 +393,8 @@ export default function Dashboard() {
                           Te esperamos para la sesión de bienvenida en línea donde conocerás más sobre la olimpiada.
                         </p>
                         <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" disabled>
-                          <a href="" target="_blank" rel="noopener noreferrer">
-                            (Unirse a la bienvenida el 4 de abril)
+                          <a href="https://omioaxaca.org/bienvenida-2025" target="_blank" rel="noopener noreferrer">
+                            Unirse a la bienvenida 2025
                           </a>
                         </Button>
                       </div>

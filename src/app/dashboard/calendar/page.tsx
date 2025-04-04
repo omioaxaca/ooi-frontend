@@ -799,10 +799,10 @@ export default function CalendarPage() {
                           <td className="border p-2" colSpan={3}>Elección de horario de clases.</td>
                         </tr>
                         <tr>
-                          <td className="border p-2">4 de Abril</td>
+                          <td className="border p-2">4 de Abril - 4:00 P.M.</td>
                           <td className="border p-2 bg-amber-100" colSpan={3}>
-                            <p>Bienvenida a la OOI y OOI Femenil 2025.</p>
-                            <p className="text-xs mt-1">En tu correo y WhatsApp registrado se te enviarán los detalles y el link a Microsoft Teams para unirte a la sesión.</p>
+                            <p>Bienvenida a la OOI 2025.</p>
+                            <p className="text-xs mt-1">Unete a la sesión de bienvenida en línea en el siguiente link: <a href="https://omioaxaca.com/bienvenida-2025" target="_blank" rel="noopener noreferrer">Sesión de bienvenida</a></p>
                           </td>
                         </tr>
                         <tr>
