@@ -27,7 +27,7 @@ export const mapBackendClassLessonToFrontendClassLesson = (classLesson: ClassLes
     date: classLesson?.date || new Date().toISOString(),
     teacher: {
       id: classLesson?.teacher?.id || 0,
-      documentId: classLesson?.teacher?.documentId || '',
+      documentId: '',
       fullname: classLesson?.teacher ? 
         `${classLesson.teacher.firstName || ''} ${classLesson.teacher.lastName || ''}`.trim() || 'Profesor no asignado' : 
         'Profesor no asignado',
@@ -93,11 +93,3 @@ export const fetchUserClassLessons = async (): Promise<ClassLesson[]> => {
     throw error;
   }
 };
-
-
-// Helper function to get current user ID - aligned with auth-context
-const getCurrentUserId = (): number => {
-  const user = localStorageUtils.getItem<User>("user");
-  // Convert the string ID to a number if needed
-  return user ? parseInt(String(user.id), 10) : 0;
-}; 

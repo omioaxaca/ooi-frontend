@@ -158,5 +158,5 @@ export const submitEvaluationAttempt = async (NewEvaluationAttempt: NewEvaluatio
 const getCurrentUserId = (): number => {
   const user = localStorageUtils.getItem<User>("user");
   // Convert the string ID to a number if needed
-  return user ? parseInt(user.id, 10) : 0;
+  return user ? user.id : 0;
 }; 

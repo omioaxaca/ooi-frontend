@@ -1,7 +1,7 @@
 import type { Syllabus } from "./Syllabus";
 import type { User } from "../user";
 import type { ContestCycle } from "./contestCycle";
-import type { StrapiFile } from "../global";
+import type { StrapiFile } from "../common";
 import type { ContestPhase } from "./contestPhase";
 
 // Backend of an evaluation

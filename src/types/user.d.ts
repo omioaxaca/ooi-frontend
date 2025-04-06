@@ -1,6 +1,5 @@
 export interface User {
   id: number
-  documentId: string
   firstName: string
   lastName: string
   email: string

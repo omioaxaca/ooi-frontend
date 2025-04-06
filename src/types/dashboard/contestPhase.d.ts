@@ -1,4 +1,4 @@
-import type { StrapiFile } from "../global";
+import type { StrapiFile } from "../common";
 
 export type ContestPhase = {
   id: number;

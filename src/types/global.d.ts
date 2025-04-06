@@ -4,9 +4,3 @@ interface Window {
     [key: string]: unknown;
   }>;
 }
-
-export type StrapiFile = {
-  id: number;
-  documentId: string;
-  url: string;
-}

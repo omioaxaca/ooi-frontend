@@ -134,7 +134,7 @@ export default function ProfilePage() {
       // In a real app, you would upload the image and update the profile
       const updatedUser: UserType = {
         ...user, 
-        id: user?.id || "",
+        id: user?.id || 0,
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
@@ -148,6 +148,7 @@ export default function ProfilePage() {
         hobbies: userData.hobbies,
         pastExperience: userData.pastExperience,
         roleType: user?.roleType || "STUDENT",
+        avatar: user?.avatar || { id: 0, documentId: "", url: "" },
       }
       
       // Update local storage
