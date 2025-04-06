@@ -13,13 +13,18 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Calendar, Video, FileText, X } from "lucide-react";
+import { ChevronRight, Calendar, Video, FileText, X, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { WithConstructionBanner } from "@/components/with-construction-banner";
+import { fetchUserNotifications, mapBackendNotificationToFrontendNotification } from "@/services/notificationService";
+import type { NotificationView } from "@/types/dashboard/notification";
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("");
+  const [notifications, setNotifications] = useState<NotificationView[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
   
   useEffect(() => {
     // Get user info from localStorage
@@ -32,24 +37,50 @@ export default function Dashboard() {
         console.error("Error parsing user data", e);
       }
     }
+    
+    // Fetch notifications
+    const getNotifications = async () => {
+      try {
+        setIsLoadingNotifications(true);
+        const backendNotifications = await fetchUserNotifications();
+        const mappedNotifications = backendNotifications.map(notification => 
+          mapBackendNotificationToFrontendNotification(notification)
+        );
+        setNotifications(mappedNotifications);
+        setNotificationsError(null);
+      } catch (err) {
+        console.error("Failed to fetch notifications:", err);
+        setNotificationsError("No se pudieron cargar las notificaciones.");
+      } finally {
+        setIsLoadingNotifications(false);
+      }
+    };
+    
+    getNotifications();
   }, []);
 
-  const announcements = [
-    {
-      title: "Examen de evaluación diagnóstico",
-      description: "El examen de evaluación diagnóstico ya está disponible. Puedes realizarlo en cualquier momento desde ahora hasta el 7 de abril.",
-      date: "27 de marzo - 7 de abril, 2025",
-      priority: "high",
-      link: "/dashboard/evaluations",
-    },
-    {
-      title: "Sesión de bienvenida",
-      description: "La sesión de bienvenida será el 4 de Abril, 4:00 P.M. Unete a la sesión de bienvenida en línea en el siguiente link.",
-      date: "4 de Abril, 2025",
-      priority: "medium",
-      link: "https://omioaxaca.com/bienvenida-2025",
-    },
-  ];
+  // Get priority color based on notification priority
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'HIGH':
+        return "bg-red-500";
+      case 'MEDIUM':
+        return "bg-yellow-500";
+      case 'LOW':
+        return "bg-green-500";
+      default:
+        return "bg-blue-500";
+    }
+  };
+
+  // Format date from ISO string to a more readable format
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   return (
     <>
@@ -100,41 +131,62 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {announcements.map((announcement, i) => (
-                      <div
-                        key={i}
-                        className="flex gap-4 border-b pb-3 last:border-0"
-                      >
-                        <div
-                          className={`w-1 rounded-full self-stretch ${
-                            announcement.priority === "high"
-                              ? "bg-red-500"
-                              : announcement.priority === "medium"
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
-                          }`}
-                        />
-                        <div>
-                          <h3 className="font-medium text-sm">
-                            {announcement.title}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {announcement.description}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {announcement.date}
-                          </p>
+                  {isLoadingNotifications ? (
+                    <div className="text-center text-gray-500 py-4">
+                      Cargando anuncios...
+                    </div>
+                  ) : notificationsError ? (
+                    <div className="text-center text-red-500 py-4">
+                      {notificationsError}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {notifications.length > 0 ? (
+                        notifications
+                          .slice(0, 3) // Limit to first 3 notifications
+                          .map((notification) => (
+                            <div
+                              key={notification.id}
+                              className="flex gap-4 border-b pb-3 last:border-0"
+                            >
+                              <div
+                                className={`w-1 rounded-full self-stretch ${getPriorityColor(notification.priority)}`}
+                              />
+                              <div className="flex-1">
+                                <h3 className="font-medium text-sm">
+                                  {notification.title}
+                                  {notification.pinned && (
+                                    <span className="ml-2 text-xs py-1 px-2 bg-blue-100 text-blue-800 rounded-full">
+                                      Destacado
+                                    </span>
+                                  )}
+                                </h3>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {notification.description}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  {formatDate(notification.initialDate)}
+                                  {notification.finalDate && ` - ${formatDate(notification.finalDate)}`}
+                                </p>
+                              </div>
+                              {notification.redirectionURL && (
+                                <Link 
+                                  href={notification.redirectionURL} 
+                                  className="text-sm text-ooi-second-blue hover:underline flex items-center self-center whitespace-nowrap"
+                                >
+                                  Abrir <ChevronRight className="h-4 w-4" />
+                                </Link>
+                              )}
+                            </div>
+                          ))
+                      ) : (
+                        <div className="text-center text-gray-500 py-4">
+                          No hay anuncios disponibles
                         </div>
-                        {announcement.link && (
-                          <Link href={announcement.link} className="text-sm text-ooi-second-blue hover:underline flex items-center">
-                            Ver más <ChevronRight className="h-4 w-4" />
-                          </Link>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end">
+                      )}
+                    </div>
+                  )}
+                  <div className="flex justify-end mt-4">
                     <Link
                       href="/dashboard/notifications"
                       className="text-sm text-ooi-second-blue hover:underline flex items-center"

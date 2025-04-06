@@ -1,5 +1,6 @@
 export interface User {
-  id: string
+  id: number
+  documentId: string
   firstName: string
   lastName: string
   email: string
@@ -12,7 +13,12 @@ export interface User {
   schoolName: string
   aboutYou: string
   hobbies: string[]
-  pastExperience: string
+  pastExperience: string,
+  avatar: {
+    id: number;
+    documentId: string;
+    url: string;
+  }
 }
 
 export interface NewUser {
