@@ -364,7 +364,7 @@ export default function RecordingsPage() {
             {selectedRecording?.presentation?.url && (
               <Button variant="outline" size="sm" asChild>
                 <a 
-                  href={selectedRecording.presentation.url} 
+                  href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${selectedRecording.presentation.url}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
@@ -499,7 +499,7 @@ function RecordingCard({
               
               {recording.presentation?.url && (
                 <Button size="sm" variant="outline" asChild>
-                  <a href={recording.presentation.url} target="_blank" rel="noopener noreferrer">
+                  <a href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${recording.presentation.url}`} target="_blank" rel="noopener noreferrer">
                     <FileText className="h-4 w-4 mr-2" />
                     Presentación
                   </a>

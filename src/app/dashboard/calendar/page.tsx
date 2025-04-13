@@ -635,7 +635,7 @@ export default function CalendarPage() {
                                   
                                   {lesson.presentation?.url && (
                                     <Button asChild variant="outline" className="gap-2">
-                                      <Link href={lesson.presentation.url} target="_blank" rel="noopener noreferrer">
+                                      <Link href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${lesson.presentation.url}`} target="_blank" rel="noopener noreferrer">
                                         <FileText className="h-4 w-4" />
                                         Presentación
                                       </Link>
