@@ -116,15 +116,15 @@ export default function Home() {
                 <p className="text-xl md:text-2xl mb-6 font-light text-white/90 max-w-xl">
                   ¡Vuélvete el/la mejor programador(a) del estado de Oaxaca!
                 </p>
-                {/* <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
+                <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
                   Inicio de clases: <span className="text-ooi-yellow">7 de Abril 2025</span>
-                </p> */}
+                </p>
                 <div className="flex flex-wrap gap-4 mt-8">
-                  {/* <Link href="/registro">
+                  <Link href="/registro">
                     <Button size="lg" className="bg-ooi-yellow text-ooi-text-dark hover:bg-ooi-light-blue/90 border-2 hover:scale-105 transition-all duration-300 font-bold">
                       Registrarme Ahora
                     </Button>
-                  </Link> */}
+                </Link>
                   <Link href="https://discord.gg/VjHmAqKfwh" target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="lg" className="bg-ooi-purple flex items-center gap-2 border-2 border-white text-ooi-text-white hover:bg-ooi-light-blue/90 hover:scale-105 transition-all duration-300">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
@@ -944,11 +944,11 @@ export default function Home() {
                             <p className="text-ooi-text-dark mb-2">
                               Para más información, puedes contactarnos en <a href="mailto:contacto@omioaxaca.org" className="text-ooi-second-blue hover:underline">contacto@omioaxaca.org</a>
                             </p>
-                            {/* <Link href="/registro">
+                            <Link href="/registro">
                               <Button className="bg-ooi-second-blue hover:bg-ooi-dark-blue text-white mt-2">
                                 Registrarme ahora
                               </Button>
-                            </Link> */}
+                            </Link>
                   </div>
                         </DialogContent>
                       </Dialog>
