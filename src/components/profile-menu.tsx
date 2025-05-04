@@ -105,7 +105,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
         <div className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200">
           <div className="relative h-8 w-8 rounded-full overflow-hidden border border-gray-200">
             <Image
-              src={user.profileImage}
+              src={`https://api.omioaxaca.org${user.avatar.url}`}
               alt="Profile"
               fill
               className="object-cover"

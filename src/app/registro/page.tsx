@@ -169,7 +169,12 @@ export default function Registro() {
         birthDate: birthDate,
         schoolName: schoolName,
         schoolLevel: schoolLevel,
-        schoolGrade: schoolGrade
+        schoolGrade: schoolGrade,
+        omegaupUserId: "",
+        discordUserId: "",
+        aboutYou: "",
+        hobbies: "",
+        pastExperience: ""
       };
       
       console.log("Sending user data:", userData); // For debugging
