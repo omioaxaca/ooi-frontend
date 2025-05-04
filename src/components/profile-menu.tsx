@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { BarChart2, User, LogOut, ChevronUp } from "lucide-react"
+import { BarChart2, User, LogOut, ChevronDown } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 
 interface ProfileMenuProps {
@@ -42,19 +42,27 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <div className="flex items-center justify-between gap-3 p-2 rounded-md hover:bg-gray-100 transition-colors cursor-pointer">
-            <div className="relative h-10 w-10 rounded-full overflow-hidden border border-gray-200">
-              <Image
-                src={user.profileImage}
-                alt="Profile"
-                fill
-                className="object-cover"
+            <div className="flex items-center gap-3">
+              <div className="relative h-6 w-6 flex-shrink-0">
+                <div className="absolute inset-0 rounded-full border border-gray-200 overflow-hidden">
+                  <Image
+                    src={`https://api.omioaxaca.org${user.avatar.url}`}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{user.firstName}</span>
+                <span className="text-xs text-gray-500">{user.email}</span>
+              </div>
+              <ChevronDown 
+                className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`} 
+                aria-hidden="true"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">{user.firstName}</span>
-              <span className="text-xs text-gray-500">{user.email}</span>
-            </div>
-            <ChevronUp className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-0' : 'rotate-180'}`} />
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side="top" className="w-56">

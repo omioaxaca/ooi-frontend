@@ -3,7 +3,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import * as localStorage from "@/utils/localStorage"
-import { User, NewUser } from "@/types/user"
+import { User, NewUser, LoggedUser, UpdateUser } from "@/types/user"
+import { 
+  login as loginService,
+  signup as signupService,
+  updateUser as updateUserService,
+  updateAvatar as updateAvatarService
+} from "@/services/userService"
 
 interface AuthContextType {
   user: User | null
@@ -11,12 +17,13 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   signup: (newUser: NewUser) => Promise<void>
   logout: () => void
-  updateUser: (user: User) => void
   isAuthenticated: () => boolean
   token: string | null
   isAdmin: () => boolean
   isStudent: () => boolean
   isTeacher: () => boolean
+  updateUser: (user: UpdateUser) => Promise<void>
+  updateAvatar: (avatar: File) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -48,31 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (newUser: NewUser) => {
     setIsLoading(true)
     try {
-      const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-      const response = await fetch(`${serverUrl}/api/auth/local/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newUser)
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        const errorMessage = data.error.message
-        throw new Error(errorMessage)
-      }
-
-      const data = await response.json()
-      const user = data.user  
-      
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(user))
-      localStorage.setItem("token", data.jwt)
-      
-      // Update state
-      setUser(user)
-
+      const loggedUser = await signupService(newUser)
+      saveLoggedUserLocally(loggedUser)
       // Redirect to dashboard
       router.push("/dashboard")
     } catch (error) {
@@ -81,6 +65,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally { 
       setIsLoading(false)
     }
+  }
+
+  // Login function
+  const login = async (email: string, password: string) => {
+    setIsLoading(true)
+    try {
+      // Call Strapi API to authenticate user
+      const loggedUser = await loginService(email, password)
+      saveLoggedUserLocally(loggedUser)
+      // Redirect to dashboard
+      router.push("/dashboard")
+    } catch (error) {
+      console.error("Login failed:", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem("user")
+    localStorage.removeItem("token")
+    setUser(null)
+    router.push("/")
+  }
+
+  // Update user function
+  const updateUser = async (newUserData: UpdateUser) => {
+    setIsLoading(true)
+    if (!user) {
+      throw new Error("User not found")
+    } else {
+      const userId = user.id.toString()
+      try {
+        const updatedUser = await updateUserService(userId, newUserData)
+        saveUserLocally(updatedUser)
+      } catch (error) {
+        console.error("Error updating user:", error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const updateAvatar = async (avatar: File) => {
+    setIsLoading(true)
+    if (!user) {
+      throw new Error("User not found")
+      setIsLoading(false)
+    } else {
+      const userId = user.id.toString()
+      try {
+        const updatedUser = await updateAvatarService(userId, avatar)
+        saveUserLocally(updatedUser)
+      } catch (error) {
+        console.error("Error updating avatar:", error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const saveLoggedUserLocally = (loggedUser: LoggedUser) => {
+    localStorage.setItem("token", loggedUser.jwt)
+    saveUserLocally(loggedUser.user)
+  }
+
+  const saveUserLocally = (user: User) => {
+    localStorage.setItem("user", JSON.stringify(user))
+    setUser(user)
   }
 
   // isAuthenticated Function 
@@ -110,66 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return user?.roleType === "PROFESSOR"
   } 
 
-  // Login function
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      
-      // Call Strapi API to authenticate user
-      const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-      const response = await fetch(`${serverUrl}/api/auth/local`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          identifier: email,
-          password: password
-        })
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        const errorMessage = data.error.message
-        throw new Error(errorMessage)
-      }
-      
-      const data = await response.json()
-      const user = data.user
-      
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(user))
-      localStorage.setItem("token", data.jwt)
-      
-      // Update state
-      setUser(user)
-      
-      // Redirect to dashboard
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Login failed:", error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
-    setUser(null)
-    router.push("/")
-  }
-
-  // Add this function to update user information
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser)
-    localStorage.setItem("user", JSON.stringify(updatedUser))
-  }
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, updateUser, isAuthenticated, token, isAdmin, isStudent, isTeacher, signup }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, isAuthenticated, token, isAdmin, isStudent, isTeacher, signup, updateUser, updateAvatar }}>
       {children}
     </AuthContext.Provider>
   )
