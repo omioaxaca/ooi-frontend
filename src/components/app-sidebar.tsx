@@ -62,6 +62,11 @@ export function AppSidebar() {
           href: "/dashboard/evaluations",
           icon: FileText,
         },
+        {
+          title: "Tareas",
+          href: "/dashboard/homeworks",
+          icon: FileText,
+        },
       ],
     },
     {
