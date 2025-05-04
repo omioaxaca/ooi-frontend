@@ -18,7 +18,7 @@ export interface User {
   aboutYou: string
   hobbies: string
   pastExperience: string
-  avatar: {
+  avatar?: {
     id: number;
     documentId: string;
     url: string;

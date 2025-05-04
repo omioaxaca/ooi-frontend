@@ -46,7 +46,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
               <div className="relative h-6 w-6 flex-shrink-0">
                 <div className="absolute inset-0 rounded-full border border-gray-200 overflow-hidden">
                   <Image
-                    src={`https://api.omioaxaca.org${user.avatar.url}`}
+                    src={user.avatar ? `https://api.omioaxaca.org${user.avatar.url}` : '/images/default-avatar.png'}
                     alt="Profile"
                     fill
                     className="object-cover"
@@ -105,7 +105,7 @@ export function ProfileMenu({ expanded = false }: ProfileMenuProps) {
         <div className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200">
           <div className="relative h-8 w-8 rounded-full overflow-hidden border border-gray-200">
             <Image
-              src={`https://api.omioaxaca.org${user.avatar.url}`}
+              src={user.avatar ? `https://api.omioaxaca.org${user.avatar.url}` : '/images/default-avatar.png'}
               alt="Profile"
               fill
               className="object-cover"
