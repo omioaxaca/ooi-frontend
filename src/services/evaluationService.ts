@@ -3,6 +3,7 @@ import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import { User } from "@/types/user";
 import type { Evaluation, EvaluationAttempt, NewEvaluationAttempt } from "@/types/dashboard/evaluations";
+import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -45,14 +46,11 @@ export const fetchUserEvaluations = async (): Promise<Evaluation[]> => {
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/evaluations?${query}`,
-      getAuthHeaders()
-    );
-    return response.data.data
+    const response = await axiosInstance.get(`/api/evaluations?${query}`);
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching evaluations:", error);
     throw error;
@@ -83,13 +81,10 @@ export const fetchEvaluationById = async (id: string | number): Promise<Evaluati
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/evaluations/${id}?${query}`, 
-      getAuthHeaders()
-    );
+    const response = await axiosInstance.get(`/api/evaluations/${id}?${query}`);
     return response.data.data;
   } catch (error) {
     console.error(`Error fetching evaluation ${id}:`, error);
@@ -125,13 +120,10 @@ export const fetchUserEvaluationAttempts = async (): Promise<EvaluationAttempt[]
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/evaluation-attempts?${query}`,
-      getAuthHeaders()
-    );
+    const response = await axiosInstance.get(`/api/evaluation-attempts?${query}`);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching evaluation attempts:", error);
@@ -142,11 +134,9 @@ export const fetchUserEvaluationAttempts = async (): Promise<EvaluationAttempt[]
 // Submit an evaluation attempt
 export const submitEvaluationAttempt = async (NewEvaluationAttempt: NewEvaluationAttempt): Promise<EvaluationAttempt> => {
   try {
-    const response = await axios.post(
-      `${API_URL}/api/evaluation-attempts`,
-      { data: NewEvaluationAttempt },
-      getAuthHeaders()
-    );
+    const response = await axiosInstance.post(`/api/evaluation-attempts`, {
+      data: NewEvaluationAttempt
+    });
     return response.data.data;
   } catch (error) {
     console.error("Error submitting evaluation attempt:", error);

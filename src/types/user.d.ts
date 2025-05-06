@@ -1,5 +1,6 @@
 export interface LoggedUser {
   jwt: string
+  refreshToken?: string
   user: User
 }
 

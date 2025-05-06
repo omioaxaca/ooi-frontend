@@ -88,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem("user")
     localStorage.removeItem("token")
+    localStorage.removeItem("refreshToken")
     setUser(null)
     router.push("/")
   }
@@ -132,6 +133,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const saveLoggedUserLocally = (loggedUser: LoggedUser) => {
     localStorage.setItem("token", loggedUser.jwt)
+    if (loggedUser.refreshToken) {
+      localStorage.setItem("refreshToken", loggedUser.refreshToken)
+    }
     saveUserLocally(loggedUser.user)
   }
 

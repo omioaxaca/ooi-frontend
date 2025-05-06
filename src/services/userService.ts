@@ -2,6 +2,7 @@ import axios from "axios";
 import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import type { User, NewUser, LoggedUser, UpdateUser } from "@/types/user";
+import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -32,13 +33,12 @@ export const getUserFullData = async (): Promise<User> => {
         }
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
 
-    const userResponse = await axios.get(
-      `${API_URL}/api/users/me?${query}`,
-      getAuthHeaders()
+    const userResponse = await axiosInstance.get(
+      `/api/users/me?${query}`
     );
 
     if (userResponse.status !== 200) {
@@ -58,146 +58,102 @@ export const getUserFullData = async (): Promise<User> => {
 // Fetch all notifications for the current user
 export const login = async (email: string, password: string): Promise<LoggedUser> => {
   try {
-    // Call Strapi API to authenticate user
-    const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-    const response = await fetch(`${serverUrl}/api/auth/local`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        identifier: email,
-        password: password
-      })
-    })
+    const response = await axios.post(`${API_URL}/api/auth/local`, {
+      identifier: email,
+      password: password,
+      refreshToken: true
+    });
 
-    if (!response.ok) {
-      const data = await response.json()
-      const errorMessage = data.error.message
-      throw new Error(errorMessage)
+    if (!response.data) {
+      throw new Error("Login failed");
     }
     
-    // get token from response
-    const loginData = await response.json()
-    const token = loginData.jwt
+    const loginData = response.data;
+    const token = loginData.jwt;
+    const refreshToken = loginData.refreshToken;
 
-    // save token in local storage to retrieve full user data
-    localStorageUtils.setItem("token", token)
+    // Save both tokens
+    localStorageUtils.setItem("token", token);
+    localStorageUtils.setItem("refreshToken", refreshToken);
 
-    const userData = await getUserFullData()
+    const userData = await getUserFullData();
 
-    // Merge the user data with the response
-    const mergedData = {
+    return {
       jwt: token,
+      refreshToken: refreshToken,
       user: userData
-    }
-    
-    return mergedData
+    };
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error("Login failed:", error);
     throw error;
   }
 };
 
 export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
   try {
-    const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-    const response = await fetch(`${serverUrl}/api/auth/local/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(newUser)
-    })
-
-    if (!response.ok) {
-      const data = await response.json()
-      const errorMessage = data.error.message
-      throw new Error(errorMessage)
+    const response = await axiosInstance.post(`/api/auth/local/register`, newUser);
+    
+    if (!response.data) {
+      throw new Error("Signup failed");
     }
-        
-    return await response.json()
+    
+    return response.data;
   } catch (error) {
-    console.error("Signup failed:", error)
-    throw error
+    console.error("Signup failed:", error);
+    throw error;
   }
-}
+};
 
 export const updateUser = async (userId: string, newUserData: UpdateUser): Promise<User> => {
   try {
-    const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-    const response = await fetch(`${serverUrl}/api/users/${userId}`, {
-      method: "PUT",
-      headers: {
-        ...getAuthHeaders().headers,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newUserData)
-    })
-
-    if (!response.ok) {
-      const data = await response.json()
-      const errorMessage = data.error.message
-      throw new Error(errorMessage)
+    const response = await axiosInstance.put(`/api/users/${userId}`, newUserData);
+    
+    if (!response.data) {
+      throw new Error("Failed to update user");
     }
 
-    const userData = await getUserFullData()
-
-    return userData
+    const userData = await getUserFullData();
+    return userData;
   } catch (error) {
-    console.error("Error updating user:", error)
-    throw error
+    console.error("Error updating user:", error);
+    throw error;
   }
-}
+};
 
 export const updateAvatar = async (userId: string, avatar: File): Promise<User> => {
   try {
-    const serverUrl = process.env.NEXT_PUBLIC_STRAPI_URL
-    const formData = new FormData()
-    formData.append("files", avatar)
-    formData.append("field", "avatar")
-    formData.append("ref", "plugin::users-permissions.user")
-    formData.append("refId", userId)
+    const formData = new FormData();
+    formData.append("files", avatar);
+    formData.append("field", "avatar");
+    formData.append("ref", "plugin::users-permissions.user");
+    formData.append("refId", userId);
 
     // First upload the file
-    const uploadResponse = await fetch(`${serverUrl}/api/upload`, {
-      method: "POST", 
-      headers: getAuthHeaders().headers,
-      body: formData
-    })
+    const uploadResponse = await axiosInstance.post(`/api/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-    if (!uploadResponse.ok) {
-      const data = await uploadResponse.json()
-      const errorMessage = data.error.message
-      throw new Error(errorMessage)
+    if (!uploadResponse.data) {
+      throw new Error("Failed to upload avatar");
     }
 
-    const uploadResult = await uploadResponse.json()
+    const uploadResult = uploadResponse.data;
 
     // Then update the user with the uploaded file ID
-    const updateResponse = await fetch(`${serverUrl}/api/users/${userId}`, {
-      method: "PUT",
-      headers: {
-        ...getAuthHeaders().headers,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        avatar: uploadResult[0].id
-      })
-    })
+    const updateResponse = await axiosInstance.put(`/api/users/${userId}`, {
+      avatar: uploadResult[0].id
+    });
 
-    if (!updateResponse.ok) {
-      const data = await updateResponse.json()
-      const errorMessage = data.error.message 
-      throw new Error(errorMessage)
+    if (!updateResponse.data) {
+      throw new Error("Failed to update user avatar");
     }
 
-    const userData = await getUserFullData()
-
-
-    return userData
+    const userData = await getUserFullData();
+    return userData;
   } catch (error) {
-    console.error("Error updating avatar:", error)
-    throw error
+    console.error("Error updating avatar:", error);
+    throw error;
   }
-}
+};

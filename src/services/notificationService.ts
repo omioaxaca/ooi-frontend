@@ -2,6 +2,7 @@ import axios from "axios";
 import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import type { Notification, NotificationView } from "@/types/dashboard/notification";
+import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -53,14 +54,11 @@ export const fetchUserNotifications = async (): Promise<Notification[]> => {
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/notifications?${query}`,
-      getAuthHeaders()
-    );
-    return response.data.data
+    const response = await axiosInstance.get(`/api/notifications?${query}`);
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching notifications:", error);
     throw error;

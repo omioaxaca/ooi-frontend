@@ -3,6 +3,8 @@ import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import { User } from "@/types/user";
 import type { ClassLesson, ClassLessonView } from "@/types/dashboard/classLessons";
+import axiosInstance from "./authService";
+
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
 // Helper to get auth token - aligned with auth-context implementation
@@ -80,14 +82,11 @@ export const fetchUserClassLessons = async (): Promise<ClassLesson[]> => {
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/class-lessons?${query}`,
-      getAuthHeaders()
-    );
-    return response.data.data
+    const response = await axiosInstance.get(`/api/class-lessons?${query}`);
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching class lessons:", error);
     throw error;

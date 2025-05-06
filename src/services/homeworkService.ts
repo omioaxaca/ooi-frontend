@@ -3,6 +3,7 @@ import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import { User } from "@/types/user";
 import type { Homework, HomeworkAttempt, NewHomeworkAttempt } from "@/types/dashboard/homework";
+import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -40,14 +41,11 @@ export const fetchUserHomeworks = async (): Promise<Homework[]> => {
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/homeworks?${query}`,
-      getAuthHeaders()
-    );
-    return response.data.data
+    const response = await axiosInstance.get(`/api/homeworks?${query}`);
+    return response.data.data;
   } catch (error) {
     console.error("Error fetching homeworks:", error);
     throw error;
@@ -73,13 +71,10 @@ export const fetchHomeworkById = async (id: string | number): Promise<Homework> 
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/homeworks/${id}?${query}`, 
-      getAuthHeaders()
-    );
+    const response = await axiosInstance.get(`/api/homeworks/${id}?${query}`);
     return response.data.data;
   } catch (error) {
     console.error(`Error fetching homework ${id}:`, error);
@@ -115,13 +110,10 @@ export const fetchUserHomeworkAttempts = async (): Promise<HomeworkAttempt[]> =>
         },
       },
       {
-        encodeValuesOnly: true, // prettify URL
+        encodeValuesOnly: true,
       }
     );
-    const response = await axios.get(
-      `${API_URL}/api/homework-attempts?${query}`,
-      getAuthHeaders()
-    );
+    const response = await axiosInstance.get(`/api/homework-attempts?${query}`);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching homework attempts:", error);
