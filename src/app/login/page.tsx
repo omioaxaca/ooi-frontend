@@ -11,12 +11,15 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isHiddenPassword, setIsHiddenPassword] = useState(false);
+
   const [errors, setErrors] = useState({
     email: false,
     password: false
@@ -27,7 +30,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setErrors({ email: false, password: false });
-    
+
     // Basic validation
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
       setErrors(prev => ({ ...prev, email: true }));
@@ -39,7 +42,7 @@ export default function Login() {
       toast.error("Por favor ingresa tu contraseña");
       return;
     }
-    
+
     try {
       await login(email, password);
     } catch (error) {
@@ -56,7 +59,6 @@ export default function Login() {
   return (
     <div className="pt-16 md:pt-20 min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      
       <main className="flex-grow py-12">
         <div className="container mx-auto px-4">
           <motion.div
@@ -71,8 +73,7 @@ export default function Login() {
                 Accede a tu cuenta de la Olimpiada Oaxaqueña de Informática
               </p>
             </div>
-            
-            <motion.div 
+            <motion.div
               className="bg-white rounded-lg shadow-md p-6 md:p-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -87,7 +88,6 @@ export default function Login() {
                     <h2 className="ml-3 text-xl font-semibold text-ooi-dark-blue">Credenciales de Acceso</h2>
                   </div>
                   <Separator className="mb-4" />
-                  
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="email" className={errors.email ? "text-red-500 pb-2" : "pb-2"}>
@@ -111,7 +111,7 @@ export default function Login() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <div className="flex justify-between">
                         <Label htmlFor="password" className={errors.password ? "text-red-500 pb-2" : "pb-2"}>
@@ -121,18 +121,36 @@ export default function Login() {
                           ¿Olvidaste tu contraseña?
                         </Link> */}
                       </div>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          setErrors(prev => ({ ...prev, password: false }));
-                        }}
-                        className={errors.password ? "border-red-500" : ""}
-                        placeholder="••••••••"
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={`${isHiddenPassword ? "password" : "text"}`}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setErrors(prev => ({ ...prev, password: false }));
+                          }}
+                          className={errors.password ? "border-red-500" : ""}
+                          placeholder="••••••••"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
+                          onClick={() => setIsHiddenPassword(!isHiddenPassword)}
+                          aria-label={"Toggle password"}
+                        >
+                          {
+                            isHiddenPassword ? (
+                              <EyeOff className="h-4 w-4 text-gray-500" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-gray-500" />
+                            )
+                          }
+                        </Button>
+                      </div>
                       {errors.password && (
                         <p className="mt-1 text-xs text-red-500">
                           Por favor ingresa tu contraseña
@@ -141,10 +159,10 @@ export default function Login() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="pt-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-ooi-second-blue hover:bg-ooi-dark-blue text-white font-semibold py-2"
                     disabled={isLoading}
                   >
@@ -159,7 +177,7 @@ export default function Login() {
                     ) : "Iniciar Sesión"}
                   </Button>
                 </div>
-                
+
                 <div className="text-center text-sm text-ooi-text-dark">
                   <p>
                     ¿No tienes una cuenta?{" "}
@@ -173,7 +191,7 @@ export default function Login() {
           </motion.div>
         </div>
       </main>
-      
+
       <footer className="bg-gray-900 text-white py-6 text-center text-sm">
         <div className="container mx-auto px-4">
           <p>© {new Date().getFullYear()} Olimpiada Oaxaqueña de Informática. Todos los derechos reservados.</p>
