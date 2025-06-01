@@ -12,13 +12,14 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isHiddenPassword, setIsHiddenPassword] = useState(false);
+  const [isHiddenPassword, setIsHiddenPassword] = useState(true);
 
   const [errors, setErrors] = useState({
     email: false,
@@ -121,36 +122,37 @@ export default function Login() {
                           ¿Olvidaste tu contraseña?
                         </Link> */}
                       </div>
-                      <div className="relative">
+                      <div className="flex w-full items-center gap-2">
                         <Input
                           id="password"
-                          type={`${isHiddenPassword ? "password" : "text"}`}
+                          type={isHiddenPassword ? "password" : "text"}
                           value={password}
                           onChange={(e) => {
                             setPassword(e.target.value);
-                            setErrors(prev => ({ ...prev, password: false }));
+                            setErrors((prev) => ({ ...prev, password: false }));
                           }}
-                          className={errors.password ? "border-red-500" : ""}
                           placeholder="••••••••"
                           required
+                          className={cn(
+                            "flex-grow",
+                            errors.password ? "border-red-500" : "",
+                            "border-input shadow-xs focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                            "placeholder:text-muted-foreground",
+                            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                          )}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
+                          className="px-2 py-2 h-9 w-9 hover:bg-transparent text-gray-500"
                           onClick={() => setIsHiddenPassword(!isHiddenPassword)}
-                          aria-label={"Toggle password"}
+                          aria-label="Toggle password visibility"
                         >
-                          {
-                            isHiddenPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-500" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-500" />
-                            )
-                          }
+                          {isHiddenPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
+
                       {errors.password && (
                         <p className="mt-1 text-xs text-red-500">
                           Por favor ingresa tu contraseña
