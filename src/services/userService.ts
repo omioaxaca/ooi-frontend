@@ -3,6 +3,8 @@ import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import type { User, NewUser, LoggedUser, UpdateUser } from "@/types/user";
 import axiosInstance from "./authService";
+import { fetchCurrentContestCycle } from "./contestCycle";
+import { createParticipation } from "./participation";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -47,7 +49,7 @@ export const getUserFullData = async (): Promise<User> => {
       throw new Error(errorMessage)
     }
 
-    const userData = userResponse.data  
+    const userData = userResponse.data
     return userData
   } catch (error) {
     console.error("Error fetching user data:", error);
@@ -67,7 +69,7 @@ export const login = async (email: string, password: string): Promise<LoggedUser
     if (!response.data) {
       throw new Error("Login failed");
     }
-    
+
     const loginData = response.data;
     const token = loginData.jwt;
     const refreshToken = loginData.refreshToken;
@@ -92,12 +94,48 @@ export const login = async (email: string, password: string): Promise<LoggedUser
 export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
   try {
     const response = await axiosInstance.post(`/api/auth/local/register`, newUser);
-    
+
     if (!response.data) {
       throw new Error("Signup failed");
     }
-    
-    return response.data;
+
+    const signupData = response.data;
+    const token = signupData.jwt;
+    const refreshToken = signupData.refreshToken;
+
+    // Save both tokens so authenticated requests can be made
+    localStorageUtils.setItem("token", token);
+    if (refreshToken) {
+      localStorageUtils.setItem("refreshToken", refreshToken);
+    }
+
+    // Get the user's full data
+    const userData = await getUserFullData();
+
+    // Register user in current contest cycle (cohort)
+    try {
+      const currentCycle = await fetchCurrentContestCycle();
+
+      if (currentCycle) {
+        await createParticipation({
+          user: userData.id,
+          contestCycle: currentCycle.id,
+          signupDate: new Date().toISOString(),
+        });
+      } else {
+        console.warn("No current contest cycle found. User not registered in any cohort.");
+      }
+    } catch (participationError) {
+      // Log the error but don't fail the signup
+      // The user can be manually registered in the cohort later
+      console.error("Error creating participation for new user:", participationError);
+    }
+
+    return {
+      jwt: token,
+      refreshToken: refreshToken,
+      user: userData,
+    };
   } catch (error) {
     console.error("Signup failed:", error);
     throw error;
@@ -107,7 +145,7 @@ export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
 export const updateUser = async (userId: string, newUserData: UpdateUser): Promise<User> => {
   try {
     const response = await axiosInstance.put(`/api/users/${userId}`, newUserData);
-    
+
     if (!response.data) {
       throw new Error("Failed to update user");
     }

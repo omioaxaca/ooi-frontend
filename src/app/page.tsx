@@ -33,37 +33,37 @@ export default function Home() {
       }
     }
   };
-  
+
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.5 }
     }
   };
 
   // Counter animation
-  const Counter = ({ 
-    from = 0, 
-    to, 
-    duration = 2, 
-    className = "" 
-  }: { 
-    from?: number; 
-    to: number; 
-    duration?: number; 
-    className?: string 
+  const Counter = ({
+    from = 0,
+    to,
+    duration = 2,
+    className = ""
+  }: {
+    from?: number;
+    to: number;
+    duration?: number;
+    className?: string
   }) => {
     const [count, setCount] = useState(from);
     const nodeRef = useRef(null);
     const isInView = useInView(nodeRef, { once: true, amount: 0.5 });
-    
+
     useEffect(() => {
       if (isInView) {
         let start = from;
         const step = to / (duration * 60);
-        
+
         const timer = setInterval(() => {
           start += step;
           if (start >= to) {
@@ -73,11 +73,11 @@ export default function Home() {
             setCount(Math.floor(start));
           }
         }, 1000/60);
-        
+
         return () => clearInterval(timer);
       }
     }, [isInView, from, to, duration]);
-    
+
     return <span ref={nodeRef} className={className}>{count}+</span>;
   };
 
@@ -94,7 +94,7 @@ export default function Home() {
         <section id="home" className="py-32 md:py-40 relative overflow-hidden">
           {/* Background gradient with primary and purple */}
           {/* <div className="absolute inset-0 bg-gradient-to-br from-[#09468b] via-[#1e77ba] to-[#6b3c8c] opacity-90"></div> */}
-          
+
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 opacity-90"></div>
 
           {/* Optional decorative elements */}
@@ -102,13 +102,13 @@ export default function Home() {
             <div className="absolute top-20 left-10 w-64 h-64 bg-white/10 rounded-full filter blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-96 h-96 bg-ooi-purple/20 rounded-full filter blur-3xl"></div>
           </div>
-          
+
           <div className="container mx-auto px-4 relative">
             <div className="grid md:grid-cols-2 gap-8 items-center">
               {/* Left side - Text content */}
               <div className="text-white text-left">
                 <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30 transition-all text-base px-4 py-2 font-medium">
-                  Selección 2025
+                  Selección 2026
                 </Badge>
                 <h1 className="text-secondary text-5xl md:text-6xl font-bold mb-6 leading-tight">
                   Olimpiada Oaxaqueña de Informática
@@ -117,7 +117,7 @@ export default function Home() {
                   ¡Vuélvete el/la mejor programador(a) del estado de Oaxaca!
                 </p>
                 <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
-                  Inicio de clases: <span className="text-ooi-yellow">7 de Abril 2025</span>
+                  Inicio de clases: <span className="text-ooi-yellow">7 de Abril 2026</span>
                 </p>
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link href="/registro">
@@ -133,7 +133,7 @@ export default function Home() {
                 </Link>
                 </div>
               </div>
-              
+
               {/* Right side - Space for 3D image - now visible on mobile */}
               <div className="h-[300px] md:h-[600px] relative mt-6 md:mt-0">
                 <div className="absolute inset-0">
@@ -148,7 +148,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
+
           {/* Diagonal divider - more inclined and inverted */}
           <div className="absolute bottom-0 left-0 right-0">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-24">
@@ -160,7 +160,7 @@ export default function Home() {
         {/* What is? Section with Animation */}
         <section id="what-is" className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-12 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -169,7 +169,7 @@ export default function Home() {
             >
               ¿Qué es la Olimpiada Oaxaqueña de Informática?
             </motion.h2>
-            
+
             <div className="grid md:grid-cols-3 gap-12">
               {/* What the organization is */}
               <motion.div
@@ -191,16 +191,16 @@ export default function Home() {
                         transition={{ duration: 0.3 }}
                         className="h-full w-full"
                       >
-                        <Image 
-                          src="/images/group-questions.png" 
-                          alt="Organización" 
-                          fill 
+                        <Image
+                          src="/images/group-questions.png"
+                          alt="Organización"
+                          fill
                           className="object-contain transition-all"
                         />
                       </motion.div>
                     </div>
                     <p className="text-ooi-text-dark">
-                    La OOI es una competencia diseñada para jóvenes apasionados por la resolución de problemas mediante la programación y la lógica computacional. A través de entrenamientos y desafíos progresivos, buscamos descubrir y formar a los mejores talentos de Oaxaca, quienes representarán al estado en la Olimpiada Mexicana de Informática 2025.
+                    La OOI es una competencia diseñada para jóvenes apasionados por la resolución de problemas mediante la programación y la lógica computacional. A través de entrenamientos y desafíos progresivos, buscamos descubrir y formar a los mejores talentos de Oaxaca, quienes representarán al estado en la Olimpiada Mexicana de Informática 2026.
                     </p>
                   </CardContent>
                 </Card>
@@ -226,15 +226,15 @@ export default function Home() {
                         transition={{ duration: 0.3 }}
                         className="h-full w-full"
                       >
-                        <Image 
-                          src="/images/phases.png" 
-                          alt="Etapas" 
-                          fill 
+                        <Image
+                          src="/images/phases.png"
+                          alt="Etapas"
+                          fill
                           className="object-contain transition-all"
                         />
                       </motion.div>
                     </div>
-                    <motion.ol 
+                    <motion.ol
                       className="list-decimal pl-5 space-y-2 text-ooi-text-dark"
                       initial="hidden"
                       whileInView="visible"
@@ -248,7 +248,7 @@ export default function Home() {
                       "Entrenamiento: Durante un periodo aproximadamente de 5 meses se te impartirán clases de programación, algoritmos y lógica para resolución de problemas. Las clases son de hora y media de forma virtual.",
                       "Selección: Presentarás exámenes para demostrar tus habilidades y formar parte del equipo que representará a Oaxaca a nivel nacional."
                       ].map((item, index) => (
-                        <motion.li 
+                        <motion.li
                           key={index}
                           variants={{
                             visible: { opacity: 1, x: 0 },
@@ -284,15 +284,15 @@ export default function Home() {
                         transition={{ duration: 0.3 }}
                         className="h-full w-full"
                       >
-                        <Image 
-                          src="/images/requirements.png" 
-                          alt="Requisitos" 
-                          fill 
+                        <Image
+                          src="/images/requirements.png"
+                          alt="Requisitos"
+                          fill
                           className="object-contain transition-all"
                         />
                       </motion.div>
                     </div>
-                    <motion.ul 
+                    <motion.ul
                       className="list-disc pl-5 space-y-2 text-ooi-text-dark"
                       initial="hidden"
                       whileInView="visible"
@@ -309,7 +309,7 @@ export default function Home() {
                       "Cursar primaria, secundaria o hasta el 4to semestre de preparatoria.",
                       "Tener ganas de aprender (no es necesario saber programar antes de empezar)."
                       ].map((item, index) => (
-                        <motion.li 
+                        <motion.li
                           key={index}
                           variants={{
                             visible: { opacity: 1, x: 0 },
@@ -330,9 +330,9 @@ export default function Home() {
 
         {/* Benefits Section - Updated Background Only */}
         <section id="benefits" className="py-16 bg-gradient-to-tr from-ooi-light-blue/20 via-ooi-yellow/10 to-ooi-purple/15">
-          
+
           <div className="container mx-auto px-4 relative">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-16 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -341,7 +341,7 @@ export default function Home() {
             >
               ¿Qué beneficios obtengo?
             </motion.h2>
-            
+
             <div className="space-y-16">
               {/* Benefit 1 - Conocimiento */}
               <motion.div
@@ -362,15 +362,15 @@ export default function Home() {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       className="relative h-56 w-56"
                     >
-                      <Image 
-                        src="/images/knowledge.png" 
-                        alt="Conocimiento" 
+                      <Image
+                        src="/images/knowledge.png"
+                        alt="Conocimiento"
                         fill
                         className="object-contain"
                       />
                     </motion.div>
                   </div>
-                  
+
                   {/* Content container */}
                   <div className="md:w-3/5 p-8 md:border-l border-gray-100">
                     <motion.div
@@ -384,7 +384,7 @@ export default function Home() {
                       El súper poder más valioso que vas a obtener es el conocimiento adquirido para resolver y programar diferentes problemas que te ayudarán en tu carrera profesional para tu futuro, dominando este conocimiento puedes llegar a trabajar en las empresas de tecnología más importantes del mundo: ej. Google, Facebook, Microsoft, Tiktok.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -393,7 +393,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-second-blue">✓</span> Aprende lenguajes como C++.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -402,7 +402,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-second-blue">✓</span> Domina estructuras de datos y algoritmos.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -416,7 +416,7 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* Benefit 2 - Reconocimiento (Reversed layout) */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -436,15 +436,15 @@ export default function Home() {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       className="relative h-56 w-56"
                     >
-                      <Image 
-                        src="/images/awards.png" 
-                        alt="Reconocimiento" 
+                      <Image
+                        src="/images/awards.png"
+                        alt="Reconocimiento"
                         fill
                         className="object-contain"
                       />
                     </motion.div>
                   </div>
-                  
+
                   {/* Content container */}
                   <div className="md:w-3/5 p-8 md:border-r border-gray-100">
                     <motion.div
@@ -458,7 +458,7 @@ export default function Home() {
                       La posibilidad de poder representar a todo el estado de Oaxaca en la etapa nacional compitiendo contra otros estados. La posibilidad de ganar un lugar en la etapa internacional.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -467,7 +467,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-purple">✓</span> Compite a nivel estatal, nacional e internacional.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -476,7 +476,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-purple">✓</span> Obtén experiencia, diplomas y medallas.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: -20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -490,7 +490,7 @@ export default function Home() {
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* Benefit 3 - Experiencia */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -510,15 +510,15 @@ export default function Home() {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       className="relative h-56 w-56"
                     >
-                      <Image 
-                        src="/images/experience.png" 
-                        alt="Experiencia" 
+                      <Image
+                        src="/images/experience.png"
+                        alt="Experiencia"
                         fill
                         className="object-contain"
                       />
                     </motion.div>
                   </div>
-                  
+
                   {/* Content container */}
                   <div className="md:w-3/5 p-8 md:border-l border-gray-100">
                     <motion.div
@@ -533,7 +533,7 @@ export default function Home() {
                         Si eres seleccionado(a) para representar a Oaxaca competirás en la etapa nacional, donde conocerás a más programadores(as) como tú, que vienen de todos los estados.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -542,7 +542,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-dark-blue">✓</span> Posibilidad de representar a México en la etapa internacional.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -551,7 +551,7 @@ export default function Home() {
                         >
                           <span className="mr-2 text-ooi-dark-blue">✓</span> Resuelve problemas complejos.
                         </motion.li>
-                        <motion.li 
+                        <motion.li
                           className="flex items-center"
                           initial={{ opacity: 0, x: 20 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -572,7 +572,7 @@ export default function Home() {
         {/* History and Achievements with Animations */}
         <section id="history" className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-12 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -581,7 +581,7 @@ export default function Home() {
             >
               Historia y Logros
             </motion.h2>
-            
+
             <div className="grid md:grid-cols-2 gap-12 mb-12">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
@@ -590,71 +590,71 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
               >
                 <p className="text-lg mb-6 text-ooi-text-dark">
-                  Desde nuestra fundación, hemos trabajado para impulsar el talento oaxaqueño 
+                  Desde nuestra fundación, hemos trabajado para impulsar el talento oaxaqueño
                   en competencias de programación a nivel nacional e internacional.
                 </p>
-                
-                <motion.div 
+
+                <motion.div
                   className="grid grid-cols-2 gap-6 mt-8"
                   variants={containerVariants}
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="text-center p-4 bg-ooi-second-blue/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
                     whileHover={{ y: -5, backgroundColor: "rgba(30, 119, 186, 0.15)" }}
                   >
-                    <Counter 
-                      from={0} 
-                      to={1200} 
-                      className="text-4xl font-bold text-ooi-second-blue block" 
+                    <Counter
+                      from={0}
+                      to={1200}
+                      className="text-4xl font-bold text-ooi-second-blue block"
                     />
                     <span className="text-sm">Alumnos</span>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="text-center p-4 bg-ooi-purple/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
                     whileHover={{ y: -5, backgroundColor: "rgba(107, 60, 140, 0.15)" }}
                   >
-                    <Counter 
-                      from={0} 
-                      to={18} 
-                      className="text-4xl font-bold text-ooi-purple block" 
+                    <Counter
+                      from={0}
+                      to={18}
+                      className="text-4xl font-bold text-ooi-purple block"
                     />
                     <span className="text-sm">Medallistas nacionales</span>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="text-center p-4 bg-ooi-yellow/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
                     whileHover={{ y: -5, backgroundColor: "rgba(250, 238, 80, 0.15)" }}
                   >
-                    <Counter 
-                      from={0} 
-                      to={12} 
+                    <Counter
+                      from={0}
+                      to={12}
                       duration={1.5}
-                      className="text-4xl font-bold text-ooi-dark-blue block" 
+                      className="text-4xl font-bold text-ooi-dark-blue block"
                     />
                     <span className="text-sm">Años de trayectoria</span>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="text-center p-4 bg-ooi-pink/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
                     whileHover={{ y: -5, backgroundColor: "rgba(254, 110, 154, 0.15)" }}
                   >
-                    <Counter 
-                      from={0} 
-                      to={2} 
+                    <Counter
+                      from={0}
+                      to={2}
                       duration={1.5}
-                      className="text-4xl font-bold text-ooi-pink block" 
+                      className="text-4xl font-bold text-ooi-pink block"
                     />
                     <span className="text-sm">Medallistas internacionales</span>
                   </motion.div>
                 </motion.div>
               </motion.div>
-              
-              <motion.div 
+
+              <motion.div
                 className="relative"
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -665,8 +665,8 @@ export default function Home() {
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Carousel 
-                    className="w-full" 
+                  <Carousel
+                    className="w-full"
                     opts={{
                       align: "start",
                       loop: true,
@@ -680,14 +680,14 @@ export default function Home() {
                     <CarouselContent>
                       {[2012, 2013, 2014, 2015, 2016, 2019, 2020, 2021, 2022, 2023, 'navidad'].map((item) => (
                         <CarouselItem key={item}>
-                          <motion.div 
+                          <motion.div
                             className="p-1 h-72 md:h-80 relative rounded-lg overflow-hidden"
                             whileHover={{ scale: 1.03 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <Image 
-                              src={`/images/history/${item}.jpeg`} 
-                              alt={`Logro ${item}`} 
+                            <Image
+                              src={`/images/history/${item}.jpeg`}
+                              alt={`Logro ${item}`}
                               fill
                               className="object-contain rounded-md"
                               sizes="(max-width: 768px) 90vw, 45vw"
@@ -711,7 +711,7 @@ export default function Home() {
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-ooi-second-blue/10 to-transparent rounded-full filter blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-ooi-purple/10 to-transparent rounded-full filter blur-3xl"></div>
-            
+
             {/* Optional geometric shapes */}
             <svg className="absolute top-10 left-10 w-32 h-32 text-ooi-second-blue/5" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
               <circle cx="50" cy="50" r="40" fill="currentColor" />
@@ -720,10 +720,10 @@ export default function Home() {
               <rect x="20" y="20" width="60" height="60" fill="currentColor" />
             </svg>
           </div>
-          
+
           {/* Content container */}
           <div className="container mx-auto px-4 relative">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-12 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -732,10 +732,10 @@ export default function Home() {
             >
               ¿Quiénes Somos?
             </motion.h2>
-            
+
             <div className="flex flex-col lg:flex-row items-center gap-12 mb-16">
               {/* Team Image */}
-              <motion.div 
+              <motion.div
                 className="lg:w-2/5 mb-10 lg:mb-0 flex items-center justify-center"
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -743,9 +743,9 @@ export default function Home() {
                 transition={{ duration: 0.7 }}
               >
                 <div style={{ width: '100%', maxWidth: '600px', position: 'relative' }}>
-                  <Image 
-                    src="/images/team.png" 
-                    alt="Equipo OOI" 
+                  <Image
+                    src="/images/team.png"
+                    alt="Equipo OOI"
                     width={600}
                     height={600}
                     style={{ objectFit: 'contain' }}
@@ -753,22 +753,22 @@ export default function Home() {
                   />
                 </div>
               </motion.div>
-              
+
               {/* Team Content Column */}
               <div className="lg:w-3/5">
-                <motion.p 
+                <motion.p
                   className="mb-8 text-lg text-ooi-text-dark"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
-                  Somos un equipo de entusiastas de la programación, educadores y ex-olímpicos 
+                  Somos un equipo de entusiastas de la programación, educadores y ex-olímpicos
                   comprometidos con el desarrollo del talento tecnológico en Oaxaca. Nuestra misión
                   es descubrir y potenciar a los futuros líderes en informática del estado.
                 </motion.p>
-                
-                <motion.div 
+
+                <motion.div
                   className="grid grid-cols-2 md:grid-cols-4 gap-6"
                   variants={containerVariants}
                   initial="hidden"
@@ -837,20 +837,20 @@ export default function Home() {
                       'role': 'Profesor',
                     },
                   ].map((person) => (
-                    <motion.div 
-                      key={person.image} 
+                    <motion.div
+                      key={person.image}
                       className="text-center"
                       variants={itemVariants}
                       whileHover={{ y: -5 }}
                     >
-                      <motion.div 
+                      <motion.div
                         className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden relative cursor-pointer"
                         whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                       >
-                        <Image 
-                          src={`/images/team/${person.image}.jpeg`} 
-                          alt={`Persona ${person.name}`} 
-                          fill 
+                        <Image
+                          src={`/images/team/${person.image}.jpeg`}
+                          alt={`Persona ${person.name}`}
+                          fill
                           className="object-cover"
                         />
                       </motion.div>
@@ -867,7 +867,7 @@ export default function Home() {
         {/* Blog Section with Animations */}
         <section id="convocatoria" className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-16 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -876,29 +876,29 @@ export default function Home() {
             >
               Convocatorias
             </motion.h2>
-            
-            <motion.div 
+
+            <motion.div
               className="grid md:grid-cols-3 gap-8"
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
-              {[2025, 2024, 2023].map((convoYear) => (
-                <motion.div 
-                  key={convoYear} 
+              {[2026, 2024, 2023].map((convoYear) => (
+                <motion.div
+                  key={convoYear}
                   variants={itemVariants}
                   whileHover={{ y: -10 }}
                 >
                   <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all h-full flex flex-col">
-                    <motion.div 
+                    <motion.div
                       className="h-72 md:h-80 lg:h-96 relative"
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Image 
-                        src={`/images/convocatorias/convo-${convoYear}.jpeg`} 
-                        alt={`Convocatoria del año ${convoYear}`} 
+                      <Image
+                        src={`/images/convocatorias/convo-${convoYear}.jpeg`}
+                        alt={`Convocatoria del año ${convoYear}`}
                         fill
                         className="object-contain transition-transform"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
@@ -916,8 +916,8 @@ export default function Home() {
                     <CardFooter className="flex gap-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             className="border-ooi-second-blue text-ooi-second-blue"
                             onClick={() => setSelectedConvo(convoYear)}
                           >
@@ -952,28 +952,28 @@ export default function Home() {
                   </div>
                         </DialogContent>
                       </Dialog>
-                      
+
                       {/* Download Button */}
-                      <Link 
-                        href={`/images/convocatorias/convo-${convoYear}.jpeg`} 
+                      <Link
+                        href={`/images/convocatorias/convo-${convoYear}.jpeg`}
                         download={`Convocatoria_OOI_${convoYear}.jpeg`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10"
                         >
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            width="16" 
-                            height="16" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className="mr-2"
                           >
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -994,7 +994,7 @@ export default function Home() {
         {/* FAQ Section with 3D Image */}
         <section id="faq" className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
-            <motion.h2 
+            <motion.h2
               className="text-3xl font-bold mb-12 text-center text-ooi-dark-blue"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -1003,10 +1003,10 @@ export default function Home() {
             >
               Preguntas Frecuentes
             </motion.h2>
-            
+
             <div className="flex flex-col lg:flex-row gap-12 items-start">
               {/* Left side - FAQ Accordion */}
-              <motion.div 
+              <motion.div
                 className="lg:w-3/5"
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -1071,9 +1071,9 @@ export default function Home() {
                   ))}
                 </Accordion>
               </motion.div>
-              
+
               {/* Right side - 3D Image */}
-              <motion.div 
+              <motion.div
                 className="lg:w-2/5 mt-10 lg:mt-0 flex items-center justify-center"
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -1081,9 +1081,9 @@ export default function Home() {
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
                 <div style={{ width: '100%', maxWidth: '300px', height: '300px', position: 'relative' }}>
-                  <Image 
-                    src="/images/faq.png" 
-                    alt="Preguntas Frecuentes" 
+                  <Image
+                    src="/images/faq.png"
+                    alt="Preguntas Frecuentes"
                     width={300}
                     height={300}
                     style={{ objectFit: 'contain' }}
@@ -1098,22 +1098,22 @@ export default function Home() {
         {/* Merged Final CTA Section with 3D Image */}
         <section className="py-16 bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 relative overflow-hidden">
           {/* Animated background elements */}
-          <motion.div 
+          <motion.div
             className="absolute inset-0 opacity-20"
             initial={{ backgroundPosition: "0% 0%" }}
             animate={{ backgroundPosition: "100% 100%" }}
             transition={{ repeat: Infinity, repeatType: "mirror", duration: 20, ease: "linear" }}
             style={{
-              backgroundImage: `radial-gradient(circle at 30% 50%, rgba(250, 238, 80, 0.8) 0%, transparent 20%), 
+              backgroundImage: `radial-gradient(circle at 30% 50%, rgba(250, 238, 80, 0.8) 0%, transparent 20%),
                                radial-gradient(circle at 70% 20%, rgba(254, 110, 154, 0.7) 0%, transparent 20%)`,
               backgroundSize: "80% 80%"
             }}
           />
-          
+
           <div className="relative z-10 container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center gap-8">
               {/* Left side - 3D Image (was on right) */}
-              <motion.div 
+              <motion.div
                 className="md:w-1/2 mb-10 md:mb-0 flex items-center justify-center"
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -1121,9 +1121,9 @@ export default function Home() {
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
                 <div style={{ width: '100%', maxWidth: '300px', height: '300px', position: 'relative' }}>
-                  <Image 
-                    src="/images/join.png" 
-                    alt="Comunidad OOI" 
+                  <Image
+                    src="/images/join.png"
+                    alt="Comunidad OOI"
                     width={300}
                     height={300}
                     style={{ objectFit: 'contain' }}
@@ -1131,9 +1131,9 @@ export default function Home() {
                   />
                 </div>
               </motion.div>
-              
+
               {/* Right side - Text content (was on left) */}
-              <motion.div 
+              <motion.div
                 className="md:w-1/2 text-center md:text-left"
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -1142,7 +1142,7 @@ export default function Home() {
               >
                 <h2 className="text-3xl font-bold mb-4 text-white">¿Listo(a) para ser parte de la OOI?</h2>
                 <p className="text-xl mb-6 text-white/90">
-                  La OOI es más que una competencia, es una comunidad donde desarrollarás 
+                  La OOI es más que una competencia, es una comunidad donde desarrollarás
                   habilidades que te acompañarán toda la vida. Únete y empieza tu camino.
                 </p>
                 <motion.div
@@ -1171,7 +1171,7 @@ export default function Home() {
         {/* Footer with Animations */}
         <footer className="bg-gray-900 text-gray-300 py-12">
           <div className="container mx-auto px-4">
-            <motion.div 
+            <motion.div
               className="grid md:grid-cols-5 gap-8 mb-8"
               variants={containerVariants}
               initial="hidden"
@@ -1205,12 +1205,12 @@ export default function Home() {
                       url: "/terminos-y-condiciones"
                     },
                   ].map((item, index) => (
-                    <motion.li 
+                    <motion.li
                       key={index}
                       whileHover={{ x: 5, color: "#ffffff" }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link href={item.url} 
+                      <Link href={item.url}
                             className="hover:text-white">
                         {item.title}
                       </Link>
@@ -1218,7 +1218,7 @@ export default function Home() {
                   ))}
                 </ul>
               </motion.div>
-              
+
               {/* New additional links column */}
               <motion.div variants={itemVariants}>
                 <h3 className="text-white text-lg font-semibold mb-4">Recursos</h3>
@@ -1241,7 +1241,7 @@ export default function Home() {
                       url: "https://wiki.omioaxaca.org/es/faq"
                     },
                   ].map((item, index) => (
-                    <motion.li 
+                    <motion.li
                       key={index}
                       whileHover={{ x: 5, color: "#ffffff" }}
                       transition={{ duration: 0.2 }}
@@ -1255,11 +1255,11 @@ export default function Home() {
                   ))}
                 </ul>
               </motion.div>
-              
+
               <motion.div variants={itemVariants}>
                 <h3 className="text-white text-lg font-semibold mb-4">Contacto</h3>
                 <ul className="space-y-2 text-sm">
-                  <motion.li 
+                  <motion.li
                     className="flex items-center gap-2"
                     whileHover={{ x: 5, color: "#ffffff" }}
                     transition={{ duration: 0.2 }}
@@ -1320,8 +1320,8 @@ export default function Home() {
                 </div>
               </motion.div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="border-t border-gray-800 pt-8 text-center text-sm"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -1335,4 +1335,4 @@ export default function Home() {
       </div>
     </>
   );
-} 
+}

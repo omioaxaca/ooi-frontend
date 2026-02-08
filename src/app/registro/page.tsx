@@ -8,7 +8,7 @@ import Navbar from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,18 +25,18 @@ export default function Registro() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { signup } = useAuth();
-  
+
   // Account Details
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   // Personal Details
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  
+
   // School Details
   const [schoolName, setSchoolName] = useState("");
   const [schoolLevel, setSchoolLevel] = useState("");
@@ -87,7 +87,7 @@ export default function Registro() {
         return [];
     }
   };
-  
+
   // Reset grade when level changes
   const handleSchoolLevelChange = (value: string) => {
     setSchoolLevel(value);
@@ -103,7 +103,7 @@ export default function Registro() {
       }));
     }
   }, [password, confirmPassword]);
-  
+
   // Add handlers to clear errors when fields are modified
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -113,7 +113,7 @@ export default function Registro() {
       password: false
     }));
   };
-  
+
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setConfirmPassword(e.target.value);
     // The confirmPassword error will be handled by the useEffect above
@@ -121,7 +121,7 @@ export default function Registro() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Reset errors
     const newErrors = {
       email: false,
@@ -135,7 +135,7 @@ export default function Registro() {
       schoolLevel: false,
       schoolGrade: false
     };
-    
+
     // Basic validation
     if (!email || !/\S+@\S+\.\S+/.test(email)) newErrors.email = true;
     if (!password || password.length < 6) newErrors.password = true;
@@ -147,16 +147,16 @@ export default function Registro() {
     if (!schoolName) newErrors.schoolName = true;
     if (!schoolLevel) newErrors.schoolLevel = true;
     if (!schoolGrade) newErrors.schoolGrade = true;
-    
+
     // If any errors, update state and return
     if (Object.values(newErrors).some(error => error)) {
       setErrors(newErrors);
       toast.error("Por favor completa todos los campos requeridos correctamente");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Format data EXACTLY as required by Strapi
       const userData: NewUser = {
@@ -176,12 +176,12 @@ export default function Registro() {
         hobbies: "",
         pastExperience: ""
       };
-      
+
       console.log("Sending user data:", userData); // For debugging
-      
+
       // Make the API request to Strapi
       await signup(userData);
-      
+
       toast.success("¡Registro exitoso!", {
         description: "Tu cuenta ha sido creada correctamente."
       });
@@ -190,7 +190,7 @@ export default function Registro() {
       setTimeout(() => {
         router.push('/');
       }, 2000);
-      
+
     } catch (error) {
       console.error('Registration error:', error);
       toast.error("Error en el registro", {
@@ -205,7 +205,7 @@ export default function Registro() {
   return (
     <div className="pt-16 md:pt-20 min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      
+
       <main className="flex-grow py-12">
         <div className="container mx-auto px-4">
           <motion.div
@@ -215,13 +215,13 @@ export default function Registro() {
             className="max-w-3xl mx-auto"
           >
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-ooi-dark-blue">Registro para la OOI 2025</h1>
+              <h1 className="text-3xl font-bold text-ooi-dark-blue">Registro para la OOI 2026</h1>
               <p className="mt-2 text-ooi-text-dark">
                 Completa el formulario para participar en la Olimpiada Oaxaqueña de Informática
             </p>
           </div>
 
-            <motion.div 
+            <motion.div
               className="bg-white rounded-lg shadow-md p-6 md:p-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -237,7 +237,7 @@ export default function Registro() {
                     <h2 className="ml-3 text-xl font-semibold text-ooi-dark-blue">Detalles de la Cuenta</h2>
             </div>
                   <Separator className="mb-4" />
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <Label htmlFor="email" className={errors.email ? "text-red-500 pb-2" : "pb-2"}>
@@ -279,7 +279,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="confirmPassword" className={errors.confirmPassword ? "text-red-500 pb-2" : "pb-2"}>
                         Confirmar Contraseña *
@@ -301,7 +301,7 @@ export default function Registro() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Personal Details Section */}
                 <div>
                   <div className="flex items-center mb-4">
@@ -311,7 +311,7 @@ export default function Registro() {
                     <h2 className="ml-3 text-xl font-semibold text-ooi-dark-blue">Información Personal</h2>
                   </div>
                   <Separator className="mb-4" />
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="firstName" className={errors.firstName ? "text-red-500 pb-2" : "pb-2"}>
@@ -332,7 +332,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="lastName" className={errors.lastName ? "text-red-500 pb-2" : "pb-2"}>
                         Apellido(s) *
@@ -352,7 +352,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="phoneNumber" className={errors.phoneNumber ? "text-red-500 pb-2" : "pb-2"}>
                         Número de Teléfono *
@@ -372,7 +372,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="birthDate" className={errors.birthDate ? "text-red-500 pb-2" : "pb-2"}>
                         Fecha de Nacimiento *
@@ -393,7 +393,7 @@ export default function Registro() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* School Details Section */}
                 <div>
                   <div className="flex items-center mb-4">
@@ -403,7 +403,7 @@ export default function Registro() {
                     <h2 className="ml-3 text-xl font-semibold text-ooi-dark-blue">Información Escolar</h2>
                   </div>
                   <Separator className="mb-4" />
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <Label htmlFor="schoolName" className={errors.schoolName ? "text-red-500 pb-2" : "pb-2"}>
@@ -424,7 +424,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="schoolLevel" className={errors.schoolLevel ? "text-red-500 pb-2" : "pb-2"}>
                         Nivel Educativo *
@@ -448,7 +448,7 @@ export default function Registro() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="schoolGrade" className={errors.schoolGrade ? "text-red-500 pb-2" : "pb-2"}>
                         Grado Escolar *
@@ -479,8 +479,8 @@ export default function Registro() {
             </div>
 
                 <div className="pt-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-ooi-second-blue hover:bg-ooi-dark-blue text-white font-semibold py-2"
                     disabled={isLoading}
                   >
@@ -495,7 +495,7 @@ export default function Registro() {
                     ) : "Completar Registro"}
             </Button>
                 </div>
-                
+
                 <div className="text-center text-sm text-ooi-text-dark">
                   <p>
                     Al registrarte, aceptas nuestros{" "}
@@ -513,7 +513,7 @@ export default function Registro() {
           </motion.div>
         </div>
       </main>
-      
+
       <footer className="bg-gray-900 text-white py-6 text-center text-sm">
         <div className="container mx-auto px-4">
           <p>© {new Date().getFullYear()} Olimpiada Oaxaqueña de Informática. Todos los derechos reservados.</p>
@@ -521,4 +521,4 @@ export default function Registro() {
       </footer>
     </div>
   );
-} 
+}

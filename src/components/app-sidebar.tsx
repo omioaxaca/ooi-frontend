@@ -4,16 +4,16 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarFooter } from "@/components/ui/sidebar"
-import { 
-  Calendar, 
-  Bell, 
-  Home, 
-  FileText, 
-  Video, 
-  BarChart2, 
-  Book, 
-  Code, 
-  GraduationCap, 
+import {
+  Calendar,
+  Bell,
+  Home,
+  FileText,
+  Video,
+  BarChart2,
+  Book,
+  Code,
+  GraduationCap,
   ChevronRight,
   LogOut
 } from "lucide-react"
@@ -26,11 +26,11 @@ import { useAuth } from "@/contexts/auth-context"
 export function AppSidebar() {
   const pathname = usePathname()
   const { logout } = useAuth()
-  
+
   // Navigation groups
   const navItems = [
     {
-      title: "Selección 2025",
+      title: "Selección 2026",
       items: [
         {
           title: "Bienvenido",
@@ -106,11 +106,11 @@ export function AppSidebar() {
           <Logo className="h-12 w-auto" />
         </Link>
       </div>
-      
+
       <div className="p-4 border-b">
         <ProfileMenu expanded={true} />
       </div>
-      
+
       <ScrollArea className="flex-1 py-2">
         {navItems.map((group, i) => (
           <div key={i} className="px-4 py-2">
@@ -140,11 +140,11 @@ export function AppSidebar() {
           </div>
         ))}
       </ScrollArea>
-      
+
       <SidebarFooter>
         <div className="p-4 border-t">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full flex items-center gap-2 text-gray-700 hover:text-red-600 hover:border-red-200"
             onClick={() => logout()}
           >

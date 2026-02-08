@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState<NotificationView[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [notificationsError, setNotificationsError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // Get user info from localStorage
     const userString = localStorage.getItem('user');
@@ -37,13 +37,13 @@ export default function Dashboard() {
         console.error("Error parsing user data", e);
       }
     }
-    
+
     // Fetch notifications
     const getNotifications = async () => {
       try {
         setIsLoadingNotifications(true);
         const backendNotifications = await fetchUserNotifications();
-        const mappedNotifications = backendNotifications.map(notification => 
+        const mappedNotifications = backendNotifications.map(notification =>
           mapBackendNotificationToFrontendNotification(notification)
         );
         setNotifications(mappedNotifications);
@@ -55,7 +55,7 @@ export default function Dashboard() {
         setIsLoadingNotifications(false);
       }
     };
-    
+
     getNotifications();
   }, []);
 
@@ -170,8 +170,8 @@ export default function Dashboard() {
                                 </p>
                               </div>
                               {notification.redirectionURL && (
-                                <Link 
-                                  href={notification.redirectionURL} 
+                                <Link
+                                  href={notification.redirectionURL}
                                   className="text-sm text-ooi-second-blue hover:underline flex items-center self-center whitespace-nowrap"
                                 >
                                   Abrir <ChevronRight className="h-4 w-4" />
@@ -214,7 +214,7 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  
+
 
                   <p className="mb-4">
                     Bienvenido olímpico(a), tu viaje de preparación para
@@ -230,7 +230,7 @@ export default function Dashboard() {
                     Comienza explorando los materiales de clase y completando
                     las primeras actividades.
                   </p>
-                  
+
                   <p>
                     <strong className="text-ooi-dark-blue">OMI&nbsp;</strong>
                   </p>
@@ -286,7 +286,7 @@ export default function Dashboard() {
                         Los(as) 4 mejores olímpicos(as) con mayor puntaje al
                         final de todas las fases de la olimpiada serán los
                         seleccionados para participar en la etapa nacional
-                        (Olimpiada Mexicana de Informática 2025).
+                        (Olimpiada Mexicana de Informática 2026).
                       </span>
                     </li>
                   </ul>
@@ -303,7 +303,7 @@ export default function Dashboard() {
                       Tendremos clases de algoritmos y también clases de
                       sesiones de habilidades personales y sociales.
                     </li>
-                    <li className="pl-2">Podrás participar en la OFMI 2025.</li>
+                    <li className="pl-2">Podrás participar en la OFMI 2026.</li>
                   </ul>
 
                   <div className="flex flex-wrap gap-3 mt-4">
@@ -345,7 +345,7 @@ export default function Dashboard() {
                   <div className="mb-3">
                     <p className="text-sm text-gray-700">Te invitamos a seguir los siguientes pasos para dar comienzo a tu viaje en la olimpiada de informática:</p>
                   </div>
-                  
+
                   <div className="space-y-5">
 
                     {/* Step 1 */}
@@ -382,7 +382,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <h3 className="font-medium text-ooi-dark-blue">Examen de evaluación diagnóstica en línea</h3>
-                          <p className="text-xs text-gray-600">27 de marzo - 7 de abril de 2025 • Requerido</p>
+                          <p className="text-xs text-gray-600">7 de marzo - 7 de abril de 2026 • Requerido</p>
                         </div>
                       </div>
                       <div className="p-3">
@@ -402,7 +402,7 @@ export default function Dashboard() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Step 3 */}
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-ooi-second-blue/10 p-3 flex items-center">
@@ -411,7 +411,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <h3 className="font-medium text-ooi-dark-blue">Selecciona tu horario de clases</h3>
-                          <p className="text-xs text-gray-600">31 Marzo - 7 de Abril de 2025 • Requerido</p>
+                          <p className="text-xs text-gray-600">7 Marzo - 7 de Abril de 2026 • Requerido</p>
                         </div>
                       </div>
                       <div className="p-3">
@@ -428,7 +428,7 @@ export default function Dashboard() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Step 4 */}
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-ooi-second-blue/10 p-3 flex items-center">
@@ -437,7 +437,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <h3 className="font-medium text-ooi-dark-blue">Asiste a la bienvenida en línea</h3>
-                          <p className="text-xs text-gray-600">4 de Abril de 2025 • 4:00 P.M. • Requerido</p>
+                          <p className="text-xs text-gray-600">28 de Febrero de 2026 • 11:00 A.M. • Requerido</p>
                         </div>
                       </div>
                       <div className="p-3">
@@ -445,13 +445,13 @@ export default function Dashboard() {
                           Te esperamos para la sesión de bienvenida en línea donde conocerás más sobre la olimpiada.
                         </p>
                         <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
-                          <a href="https://omioaxaca.org/bienvenida-2025" target="_blank" rel="noopener noreferrer">
-                            Unirse a la bienvenida 2025
+                          <a href="https://omioaxaca.org/bienvenida-2026" target="_blank" rel="noopener noreferrer">
+                            Unirse a la bienvenida 2026
                           </a>
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Optional Steps */}
                     <div className="mt-4">
                       <h3 className="font-medium text-sm text-ooi-dark-blue mb-3">Pasos opcionales</h3>
@@ -468,7 +468,7 @@ export default function Dashboard() {
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-start gap-3 p-3 border rounded-lg">
                           <div className="h-6 w-6 rounded-full bg-ooi-purple/20 flex items-center justify-center text-ooi-purple text-xs font-medium">
                             6

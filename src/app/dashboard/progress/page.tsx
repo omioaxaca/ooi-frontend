@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -29,7 +29,7 @@ export default function ProgressPage() {
     exams: 85,
     exercises: 38
   });
-  
+
   useEffect(() => {
     // Get user info from localStorage
     const userString = localStorage.getItem('user');
@@ -50,7 +50,7 @@ export default function ProgressPage() {
       title: "Tarea: Algoritmos Básicos",
       score: 9,
       maxScore: 10,
-      date: "31 marzo, 2025",
+      date: "31 marzo, 2026",
       status: "completed"
     },
     {
@@ -58,7 +58,7 @@ export default function ProgressPage() {
       title: "Examen: Introducción a la Programación",
       score: 85,
       maxScore: 100,
-      date: "10 abril, 2025",
+      date: "10 abril, 2026",
       status: "completed"
     },
     {
@@ -66,7 +66,7 @@ export default function ProgressPage() {
       title: "Ejercicio: Bubble Sort",
       score: null,
       maxScore: null,
-      date: "5 abril, 2025",
+      date: "5 abril, 2026",
       status: "completed"
     },
     {
@@ -74,7 +74,7 @@ export default function ProgressPage() {
       title: "Ejercicio: Binary Search",
       score: null,
       maxScore: null,
-      date: "8 abril, 2025",
+      date: "8 abril, 2026",
       status: "in-progress"
     },
     {
@@ -82,35 +82,35 @@ export default function ProgressPage() {
       title: "Tarea: Estructuras de Datos",
       score: null,
       maxScore: 10,
-      date: "15 abril, 2025",
+      date: "15 abril, 2026",
       status: "pending"
     }
   ];
 
   // Sample data for skills
   const skills = [
-    { 
-      name: "Pensamiento algorítmico", 
+    {
+      name: "Pensamiento algorítmico",
       level: 65,
       description: "Capacidad para diseñar algoritmos eficientes y estructurados."
     },
-    { 
-      name: "Estructuras de datos", 
+    {
+      name: "Estructuras de datos",
       level: 40,
       description: "Conocimiento y aplicación de estructuras de datos fundamentales."
     },
-    { 
-      name: "Resolución de problemas", 
+    {
+      name: "Resolución de problemas",
       level: 70,
       description: "Habilidad para analizar y resolver problemas complejos."
     },
-    { 
-      name: "Programación orientada a objetos", 
+    {
+      name: "Programación orientada a objetos",
       level: 30,
       description: "Entendimiento de los principios de la POO."
     },
-    { 
-      name: "Complejidad algorítmica", 
+    {
+      name: "Complejidad algorítmica",
       level: 25,
       description: "Análisis de la eficiencia temporal y espacial de algoritmos."
     }
@@ -120,17 +120,17 @@ export default function ProgressPage() {
   const nextGoals = [
     {
       title: "Completar módulo de estructuras de datos",
-      deadline: "30 abril, 2025",
+      deadline: "30 abril, 2026",
       progress: 40
     },
     {
       title: "Resolver 10 ejercicios de nivel intermedio",
-      deadline: "15 mayo, 2025",
+      deadline: "15 mayo, 2026",
       progress: 20
     },
     {
       title: "Participar en la competencia mensual",
-      deadline: "22 abril, 2025",
+      deadline: "22 abril, 2026",
       progress: 0
     }
   ];
@@ -158,9 +158,9 @@ export default function ProgressPage() {
               </Breadcrumb>
             </div>
           </header>
-          
+
           <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -183,7 +183,7 @@ export default function ProgressPage() {
                     Resumen de progreso
                   </CardTitle>
                   <CardDescription>
-                    Olimpiada Oaxaqueña de Informática 2025
+                    Olimpiada Oaxaqueña de Informática 2026
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -194,7 +194,7 @@ export default function ProgressPage() {
                     </div>
                     <Progress value={progressData.overall} className="h-2" />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="bg-blue-50 rounded-lg p-4">
                       <div className="flex justify-between items-start">
@@ -207,7 +207,7 @@ export default function ProgressPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-green-50 rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div>
@@ -219,7 +219,7 @@ export default function ProgressPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-yellow-50 rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div>
@@ -231,7 +231,7 @@ export default function ProgressPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-purple-50 rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div>
@@ -273,7 +273,7 @@ export default function ProgressPage() {
                              activity.status === 'in-progress' ? <Clock className="h-5 w-5" /> :
                              <FileQuestion className="h-5 w-5" />}
                           </div>
-                          
+
                           <div className="flex-1">
                             <div className="flex items-start justify-between">
                               <div>
@@ -303,7 +303,7 @@ export default function ProgressPage() {
                   </CardContent>
                 </Card>
               </motion.div>
-              
+
               <div className="space-y-6">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -332,7 +332,7 @@ export default function ProgressPage() {
                     </CardContent>
                   </Card>
                 </motion.div>
-                
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -369,4 +369,4 @@ export default function ProgressPage() {
       </SidebarInset>
     </>
   );
-} 
+}

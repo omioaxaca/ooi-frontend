@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -35,7 +35,7 @@ export default function ExercisesPage() {
   const [topicFilter, setTopicFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("difficulty-asc");
-  
+
   // Sample exercises data
   const exercises = [
     {
@@ -45,7 +45,7 @@ export default function ExercisesPage() {
       difficulty: "easy",
       topics: ["arrays", "hash table"],
       status: "completed",
-      completedDate: "15 marzo, 2025",
+      completedDate: "15 marzo, 2026",
       acceptanceRate: "95%",
       url: "/dashboard/exercises/1"
     },
@@ -56,7 +56,7 @@ export default function ExercisesPage() {
       difficulty: "easy",
       topics: ["strings", "two pointers"],
       status: "completed",
-      completedDate: "17 marzo, 2025",
+      completedDate: "17 marzo, 2026",
       acceptanceRate: "92%",
       url: "/dashboard/exercises/2"
     },
@@ -100,7 +100,7 @@ export default function ExercisesPage() {
       difficulty: "easy",
       topics: ["stack", "strings"],
       status: "completed",
-      completedDate: "20 marzo, 2025",
+      completedDate: "20 marzo, 2026",
       acceptanceRate: "89%",
       url: "/dashboard/exercises/6"
     },
@@ -171,36 +171,36 @@ export default function ExercisesPage() {
       url: "/dashboard/exercises/12"
     },
   ];
-  
+
   // Get available topics from exercises
   const allTopics = [...new Set(exercises.flatMap(ex => ex.topics))].sort();
-  
+
   // Apply filters
   const filteredExercises = exercises.filter(exercise => {
     // Apply search filter
-    if (searchQuery && !exercise.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
+    if (searchQuery && !exercise.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !exercise.description.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
+
     // Apply difficulty filter
     if (difficultyFilter !== "all" && exercise.difficulty !== difficultyFilter) {
       return false;
     }
-    
+
     // Apply topic filter
     if (topicFilter !== "all" && !exercise.topics.includes(topicFilter)) {
       return false;
     }
-    
+
     // Apply status filter
     if (statusFilter !== "all" && exercise.status !== statusFilter) {
       return false;
     }
-    
+
     return true;
   });
-  
+
   // Sort exercises
   const sortedExercises = [...filteredExercises].sort((a, b) => {
     switch (sortBy) {
@@ -218,7 +218,7 @@ export default function ExercisesPage() {
         return 0;
     }
   });
-  
+
   // Helper function to get color based on difficulty
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -228,7 +228,7 @@ export default function ExercisesPage() {
       default: return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   // Helper function to get status display
   const getStatusDisplay = (status: string) => {
     switch (status) {
@@ -267,7 +267,7 @@ export default function ExercisesPage() {
               </Breadcrumb>
             </div>
           </header>
-          
+
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -294,7 +294,7 @@ export default function ExercisesPage() {
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -314,7 +314,7 @@ export default function ExercisesPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2">
                       <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
                         <SelectTrigger className="w-[140px]">
@@ -330,7 +330,7 @@ export default function ExercisesPage() {
                           <SelectItem value="hard">Difícil</SelectItem>
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={topicFilter} onValueChange={setTopicFilter}>
                         <SelectTrigger className="w-[140px]">
                           <div className="flex items-center gap-2">
@@ -345,7 +345,7 @@ export default function ExercisesPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-[140px]">
                           <div className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export default function ExercisesPage() {
                           <SelectItem value="not-attempted">No intentados</SelectItem>
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="w-[140px]">
                           <div className="flex items-center gap-2">
@@ -378,12 +378,12 @@ export default function ExercisesPage() {
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent>
                   <div className="space-y-2">
                     {sortedExercises.length > 0 ? (
                       sortedExercises.map((exercise) => (
-                        <motion.div 
+                        <motion.div
                           key={exercise.id}
                           whileHover={{ x: 2 }}
                           transition={{ duration: 0.2 }}
@@ -394,7 +394,7 @@ export default function ExercisesPage() {
                                 exercise.difficulty === 'easy' ? 'bg-green-500' :
                                 exercise.difficulty === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
                               }`}></div>
-                              
+
                               <div className="flex-1 flex items-center p-4">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
@@ -405,7 +405,7 @@ export default function ExercisesPage() {
                                     </Badge>
                                   </div>
                                   <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
-                                  
+
                                   <div className="flex flex-wrap gap-2 mt-2">
                                     {exercise.topics.map((topic, i) => (
                                       <Badge key={i} variant="outline" className="text-xs bg-gray-50">
@@ -414,7 +414,7 @@ export default function ExercisesPage() {
                                     ))}
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex flex-col items-end gap-2 ml-4">
                                   <div className="flex items-center">
                                     {getStatusDisplay(exercise.status).icon}
@@ -422,11 +422,11 @@ export default function ExercisesPage() {
                                       {getStatusDisplay(exercise.status).text}
                                     </span>
                                   </div>
-                                  
+
                                   <div className="text-xs text-gray-500">
                                     Aceptación: {exercise.acceptanceRate}
                                   </div>
-                                  
+
                                   <Button size="sm" asChild>
                                     <a href={exercise.url} className="mt-2">
                                       {exercise.status === 'completed' ? 'Revisar' : 'Resolver'}
@@ -445,12 +445,12 @@ export default function ExercisesPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="mt-4 flex items-center justify-between">
                     <div className="text-sm text-gray-500">
                       Mostrando {sortedExercises.length} de {exercises.length} ejercicios
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" disabled>
                         Anterior
@@ -463,7 +463,7 @@ export default function ExercisesPage() {
                 </CardContent>
               </Card>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -484,14 +484,14 @@ export default function ExercisesPage() {
                       </div>
                       <div className="text-sm text-gray-600">Problemas resueltos</div>
                     </div>
-                    
+
                     <div className="flex flex-col items-center p-4 border rounded-lg">
                       <div className="text-3xl font-bold text-yellow-500 mb-2">
                         {exercises.filter(ex => ex.status === 'attempted').length}
                       </div>
                       <div className="text-sm text-gray-600">Problemas intentados</div>
                     </div>
-                    
+
                     <div className="flex flex-col items-center p-4 border rounded-lg">
                       <div className="text-3xl font-bold text-gray-700 mb-2">
                         {exercises.filter(ex => ex.status === 'not-attempted').length}
@@ -499,7 +499,7 @@ export default function ExercisesPage() {
                       <div className="text-sm text-gray-600">Problemas pendientes</div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6">
                     <h3 className="text-sm font-medium mb-2">Progreso por dificultad</h3>
                     <div className="space-y-3">
@@ -509,34 +509,34 @@ export default function ExercisesPage() {
                           <span>{exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'easy').length}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full" 
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
                             style={{ width: `${(exercises.filter(ex => ex.difficulty === 'easy' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'easy').length)) * 100}%` }}
                           ></div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <div className="flex justify-between mb-1 text-xs">
                           <span>Medio</span>
                           <span>{exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'medium').length}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-yellow-500 h-2 rounded-full" 
+                          <div
+                            className="bg-yellow-500 h-2 rounded-full"
                             style={{ width: `${(exercises.filter(ex => ex.difficulty === 'medium' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'medium').length)) * 100}%` }}
                           ></div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <div className="flex justify-between mb-1 text-xs">
                           <span>Difícil</span>
                           <span>{exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length} / {exercises.filter(ex => ex.difficulty === 'hard').length}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-red-500 h-2 rounded-full" 
+                          <div
+                            className="bg-red-500 h-2 rounded-full"
                             style={{ width: `${(exercises.filter(ex => ex.difficulty === 'hard' && ex.status === 'completed').length / Math.max(1, exercises.filter(ex => ex.difficulty === 'hard').length)) * 100}%` }}
                           ></div>
                         </div>
@@ -551,4 +551,4 @@ export default function ExercisesPage() {
       </SidebarInset>
     </>
   );
-} 
+}

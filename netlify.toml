@@ -2,11 +2,11 @@
   package = "@netlify/plugin-nextjs"
 
 [[redirects]]
-  from = "/bienvenida-2025"
+  from = "/bienvenida-2026"
   to = "https://teams.microsoft.com/l/meetup-join/19%3ameeting_OTZkZTExMmMtMzAzNi00NTVlLTlhMWQtMTY5YWVkMTA0Njgz%40thread.v2/0?context=%7b%22Tid%22%3a%229577482f-f879-4df0-9bb1-7e0fc583dba9%22%2c%22Oid%22%3a%22ccd95571-21be-4eb5-9cff-754b6ead474d%22%7d"
   force = true
 
 [[redirects]]
-  from = "/clases-seleccion-2025"
+  from = "/clases-seleccion-2026"
   to = "https://teams.microsoft.com/l/meetup-join/19%3ameeting_OTRiOGU5MWQtNzA2MC00Y2ZlLTg2ODQtMDQ5N2NlYTA3MDdl%40thread.v2/0?context=%7b%22Tid%22%3a%229577482f-f879-4df0-9bb1-7e0fc583dba9%22%2c%22Oid%22%3a%22ccd95571-21be-4eb5-9cff-754b6ead474d%22%7d"
   force = true

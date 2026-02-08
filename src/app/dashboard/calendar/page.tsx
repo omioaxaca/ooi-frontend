@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -37,7 +37,7 @@ export default function CalendarPage() {
   // For class numbering
   const [classNumbersAssigned, setClassNumbersAssigned] = useState(false);
   const classNumberMapRef = useRef<Map<number, number>>(new Map());
-  
+
   // Fetch class lessons when component mounts
   useEffect(() => {
     const getClassLessons = async () => {
@@ -50,12 +50,12 @@ export default function CalendarPage() {
         setIsLoading(false);
       }
     };
-    
+
     getClassLessons();
   }, []);
 
   // Sort class lessons by date for consistent numbering
-  const sortedLessons = useMemo(() => 
+  const sortedLessons = useMemo(() =>
     [...classLessons]
       .filter(lesson => lesson?.syllabi && lesson.syllabi.length > 1)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
@@ -67,13 +67,13 @@ export default function CalendarPage() {
     if (!isLoading && sortedLessons.length > 0 && !classNumbersAssigned) {
       // Clear existing assignments to ensure fresh numbering
       classNumberMapRef.current.clear();
-      
+
       // Assign sequential numbers to classes with syllabi
       let counter = 1;
       sortedLessons.forEach(lesson => {
         classNumberMapRef.current.set(lesson.id, counter++);
       });
-      
+
       setClassNumbersAssigned(true);
     }
   }, [isLoading, sortedLessons, classNumbersAssigned]);
@@ -87,26 +87,26 @@ export default function CalendarPage() {
   const getDaysInMonth = (month: number, year: number) => {
     return new Date(year, month + 1, 0).getDate();
   };
-  
+
   const getFirstDayOfMonth = (month: number, year: number) => {
     return new Date(year, month, 1).getDay();
   };
-  
+
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentMonth, currentYear);
     const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
-    
+
     const days = [];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push({ day: null, events: [] });
     }
-    
+
     // Add days of the month with their events
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
-      
+
       // Find class lessons for this day (with validation)
       const dayEvents = classLessons.filter(lesson => {
         if (!lesson.date) return false;
@@ -121,10 +121,10 @@ export default function CalendarPage() {
           return false;
         }
       });
-      
+
       days.push({ day, events: dayEvents, date });
     }
-    
+
     return days;
   };
 
@@ -133,9 +133,9 @@ export default function CalendarPage() {
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
-  
+
   const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  
+
   const goToPreviousMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
@@ -145,7 +145,7 @@ export default function CalendarPage() {
     }
     setSelectedDay(null);
   };
-  
+
   const goToNextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
@@ -157,7 +157,7 @@ export default function CalendarPage() {
   };
 
   // Get events for selected day
-  const selectedDayEvents = selectedDay ? 
+  const selectedDayEvents = selectedDay ?
     classLessons.filter(lesson => {
       const lessonDate = new Date(lesson.date);
       return (
@@ -177,11 +177,11 @@ export default function CalendarPage() {
     if (!dateString) return 'No date specified';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('es-MX', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString('es-MX', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
     } catch (e) {
       return 'Invalid date';
@@ -193,8 +193,8 @@ export default function CalendarPage() {
     if (!dateString) return 'No time specified';
     try {
       const date = new Date(dateString);
-      return date.toLocaleTimeString('es-MX', { 
-        hour: '2-digit', 
+      return date.toLocaleTimeString('es-MX', {
+        hour: '2-digit',
         minute: '2-digit',
         hour12: true
       });
@@ -250,10 +250,10 @@ export default function CalendarPage() {
   // Determine badge color based on contest phase name
   const getPhaseBadgeColor = (phaseTitle: string | undefined | null) => {
     if (!phaseTitle) return "bg-gray-100 text-gray-800";
-    
+
     // Use the phase title to determine color
     const phaseLower = phaseTitle.toLowerCase();
-    
+
     if (phaseLower.includes('fase 1') || phaseLower.includes('aprendiz')) {
       return "bg-blue-100 text-blue-800";
     } else if (phaseLower.includes('fase 2') || phaseLower.includes('matemático')) {
@@ -280,12 +280,12 @@ export default function CalendarPage() {
     if (!lesson?.syllabi || lesson.syllabi.length === 0) {
       return 'Clase programada';
     }
-    
+
     // If only one syllabus, use its title
     if (lesson.syllabi.length === 1) {
       return lesson.syllabi[0]?.title || 'Clase programada';
     }
-    
+
     // If multiple syllabi, format as "Clase número X"
     const classNumber = getClassNumber(lesson.id);
     return `Clase número ${classNumber || '?'} (${lesson.syllabi.length} temas)`;
@@ -296,20 +296,20 @@ export default function CalendarPage() {
     if (!lesson?.syllabi || lesson.syllabi.length === 0) {
       return [];
     }
-    
+
     return lesson.syllabi.map(syllabus => syllabus.title).filter(Boolean);
   };
 
   // Get safe syllabus description
   const getSyllabusDescription = (lesson: ClassLesson) => {
-    return lesson?.description || 
-      (lesson?.syllabi && lesson.syllabi.length > 0 && lesson.syllabi[0]?.description) || 
+    return lesson?.description ||
+      (lesson?.syllabi && lesson.syllabi.length > 0 && lesson.syllabi[0]?.description) ||
       'No hay descripción disponible.';
   };
 
   // Get safe teacher name
   const getTeacherName = (lesson: ClassLesson) => {
-    return lesson?.teacher 
+    return lesson?.teacher
       ? `${lesson.teacher.firstName || ''} ${lesson.teacher.lastName || ''}`.trim() || 'Profesor no asignado'
       : 'Profesor no asignado';
   };
@@ -345,9 +345,9 @@ export default function CalendarPage() {
               </Breadcrumb>
             </div>
           </header>
-          
+
           <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -410,11 +410,11 @@ export default function CalendarPage() {
                                 {day}
                               </div>
                             ))}
-                            
+
                             {/* Calendar days */}
                             {calendarDays.map((dayData, i) => (
-                              <div 
-                                key={i} 
+                              <div
+                                key={i}
                                 className={`border rounded-md min-h-[80px] p-1 ${
                                   dayData.day === selectedDay ? 'ring-2 ring-ooi-second-blue' : ''
                                 } ${
@@ -429,8 +429,8 @@ export default function CalendarPage() {
                                     </div>
                                     <div className="space-y-1">
                                       {dayData.events.slice(0, 2).map((lesson, j) => (
-                                        <div 
-                                          key={j} 
+                                        <div
+                                          key={j}
                                           className={`text-xs truncate px-1 py-0.5 rounded ${getPhaseBadgeColor(getPhaseName(lesson))}`}
                                         >
                                           <span className="font-medium">
@@ -452,7 +452,7 @@ export default function CalendarPage() {
                         </CardContent>
                       </Card>
                     </div>
-                    
+
                     <div>
                       <Card>
                         <CardHeader>
@@ -485,9 +485,9 @@ export default function CalendarPage() {
                                     </div>
                                     {lesson.meetingURL && (
                                       <div className="mt-3">
-                                        <a 
-                                          href={lesson.meetingURL} 
-                                          target="_blank" 
+                                        <a
+                                          href={lesson.meetingURL}
+                                          target="_blank"
                                           rel="noopener noreferrer"
                                           className="flex items-center text-sm text-blue-600 hover:underline"
                                         >
@@ -521,8 +521,8 @@ export default function CalendarPage() {
                       <CardHeader>
                         <CardTitle>Tus Clases Programadas</CardTitle>
                         <CardDescription>
-                          {classLessons.length > 0 
-                            ? `Tienes ${classLessons.length} clases programadas.` 
+                          {classLessons.length > 0
+                            ? `Tienes ${classLessons.length} clases programadas.`
                             : "No tienes clases programadas."}
                         </CardDescription>
                       </CardHeader>
@@ -567,7 +567,7 @@ export default function CalendarPage() {
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 <div className="flex-1">
                                   <div className="flex flex-wrap items-start justify-between gap-2">
                                     <div>
@@ -579,10 +579,10 @@ export default function CalendarPage() {
                                       </div>
                                     </div>
                                     <Badge className={getPhaseBadgeColor(getPhaseName(lesson))}>
-                                      {getPhaseName(lesson) || lesson.contestCycle?.name || 'OOI 2025'}
+                                      {getPhaseName(lesson) || lesson.contestCycle?.name || 'OOI 2026'}
                                     </Badge>
                                   </div>
-                                  
+
                                   {/* Display syllabus topics if multiple exist */}
                                   {lesson.syllabi && lesson.syllabi.length > 1 && (
                                     <div className="mb-3">
@@ -597,11 +597,11 @@ export default function CalendarPage() {
                                       </div>
                                     </div>
                                   )}
-                                  
+
                                   <p className="text-sm text-gray-700 mb-3 line-clamp-2">
                                     {getSyllabusDescription(lesson)}
                                   </p>
-                                  
+
                                   <div className="flex items-center gap-2 mt-3">
                                     <Avatar className="h-8 w-8">
                                       <AvatarImage src={lesson.teacher?.avatar?.url} alt={lesson.teacher?.firstName || 'Teacher'} />
@@ -613,7 +613,7 @@ export default function CalendarPage() {
                                     </div>
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex flex-col gap-2 justify-center mt-4 md:mt-0">
                                   {lesson.meetingURL && (
                                     <Button asChild variant="default" className="gap-2">
@@ -623,7 +623,7 @@ export default function CalendarPage() {
                                       </Link>
                                     </Button>
                                   )}
-                                  
+
                                   {lesson.classRecordingURL && (
                                     <Button asChild variant="outline" className="gap-2">
                                       <Link href={lesson.classRecordingURL} target="_blank" rel="noopener noreferrer">
@@ -632,7 +632,7 @@ export default function CalendarPage() {
                                       </Link>
                                     </Button>
                                   )}
-                                  
+
                                   {lesson.presentation?.url && (
                                     <Button asChild variant="outline" className="gap-2">
                                       <Link href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${lesson.presentation.url}`} target="_blank" rel="noopener noreferrer">
@@ -657,4 +657,4 @@ export default function CalendarPage() {
       </SidebarInset>
     </>
   );
-} 
+}
