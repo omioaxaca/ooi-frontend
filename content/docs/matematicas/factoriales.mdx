@@ -1,0 +1,453 @@
+---
+title: "Factoriales"
+description: "Domina el cálculo y manipulación de factoriales en programación competitiva"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["matemáticas", "factoriales", "combinatoria"]
+order: 5
+---
+
+## ¿Qué es el factorial?
+
+El **factorial** de un número entero no negativo $n$, denotado como $n!$, es el producto de todos los enteros positivos menores o iguales a $n$:
+
+$$n! = n \times (n-1) \times (n-2) \times ... \times 2 \times 1$$
+
+### Definición recursiva
+
+$$n! = \begin{cases}
+1 & \text{si } n = 0 \text{ o } n = 1 \\
+n \times (n-1)! & \text{si } n > 1
+\end{cases}$$
+
+### Primeros valores
+
+| $n$ | $n!$ |
+|-----|------|
+| 0 | 1 |
+| 1 | 1 |
+| 2 | 2 |
+| 3 | 6 |
+| 4 | 24 |
+| 5 | 120 |
+| 6 | 720 |
+| 7 | 5040 |
+| 10 | 3,628,800 |
+| 15 | 1,307,674,368,000 |
+| 20 | 2,432,902,008,176,640,000 |
+
+> ⚠️ **Cuidado:** Los factoriales crecen MUY rápido. $20!$ ya no cabe en un `long long`. Por eso, en competencias casi siempre trabajamos con factoriales módulo un número primo.
+
+## Implementación básica
+
+### Iterativa
+
+```cpp
+long long factorial(int n) {
+    long long resultado = 1;
+    for (int i = 2; i <= n; i++) {
+        resultado *= i;
+    }
+    return resultado;
+}
+```
+
+### Recursiva
+
+```cpp
+long long factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+```
+
+## Factorial con módulo
+
+En programación competitiva, frecuentemente necesitamos $n! \mod m$:
+
+```cpp
+const long long MOD = 1e9 + 7;
+
+long long factorialMod(int n) {
+    long long resultado = 1;
+    for (int i = 2; i <= n; i++) {
+        resultado = (resultado * i) % MOD;
+    }
+    return resultado;
+}
+```
+
+## Precálculo de factoriales
+
+Cuando necesitamos muchos factoriales, es más eficiente precalcularlos:
+
+```cpp
+const int MAXN = 1e6;
+const long long MOD = 1e9 + 7;
+
+long long fact[MAXN + 1];
+long long invFact[MAXN + 1];
+
+long long potencia(long long base, long long exp, long long mod) {
+    long long resultado = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp & 1) resultado = resultado * base % mod;
+        base = base * base % mod;
+        exp >>= 1;
+    }
+    return resultado;
+}
+
+void precalcular() {
+    fact[0] = 1;
+    for (int i = 1; i <= MAXN; i++) {
+        fact[i] = fact[i-1] * i % MOD;
+    }
+
+    // Inverso de n! usando Fermat
+    invFact[MAXN] = potencia(fact[MAXN], MOD - 2, MOD);
+    for (int i = MAXN - 1; i >= 0; i--) {
+        invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+    }
+}
+```
+
+**Complejidad:** $O(n)$ precálculo, $O(1)$ por consulta.
+
+<details>
+<summary>💡 ¿Por qué calcular inversos así?</summary>
+
+Si tenemos $(n+1)!^{-1}$, podemos obtener $n!^{-1}$ multiplicando por $(n+1)$:
+
+$$n!^{-1} = (n+1)! ^{-1} \times (n+1)$$
+
+Esto porque $n! \times (n+1) = (n+1)!$, entonces $n!^{-1} = (n+1)!^{-1} \times (n+1)$.
+
+</details>
+
+## Propiedades importantes
+
+### División de factoriales
+
+$$\frac{n!}{k!} = n \times (n-1) \times ... \times (k+1) \quad \text{para } n \geq k$$
+
+```cpp
+// Calcula n! / k! mod MOD
+long long divFactorial(int n, int k) {
+    if (k > n) return 0;
+    return fact[n] * invFact[k] % MOD;
+}
+```
+
+### Factorial doble
+
+El factorial doble $n!!$ es el producto de todos los enteros del mismo paridad hasta $n$:
+
+$$n!! = n \times (n-2) \times (n-4) \times ... $$
+
+- $7!! = 7 \times 5 \times 3 \times 1 = 105$
+- $8!! = 8 \times 6 \times 4 \times 2 = 384$
+
+```cpp
+long long factorialDoble(int n) {
+    long long resultado = 1;
+    for (int i = n; i >= 1; i -= 2) {
+        resultado *= i;
+    }
+    return resultado;
+}
+```
+
+## Ceros al final de $n!$
+
+Los ceros al final de $n!$ se deben a factores de 10, que son $2 \times 5$. Como siempre hay más factores de 2 que de 5, contamos los factores de 5:
+
+$$Z(n) = \left\lfloor \frac{n}{5} \right\rfloor + \left\lfloor \frac{n}{25} \right\rfloor + \left\lfloor \frac{n}{125} \right\rfloor + ...$$
+
+```cpp
+long long cerosFactorial(long long n) {
+    long long ceros = 0;
+    long long potencia5 = 5;
+
+    while (potencia5 <= n) {
+        ceros += n / potencia5;
+        potencia5 *= 5;
+    }
+
+    return ceros;
+}
+```
+
+### Ejemplo
+
+$100!$ termina en:
+$$\left\lfloor \frac{100}{5} \right\rfloor + \left\lfloor \frac{100}{25} \right\rfloor + \left\lfloor \frac{100}{125} \right\rfloor = 20 + 4 + 0 = 24 \text{ ceros}$$
+
+## Exponente de primo $p$ en $n!$
+
+Fórmula de Legendre:
+
+$$\nu_p(n!) = \sum_{i=1}^{\infty} \left\lfloor \frac{n}{p^i} \right\rfloor$$
+
+```cpp
+long long exponentePrimo(long long n, long long p) {
+    long long exponente = 0;
+    long long potencia = p;
+
+    while (potencia <= n) {
+        exponente += n / potencia;
+        potencia *= p;
+    }
+
+    return exponente;
+}
+```
+
+## Problemas de práctica
+
+### Problema 1: Último dígito no cero de $n!$
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Tabla precalculada para n! mod 10 (sin ceros)
+int tabla[] = {1, 1, 2, 6, 4, 2, 2, 4, 2, 8};
+
+int ultimoDigitoNoZero(int n) {
+    if (n < 2) return 1;
+
+    if ((n / 10) % 2 == 1) {
+        return (4 * tabla[n % 10] * ultimoDigitoNoZero(n / 5)) % 10;
+    } else {
+        return (6 * tabla[n % 10] * ultimoDigitoNoZero(n / 5)) % 10;
+    }
+}
+
+int main() {
+    int n;
+    cin >> n;
+    cout << ultimoDigitoNoZero(n) << endl;
+    return 0;
+}
+```
+
+### Problema 2: ¿Es $n!$ divisible por $m$?
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+map<long long, int> factorizar(long long n) {
+    map<long long, int> factores;
+    for (long long i = 2; i * i <= n; i++) {
+        while (n % i == 0) {
+            factores[i]++;
+            n /= i;
+        }
+    }
+    if (n > 1) factores[n]++;
+    return factores;
+}
+
+long long exponenteEnFactorial(long long n, long long p) {
+    long long exp = 0;
+    long long potencia = p;
+    while (potencia <= n) {
+        exp += n / potencia;
+        potencia *= p;
+    }
+    return exp;
+}
+
+int main() {
+    long long n, m;
+    cin >> n >> m;
+
+    auto factores = factorizar(m);
+
+    bool divisible = true;
+    for (auto& [primo, expRequerido] : factores) {
+        long long expEnFactorial = exponenteEnFactorial(n, primo);
+        if (expEnFactorial < expRequerido) {
+            divisible = false;
+            break;
+        }
+    }
+
+    cout << (divisible ? "SI" : "NO") << endl;
+    return 0;
+}
+```
+
+### Problema 3: Encontrar $n$ dado los ceros de $n!$
+
+Dado el número de ceros $k$, encuentra el menor $n$ tal que $n!$ tiene exactamente $k$ ceros:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+long long ceros(long long n) {
+    long long c = 0;
+    long long p = 5;
+    while (p <= n) {
+        c += n / p;
+        p *= 5;
+    }
+    return c;
+}
+
+int main() {
+    long long k;
+    cin >> k;
+
+    // Búsqueda binaria
+    long long lo = 0, hi = 5 * k;
+
+    while (lo < hi) {
+        long long mid = (lo + hi) / 2;
+        if (ceros(mid) < k) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+
+    if (ceros(lo) == k) {
+        cout << lo << endl;
+    } else {
+        cout << "No existe" << endl;
+    }
+
+    return 0;
+}
+```
+
+### Problema 4: Calcular $\frac{n!}{a! \times b!} \mod p$
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const long long MOD = 1e9 + 7;
+const int MAXN = 1e6;
+
+long long fact[MAXN + 1];
+long long invFact[MAXN + 1];
+
+long long potencia(long long base, long long exp) {
+    long long resultado = 1;
+    base %= MOD;
+    while (exp > 0) {
+        if (exp & 1) resultado = resultado * base % MOD;
+        base = base * base % MOD;
+        exp >>= 1;
+    }
+    return resultado;
+}
+
+void precalcular() {
+    fact[0] = 1;
+    for (int i = 1; i <= MAXN; i++) {
+        fact[i] = fact[i-1] * i % MOD;
+    }
+    invFact[MAXN] = potencia(fact[MAXN], MOD - 2);
+    for (int i = MAXN - 1; i >= 0; i--) {
+        invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+    }
+}
+
+long long calcular(int n, int a, int b) {
+    if (a + b > n) return 0;
+    return fact[n] * invFact[a] % MOD * invFact[b] % MOD;
+}
+
+int main() {
+    precalcular();
+
+    int n, a, b;
+    cin >> n >> a >> b;
+
+    cout << calcular(n, a, b) << endl;
+    return 0;
+}
+```
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const long long MOD = 1e9 + 7;
+const int MAXN = 2e6;
+
+long long fact[MAXN + 1];
+long long invFact[MAXN + 1];
+
+long long potencia(long long base, long long exp, long long mod = MOD) {
+    long long resultado = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp & 1) resultado = resultado * base % mod;
+        base = base * base % mod;
+        exp >>= 1;
+    }
+    return resultado;
+}
+
+void precalcularFactoriales() {
+    fact[0] = 1;
+    for (int i = 1; i <= MAXN; i++) {
+        fact[i] = fact[i-1] * i % MOD;
+    }
+    invFact[MAXN] = potencia(fact[MAXN], MOD - 2);
+    for (int i = MAXN - 1; i >= 0; i--) {
+        invFact[i] = invFact[i + 1] * (i + 1) % MOD;
+    }
+}
+
+// n! mod MOD
+long long factorial(int n) {
+    return fact[n];
+}
+
+// (n!)^(-1) mod MOD
+long long factorialInverso(int n) {
+    return invFact[n];
+}
+
+// n! / k! mod MOD
+long long permutacionesParciales(int n, int k) {
+    if (k > n) return 0;
+    return fact[n] * invFact[k] % MOD;
+}
+
+int main() {
+    precalcularFactoriales();
+
+    // Ejemplo de uso
+    cout << "5! = " << factorial(5) << endl;
+    cout << "10!/5! = " << permutacionesParciales(10, 5) << endl;
+
+    return 0;
+}
+```
+
+## Resumen
+
+| Operación | Complejidad |
+|-----------|-------------|
+| Calcular $n!$ | $O(n)$ |
+| $n!$ precalculado | $O(n)$ precálculo, $O(1)$ consulta |
+| Ceros en $n!$ | $O(\log n)$ |
+| Exponente de $p$ en $n!$ | $O(\log_p n)$ |
+
+## Ejercicios recomendados
+
+1. [SPOJ - FCTRL](https://www.spoj.com/problems/FCTRL/) - Ceros al final
+2. [CSES - Factorial](https://cses.fi/problemset/task/1617) (implícito en combinaciones)
+3. [Codeforces - Factorial](https://codeforces.com/problemset/problem/711/D)
+4. [UVa - Factorial Frequencies](https://onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=524)

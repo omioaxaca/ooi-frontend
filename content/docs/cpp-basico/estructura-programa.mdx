@@ -1,0 +1,288 @@
+---
+title: "Estructura de un Programa en C++"
+description: "Aprende la estructura básica de un programa en C++ para programación competitiva"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "estructura", "básico", "sintaxis"]
+syllabusId: 5
+---
+
+## Estructura básica
+
+Todo programa en C++ sigue una estructura fundamental:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    // Tu código aquí
+    return 0;
+}
+```
+
+Analicemos cada parte:
+
+### Directivas de preprocesador
+
+```cpp
+#include <iostream>
+```
+
+Las directivas `#include` importan bibliotecas. Las más comunes son:
+
+| Biblioteca | Uso |
+|------------|-----|
+| `<iostream>` | Entrada/salida (cin, cout) |
+| `<cmath>` | Funciones matemáticas |
+| `<string>` | Manejo de cadenas |
+| `<vector>` | Arreglos dinámicos |
+| `<algorithm>` | Algoritmos (sort, find) |
+
+**Para competencias**, usamos el header que incluye todo:
+
+```cpp
+#include <bits/stdc++.h>
+```
+
+### Espacio de nombres
+
+```cpp
+using namespace std;
+```
+
+Esto nos permite usar `cout` en lugar de `std::cout`.
+
+### Función main
+
+```cpp
+int main() {
+    // Código
+    return 0;
+}
+```
+
+- `int` indica que devuelve un entero
+- `main()` es el punto de entrada del programa
+- `return 0` indica que el programa terminó correctamente
+
+## Template para competencias
+
+Este es el template recomendado para programación competitiva:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Macros útiles
+#define int long long
+#define endl '\n'
+#define pb push_back
+#define all(x) (x).begin(), (x).end()
+
+void solve() {
+    // Tu solución aquí
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t = 1;
+    // cin >> t; // Descomenta si hay múltiples casos
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
+```
+
+### Explicación del template
+
+#### Optimización de entrada/salida
+
+```cpp
+ios_base::sync_with_stdio(false);
+cin.tie(NULL);
+```
+
+Estas líneas aceleran significativamente la lectura y escritura de datos.
+
+#### Macro para evitar overflow
+
+```cpp
+#define int long long
+```
+
+Redefine `int` como `long long` para evitar errores de overflow.
+
+#### Usar signed main
+
+```cpp
+signed main()
+```
+
+Necesario cuando usamos `#define int long long`.
+
+## Comentarios
+
+```cpp
+// Esto es un comentario de una línea
+
+/*
+   Esto es un comentario
+   de múltiples líneas
+*/
+```
+
+## Ejemplo completo: Hola Mundo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "¡Hola, Mundo!" << endl;
+    return 0;
+}
+```
+
+**Salida:**
+```
+¡Hola, Mundo!
+```
+
+## Ejemplo: Sumar dos números
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+**Entrada:**
+```
+5 3
+```
+
+**Salida:**
+```
+8
+```
+
+## Errores comunes
+
+### 1. Olvidar el punto y coma
+
+```cpp
+// ❌ Error
+cout << "Hola"
+
+// ✅ Correcto
+cout << "Hola";
+```
+
+### 2. Usar comillas incorrectas
+
+```cpp
+// ❌ Error (comillas tipográficas)
+cout << "Hola";
+
+// ✅ Correcto (comillas rectas)
+cout << "Hola";
+```
+
+### 3. Case sensitivity
+
+```cpp
+// ❌ Error (C++ es sensible a mayúsculas)
+Int main()
+COUT << "Hola";
+
+// ✅ Correcto
+int main()
+cout << "Hola";
+```
+
+### 4. Olvidar incluir bibliotecas
+
+```cpp
+// ❌ Error (no se incluyó iostream)
+int main() {
+    cout << "Hola";
+}
+
+// ✅ Correcto
+#include <iostream>
+using namespace std;
+int main() {
+    cout << "Hola";
+}
+```
+
+## Compilación y ejecución
+
+### En terminal (Linux/Mac)
+
+```bash
+# Compilar
+g++ -o programa programa.cpp
+
+# Ejecutar
+./programa
+```
+
+### Con flags de competencia
+
+```bash
+g++ -std=c++17 -O2 -Wall programa.cpp -o programa
+```
+
+| Flag | Significado |
+|------|-------------|
+| `-std=c++17` | Usar estándar C++17 |
+| `-O2` | Optimización nivel 2 |
+| `-Wall` | Mostrar todas las advertencias |
+
+## Ejercicio de práctica
+
+Escribe un programa que lea tu nombre y lo salude:
+
+**Entrada:**
+```
+Juan
+```
+
+**Salida:**
+```
+¡Hola, Juan!
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string nombre;
+    cin >> nombre;
+    cout << "¡Hola, " << nombre << "!" << endl;
+    return 0;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Tipos de Datos y Variables](/blog/cpp-basico/tipos-de-datos) para almacenar información en tus programas.

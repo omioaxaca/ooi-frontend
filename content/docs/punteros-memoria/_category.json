@@ -1,0 +1,5 @@
+{
+  "name": "Punteros y Memoria",
+  "description": "Manejo de memoria, punteros, heap y stack en C++",
+  "order": 10
+}

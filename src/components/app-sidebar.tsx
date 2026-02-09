@@ -94,6 +94,16 @@ export function AppSidebar() {
         },
       ],
     },
+    {
+      title: "Recursos",
+      items: [
+        {
+          title: "Documentación",
+          href: "/blog",
+          icon: Book,
+        },
+      ],
+    },
   ]
 
   return (

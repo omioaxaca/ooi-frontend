@@ -1,0 +1,24 @@
+{
+  "categoryOrder": [
+    "introduccion",
+    "fundamentos",
+    "cpp-basico",
+    "estructuras-de-control",
+    "estructuras-de-datos",
+    "algoritmos",
+    "recursion",
+    "pilas-y-colas",
+    "diccionarios-mapas",
+    "busquedas",
+    "matematicas",
+    "punteros-memoria",
+    "listas-enlazadas",
+    "arboles",
+    "estructuras-avanzadas",
+    "grafos",
+    "grafos-avanzados",
+    "programacion-dinamica",
+    "teoria-juegos",
+    "estructuras-persistentes"
+  ]
+}

@@ -1,0 +1,476 @@
+---
+title: "Recorridos de Árboles"
+description: "Domina los recorridos preorder, inorder y postorder en árboles binarios"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["árboles", "recorridos", "preorder", "inorder", "postorder"]
+syllabusId: 55
+order: 3
+---
+
+## Tipos de recorridos
+
+Hay tres formas principales de recorrer un árbol binario:
+
+| Recorrido | Orden | Mnemotécnico |
+|-----------|-------|--------------|
+| **Preorder** | Raíz → Izquierdo → Derecho | **R**ID |
+| **Inorder** | Izquierdo → Raíz → Derecho | I**R**D |
+| **Postorder** | Izquierdo → Derecho → Raíz | ID**R** |
+
+## Visualización
+
+```
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+Preorder:  1, 2, 4, 5, 3, 6  (Raíz primero)
+Inorder:   4, 2, 5, 1, 3, 6  (Raíz en medio)
+Postorder: 4, 5, 2, 6, 3, 1  (Raíz al final)
+```
+
+## Estructura del nodo
+
+```cpp
+struct Nodo {
+    int valor;
+    Nodo* izquierdo;
+    Nodo* derecho;
+
+    Nodo(int v) : valor(v), izquierdo(nullptr), derecho(nullptr) {}
+};
+```
+
+## Implementación recursiva
+
+### Preorder (Raíz-Izquierdo-Derecho)
+
+```cpp
+void preorder(Nodo* nodo) {
+    if (nodo == nullptr) return;
+
+    cout << nodo->valor << " ";   // 1. Procesar raíz
+    preorder(nodo->izquierdo);    // 2. Recorrer izquierdo
+    preorder(nodo->derecho);      // 3. Recorrer derecho
+}
+```
+
+**Uso:** Copiar un árbol, obtener expresión prefija.
+
+### Inorder (Izquierdo-Raíz-Derecho)
+
+```cpp
+void inorder(Nodo* nodo) {
+    if (nodo == nullptr) return;
+
+    inorder(nodo->izquierdo);     // 1. Recorrer izquierdo
+    cout << nodo->valor << " ";   // 2. Procesar raíz
+    inorder(nodo->derecho);       // 3. Recorrer derecho
+}
+```
+
+**Uso:** En BST, da los elementos ordenados.
+
+### Postorder (Izquierdo-Derecho-Raíz)
+
+```cpp
+void postorder(Nodo* nodo) {
+    if (nodo == nullptr) return;
+
+    postorder(nodo->izquierdo);   // 1. Recorrer izquierdo
+    postorder(nodo->derecho);     // 2. Recorrer derecho
+    cout << nodo->valor << " ";   // 3. Procesar raíz
+}
+```
+
+**Uso:** Eliminar árbol, evaluar expresiones, calcular altura.
+
+## Implementación iterativa
+
+Para evitar stack overflow en árboles muy profundos:
+
+### Preorder iterativo
+
+```cpp
+vector<int> preorderIterativo(Nodo* raiz) {
+    vector<int> resultado;
+    if (raiz == nullptr) return resultado;
+
+    stack<Nodo*> pila;
+    pila.push(raiz);
+
+    while (!pila.empty()) {
+        Nodo* nodo = pila.top();
+        pila.pop();
+        resultado.push_back(nodo->valor);
+
+        // Derecho primero (para que izquierdo salga primero)
+        if (nodo->derecho) pila.push(nodo->derecho);
+        if (nodo->izquierdo) pila.push(nodo->izquierdo);
+    }
+
+    return resultado;
+}
+```
+
+### Inorder iterativo
+
+```cpp
+vector<int> inorderIterativo(Nodo* raiz) {
+    vector<int> resultado;
+    stack<Nodo*> pila;
+    Nodo* actual = raiz;
+
+    while (actual != nullptr || !pila.empty()) {
+        // Ir al nodo más a la izquierda
+        while (actual != nullptr) {
+            pila.push(actual);
+            actual = actual->izquierdo;
+        }
+
+        actual = pila.top();
+        pila.pop();
+        resultado.push_back(actual->valor);
+
+        actual = actual->derecho;
+    }
+
+    return resultado;
+}
+```
+
+### Postorder iterativo (con dos pilas)
+
+```cpp
+vector<int> postorderIterativo(Nodo* raiz) {
+    vector<int> resultado;
+    if (raiz == nullptr) return resultado;
+
+    stack<Nodo*> pila1, pila2;
+    pila1.push(raiz);
+
+    while (!pila1.empty()) {
+        Nodo* nodo = pila1.top();
+        pila1.pop();
+        pila2.push(nodo);
+
+        if (nodo->izquierdo) pila1.push(nodo->izquierdo);
+        if (nodo->derecho) pila1.push(nodo->derecho);
+    }
+
+    while (!pila2.empty()) {
+        resultado.push_back(pila2.top()->valor);
+        pila2.pop();
+    }
+
+    return resultado;
+}
+```
+
+## Recorrido por niveles (BFS)
+
+También llamado Level Order:
+
+```cpp
+vector<vector<int>> levelOrder(Nodo* raiz) {
+    vector<vector<int>> resultado;
+    if (raiz == nullptr) return resultado;
+
+    queue<Nodo*> cola;
+    cola.push(raiz);
+
+    while (!cola.empty()) {
+        int nivelSize = cola.size();
+        vector<int> nivelActual;
+
+        for (int i = 0; i < nivelSize; i++) {
+            Nodo* nodo = cola.front();
+            cola.pop();
+            nivelActual.push_back(nodo->valor);
+
+            if (nodo->izquierdo) cola.push(nodo->izquierdo);
+            if (nodo->derecho) cola.push(nodo->derecho);
+        }
+
+        resultado.push_back(nivelActual);
+    }
+
+    return resultado;
+}
+```
+
+```
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+Level Order: [[1], [2, 3], [4, 5, 6]]
+```
+
+## Reconstruir árbol desde recorridos
+
+### Desde Preorder + Inorder
+
+```cpp
+unordered_map<int, int> inorderIdx;
+
+Nodo* construir(vector<int>& preorder, vector<int>& inorder,
+                int preStart, int preEnd, int inStart, int inEnd) {
+    if (preStart > preEnd) return nullptr;
+
+    int raizVal = preorder[preStart];
+    Nodo* raiz = new Nodo(raizVal);
+
+    int raizIdx = inorderIdx[raizVal];
+    int tamIzq = raizIdx - inStart;
+
+    raiz->izquierdo = construir(preorder, inorder,
+                                preStart + 1, preStart + tamIzq,
+                                inStart, raizIdx - 1);
+
+    raiz->derecho = construir(preorder, inorder,
+                              preStart + tamIzq + 1, preEnd,
+                              raizIdx + 1, inEnd);
+
+    return raiz;
+}
+
+Nodo* buildTree(vector<int>& preorder, vector<int>& inorder) {
+    for (int i = 0; i < inorder.size(); i++) {
+        inorderIdx[inorder[i]] = i;
+    }
+    return construir(preorder, inorder, 0, preorder.size() - 1, 0, inorder.size() - 1);
+}
+```
+
+### Desde Postorder + Inorder
+
+```cpp
+Nodo* construirPost(vector<int>& postorder, vector<int>& inorder,
+                    int postStart, int postEnd, int inStart, int inEnd) {
+    if (postStart > postEnd) return nullptr;
+
+    int raizVal = postorder[postEnd];  // Raíz está al final
+    Nodo* raiz = new Nodo(raizVal);
+
+    int raizIdx = inorderIdx[raizVal];
+    int tamIzq = raizIdx - inStart;
+
+    raiz->izquierdo = construirPost(postorder, inorder,
+                                    postStart, postStart + tamIzq - 1,
+                                    inStart, raizIdx - 1);
+
+    raiz->derecho = construirPost(postorder, inorder,
+                                  postStart + tamIzq, postEnd - 1,
+                                  raizIdx + 1, inEnd);
+
+    return raiz;
+}
+```
+
+## Aplicaciones prácticas
+
+### Calcular altura del árbol (Postorder)
+
+```cpp
+int altura(Nodo* nodo) {
+    if (nodo == nullptr) return -1;
+
+    int altIzq = altura(nodo->izquierdo);
+    int altDer = altura(nodo->derecho);
+
+    return 1 + max(altIzq, altDer);
+}
+```
+
+### Contar nodos (Postorder)
+
+```cpp
+int contarNodos(Nodo* nodo) {
+    if (nodo == nullptr) return 0;
+
+    return 1 + contarNodos(nodo->izquierdo) + contarNodos(nodo->derecho);
+}
+```
+
+### Verificar si son iguales (Preorder)
+
+```cpp
+bool sonIguales(Nodo* p, Nodo* q) {
+    if (p == nullptr && q == nullptr) return true;
+    if (p == nullptr || q == nullptr) return false;
+
+    return p->valor == q->valor &&
+           sonIguales(p->izquierdo, q->izquierdo) &&
+           sonIguales(p->derecho, q->derecho);
+}
+```
+
+### Copiar árbol (Preorder)
+
+```cpp
+Nodo* copiar(Nodo* nodo) {
+    if (nodo == nullptr) return nullptr;
+
+    Nodo* copia = new Nodo(nodo->valor);
+    copia->izquierdo = copiar(nodo->izquierdo);
+    copia->derecho = copiar(nodo->derecho);
+
+    return copia;
+}
+```
+
+### Eliminar árbol (Postorder)
+
+```cpp
+void eliminar(Nodo* nodo) {
+    if (nodo == nullptr) return;
+
+    eliminar(nodo->izquierdo);
+    eliminar(nodo->derecho);
+    delete nodo;  // Eliminar después de los hijos
+}
+```
+
+## Recorridos en árboles generales (no binarios)
+
+Para árboles con múltiples hijos:
+
+```cpp
+vector<int> adj[MAXN];
+
+// Preorder
+void preorder(int nodo, int padre) {
+    cout << nodo << " ";  // Procesar primero
+    for (int hijo : adj[nodo]) {
+        if (hijo != padre) {
+            preorder(hijo, nodo);
+        }
+    }
+}
+
+// Postorder
+void postorder(int nodo, int padre) {
+    for (int hijo : adj[nodo]) {
+        if (hijo != padre) {
+            postorder(hijo, nodo);
+        }
+    }
+    cout << nodo << " ";  // Procesar al final
+}
+```
+
+## Euler Tour (recorrido de Euler)
+
+Visita cada nodo al entrar y al salir:
+
+```cpp
+int timer = 0;
+int tin[MAXN], tout[MAXN];
+
+void eulerTour(int nodo, int padre) {
+    tin[nodo] = timer++;
+
+    for (int hijo : adj[nodo]) {
+        if (hijo != padre) {
+            eulerTour(hijo, nodo);
+        }
+    }
+
+    tout[nodo] = timer++;
+}
+
+// u es ancestro de v si tin[u] <= tin[v] && tout[u] >= tout[v]
+```
+
+## Código completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Nodo {
+    int valor;
+    Nodo* izq;
+    Nodo* der;
+    Nodo(int v) : valor(v), izq(nullptr), der(nullptr) {}
+};
+
+void preorder(Nodo* n, vector<int>& res) {
+    if (!n) return;
+    res.push_back(n->valor);
+    preorder(n->izq, res);
+    preorder(n->der, res);
+}
+
+void inorder(Nodo* n, vector<int>& res) {
+    if (!n) return;
+    inorder(n->izq, res);
+    res.push_back(n->valor);
+    inorder(n->der, res);
+}
+
+void postorder(Nodo* n, vector<int>& res) {
+    if (!n) return;
+    postorder(n->izq, res);
+    postorder(n->der, res);
+    res.push_back(n->valor);
+}
+
+int main() {
+    //        1
+    //       / \
+    //      2   3
+    //     / \   \
+    //    4   5   6
+
+    Nodo* raiz = new Nodo(1);
+    raiz->izq = new Nodo(2);
+    raiz->der = new Nodo(3);
+    raiz->izq->izq = new Nodo(4);
+    raiz->izq->der = new Nodo(5);
+    raiz->der->der = new Nodo(6);
+
+    vector<int> pre, in, post;
+    preorder(raiz, pre);
+    inorder(raiz, in);
+    postorder(raiz, post);
+
+    cout << "Preorder: ";
+    for (int x : pre) cout << x << " ";
+    cout << endl;  // 1 2 4 5 3 6
+
+    cout << "Inorder: ";
+    for (int x : in) cout << x << " ";
+    cout << endl;  // 4 2 5 1 3 6
+
+    cout << "Postorder: ";
+    for (int x : post) cout << x << " ";
+    cout << endl;  // 4 5 2 6 3 1
+
+    return 0;
+}
+```
+
+## Resumen
+
+| Recorrido | Orden | Aplicación típica |
+|-----------|-------|-------------------|
+| Preorder | R-I-D | Copiar árbol, serializar |
+| Inorder | I-R-D | BST ordenado |
+| Postorder | I-D-R | Eliminar, calcular altura |
+| Level Order | Por niveles | BFS, imprimir por nivel |
+| Euler Tour | Entrada/salida | LCA, consultas de subárbol |
+
+## Ejercicios recomendados
+
+1. [LeetCode - Binary Tree Inorder Traversal](https://leetcode.com/problems/binary-tree-inorder-traversal/)
+2. [LeetCode - Binary Tree Preorder Traversal](https://leetcode.com/problems/binary-tree-preorder-traversal/)
+3. [LeetCode - Binary Tree Postorder Traversal](https://leetcode.com/problems/binary-tree-postorder-traversal/)
+4. [LeetCode - Construct Binary Tree from Preorder and Inorder](https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+5. [CSES - Tree Traversals](https://cses.fi/problemset/task/1674)

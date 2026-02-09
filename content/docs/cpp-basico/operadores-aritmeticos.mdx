@@ -1,0 +1,269 @@
+---
+title: "Operadores Aritméticos"
+description: "Aprende a usar los operadores aritméticos básicos y avanzados en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "operadores", "aritmética", "básico"]
+syllabusId: 8
+---
+
+## Operadores básicos
+
+| Operador | Operación | Ejemplo | Resultado |
+|----------|-----------|---------|-----------|
+| `+` | Suma | `5 + 3` | `8` |
+| `-` | Resta | `5 - 3` | `2` |
+| `*` | Multiplicación | `5 * 3` | `15` |
+| `/` | División | `5 / 3` | `1` (entero) |
+| `%` | Módulo (residuo) | `5 % 3` | `2` |
+
+## División entera vs decimal
+
+```cpp
+int a = 7 / 2;        // a = 3 (división entera)
+double b = 7 / 2;     // b = 3.0 (¡aún es entera!)
+double c = 7.0 / 2;   // c = 3.5 (división decimal)
+double d = (double)7 / 2;  // d = 3.5 (casting)
+```
+
+## El operador módulo (%)
+
+El módulo devuelve el residuo de la división:
+
+```cpp
+cout << 10 % 3 << endl;  // 1 (10 = 3*3 + 1)
+cout << 15 % 5 << endl;  // 0 (15 = 5*3 + 0)
+cout << 7 % 10 << endl;  // 7 (7 = 10*0 + 7)
+```
+
+### Usos comunes del módulo
+
+**Verificar si es par/impar:**
+```cpp
+if (n % 2 == 0) {
+    cout << "Par" << endl;
+} else {
+    cout << "Impar" << endl;
+}
+```
+
+**Obtener el último dígito:**
+```cpp
+int ultimoDigito = n % 10;
+```
+
+**Mantener valores en un rango (circular):**
+```cpp
+// Horas del reloj (0-23)
+int hora = (hora + 1) % 24;
+
+// Índice circular en arreglo
+int siguiente = (i + 1) % n;
+```
+
+**Verificar divisibilidad:**
+```cpp
+if (n % 3 == 0) {
+    cout << "Divisible por 3" << endl;
+}
+```
+
+## Operadores de incremento y decremento
+
+| Operador | Nombre | Equivalente |
+|----------|--------|-------------|
+| `++i` | Pre-incremento | `i = i + 1` (incrementa antes de usar) |
+| `i++` | Post-incremento | `i = i + 1` (usa antes de incrementar) |
+| `--i` | Pre-decremento | `i = i - 1` |
+| `i--` | Post-decremento | `i = i - 1` |
+
+```cpp
+int a = 5;
+cout << ++a << endl;  // Imprime 6, a ahora es 6
+cout << a++ << endl;  // Imprime 6, a ahora es 7
+cout << a << endl;    // Imprime 7
+```
+
+## Operadores de asignación compuesta
+
+| Operador | Ejemplo | Equivalente |
+|----------|---------|-------------|
+| `+=` | `a += 5` | `a = a + 5` |
+| `-=` | `a -= 5` | `a = a - 5` |
+| `*=` | `a *= 5` | `a = a * 5` |
+| `/=` | `a /= 5` | `a = a / 5` |
+| `%=` | `a %= 5` | `a = a % 5` |
+
+```cpp
+int suma = 0;
+suma += 10;  // suma = 10
+suma += 5;   // suma = 15
+suma *= 2;   // suma = 30
+```
+
+## Jerarquía de operaciones
+
+La precedencia determina el orden de evaluación:
+
+1. `()` - Paréntesis (mayor prioridad)
+2. `++`, `--` - Incremento/decremento
+3. `*`, `/`, `%` - Multiplicación, división, módulo
+4. `+`, `-` - Suma, resta (menor prioridad)
+
+```cpp
+int resultado = 2 + 3 * 4;      // = 2 + 12 = 14 (no 20)
+int correcto = (2 + 3) * 4;     // = 5 * 4 = 20
+```
+
+### Ejemplos de precedencia
+
+```cpp
+cout << 10 + 20 * 30 << endl;        // 610 (no 900)
+cout << (10 + 20) * 30 << endl;      // 900
+cout << 100 / 10 * 10 << endl;       // 100 (izq a der)
+cout << 100 / (10 * 10) << endl;     // 1
+cout << 5 + 10 % 3 << endl;          // 6 (5 + 1)
+```
+
+## Funciones matemáticas de cmath
+
+```cpp
+#include <cmath>
+
+// Potencia
+pow(2, 10);     // 2^10 = 1024
+
+// Raíz cuadrada
+sqrt(16);       // 4.0
+
+// Valor absoluto
+abs(-5);        // 5 (para enteros)
+fabs(-5.5);     // 5.5 (para decimales)
+
+// Redondeo
+floor(3.7);     // 3.0 (hacia abajo)
+ceil(3.2);      // 4.0 (hacia arriba)
+round(3.5);     // 4.0 (al más cercano)
+
+// Logaritmos
+log(2.718);     // 1.0 (logaritmo natural)
+log10(100);     // 2.0 (logaritmo base 10)
+log2(8);        // 3.0 (logaritmo base 2)
+
+// Mínimo y máximo
+min(5, 3);      // 3
+max(5, 3);      // 5
+```
+
+## Errores comunes
+
+### Overflow en multiplicación
+
+```cpp
+int a = 100000;
+int b = 100000;
+int c = a * b;  // ¡OVERFLOW! Resultado incorrecto
+
+// Solución
+long long x = (long long)a * b;  // Correcto
+```
+
+### División por cero
+
+```cpp
+int a = 10;
+int b = 0;
+int c = a / b;  // ¡ERROR! División por cero
+int d = a % b;  // ¡ERROR! Módulo por cero
+```
+
+### Precisión de punto flotante
+
+```cpp
+double a = 0.1 + 0.2;
+if (a == 0.3) {
+    cout << "Iguales" << endl;  // ¡No se imprime!
+}
+// a es en realidad 0.30000000000000004
+
+// Solución: comparar con tolerancia
+if (abs(a - 0.3) < 1e-9) {
+    cout << "Aproximadamente iguales" << endl;
+}
+```
+
+## Ejemplo práctico: Calculadora simple
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    double a, b;
+    char op;
+
+    cin >> a >> op >> b;
+
+    double resultado;
+
+    if (op == '+') resultado = a + b;
+    else if (op == '-') resultado = a - b;
+    else if (op == '*') resultado = a * b;
+    else if (op == '/') resultado = a / b;
+    else {
+        cout << "Operador no válido" << endl;
+        return 1;
+    }
+
+    cout << resultado << endl;
+
+    return 0;
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Dado un número de segundos, convertirlo a horas, minutos y segundos.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int totalSegundos;
+cin >> totalSegundos;
+
+int horas = totalSegundos / 3600;
+int minutos = (totalSegundos % 3600) / 60;
+int segundos = totalSegundos % 60;
+
+cout << horas << "h " << minutos << "m " << segundos << "s" << endl;
+```
+
+</details>
+
+### Ejercicio 2
+Verifica si un número de 3 dígitos es capicúa (se lee igual al derecho y al revés).
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+int unidades = n % 10;
+int centenas = n / 100;
+
+if (unidades == centenas) {
+    cout << "Es capicúa" << endl;
+} else {
+    cout << "No es capicúa" << endl;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Tipo Char y Código ASCII](/blog/cpp-basico/char-ascii) para trabajar con caracteres.

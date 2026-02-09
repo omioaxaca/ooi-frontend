@@ -22,21 +22,21 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const isHomePage = pathname === "/";
-  
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  
+
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
-  
+
   // Function to handle section navigation
   const handleNavigation = (sectionId: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    
+
     if (isHomePage) {
       // If already on homepage, just scroll to the section
       const element = document.getElementById(sectionId);
@@ -47,13 +47,13 @@ export default function Navbar() {
       // If on another page, navigate to homepage with the section hash
       router.push(`/#${sectionId}`);
     }
-    
+
     // Close mobile menu if open
     if (isMenuOpen) {
       closeMenu();
     }
   };
-  
+
   // Change navbar background on scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -63,11 +63,11 @@ export default function Navbar() {
         setIsScrolled(false);
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   // Handle hash navigation when arriving from another page
   useEffect(() => {
     if (isHomePage && window.location.hash) {
@@ -82,10 +82,10 @@ export default function Navbar() {
   }, [isHomePage]);
 
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? "bg-white/95 backdrop-blur-sm shadow-md" 
+        isScrolled
+          ? "bg-white/95 backdrop-blur-sm shadow-md"
           : "bg-transparent"
       }`}
     >
@@ -94,8 +94,8 @@ export default function Navbar() {
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Image 
-                src="/images/logo.png" 
+              <Image
+                src="/images/logo.png"
                 alt="Olimpiada Oaxaqueña de Informática"
                 width={512}
                 height={512}
@@ -106,40 +106,46 @@ export default function Navbar() {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/#home" 
+            <Link
+              href="/#home"
               onClick={handleNavigation('home')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Inicio
             </Link>
-            <Link 
-              href="/#what-is" 
+            <Link
+              href="/#what-is"
               onClick={handleNavigation('what-is')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               ¿Qué es?
             </Link>
             <Link
-              href="/#benefits" 
+              href="/#benefits"
               onClick={handleNavigation('benefits')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Beneficios
             </Link>
             <Link
-              href="/#convocatoria" 
+              href="/#convocatoria"
               onClick={handleNavigation('convocatoria')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Convocatoria
             </Link>
             <Link
-              href="/#faq" 
+              href="/#faq"
               onClick={handleNavigation('faq')}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               FAQ
+            </Link>
+            <Link
+              href="/blog"
+              className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
+            >
+              Documentación
             </Link>
           </div>
 
@@ -185,7 +191,7 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button 
+            <button
               onClick={toggleMenu}
               className="text-gray-700 focus:outline-none"
               aria-label="Toggle menu"
@@ -200,42 +206,48 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg z-50">
           <div className="py-4 px-6 flex flex-col space-y-4">
-            <Link 
-              href="/#home" 
+            <Link
+              href="/#home"
               onClick={handleNavigation('home')}
               className="hover:text-blue-600 py-2"
             >
               Inicio
             </Link>
-            <Link 
-              href="/#what-is" 
+            <Link
+              href="/#what-is"
               onClick={handleNavigation('what-is')}
               className="hover:text-blue-600 py-2"
             >
               ¿Qué es?
             </Link>
-            <Link 
-              href="/#benefits" 
+            <Link
+              href="/#benefits"
               onClick={handleNavigation('benefits')}
               className="hover:text-blue-600 py-2"
             >
               Beneficios
             </Link>
-            <Link 
-              href="/#convocatoria" 
+            <Link
+              href="/#convocatoria"
               onClick={handleNavigation('convocatoria')}
               className="hover:text-blue-600 py-2"
             >
               Convocatoria
             </Link>
-            <Link 
-              href="/#faq" 
+            <Link
+              href="/#faq"
               onClick={handleNavigation('faq')}
               className="hover:text-blue-600 py-2"
             >
               FAQ
             </Link>
-
+            <Link
+              href="/blog"
+              onClick={closeMenu}
+              className="hover:text-blue-600 py-2"
+            >
+              Documentación
+            </Link>
             <div className="pt-4 border-t">
               {user ? (
                 <div className="flex flex-col space-y-3">
@@ -262,4 +274,4 @@ export default function Navbar() {
       )}
     </header>
   );
-} 
+}

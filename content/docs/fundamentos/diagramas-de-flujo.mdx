@@ -1,0 +1,359 @@
+---
+title: "Diagramas de Flujo"
+description: "Aprende a representar algoritmos gráficamente usando diagramas de flujo"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["diagramas", "fundamentos", "algoritmos", "visualización"]
+syllabusId: 4
+---
+
+## ¿Qué es un diagrama de flujo?
+
+Un **diagrama de flujo** es una representación gráfica de un algoritmo que utiliza símbolos estandarizados para mostrar el flujo de operaciones. Es una herramienta visual que facilita entender y comunicar la lógica de un programa.
+
+## Símbolos básicos
+
+| Símbolo | Nombre | Uso |
+|---------|--------|-----|
+| ⬭ (Óvalo) | Inicio/Fin | Marca el comienzo y final del algoritmo |
+| ▭ (Rectángulo) | Proceso | Operaciones o instrucciones |
+| ◇ (Rombo) | Decisión | Condiciones (if/else) |
+| ▱ (Paralelogramo) | Entrada/Salida | Leer o mostrar datos |
+| → (Flecha) | Flujo | Dirección del algoritmo |
+
+## Ejemplo: Determinar si un número es par
+
+**Algoritmo:**
+1. Leer un número
+2. Si el número es divisible por 2, es par
+3. Si no, es impar
+4. Mostrar resultado
+
+**Diagrama conceptual:**
+
+```
+    ┌─────────┐
+    │ INICIO  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Leer n  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ n % 2   │
+    │  == 0?  │
+    └────┬────┘
+      Sí │    No
+    ┌────▼────┐  ┌────▼────┐
+    │ "Par"   │  │ "Impar" │
+    └────┬────┘  └────┬────┘
+         │           │
+         └─────┬─────┘
+         ┌─────▼─────┐
+         │   FIN     │
+         └───────────┘
+```
+
+**Código correspondiente:**
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    if (n % 2 == 0) {
+        cout << "Par" << endl;
+    } else {
+        cout << "Impar" << endl;
+    }
+
+    return 0;
+}
+```
+
+## Estructuras de control en diagramas
+
+### Secuencia
+
+Las instrucciones se ejecutan una tras otra:
+
+```
+    ┌─────────┐
+    │ Paso 1  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Paso 2  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Paso 3  │
+    └─────────┘
+```
+
+### Selección (if-else)
+
+```
+         ┌──────────┐
+         │ Condición│
+         └────┬─────┘
+        Sí    │    No
+    ┌─────────┼─────────┐
+    │         │         │
+┌───▼───┐         ┌───▼───┐
+│Acción1│         │Acción2│
+└───┬───┘         └───┬───┘
+    │                 │
+    └────────┬────────┘
+             ▼
+```
+
+### Ciclo mientras (while)
+
+```
+         ┌─────────────────┐
+         │                 │
+         │    ┌────────┐   │
+         └────► Condición◄──┘
+              └────┬────┘
+             Sí    │    No
+         ┌─────────┘    │
+         │              │
+    ┌────▼────┐         │
+    │ Cuerpo  │         │
+    │del ciclo│         │
+    └────┬────┘         │
+         │              │
+         └──────────────┘
+                        ▼
+```
+
+### Ciclo para (for)
+
+```
+    ┌─────────────┐
+    │ i = inicio  │
+    └──────┬──────┘
+           │
+    ┌──────▼──────┐
+    │ i <= fin ?  │◄────────┐
+    └──────┬──────┘         │
+      Sí   │    No          │
+    ┌──────┘    │           │
+    │           │           │
+┌───▼───┐       │     ┌─────┴─────┐
+│Cuerpo │       │     │  i = i+1  │
+└───┬───┘       │     └─────┬─────┘
+    │           │           │
+    └───────────┼───────────┘
+                ▼
+```
+
+## Ejemplo completo: Factorial
+
+**Problema:** Calcular el factorial de n (n!)
+
+**Diagrama:**
+
+```
+    ┌─────────┐
+    │ INICIO  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Leer n  │
+    └────┬────┘
+         │
+    ┌────▼────────┐
+    │ fact = 1    │
+    │ i = 1       │
+    └────┬────────┘
+         │
+    ┌────▼────┐
+    │ i <= n? │◄────────┐
+    └────┬────┘         │
+      Sí │    No        │
+    ┌────┘    │         │
+    │         │         │
+┌───▼────────┐│    ┌────┴────┐
+│fact = fact ││    │ i = i+1 │
+│    * i     ││    └────┬────┘
+└────┬───────┘│         │
+     │        │         │
+     └────────┼─────────┘
+              │
+    ┌─────────▼─────────┐
+    │ Mostrar fact      │
+    └─────────┬─────────┘
+              │
+    ┌─────────▼─────────┐
+    │      FIN          │
+    └───────────────────┘
+```
+
+**Código:**
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    long long fact = 1;
+    for (int i = 1; i <= n; i++) {
+        fact = fact * i;
+    }
+
+    cout << fact << endl;
+
+    return 0;
+}
+```
+
+## Ejemplo: Suma de números hasta que el usuario ingrese 0
+
+```
+    ┌─────────┐
+    │ INICIO  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ suma = 0│
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Leer n  │◄────────┐
+    └────┬────┘         │
+         │              │
+    ┌────▼────┐         │
+    │ n != 0? │         │
+    └────┬────┘         │
+      Sí │    No        │
+    ┌────┘    │         │
+    │         │         │
+┌───▼────────┐│    ┌────┴────┐
+│suma = suma ││    │ Leer n  │
+│    + n     ││    └─────────┘
+└────┬───────┘│
+     └────────┘
+              │
+    ┌─────────▼─────────┐
+    │ Mostrar suma      │
+    └─────────┬─────────┘
+              │
+         ┌────▼────┐
+         │   FIN   │
+         └─────────┘
+```
+
+**Código:**
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int suma = 0;
+    int n;
+
+    cin >> n;
+    while (n != 0) {
+        suma = suma + n;
+        cin >> n;
+    }
+
+    cout << suma << endl;
+
+    return 0;
+}
+```
+
+## Buenas prácticas
+
+1. **Flujo de arriba a abajo:** El diagrama debe leerse de arriba hacia abajo
+2. **Un inicio y un fin:** Debe haber exactamente un punto de inicio y uno de fin
+3. **Claridad:** Cada símbolo debe contener instrucciones claras y concisas
+4. **Evitar cruces:** Las líneas no deben cruzarse si es posible
+5. **Consistencia:** Usar el mismo nivel de detalle en todo el diagrama
+
+## Herramientas para crear diagramas
+
+- **Draw.io** (diagrams.net) - Gratuito y en línea
+- **Lucidchart** - Profesional con versión gratuita
+- **Mermaid** - Diagramas en texto para documentación
+- **Papel y lápiz** - ¡Siempre funciona!
+
+## Ejercicio de práctica
+
+Dibuja el diagrama de flujo para un algoritmo que determine si un número es primo.
+
+<details>
+<summary>Ver solución</summary>
+
+```
+    ┌─────────┐
+    │ INICIO  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Leer n  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ n < 2?  │
+    └────┬────┘
+      Sí │    No
+    ┌────┘    │
+    │    ┌────▼────┐
+    │    │ i = 2   │
+    │    │esPrimo= │
+    │    │ true    │
+    │    └────┬────┘
+    │         │
+    │    ┌────▼─────────┐
+    │    │i*i <= n AND  │◄──┐
+    │    │  esPrimo?    │   │
+    │    └────┬─────────┘   │
+    │      Sí │    No       │
+    │    ┌────┘    │        │
+    │    │         │        │
+    │┌───▼───┐     │   ┌────┴────┐
+    ││n%i==0?│     │   │ i = i+1 │
+    │└───┬───┘     │   └─────────┘
+    │  Sí│   No    │
+    │┌───▼────┐    │
+    ││esPrimo │    │
+    ││= false │────┘
+    │└────────┘
+    │         │
+┌───▼───┐     │
+│"No es"│     │
+│"primo"│     ├─────────┐
+└───┬───┘     │    ┌────▼────┐
+    │         │    │esPrimo? │
+    │         │    └────┬────┘
+    │         │      Sí │  No
+    │         │    ┌────┘   │
+    │         │┌───▼───┐┌───▼───┐
+    │         ││"Es    ││"No es"│
+    │         ││primo" ││"primo"│
+    │         │└───┬───┘└───┬───┘
+    │         │    │        │
+    └─────────┴────┴────────┘
+                   │
+              ┌────▼────┐
+              │   FIN   │
+              └─────────┘
+```
+
+</details>
+
+## Siguiente paso
+
+Ahora que sabes representar algoritmos, aprende la [Estructura de un Programa en C++](/blog/cpp-basico/estructura-programa).

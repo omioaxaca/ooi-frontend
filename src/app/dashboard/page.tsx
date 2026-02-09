@@ -12,19 +12,59 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Calendar, Video, FileText, X, ExternalLink } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ChevronRight,
+  Calendar,
+  Video,
+  FileText,
+  X,
+  ExternalLink,
+  Sparkles,
+  UserPlus,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  Star
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { WithConstructionBanner } from "@/components/with-construction-banner";
 import { fetchUserNotifications, mapBackendNotificationToFrontendNotification } from "@/services/notificationService";
+import { fetchCurrentContestCycle, isSignupOpen } from "@/services/contestCycle";
+import { fetchUserParticipations, createParticipation } from "@/services/participation";
+import { useAuth } from "@/contexts/auth-context";
 import type { NotificationView } from "@/types/dashboard/notification";
+import type { ContestCycle } from "@/types/dashboard/contestCycle";
+import type { ParticipationListItem } from "@/types/dashboard/participation";
+
+// Helper to format dates in Spanish
+const formatDateSpanish = (dateString: string | null): string => {
+  if (!dateString) return "No definida";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [userName, setUserName] = useState("");
   const [notifications, setNotifications] = useState<NotificationView[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [notificationsError, setNotificationsError] = useState<string | null>(null);
+
+  // Cycle registration state
+  const [isLoadingCycle, setIsLoadingCycle] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
+  const [currentCycle, setCurrentCycle] = useState<ContestCycle | null>(null);
+  const [isRegisteredInCurrentCycle, setIsRegisteredInCurrentCycle] = useState(false);
+  const [currentParticipation, setCurrentParticipation] = useState<ParticipationListItem | null>(null);
 
   useEffect(() => {
     // Get user info from localStorage
@@ -56,8 +96,66 @@ export default function Dashboard() {
       }
     };
 
+    // Fetch cycle and participation data
+    const loadCycleData = async () => {
+      try {
+        setIsLoadingCycle(true);
+        const [cycle, userParticipations] = await Promise.all([
+          fetchCurrentContestCycle(),
+          fetchUserParticipations()
+        ]);
+
+        setCurrentCycle(cycle);
+
+        if (cycle && userParticipations.length > 0) {
+          const currentParticipationFound = userParticipations.find(
+            (p) => p.contestCycle.id === cycle.id
+          );
+          setIsRegisteredInCurrentCycle(!!currentParticipationFound);
+          setCurrentParticipation(currentParticipationFound || null);
+        }
+      } catch (error) {
+        console.error("Error loading cycle data:", error);
+      } finally {
+        setIsLoadingCycle(false);
+      }
+    };
+
     getNotifications();
+    loadCycleData();
   }, []);
+
+  const handleJoinCurrentCycle = async () => {
+    if (!currentCycle || !user) return;
+
+    setIsJoining(true);
+    try {
+      await createParticipation({
+        user: user.id,
+        contestCycle: currentCycle.id,
+        signupDate: new Date().toISOString(),
+      });
+
+      // Refresh participations
+      const updatedParticipations = await fetchUserParticipations();
+      const newCurrentParticipation = updatedParticipations.find(
+        (p) => p.contestCycle.id === currentCycle.id
+      );
+      setCurrentParticipation(newCurrentParticipation || null);
+      setIsRegisteredInCurrentCycle(true);
+
+      toast.success("¡Te has inscrito exitosamente!", {
+        description: `Ahora eres parte de ${currentCycle.name}`
+      });
+    } catch (error) {
+      console.error("Error joining cycle:", error);
+      toast.error("Error al inscribirse", {
+        description: "Por favor intenta nuevamente más tarde"
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   // Get priority color based on notification priority
   const getPriorityColor = (priority: string) => {
@@ -106,6 +204,135 @@ export default function Dashboard() {
           </header>
 
           <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+
+            {/* Cycle Registration Section */}
+            {isLoadingCycle ? (
+              <Skeleton className="h-40 w-full" />
+            ) : currentCycle && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {!isRegisteredInCurrentCycle ? (
+                  /* Join Current Cycle CTA */
+                  <Card className="border-2 border-ooi-second-blue bg-gradient-to-br from-ooi-second-blue/5 via-ooi-purple/5 to-transparent overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex-shrink-0">
+                          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-ooi-second-blue to-ooi-purple flex items-center justify-center">
+                            <Sparkles className="h-10 w-10 text-white" />
+                          </div>
+                        </div>
+
+                        <div className="flex-1 text-center md:text-left">
+                          <h2 className="text-xl font-bold text-ooi-dark-blue mb-2">
+                            ¡Únete a {currentCycle.name}!
+                          </h2>
+                          <p className="text-gray-600 mb-3">
+                            {currentCycle.description || "Una nueva edición de la Olimpiada Oaxaqueña de Informática está por comenzar. ¡No te quedes fuera!"}
+                          </p>
+
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4 justify-center md:justify-start">
+                            {currentCycle.signupDeadline && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                <span>Inscripciones hasta: {formatDateSpanish(currentCycle.signupDeadline)}</span>
+                              </div>
+                            )}
+                            {currentCycle.startClassesDate && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>Inicio de clases: {formatDateSpanish(currentCycle.startClassesDate)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {isSignupOpen(currentCycle) ? (
+                            <Button
+                              onClick={handleJoinCurrentCycle}
+                              disabled={isJoining}
+                              className="bg-ooi-second-blue hover:bg-ooi-dark-blue text-white"
+                              size="lg"
+                            >
+                              {isJoining ? (
+                                <>
+                                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  Inscribiendo...
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="h-5 w-5 mr-2" />
+                                  Inscribirme ahora
+                                  <ArrowRight className="h-5 w-5 ml-2" />
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            <Badge variant="outline" className="text-red-600 border-red-300">
+                              Las inscripciones han cerrado
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : currentParticipation && (
+                  /* Current Cycle Participation Info */
+                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-transparent">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <CardTitle className="text-lg text-ooi-dark-blue">
+                            {currentCycle.name}
+                          </CardTitle>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800 border-green-300">
+                          Inscrito
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white rounded-lg p-3 border">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Calendar className="h-4 w-4 text-gray-500" />
+                            <span className="text-xs text-gray-500">Fecha de inscripción</span>
+                          </div>
+                          <p className="font-medium text-sm">{formatDateSpanish(currentParticipation.signupDate)}</p>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-3 border">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <span className="text-xs text-gray-500">Inicio de clases</span>
+                          </div>
+                          <p className="font-medium text-sm">{formatDateSpanish(currentCycle.startClassesDate)}</p>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-3 border">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Star className="h-4 w-4 text-gray-500" />
+                            <span className="text-xs text-gray-500">Examen diagnóstico</span>
+                          </div>
+                          <p className="font-medium text-sm">
+                            {currentParticipation.diagnosticExamDone ? (
+                              <span className="text-green-600">Completado ✓</span>
+                            ) : (
+                              <span className="text-yellow-600">Pendiente</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </motion.div>
+            )}
 
           <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -477,6 +704,11 @@ export default function Dashboard() {
                             <h4 className="text-sm font-medium">Prepárate para las clases</h4>
                             <p className="text-xs text-gray-600 mb-2">Comienza tu preparación anticipada con estos recursos:</p>
                             <div className="space-y-2">
+                              <Button size="sm" variant="outline" className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
+                                <Link href="/blog">
+                                  📚 Documentación y guías
+                                </Link>
+                              </Button>
                               <Button size="sm" variant="outline" className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
                                 <a href="https://youtube.com/playlist?list=PLLLsY3RQV2bhHhhoDoIfEEgRJGmjZBTii&si=89ogv39b1zY27S2V" target="_blank" rel="noopener noreferrer">
                                   Cursos anteriores

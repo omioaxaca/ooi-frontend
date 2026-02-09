@@ -1,0 +1,387 @@
+---
+title: "Struct en C++"
+description: "Aprende a crear y usar estructuras personalizadas para organizar datos relacionados"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "struct", "estructuras", "tipos-personalizados"]
+syllabusId: 26
+---
+
+## ¿Qué es un struct?
+
+Un `struct` permite agrupar variables relacionadas bajo un mismo nombre. Es útil para representar entidades con múltiples atributos.
+
+## Definición básica
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+    double altura;
+};
+
+int main() {
+    Persona p;
+    p.nombre = "Juan";
+    p.edad = 25;
+    p.altura = 1.75;
+
+    cout << p.nombre << " tiene " << p.edad << " años" << endl;
+    return 0;
+}
+```
+
+## Inicialización
+
+```cpp
+// Método 1: Inicialización por campos
+Persona p1;
+p1.nombre = "Ana";
+p1.edad = 30;
+
+// Método 2: Inicialización con llaves
+Persona p2 = {"Carlos", 28, 1.80};
+
+// Método 3: Inicialización designada (C++20)
+Persona p3 = {.nombre = "María", .edad = 22, .altura = 1.65};
+```
+
+## Structs con arreglos y vectores
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+};
+
+// Arreglo de structs
+Persona personas[100];
+personas[0] = {"Juan", 25};
+
+// Vector de structs (recomendado)
+vector<Persona> lista;
+lista.push_back({"Ana", 30});
+lista.push_back({"Carlos", 28});
+
+for (const Persona& p : lista) {
+    cout << p.nombre << ": " << p.edad << endl;
+}
+```
+
+## Structs como parámetros
+
+### Por valor (copia)
+
+```cpp
+void imprimir(Persona p) {
+    cout << p.nombre << " - " << p.edad << endl;
+}
+```
+
+### Por referencia (eficiente, sin copia)
+
+```cpp
+void cumpleAnios(Persona& p) {
+    p.edad++;
+}
+```
+
+### Por referencia constante (eficiente, solo lectura)
+
+```cpp
+void mostrar(const Persona& p) {
+    cout << p.nombre << endl;
+    // p.edad = 30;  // Error: no se puede modificar
+}
+```
+
+## Struct para competencias: Punto
+
+```cpp
+struct Punto {
+    int x, y;
+};
+
+// Distancia entre dos puntos
+double distancia(const Punto& a, const Punto& b) {
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
+```
+
+## Struct para competencias: Par ordenado
+
+```cpp
+struct Par {
+    int valor;
+    int indice;
+};
+
+int main() {
+    vector<Par> arr = {{5, 0}, {3, 1}, {8, 2}, {1, 3}};
+
+    // Ordenar por valor
+    sort(arr.begin(), arr.end(), [](const Par& a, const Par& b) {
+        return a.valor < b.valor;
+    });
+
+    // Ahora arr está ordenado por valor, pero conservamos los índices originales
+    for (const Par& p : arr) {
+        cout << "Valor: " << p.valor << ", Índice original: " << p.indice << endl;
+    }
+
+    return 0;
+}
+```
+
+## Operadores de comparación
+
+Para poder ordenar structs, necesitas definir cómo se comparan:
+
+### Método 1: Operador menor que
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+
+    bool operator<(const Persona& otra) const {
+        if (edad != otra.edad) {
+            return edad < otra.edad;  // Menor edad primero
+        }
+        return nombre < otra.nombre;  // Si igual edad, orden alfabético
+    }
+};
+
+// Ahora puedes usar sort directamente
+vector<Persona> lista = {{"Ana", 30}, {"Juan", 25}, {"María", 30}};
+sort(lista.begin(), lista.end());
+```
+
+### Método 2: Función comparadora
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+};
+
+bool compararPorEdad(const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+}
+
+bool compararPorNombre(const Persona& a, const Persona& b) {
+    return a.nombre < b.nombre;
+}
+
+// Uso
+sort(lista.begin(), lista.end(), compararPorEdad);
+```
+
+### Método 3: Lambda (más común en competencias)
+
+```cpp
+sort(lista.begin(), lista.end(), [](const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+});
+```
+
+## Struct para representar aristas
+
+Común en problemas de grafos:
+
+```cpp
+struct Arista {
+    int origen, destino, peso;
+
+    bool operator<(const Arista& otra) const {
+        return peso < otra.peso;
+    }
+};
+
+int main() {
+    vector<Arista> aristas = {
+        {0, 1, 5},
+        {1, 2, 3},
+        {0, 2, 8}
+    };
+
+    // Ordenar por peso (para Kruskal)
+    sort(aristas.begin(), aristas.end());
+
+    return 0;
+}
+```
+
+## Struct para eventos
+
+```cpp
+struct Evento {
+    int tiempo;
+    int tipo;  // 0 = inicio, 1 = fin
+
+    bool operator<(const Evento& otro) const {
+        if (tiempo != otro.tiempo) return tiempo < otro.tiempo;
+        return tipo < otro.tipo;  // Priorizar inicios
+    }
+};
+
+// Útil para sweep line
+```
+
+## Ejemplo: Ordenar estudiantes
+
+```cpp
+struct Estudiante {
+    string nombre;
+    double promedio;
+    int id;
+};
+
+int main() {
+    vector<Estudiante> lista = {
+        {"Ana", 9.5, 1},
+        {"Juan", 8.7, 2},
+        {"María", 9.5, 3},
+        {"Carlos", 9.0, 4}
+    };
+
+    // Ordenar por promedio (mayor a menor), si empatan por nombre
+    sort(lista.begin(), lista.end(), [](const Estudiante& a, const Estudiante& b) {
+        if (a.promedio != b.promedio) {
+            return a.promedio > b.promedio;  // Mayor promedio primero
+        }
+        return a.nombre < b.nombre;  // Alfabéticamente
+    });
+
+    for (const auto& e : lista) {
+        cout << e.nombre << ": " << e.promedio << endl;
+    }
+
+    return 0;
+}
+```
+
+## Struct con funciones miembro
+
+```cpp
+struct Rectangulo {
+    int ancho, alto;
+
+    int area() const {
+        return ancho * alto;
+    }
+
+    int perimetro() const {
+        return 2 * (ancho + alto);
+    }
+
+    bool esValido() const {
+        return ancho > 0 && alto > 0;
+    }
+};
+
+int main() {
+    Rectangulo r = {5, 3};
+    cout << "Área: " << r.area() << endl;        // 15
+    cout << "Perímetro: " << r.perimetro() << endl;  // 16
+    return 0;
+}
+```
+
+## pair y tuple de la STL
+
+Para casos simples, puedes usar las estructuras de la STL:
+
+### pair
+
+```cpp
+#include <utility>
+
+pair<int, string> p = {1, "uno"};
+cout << p.first << " " << p.second << endl;
+
+// Común para coordenadas
+pair<int, int> punto = {3, 4};
+```
+
+### tuple
+
+```cpp
+#include <tuple>
+
+tuple<int, string, double> t = {1, "uno", 1.0};
+cout << get<0>(t) << " " << get<1>(t) << " " << get<2>(t) << endl;
+
+// Desempaquetar (C++17)
+auto [a, b, c] = t;
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Crea un struct para representar un intervalo [inicio, fin] y ordena intervalos por inicio.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+struct Intervalo {
+    int inicio, fin;
+
+    bool operator<(const Intervalo& otro) const {
+        if (inicio != otro.inicio) return inicio < otro.inicio;
+        return fin < otro.fin;
+    }
+};
+
+int main() {
+    vector<Intervalo> intervalos = {{5, 10}, {1, 3}, {2, 8}};
+    sort(intervalos.begin(), intervalos.end());
+    // Resultado: [1,3], [2,8], [5,10]
+    return 0;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Crea un struct para representar fracciones con función de simplificar.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+struct Fraccion {
+    int num, den;
+
+    void simplificar() {
+        int g = __gcd(abs(num), abs(den));
+        num /= g;
+        den /= g;
+        if (den < 0) {
+            num = -num;
+            den = -den;
+        }
+    }
+
+    Fraccion operator+(const Fraccion& otra) const {
+        Fraccion r = {num * otra.den + otra.num * den, den * otra.den};
+        r.simplificar();
+        return r;
+    }
+};
+
+int main() {
+    Fraccion a = {1, 2};
+    Fraccion b = {1, 3};
+    Fraccion c = a + b;
+    cout << c.num << "/" << c.den << endl;  // 5/6
+    return 0;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Ordenamiento con Sort de STL](/blog/algoritmos/ordenamiento-sort-stl) para ordenar estructuras eficientemente.

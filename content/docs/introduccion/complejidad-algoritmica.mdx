@@ -1,0 +1,192 @@
+---
+title: "Complejidad Algorítmica"
+description: "Aprende a analizar la eficiencia de tus algoritmos con notación Big O"
+date: "2026-02-03"
+author: "OOI Oaxaca"
+tags: ["complejidad", "big-o", "análisis", "fundamentos"]
+syllabusId: 25
+---
+
+## ¿Qué es la complejidad algorítmica?
+
+La complejidad algorítmica nos permite medir qué tan eficiente es un algoritmo en términos de tiempo y espacio. Es fundamental para escribir código que funcione dentro de los límites de tiempo de las competencias.
+
+## Notación Big O
+
+La notación Big O describe el comportamiento asintótico de un algoritmo, es decir, cómo crece el tiempo de ejecución cuando el tamaño de entrada aumenta.
+
+### Complejidades comunes
+
+| Complejidad | Nombre | Ejemplo |
+|------------|--------|---------|
+| O(1) | Constante | Acceso a array |
+| O(log n) | Logarítmica | Búsqueda binaria |
+| O(n) | Lineal | Recorrer array |
+| O(n log n) | Log-lineal | Merge sort |
+| O(n²) | Cuadrática | Bubble sort |
+| O(2ⁿ) | Exponencial | Subconjuntos |
+| O(n!) | Factorial | Permutaciones |
+
+<Callout type="info">
+  En competencias, generalmente puedes hacer hasta **10⁸ operaciones por segundo**. Usa esta regla para estimar si tu solución pasará los límites de tiempo.
+</Callout>
+
+## Ejemplos prácticos
+
+### O(1) - Tiempo constante
+
+```cpp
+int obtenerPrimero(vector<int>& arr) {
+    return arr[0];  // Siempre una operación
+}
+```
+
+### O(n) - Tiempo lineal
+
+```cpp
+int suma(vector<int>& arr) {
+    int total = 0;
+    for (int x : arr) {     // n operaciones
+        total += x;
+    }
+    return total;
+}
+```
+
+### O(n²) - Tiempo cuadrático
+
+```cpp
+void bubbleSort(vector<int>& arr) {
+    int n = arr.size();
+    for (int i = 0; i < n; i++) {         // n veces
+        for (int j = 0; j < n - 1; j++) { // n veces
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+```
+
+### O(log n) - Tiempo logarítmico
+
+```cpp
+int busquedaBinaria(vector<int>& arr, int objetivo) {
+    int izq = 0, der = arr.size() - 1;
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;
+        if (arr[mid] == objetivo) return mid;
+        if (arr[mid] < objetivo) izq = mid + 1;
+        else der = mid - 1;
+    }
+    return -1;
+}
+```
+
+## Reglas para calcular complejidad
+
+### 1. Operaciones consecutivas se suman
+
+```cpp
+void ejemplo(int n) {
+    // O(n)
+    for (int i = 0; i < n; i++) { }
+
+    // O(n)
+    for (int i = 0; i < n; i++) { }
+}
+// Total: O(n) + O(n) = O(2n) = O(n)
+```
+
+### 2. Loops anidados se multiplican
+
+```cpp
+void ejemplo(int n) {
+    for (int i = 0; i < n; i++) {        // O(n)
+        for (int j = 0; j < n; j++) {    // O(n)
+            // operación O(1)
+        }
+    }
+}
+// Total: O(n) × O(n) = O(n²)
+```
+
+### 3. Se ignoran constantes
+
+- O(2n) → O(n)
+- O(n + 100) → O(n)
+- O(3n² + 5n) → O(n²)
+
+### 4. Se toma el término dominante
+
+- O(n² + n) → O(n²)
+- O(n³ + n² + n) → O(n³)
+
+## Tabla de referencia rápida
+
+Esta tabla te ayuda a elegir la complejidad adecuada según el tamaño de entrada:
+
+| n máximo | Complejidad aceptable |
+|----------|----------------------|
+| ≤ 10 | O(n!), O(2ⁿ) |
+| ≤ 20 | O(2ⁿ) |
+| ≤ 500 | O(n³) |
+| ≤ 5,000 | O(n²) |
+| ≤ 10⁶ | O(n log n) |
+| ≤ 10⁸ | O(n) |
+| > 10⁸ | O(log n), O(1) |
+
+<Callout type="warning">
+  Siempre verifica los límites del problema antes de implementar. Una solución O(n²) no funcionará si n = 10⁶.
+</Callout>
+
+## Complejidad de espacio
+
+Además del tiempo, también debemos considerar la memoria:
+
+```cpp
+// O(1) espacio - solo variables locales
+int suma(vector<int>& arr) {
+    int total = 0;
+    for (int x : arr) total += x;
+    return total;
+}
+
+// O(n) espacio - crea una copia
+vector<int> duplicar(vector<int>& arr) {
+    vector<int> resultado(arr.size());
+    for (int i = 0; i < arr.size(); i++) {
+        resultado[i] = arr[i] * 2;
+    }
+    return resultado;
+}
+```
+
+## Ejercicio práctico
+
+¿Cuál es la complejidad de este código?
+
+```cpp
+void misterio(int n) {
+    for (int i = 1; i <= n; i *= 2) {
+        for (int j = 0; j < n; j++) {
+            cout << i << " " << j << endl;
+        }
+    }
+}
+```
+
+<details>
+<summary>Ver respuesta</summary>
+
+**Respuesta: O(n log n)**
+
+- El loop externo ejecuta log₂(n) veces (i se duplica cada iteración)
+- El loop interno ejecuta n veces
+- Total: O(n log n)
+
+</details>
+
+## Siguiente paso
+
+Ahora que entiendes la complejidad, aprende sobre [búsqueda binaria](/blog/algoritmos/busqueda-binaria), uno de los algoritmos más importantes.

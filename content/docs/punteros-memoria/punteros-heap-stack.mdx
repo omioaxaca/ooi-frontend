@@ -1,0 +1,382 @@
+---
+title: "Punteros y Manejo de Memoria"
+description: "Comprende los punteros, la diferencia entre heap y stack, y el manejo de memoria en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["punteros", "memoria", "heap", "stack", "C++"]
+syllabusId: 50
+order: 1
+---
+
+## ¿Qué es un puntero?
+
+Un **puntero** es una variable que almacena la **dirección de memoria** de otra variable. En lugar de guardar un valor directamente, guarda la ubicación donde ese valor está almacenado.
+
+```cpp
+int x = 42;        // Variable normal
+int* ptr = &x;     // Puntero que guarda la dirección de x
+
+cout << x << endl;      // 42 (el valor)
+cout << &x << endl;     // 0x7ffd... (la dirección)
+cout << ptr << endl;    // 0x7ffd... (misma dirección)
+cout << *ptr << endl;   // 42 (desreferenciando el puntero)
+```
+
+> 💡 **Operadores clave:**
+> - `&` obtiene la dirección de una variable
+> - `*` accede al valor en una dirección (desreferencia)
+
+## Stack vs Heap
+
+La memoria en un programa se divide principalmente en dos áreas:
+
+### Stack (Pila)
+
+El **stack** es memoria automática que se gestiona sola:
+
+```cpp
+void funcion() {
+    int a = 5;           // Se crea en el stack
+    double b = 3.14;     // También en el stack
+    int arr[100];        // Array en el stack
+}                        // Al terminar, todo se libera automáticamente
+```
+
+**Características del Stack:**
+- ✅ Muy rápido (asignación instantánea)
+- ✅ Liberación automática
+- ❌ Tamaño limitado (típicamente 1-8 MB)
+- ❌ No puede cambiar de tamaño
+
+### Heap (Montículo)
+
+El **heap** es memoria dinámica que tú controlas:
+
+```cpp
+void funcion() {
+    int* ptr = new int(42);         // Se crea en el heap
+    int* arr = new int[1000000];    // Array grande en el heap
+
+    // ... usar la memoria ...
+
+    delete ptr;       // Debes liberar manualmente
+    delete[] arr;     // Para arrays, usa delete[]
+}
+```
+
+**Características del Heap:**
+- ✅ Tamaño grande (GBs disponibles)
+- ✅ Puede crecer dinámicamente
+- ❌ Más lento que stack
+- ❌ Debes liberar manualmente (riesgo de memory leaks)
+
+## Comparación visual
+
+```
+┌─────────────────────────────────────────┐
+│              MEMORIA                     │
+├─────────────────────────────────────────┤
+│  Stack (crece hacia abajo ↓)            │
+│  ┌─────────────────────────┐            │
+│  │ Variables locales       │            │
+│  │ Parámetros de función   │            │
+│  │ Direcciones de retorno  │            │
+│  └─────────────────────────┘            │
+│           ↓                              │
+│           .                              │
+│           .                              │
+│           ↑                              │
+│  ┌─────────────────────────┐            │
+│  │ Memoria dinámica        │            │
+│  │ (new/malloc)            │            │
+│  └─────────────────────────┘            │
+│  Heap (crece hacia arriba ↑)            │
+├─────────────────────────────────────────┤
+│  Datos globales/estáticos               │
+├─────────────────────────────────────────┤
+│  Código del programa                    │
+└─────────────────────────────────────────┘
+```
+
+## ¿Cuándo usar cada uno?
+
+| Situación | Usar Stack | Usar Heap |
+|-----------|------------|-----------|
+| Arrays pequeños (<10⁵ elementos) | ✅ | |
+| Arrays grandes (>10⁵ elementos) | | ✅ |
+| Tamaño conocido en compilación | ✅ | |
+| Tamaño dinámico | | ✅ |
+| Variables temporales | ✅ | |
+| Datos que sobreviven la función | | ✅ |
+
+## Problema común: Stack Overflow
+
+En competencias, un error frecuente es el **stack overflow** por arrays grandes:
+
+```cpp
+// ❌ MAL: Array muy grande en el stack
+void resolver() {
+    int dp[10000][10000];  // 400 MB en stack = CRASH
+}
+
+// ✅ BIEN: Opción 1 - Variables globales (no usan stack)
+int dp[10000][10000];
+void resolver() {
+    // usar dp...
+}
+
+// ✅ BIEN: Opción 2 - Usar heap
+void resolver() {
+    vector<vector<int>> dp(10000, vector<int>(10000));
+    // vector usa heap internamente
+}
+```
+
+> ⚠️ **En competencias:** Declara arrays grandes como **variables globales** o usa `vector`.
+
+## Aritmética de punteros
+
+Los punteros soportan operaciones aritméticas:
+
+```cpp
+int arr[5] = {10, 20, 30, 40, 50};
+int* ptr = arr;  // Apunta al primer elemento
+
+cout << *ptr << endl;       // 10
+cout << *(ptr + 1) << endl; // 20 (avanza un int = 4 bytes)
+cout << *(ptr + 2) << endl; // 30
+cout << ptr[3] << endl;     // 40 (equivalente a *(ptr + 3))
+
+ptr++;  // Ahora apunta a arr[1]
+cout << *ptr << endl;  // 20
+```
+
+## Punteros y arrays
+
+En C++, el nombre de un array es un puntero al primer elemento:
+
+```cpp
+int arr[5] = {1, 2, 3, 4, 5};
+
+// Estas expresiones son equivalentes:
+cout << arr[0] << endl;    // 1
+cout << *arr << endl;      // 1
+
+cout << arr[2] << endl;    // 3
+cout << *(arr + 2) << endl; // 3
+
+// Pasar array a función
+void procesar(int* arr, int n) {
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+}
+
+procesar(arr, 5);  // Pasa la dirección del array
+```
+
+## Punteros a punteros
+
+Útiles para matrices dinámicas:
+
+```cpp
+// Crear matriz dinámica n x m
+int** crearMatriz(int n, int m) {
+    int** matriz = new int*[n];  // Array de punteros
+    for (int i = 0; i < n; i++) {
+        matriz[i] = new int[m];  // Cada fila es un array
+    }
+    return matriz;
+}
+
+// Liberar matriz
+void liberarMatriz(int** matriz, int n) {
+    for (int i = 0; i < n; i++) {
+        delete[] matriz[i];  // Liberar cada fila
+    }
+    delete[] matriz;  // Liberar array de punteros
+}
+
+int main() {
+    int** mat = crearMatriz(3, 4);
+    mat[1][2] = 42;  // Usar como matriz normal
+    liberarMatriz(mat, 3);
+    return 0;
+}
+```
+
+> 💡 **En competencias:** Preferir `vector<vector<int>>` que maneja la memoria automáticamente.
+
+## nullptr y verificaciones
+
+Siempre verifica si un puntero es válido:
+
+```cpp
+int* ptr = nullptr;  // Puntero nulo (no apunta a nada)
+
+// Verificar antes de usar
+if (ptr != nullptr) {
+    cout << *ptr << endl;
+}
+
+// Forma corta
+if (ptr) {
+    cout << *ptr << endl;
+}
+```
+
+## Referencias vs Punteros
+
+Las **referencias** son alias más seguros:
+
+```cpp
+int x = 10;
+
+// Puntero
+int* ptr = &x;
+*ptr = 20;        // Necesita desreferenciar
+
+// Referencia
+int& ref = x;
+ref = 30;         // Uso directo, más limpio
+
+// En funciones - Paso por referencia
+void duplicar(int& n) {
+    n *= 2;  // Modifica el original
+}
+
+// Equivalente con puntero
+void duplicarPtr(int* n) {
+    *n *= 2;
+}
+
+int main() {
+    int a = 5;
+    duplicar(a);     // a ahora es 10
+    duplicarPtr(&a); // a ahora es 20
+}
+```
+
+## Smart Pointers (C++11+)
+
+Para código más seguro, usa smart pointers:
+
+```cpp
+#include <memory>
+
+// unique_ptr - un solo dueño
+unique_ptr<int> p1 = make_unique<int>(42);
+// Se libera automáticamente al salir del scope
+
+// shared_ptr - múltiples dueños
+shared_ptr<int> p2 = make_shared<int>(100);
+shared_ptr<int> p3 = p2;  // Ambos apuntan al mismo dato
+// Se libera cuando el último shared_ptr se destruye
+```
+
+> 📝 **En competencias:** Raramente necesitas smart pointers, pero son importantes en código de producción.
+
+## Ejemplo práctico: Swap con punteros
+
+```cpp
+void intercambiar(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int main() {
+    int x = 5, y = 10;
+    intercambiar(&x, &y);
+    cout << x << " " << y << endl;  // 10 5
+}
+```
+
+## Errores comunes
+
+### 1. Usar puntero no inicializado
+
+```cpp
+int* ptr;          // ❌ No apunta a nada válido
+*ptr = 10;         // CRASH - undefined behavior
+
+int* ptr = nullptr; // ✅ Al menos está inicializado
+```
+
+### 2. Memory leak
+
+```cpp
+void funcion() {
+    int* ptr = new int(42);
+    // ❌ Olvidé hacer delete
+}  // La memoria se pierde para siempre
+```
+
+### 3. Dangling pointer
+
+```cpp
+int* obtenerPuntero() {
+    int x = 42;
+    return &x;  // ❌ x se destruye al terminar la función
+}
+// El puntero retornado apunta a memoria inválida
+```
+
+### 4. Double free
+
+```cpp
+int* ptr = new int(42);
+delete ptr;
+delete ptr;  // ❌ CRASH - liberar dos veces
+```
+
+## Template para competencias
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Arrays grandes como globales
+const int MAXN = 100005;
+int arr[MAXN];
+int dp[5005][5005];
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+
+    // Para tamaños dinámicos, usar vector
+    vector<int> v(n);
+    for (int i = 0; i < n; i++) {
+        cin >> v[i];
+    }
+
+    // Vector 2D dinámico
+    int filas, cols;
+    cin >> filas >> cols;
+    vector<vector<int>> matriz(filas, vector<int>(cols));
+
+    return 0;
+}
+```
+
+## Resumen
+
+| Concepto | Stack | Heap |
+|----------|-------|------|
+| Asignación | Automática | Manual (`new`/`delete`) |
+| Velocidad | Muy rápida | Más lenta |
+| Tamaño | Limitado (~1-8 MB) | Grande (GBs) |
+| Liberación | Automática | Manual |
+| Uso típico | Variables locales | Datos grandes/dinámicos |
+
+## Ejercicios
+
+1. **Intercambio:** Implementa una función que intercambie dos valores usando punteros.
+
+2. **Suma de array:** Escribe una función que reciba un puntero a un array y su tamaño, y retorne la suma.
+
+3. **Matriz dinámica:** Crea una matriz n×m dinámicamente, llénala con valores, e imprímela.

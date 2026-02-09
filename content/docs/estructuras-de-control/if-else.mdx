@@ -1,0 +1,364 @@
+---
+title: "Estructura de Control if-else"
+description: "Aprende a tomar decisiones en tus programas usando if, else if y else"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "if", "else", "condicionales", "estructuras-de-control"]
+syllabusId: 14
+---
+
+## La sentencia if
+
+La sentencia `if` ejecuta código solo si una condición es verdadera:
+
+```cpp
+if (condición) {
+    // Se ejecuta si la condición es true
+}
+```
+
+### Ejemplo básico
+
+```cpp
+int edad;
+cin >> edad;
+
+if (edad >= 18) {
+    cout << "Eres mayor de edad" << endl;
+}
+```
+
+## if-else
+
+Ejecuta un bloque si la condición es verdadera, otro si es falsa:
+
+```cpp
+if (condición) {
+    // Se ejecuta si es true
+} else {
+    // Se ejecuta si es false
+}
+```
+
+### Ejemplo
+
+```cpp
+int numero;
+cin >> numero;
+
+if (numero % 2 == 0) {
+    cout << "Par" << endl;
+} else {
+    cout << "Impar" << endl;
+}
+```
+
+## if-else if-else
+
+Para múltiples condiciones:
+
+```cpp
+if (condición1) {
+    // Si condición1 es true
+} else if (condición2) {
+    // Si condición2 es true
+} else if (condición3) {
+    // Si condición3 es true
+} else {
+    // Si ninguna es true
+}
+```
+
+### Ejemplo: Calificación en letras
+
+```cpp
+int nota;
+cin >> nota;
+
+if (nota >= 90) {
+    cout << "A" << endl;
+} else if (nota >= 80) {
+    cout << "B" << endl;
+} else if (nota >= 70) {
+    cout << "C" << endl;
+} else if (nota >= 60) {
+    cout << "D" << endl;
+} else {
+    cout << "F" << endl;
+}
+```
+
+## if anidados
+
+Un `if` puede contener otros `if`:
+
+```cpp
+int edad;
+bool tienePermiso;
+cin >> edad >> tienePermiso;
+
+if (edad >= 18) {
+    if (tienePermiso) {
+        cout << "Puede entrar" << endl;
+    } else {
+        cout << "Necesita permiso" << endl;
+    }
+} else {
+    cout << "Es menor de edad" << endl;
+}
+```
+
+**Equivalente más legible:**
+
+```cpp
+if (edad >= 18 && tienePermiso) {
+    cout << "Puede entrar" << endl;
+} else if (edad >= 18) {
+    cout << "Necesita permiso" << endl;
+} else {
+    cout << "Es menor de edad" << endl;
+}
+```
+
+## Llaves opcionales
+
+Si el bloque tiene una sola instrucción, las llaves son opcionales:
+
+```cpp
+// Con llaves (recomendado)
+if (x > 0) {
+    cout << "Positivo" << endl;
+}
+
+// Sin llaves (funciona, pero puede causar errores)
+if (x > 0)
+    cout << "Positivo" << endl;
+```
+
+**¡Cuidado!** Sin llaves, solo la primera línea pertenece al if:
+
+```cpp
+if (x > 0)
+    cout << "Positivo" << endl;
+    cout << "Esto siempre se ejecuta" << endl;  // ¡No es parte del if!
+```
+
+## El operador ternario
+
+Una forma compacta de if-else para asignaciones:
+
+```cpp
+// Forma larga
+int mayor;
+if (a > b) {
+    mayor = a;
+} else {
+    mayor = b;
+}
+
+// Forma con operador ternario
+int mayor = (a > b) ? a : b;
+```
+
+### Sintaxis
+
+```cpp
+resultado = (condición) ? valor_si_true : valor_si_false;
+```
+
+### Ejemplos
+
+```cpp
+// Valor absoluto
+int absoluto = (n < 0) ? -n : n;
+
+// Mínimo de dos números
+int minimo = (a < b) ? a : b;
+
+// Paridad
+string paridad = (n % 2 == 0) ? "par" : "impar";
+```
+
+## Ejemplo: Determinar el mayor de tres números
+
+```cpp
+int a, b, c;
+cin >> a >> b >> c;
+
+int mayor;
+
+if (a >= b && a >= c) {
+    mayor = a;
+} else if (b >= a && b >= c) {
+    mayor = b;
+} else {
+    mayor = c;
+}
+
+cout << "El mayor es: " << mayor << endl;
+```
+
+**Con operador ternario:**
+
+```cpp
+int mayor = (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);
+```
+
+**Con función max:**
+
+```cpp
+int mayor = max({a, b, c});
+```
+
+## Ejemplo: Clasificar triángulos
+
+```cpp
+int a, b, c;
+cin >> a >> b >> c;
+
+// Verificar si es válido
+if (a + b <= c || b + c <= a || a + c <= b) {
+    cout << "No es un triángulo válido" << endl;
+} else if (a == b && b == c) {
+    cout << "Equilátero" << endl;
+} else if (a == b || b == c || a == c) {
+    cout << "Isósceles" << endl;
+} else {
+    cout << "Escaleno" << endl;
+}
+```
+
+## Ejemplo: Calculadora con menú
+
+```cpp
+double a, b;
+char operacion;
+
+cout << "Ingresa: numero operador numero" << endl;
+cin >> a >> operacion >> b;
+
+if (operacion == '+') {
+    cout << a + b << endl;
+} else if (operacion == '-') {
+    cout << a - b << endl;
+} else if (operacion == '*') {
+    cout << a * b << endl;
+} else if (operacion == '/') {
+    if (b != 0) {
+        cout << a / b << endl;
+    } else {
+        cout << "Error: División por cero" << endl;
+    }
+} else {
+    cout << "Operación no válida" << endl;
+}
+```
+
+## Errores comunes
+
+### 1. Usar = en lugar de ==
+
+```cpp
+// ❌ Error: asignación
+if (x = 5) { }
+
+// ✅ Correcto: comparación
+if (x == 5) { }
+```
+
+### 2. Punto y coma después del if
+
+```cpp
+// ❌ Error: el ; termina el if
+if (x > 0);
+{
+    cout << "Positivo" << endl;  // Siempre se ejecuta
+}
+
+// ✅ Correcto
+if (x > 0) {
+    cout << "Positivo" << endl;
+}
+```
+
+### 3. Condiciones que siempre son true/false
+
+```cpp
+// ❌ Siempre true
+if (x = 5) { }
+
+// ❌ Comparación incorrecta de rangos
+if (1 < x < 10) { }  // No hace lo que crees
+
+// ✅ Correcto
+if (x > 1 && x < 10) { }
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Determina el signo de un número (positivo, negativo o cero).
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+if (n > 0) {
+    cout << "Positivo" << endl;
+} else if (n < 0) {
+    cout << "Negativo" << endl;
+} else {
+    cout << "Cero" << endl;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Dado un año, determina si es bisiesto.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int anio;
+cin >> anio;
+
+if ((anio % 4 == 0 && anio % 100 != 0) || anio % 400 == 0) {
+    cout << "Bisiesto" << endl;
+} else {
+    cout << "No bisiesto" << endl;
+}
+```
+
+</details>
+
+### Ejercicio 3
+Dados los coeficientes a, b, c de una ecuación cuadrática, determina cuántas soluciones reales tiene.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+double a, b, c;
+cin >> a >> b >> c;
+
+double discriminante = b*b - 4*a*c;
+
+if (discriminante > 0) {
+    cout << "Dos soluciones reales" << endl;
+} else if (discriminante == 0) {
+    cout << "Una solución real" << endl;
+} else {
+    cout << "Sin soluciones reales" << endl;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende a repetir código con [Ciclo For](/blog/estructuras-de-control/ciclo-for).

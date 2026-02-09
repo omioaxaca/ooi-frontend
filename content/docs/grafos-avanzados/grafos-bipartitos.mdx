@@ -1,0 +1,306 @@
+---
+title: "Grafos Bipartitos"
+description: "Aprende a identificar y trabajar con grafos bipartitos"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["grafos", "bipartito", "coloreo", "matching"]
+syllabusId: 66
+order: 6
+---
+
+## ¿Qué es un grafo bipartito?
+
+Un grafo es **bipartito** si sus nodos se pueden dividir en dos conjuntos disjuntos A y B, tal que todas las aristas conectan un nodo de A con uno de B.
+
+```
+Bipartito:           No bipartito:
+  A       B             1---2
+  1-------4              \ /
+  2-------5               3
+  3-------6
+
+Equivalente: Se puede colorear con 2 colores sin que nodos adyacentes tengan el mismo color.
+```
+
+## Verificar si es bipartito (BFS)
+
+```cpp
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int color[MAXN];  // -1 = no visitado, 0 o 1 = color
+
+bool esBipartito(int inicio) {
+    queue<int> cola;
+    cola.push(inicio);
+    color[inicio] = 0;
+
+    while (!cola.empty()) {
+        int u = cola.front();
+        cola.pop();
+
+        for (int v : adj[u]) {
+            if (color[v] == -1) {
+                color[v] = 1 - color[u];  // Color opuesto
+                cola.push(v);
+            } else if (color[v] == color[u]) {
+                return false;  // Mismo color = no bipartito
+            }
+        }
+    }
+
+    return true;
+}
+
+bool verificarBipartito(int n) {
+    fill(color, color + n + 1, -1);
+
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == -1) {
+            if (!esBipartito(i)) return false;
+        }
+    }
+
+    return true;
+}
+```
+
+## Verificar con DFS
+
+```cpp
+bool dfsBipartito(int u, int c) {
+    color[u] = c;
+
+    for (int v : adj[u]) {
+        if (color[v] == -1) {
+            if (!dfsBipartito(v, 1 - c)) return false;
+        } else if (color[v] == c) {
+            return false;
+        }
+    }
+
+    return true;
+}
+```
+
+## Obtener los dos conjuntos
+
+```cpp
+pair<vector<int>, vector<int>> obtenerParticion(int n) {
+    vector<int> grupoA, grupoB;
+
+    if (!verificarBipartito(n)) {
+        return {{}, {}};  // No es bipartito
+    }
+
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == 0) {
+            grupoA.push_back(i);
+        } else {
+            grupoB.push_back(i);
+        }
+    }
+
+    return {grupoA, grupoB};
+}
+```
+
+## Encontrar ciclo impar
+
+Si el grafo no es bipartito, tiene un ciclo de longitud impar:
+
+```cpp
+int padre[MAXN];
+
+vector<int> encontrarCicloImpar(int n) {
+    fill(color, color + n + 1, -1);
+    fill(padre, padre + n + 1, -1);
+
+    for (int i = 1; i <= n; i++) {
+        if (color[i] != -1) continue;
+
+        queue<int> cola;
+        cola.push(i);
+        color[i] = 0;
+
+        while (!cola.empty()) {
+            int u = cola.front();
+            cola.pop();
+
+            for (int v : adj[u]) {
+                if (color[v] == -1) {
+                    color[v] = 1 - color[u];
+                    padre[v] = u;
+                    cola.push(v);
+                } else if (color[v] == color[u]) {
+                    // Encontramos ciclo impar
+                    vector<int> ciclo;
+
+                    // Camino de u a ancestro común
+                    vector<int> caminoU, caminoV;
+                    int x = u, y = v;
+
+                    while (x != -1) {
+                        caminoU.push_back(x);
+                        x = padre[x];
+                    }
+                    while (y != -1) {
+                        caminoV.push_back(y);
+                        y = padre[y];
+                    }
+
+                    // Encontrar ancestro común
+                    set<int> ancestrosU(caminoU.begin(), caminoU.end());
+                    int lca = -1;
+                    for (int node : caminoV) {
+                        if (ancestrosU.count(node)) {
+                            lca = node;
+                            break;
+                        }
+                    }
+
+                    // Construir ciclo
+                    for (int node : caminoU) {
+                        ciclo.push_back(node);
+                        if (node == lca) break;
+                    }
+                    vector<int> segundaParte;
+                    for (int node : caminoV) {
+                        if (node == lca) break;
+                        segundaParte.push_back(node);
+                    }
+                    reverse(segundaParte.begin(), segundaParte.end());
+                    for (int node : segundaParte) {
+                        ciclo.push_back(node);
+                    }
+                    ciclo.push_back(ciclo[0]);
+
+                    return ciclo;
+                }
+            }
+        }
+    }
+
+    return {};  // No hay ciclo impar
+}
+```
+
+## Maximum Bipartite Matching
+
+Encontrar el máximo emparejamiento usando el algoritmo húngaro (Kuhn):
+
+```cpp
+const int MAXN = 1005;
+vector<int> adj[MAXN];
+int match[MAXN];
+bool usado[MAXN];
+
+bool dfs(int u) {
+    for (int v : adj[u]) {
+        if (usado[v]) continue;
+        usado[v] = true;
+
+        if (match[v] == -1 || dfs(match[v])) {
+            match[v] = u;
+            return true;
+        }
+    }
+    return false;
+}
+
+int maxMatching(int n, int m) {  // n nodos en A, m nodos en B
+    fill(match, match + m + 1, -1);
+
+    int matching = 0;
+    for (int u = 1; u <= n; u++) {
+        fill(usado, usado + m + 1, false);
+        if (dfs(u)) {
+            matching++;
+        }
+    }
+
+    return matching;
+}
+```
+
+## Teorema de König
+
+En un grafo bipartito:
+- **Maximum Matching** = **Minimum Vertex Cover**
+
+Esto permite resolver problemas de cobertura de vértices en grafos bipartitos.
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int color[MAXN];
+
+bool bfs(int start) {
+    queue<int> q;
+    q.push(start);
+    color[start] = 0;
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        for (int v : adj[u]) {
+            if (color[v] == -1) {
+                color[v] = 1 - color[u];
+                q.push(v);
+            } else if (color[v] == color[u]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool isBipartite(int n) {
+    fill(color, color + n + 1, -1);
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == -1 && !bfs(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, m;
+    cin >> n >> m;
+
+    for (int i = 0; i < m; i++) {
+        int a, b;
+        cin >> a >> b;
+        adj[a].push_back(b);
+        adj[b].push_back(a);
+    }
+
+    if (isBipartite(n)) {
+        // Imprimir grupos
+        for (int i = 1; i <= n; i++) {
+            cout << color[i] + 1 << " ";
+        }
+        cout << "\n";
+    } else {
+        cout << "IMPOSSIBLE\n";
+    }
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Building Teams](https://cses.fi/problemset/task/1668)
+2. [LeetCode - Is Graph Bipartite?](https://leetcode.com/problems/is-graph-bipartite/)
+3. [Codeforces - DZY Loves Chessboard](https://codeforces.com/problemset/problem/445/B)
+4. [SPOJ - MATCHING](https://www.spoj.com/problems/MATCHING/)

@@ -1,0 +1,400 @@
+---
+title: "Problemas de Pilas y Colas"
+description: "Practica con problemas clásicos de competencias que usan pilas y colas"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "estructuras-de-datos", "pilas", "colas", "problemas", "competencias"]
+syllabusId: 41
+---
+
+## Problemas con Pilas
+
+### Problema 1: Área máxima de histograma
+
+Dado un histograma con barras de diferentes alturas, encuentra el área del rectángulo más grande que puede formarse.
+
+```
+Alturas: [2, 1, 5, 6, 2, 3]
+
+     ┌───┐
+     │ 6 │
+ ┌───┼───┤
+ │ 5 │   │      ┌───┐
+ │   │   │      │ 3 │
+ │   │   │  ┌───┼───┤
+ │   │   │  │ 2 │   │
+┌┼───┼───┼──┼───┼───┤
+│2   │   │  │   │   │
+└────┴───┴──┴───┴───┘
+
+Área máxima: 10 (rectángulo de altura 5 y ancho 2)
+```
+
+```cpp
+int areaMaxHistograma(vector<int>& alturas) {
+    stack<int> pila;  // Índices
+    int maxArea = 0;
+    int n = alturas.size();
+
+    for (int i = 0; i <= n; i++) {
+        int h = (i == n) ? 0 : alturas[i];
+
+        while (!pila.empty() && alturas[pila.top()] > h) {
+            int altura = alturas[pila.top()];
+            pila.pop();
+
+            int ancho = pila.empty() ? i : i - pila.top() - 1;
+            maxArea = max(maxArea, altura * ancho);
+        }
+
+        pila.push(i);
+    }
+
+    return maxArea;
+}
+```
+
+### Problema 2: Eliminar k dígitos
+
+Dado un número representado como string, elimina k dígitos para obtener el número más pequeño posible.
+
+```cpp
+string eliminarKDigitos(string num, int k) {
+    stack<char> pila;
+
+    for (char c : num) {
+        // Eliminar dígitos mayores si aún podemos eliminar
+        while (!pila.empty() && k > 0 && pila.top() > c) {
+            pila.pop();
+            k--;
+        }
+        pila.push(c);
+    }
+
+    // Si aún quedan eliminaciones por hacer
+    while (k > 0) {
+        pila.pop();
+        k--;
+    }
+
+    // Construir resultado
+    string resultado = "";
+    while (!pila.empty()) {
+        resultado = pila.top() + resultado;
+        pila.pop();
+    }
+
+    // Eliminar ceros iniciales
+    int i = 0;
+    while (i < resultado.size() && resultado[i] == '0') i++;
+    resultado = resultado.substr(i);
+
+    return resultado.empty() ? "0" : resultado;
+}
+// "1432219", k=3 -> "1219"
+// "10200", k=1 -> "200"
+```
+
+### Problema 3: Validar secuencia push/pop
+
+Dada una secuencia de push y una secuencia de pop, determina si es una secuencia válida para una pila.
+
+```cpp
+bool secuenciaValida(vector<int>& pushed, vector<int>& popped) {
+    stack<int> pila;
+    int j = 0;
+
+    for (int x : pushed) {
+        pila.push(x);
+
+        while (!pila.empty() && j < popped.size() && pila.top() == popped[j]) {
+            pila.pop();
+            j++;
+        }
+    }
+
+    return pila.empty();
+}
+// pushed = [1,2,3,4,5], popped = [4,5,3,2,1] -> true
+// pushed = [1,2,3,4,5], popped = [4,3,5,1,2] -> false
+```
+
+### Problema 4: Temperatura más cercana
+
+Para cada día, encuentra cuántos días tienes que esperar para un día más cálido.
+
+```cpp
+vector<int> diasParaMasCálido(vector<int>& temp) {
+    int n = temp.size();
+    vector<int> resultado(n, 0);
+    stack<int> pila;  // Índices
+
+    for (int i = 0; i < n; i++) {
+        while (!pila.empty() && temp[pila.top()] < temp[i]) {
+            resultado[pila.top()] = i - pila.top();
+            pila.pop();
+        }
+        pila.push(i);
+    }
+
+    return resultado;
+}
+// [73,74,75,71,69,72,76,73] -> [1,1,4,2,1,1,0,0]
+```
+
+## Problemas con Colas
+
+### Problema 5: Rotten Oranges
+
+En una cuadrícula, cada minuto las naranjas podridas pudren a sus vecinas. ¿Cuánto tiempo toma pudrir todas?
+
+```cpp
+int tiempoPudrir(vector<vector<int>>& grid) {
+    int n = grid.size(), m = grid[0].size();
+    queue<pair<int,int>> cola;
+    int frescas = 0;
+
+    // Encontrar podridas iniciales y contar frescas
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (grid[i][j] == 2) {
+                cola.push({i, j});
+            } else if (grid[i][j] == 1) {
+                frescas++;
+            }
+        }
+    }
+
+    if (frescas == 0) return 0;
+
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+    int tiempo = 0;
+
+    while (!cola.empty()) {
+        int tam = cola.size();
+        bool pudrioAlguien = false;
+
+        for (int i = 0; i < tam; i++) {
+            auto [x, y] = cola.front();
+            cola.pop();
+
+            for (int d = 0; d < 4; d++) {
+                int nx = x + dx[d];
+                int ny = y + dy[d];
+
+                if (nx >= 0 && nx < n && ny >= 0 && ny < m && grid[nx][ny] == 1) {
+                    grid[nx][ny] = 2;
+                    frescas--;
+                    cola.push({nx, ny});
+                    pudrioAlguien = true;
+                }
+            }
+        }
+
+        if (pudrioAlguien) tiempo++;
+    }
+
+    return frescas == 0 ? tiempo : -1;
+}
+```
+
+### Problema 6: Shortest Bridge
+
+Hay dos islas en una cuadrícula. Encuentra el número mínimo de celdas de agua que debes convertir para conectarlas.
+
+```cpp
+int puenteCorto(vector<vector<int>>& grid) {
+    int n = grid.size();
+    queue<pair<int,int>> cola;
+    bool encontrado = false;
+
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    // DFS para marcar la primera isla
+    function<void(int, int)> dfs = [&](int x, int y) {
+        if (x < 0 || x >= n || y < 0 || y >= n || grid[x][y] != 1) return;
+        grid[x][y] = 2;
+        cola.push({x, y});
+        for (int d = 0; d < 4; d++) {
+            dfs(x + dx[d], y + dy[d]);
+        }
+    };
+
+    // Encontrar y marcar primera isla
+    for (int i = 0; i < n && !encontrado; i++) {
+        for (int j = 0; j < n && !encontrado; j++) {
+            if (grid[i][j] == 1) {
+                dfs(i, j);
+                encontrado = true;
+            }
+        }
+    }
+
+    // BFS para expandir hasta encontrar la segunda isla
+    int pasos = 0;
+    while (!cola.empty()) {
+        int tam = cola.size();
+
+        for (int i = 0; i < tam; i++) {
+            auto [x, y] = cola.front();
+            cola.pop();
+
+            for (int d = 0; d < 4; d++) {
+                int nx = x + dx[d];
+                int ny = y + dy[d];
+
+                if (nx >= 0 && nx < n && ny >= 0 && ny < n) {
+                    if (grid[nx][ny] == 1) return pasos;
+                    if (grid[nx][ny] == 0) {
+                        grid[nx][ny] = 2;
+                        cola.push({nx, ny});
+                    }
+                }
+            }
+        }
+        pasos++;
+    }
+
+    return -1;
+}
+```
+
+### Problema 7: Walls and Gates
+
+Llena cada celda vacía con la distancia a la puerta más cercana.
+
+```cpp
+void llenarDistancias(vector<vector<int>>& rooms) {
+    int INF = INT_MAX;
+    int n = rooms.size(), m = rooms[0].size();
+    queue<pair<int,int>> cola;
+
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    // Agregar todas las puertas (valor 0)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (rooms[i][j] == 0) {
+                cola.push({i, j});
+            }
+        }
+    }
+
+    // BFS desde todas las puertas simultáneamente
+    while (!cola.empty()) {
+        auto [x, y] = cola.front();
+        cola.pop();
+
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+
+            if (nx >= 0 && nx < n && ny >= 0 && ny < m && rooms[nx][ny] == INF) {
+                rooms[nx][ny] = rooms[x][y] + 1;
+                cola.push({nx, ny});
+            }
+        }
+    }
+}
+```
+
+## Problemas combinados
+
+### Problema 8: Simplificar ruta
+
+Dada una ruta de sistema de archivos, simplifica eliminando `.` y `..`.
+
+```cpp
+string simplificarRuta(string path) {
+    stack<string> pila;
+    stringstream ss(path);
+    string parte;
+
+    while (getline(ss, parte, '/')) {
+        if (parte == "..") {
+            if (!pila.empty()) pila.pop();
+        } else if (parte != "" && parte != ".") {
+            pila.push(parte);
+        }
+    }
+
+    if (pila.empty()) return "/";
+
+    string resultado = "";
+    while (!pila.empty()) {
+        resultado = "/" + pila.top() + resultado;
+        pila.pop();
+    }
+
+    return resultado;
+}
+// "/a/./b/../../c/" -> "/c"
+// "/home//foo/" -> "/home/foo"
+```
+
+### Problema 9: Decode String
+
+Decodifica strings con patrones como `k[encoded_string]`.
+
+```cpp
+string decode(string s) {
+    stack<string> strStack;
+    stack<int> numStack;
+    string actual = "";
+    int num = 0;
+
+    for (char c : s) {
+        if (isdigit(c)) {
+            num = num * 10 + (c - '0');
+        } else if (c == '[') {
+            numStack.push(num);
+            strStack.push(actual);
+            num = 0;
+            actual = "";
+        } else if (c == ']') {
+            int k = numStack.top(); numStack.pop();
+            string temp = strStack.top(); strStack.pop();
+
+            for (int i = 0; i < k; i++) {
+                temp += actual;
+            }
+            actual = temp;
+        } else {
+            actual += c;
+        }
+    }
+
+    return actual;
+}
+// "3[a]2[bc]" -> "aaabcbc"
+// "3[a2[c]]" -> "accaccacc"
+```
+
+## Tips para competencias
+
+1. **Pilas:** Úsalas para:
+   - Matching de paréntesis
+   - Siguiente/anterior elemento mayor/menor
+   - Evaluación de expresiones
+   - Histogramas
+
+2. **Colas:** Úsalas para:
+   - BFS
+   - Procesamiento en orden
+   - Simulaciones
+
+3. **Deque:** Úsala para:
+   - Ventana deslizante
+   - Cuando necesitas ambos extremos
+
+4. **Priority Queue:** Úsala para:
+   - Dijkstra
+   - Selección de elementos óptimos
+   - Problemas de scheduling
+
+## Siguiente paso
+
+Continúa practicando con [Búsqueda Binaria](/blog/algoritmos/busqueda-binaria).

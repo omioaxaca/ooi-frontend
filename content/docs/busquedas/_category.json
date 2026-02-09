@@ -1,0 +1,5 @@
+{
+  "name": "Búsquedas",
+  "description": "Algoritmos de búsqueda: búsqueda binaria, BFS, DFS y técnicas de exploración",
+  "order": 9
+}

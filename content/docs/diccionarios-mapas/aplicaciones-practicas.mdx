@@ -1,0 +1,380 @@
+---
+title: "Aplicaciones Prácticas"
+description: "Problemas comunes resueltos con mapas y conjuntos en competencias"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["map", "set", "aplicaciones", "problemas", "técnicas"]
+syllabusId: 80
+order: 3
+---
+
+## Compresión de coordenadas
+
+Cuando los valores son muy grandes pero la cantidad es pequeña:
+
+```cpp
+vector<int> comprimir(vector<int>& arr) {
+    // Crear set ordenado con valores únicos
+    set<int> valores(arr.begin(), arr.end());
+
+    // Asignar índices comprimidos
+    map<int, int> compresion;
+    int idx = 0;
+    for (int v : valores) {
+        compresion[v] = idx++;
+    }
+
+    // Aplicar compresión
+    vector<int> resultado;
+    for (int x : arr) {
+        resultado.push_back(compresion[x]);
+    }
+
+    return resultado;
+}
+
+// Ejemplo: [1000000, 1, 500000, 1]
+// Resultado: [2, 0, 1, 0]
+```
+
+## Contar subarreglos con suma K
+
+```cpp
+int subarreglosConSumaK(vector<int>& nums, int k) {
+    map<long long, int> frecPrefijo;
+    frecPrefijo[0] = 1;
+
+    long long suma = 0;
+    int cuenta = 0;
+
+    for (int x : nums) {
+        suma += x;
+        // Buscamos prefijos cuya suma sea (suma - k)
+        if (frecPrefijo.count(suma - k)) {
+            cuenta += frecPrefijo[suma - k];
+        }
+        frecPrefijo[suma]++;
+    }
+
+    return cuenta;
+}
+```
+
+## Subarreglo más largo con suma 0
+
+```cpp
+int subarregloSuma0(vector<int>& arr) {
+    map<long long, int> primerIndice;
+    primerIndice[0] = -1;
+
+    long long suma = 0;
+    int maxLen = 0;
+
+    for (int i = 0; i < arr.size(); i++) {
+        suma += arr[i];
+
+        if (primerIndice.count(suma)) {
+            maxLen = max(maxLen, i - primerIndice[suma]);
+        } else {
+            primerIndice[suma] = i;
+        }
+    }
+
+    return maxLen;
+}
+```
+
+## Substring sin caracteres repetidos
+
+```cpp
+int substringMasLargo(string& s) {
+    map<char, int> ultimaPosicion;
+    int maxLen = 0;
+    int inicio = 0;
+
+    for (int i = 0; i < s.size(); i++) {
+        if (ultimaPosicion.count(s[i]) && ultimaPosicion[s[i]] >= inicio) {
+            inicio = ultimaPosicion[s[i]] + 1;
+        }
+
+        ultimaPosicion[s[i]] = i;
+        maxLen = max(maxLen, i - inicio + 1);
+    }
+
+    return maxLen;
+}
+```
+
+## Primer elemento no repetido
+
+```cpp
+char primerNoRepetido(string& s) {
+    map<char, int> freq;
+    for (char c : s) freq[c]++;
+
+    for (char c : s) {
+        if (freq[c] == 1) return c;
+    }
+
+    return '#';  // No existe
+}
+```
+
+## Intersección de dos arreglos
+
+```cpp
+vector<int> interseccion(vector<int>& a, vector<int>& b) {
+    multiset<int> ms(b.begin(), b.end());
+    vector<int> resultado;
+
+    for (int x : a) {
+        auto it = ms.find(x);
+        if (it != ms.end()) {
+            resultado.push_back(x);
+            ms.erase(it);  // Solo una ocurrencia
+        }
+    }
+
+    return resultado;
+}
+```
+
+## Sistema de nombres únicos
+
+```cpp
+vector<string> nombresUnicos(vector<string>& nombres) {
+    map<string, int> contador;
+    vector<string> resultado;
+
+    for (const string& nombre : nombres) {
+        if (contador.count(nombre)) {
+            string nuevo = nombre + to_string(contador[nombre]);
+            contador[nombre]++;
+            contador[nuevo] = 1;
+            resultado.push_back(nuevo);
+        } else {
+            contador[nombre] = 1;
+            resultado.push_back("OK");
+        }
+    }
+
+    return resultado;
+}
+```
+
+## Menor ventana que contiene todos los caracteres
+
+```cpp
+string menorVentana(string& s, string& t) {
+    map<char, int> necesito, tengo;
+    for (char c : t) necesito[c]++;
+
+    int requeridos = necesito.size();
+    int formados = 0;
+    int inicio = 0, minLen = INT_MAX, minInicio = 0;
+
+    for (int fin = 0; fin < s.size(); fin++) {
+        char c = s[fin];
+        tengo[c]++;
+
+        if (necesito.count(c) && tengo[c] == necesito[c]) {
+            formados++;
+        }
+
+        while (formados == requeridos) {
+            if (fin - inicio + 1 < minLen) {
+                minLen = fin - inicio + 1;
+                minInicio = inicio;
+            }
+
+            char d = s[inicio];
+            tengo[d]--;
+            if (necesito.count(d) && tengo[d] < necesito[d]) {
+                formados--;
+            }
+            inicio++;
+        }
+    }
+
+    return minLen == INT_MAX ? "" : s.substr(minInicio, minLen);
+}
+```
+
+## Ordenar por frecuencia
+
+```cpp
+vector<int> ordenarPorFrecuencia(vector<int>& nums) {
+    map<int, int> freq;
+    for (int x : nums) freq[x]++;
+
+    // Ordenar: mayor frecuencia primero, empates por valor menor
+    sort(nums.begin(), nums.end(), [&](int a, int b) {
+        if (freq[a] != freq[b]) return freq[a] > freq[b];
+        return a < b;
+    });
+
+    return nums;
+}
+```
+
+## Rangos y consultas con set
+
+```cpp
+class IntervalSet {
+    set<pair<int, int>> intervalos;  // {inicio, fin}
+
+public:
+    void agregar(int l, int r) {
+        // Encontrar intervalos que se superponen
+        auto it = intervalos.lower_bound({l, l});
+        if (it != intervalos.begin()) it--;
+
+        while (it != intervalos.end() && it->first <= r) {
+            if (it->second >= l) {
+                l = min(l, it->first);
+                r = max(r, it->second);
+                it = intervalos.erase(it);
+            } else {
+                it++;
+            }
+        }
+
+        intervalos.insert({l, r});
+    }
+
+    bool contiene(int x) {
+        auto it = intervalos.upper_bound({x, INT_MAX});
+        if (it == intervalos.begin()) return false;
+        it--;
+        return it->first <= x && x <= it->second;
+    }
+};
+```
+
+## LRU Cache con map y list
+
+```cpp
+class LRUCache {
+    int capacidad;
+    list<pair<int, int>> lista;  // {clave, valor}
+    unordered_map<int, list<pair<int, int>>::iterator> mapa;
+
+public:
+    LRUCache(int cap) : capacidad(cap) {}
+
+    int get(int clave) {
+        if (!mapa.count(clave)) return -1;
+
+        // Mover al frente
+        auto it = mapa[clave];
+        lista.splice(lista.begin(), lista, it);
+
+        return it->second;
+    }
+
+    void put(int clave, int valor) {
+        if (mapa.count(clave)) {
+            auto it = mapa[clave];
+            it->second = valor;
+            lista.splice(lista.begin(), lista, it);
+            return;
+        }
+
+        if (lista.size() >= capacidad) {
+            int viejo = lista.back().first;
+            mapa.erase(viejo);
+            lista.pop_back();
+        }
+
+        lista.push_front({clave, valor});
+        mapa[clave] = lista.begin();
+    }
+};
+```
+
+## Coordenadas dispersas
+
+```cpp
+class MatrizDispersa {
+    map<pair<int, int>, long long> datos;
+
+public:
+    void set(int x, int y, long long val) {
+        if (val == 0) {
+            datos.erase({x, y});
+        } else {
+            datos[{x, y}] = val;
+        }
+    }
+
+    long long get(int x, int y) {
+        if (datos.count({x, y})) {
+            return datos[{x, y}];
+        }
+        return 0;
+    }
+
+    void sumar(int x, int y, long long delta) {
+        datos[{x, y}] += delta;
+        if (datos[{x, y}] == 0) {
+            datos.erase({x, y});
+        }
+    }
+};
+```
+
+## Template: Problemas con map/set
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+
+    vector<int> arr(n);
+    map<int, int> freq;
+    set<int> unicos;
+
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+        freq[arr[i]]++;
+        unicos.insert(arr[i]);
+    }
+
+    // Valores únicos
+    cout << "Únicos: " << unicos.size() << "\n";
+
+    // Más frecuente
+    int maxF = 0, moda = 0;
+    for (auto& [v, f] : freq) {
+        if (f > maxF) {
+            maxF = f;
+            moda = v;
+        }
+    }
+    cout << "Moda: " << moda << " (" << maxF << " veces)\n";
+
+    // Menor >= X
+    int x;
+    cin >> x;
+    auto it = unicos.lower_bound(x);
+    if (it != unicos.end()) {
+        cout << "Menor >= " << x << ": " << *it << "\n";
+    }
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Subarray Sum II](https://cses.fi/problemset/task/1661)
+2. [LeetCode - Subarray Sum Equals K](https://leetcode.com/problems/subarray-sum-equals-k/)
+3. [LeetCode - Longest Substring Without Repeating](https://leetcode.com/problems/longest-substring-without-repeating-characters/)
+4. [LeetCode - Minimum Window Substring](https://leetcode.com/problems/minimum-window-substring/)
+5. [Codeforces - Registration System](https://codeforces.com/problemset/problem/4/C)

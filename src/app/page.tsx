@@ -20,7 +20,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ClientOnly } from "@/components/client-only"
+import { ClientOnly } from "@/components/client-only";
+import { fetchCurrentContestCycle } from "@/services/contestCycle";
+import type { ContestCycle } from "@/types/dashboard/contestCycle";
+
+// Helper to format dates in Spanish
+const formatDateSpanish = (dateString: string | null): string => {
+  if (!dateString) return "Próximamente";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
+
+// Helper to extract year from cycle name or date
+const getCycleYear = (cycle: ContestCycle | null): string => {
+  if (!cycle) return new Date().getFullYear().toString();
+  // Try to extract year from name (e.g., "OOI 2026" -> "2026")
+  const yearMatch = cycle.name.match(/\d{4}/);
+  if (yearMatch) return yearMatch[0];
+  // Fallback to startClassesDate year or current year
+  if (cycle.startClassesDate) {
+    return new Date(cycle.startClassesDate).getFullYear().toString();
+  }
+  return new Date().getFullYear().toString();
+}
 
 export default function Home() {
   // Animation variants
@@ -84,6 +110,31 @@ export default function Home() {
   // Add this state to track which convocatoria is currently being viewed
   const [selectedConvo, setSelectedConvo] = useState<number | null>(null);
 
+  // Current contest cycle state
+  const [currentCycle, setCurrentCycle] = useState<ContestCycle | null>(null);
+  const [isLoadingCycle, setIsLoadingCycle] = useState(true);
+
+  // Fetch current contest cycle
+  useEffect(() => {
+    const loadCycle = async () => {
+      try {
+        const cycle = await fetchCurrentContestCycle();
+        setCurrentCycle(cycle);
+      } catch (error) {
+        console.error("Error loading contest cycle:", error);
+      } finally {
+        setIsLoadingCycle(false);
+      }
+    };
+    loadCycle();
+  }, []);
+
+  // Dynamic values from current cycle
+  const cycleYear = getCycleYear(currentCycle);
+  const startClassesDate = currentCycle?.startClassesDate
+    ? formatDateSpanish(currentCycle.startClassesDate)
+    : "Próximamente";
+
   return (
     <>
       <ClientOnly>
@@ -108,7 +159,7 @@ export default function Home() {
               {/* Left side - Text content */}
               <div className="text-white text-left">
                 <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30 transition-all text-base px-4 py-2 font-medium">
-                  Selección 2026
+                  Selección {cycleYear}
                 </Badge>
                 <h1 className="text-secondary text-5xl md:text-6xl font-bold mb-6 leading-tight">
                   Olimpiada Oaxaqueña de Informática
@@ -117,7 +168,7 @@ export default function Home() {
                   ¡Vuélvete el/la mejor programador(a) del estado de Oaxaca!
                 </p>
                 <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
-                  Inicio de clases: <span className="text-ooi-yellow">7 de Abril 2026</span>
+                  Inicio de clases: <span className="text-ooi-yellow">{startClassesDate}</span>
                 </p>
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link href="/registro">
@@ -200,7 +251,7 @@ export default function Home() {
                       </motion.div>
                     </div>
                     <p className="text-ooi-text-dark">
-                    La OOI es una competencia diseñada para jóvenes apasionados por la resolución de problemas mediante la programación y la lógica computacional. A través de entrenamientos y desafíos progresivos, buscamos descubrir y formar a los mejores talentos de Oaxaca, quienes representarán al estado en la Olimpiada Mexicana de Informática 2026.
+                    La OOI es una competencia diseñada para jóvenes apasionados por la resolución de problemas mediante la programación y la lógica computacional. A través de entrenamientos y desafíos progresivos, buscamos descubrir y formar a los mejores talentos de Oaxaca, quienes representarán al estado en la Olimpiada Mexicana de Informática {cycleYear}.
                     </p>
                   </CardContent>
                 </Card>
@@ -777,39 +828,19 @@ export default function Home() {
                 >
                   {[
                     {
-                      'name': 'Alejandro García',
-                      'image': 'alex',
-                      'role': 'Delegado Estatal',
-                    },
-                    {
-                      'name': 'Daniel Gómez',
-                      'image': 'daniel',
-                      'role': 'Líder de Competencia',
-                    },
-                    {
                       'name': 'Jose Garfias',
                       'image': 'jose',
-                      'role': 'Líder de difusión',
-                    },
-                    {
-                      'name': 'Itzayana García',
-                      'image': 'itzayana',
-                      'role': 'Líder de OFMI Oaxaca',
-                    },
-                    {
-                      'name': 'Esaú Peralta',
-                      'image': 'esau',
-                      'role': 'Profesor',
+                      'role': 'Coordinador',
                     },
                     {
                       'name': 'Biniza Ruiz',
                       'image': 'bini',
-                      'role': 'Profesora',
+                      'role': 'OFMI Oaxaca',
                     },
                     {
-                      'name': 'Javier Alonso',
-                      'image': 'javi',
-                      'role': 'Profesor',
+                      'name': 'Itzayana García',
+                      'image': 'itzayana',
+                      'role': 'OFMI Oaxaca',
                     },
                     {
                       'name': 'Fernando Mauro',
@@ -817,8 +848,13 @@ export default function Home() {
                       'role': 'Profesor',
                     },
                     {
-                      'name': 'Giovanni Martínez',
-                      'image': 'gio',
+                      'name': 'Zaid Diaz',
+                      'image': 'zaid',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Esaú Peralta',
+                      'image': 'esau',
                       'role': 'Profesor',
                     },
                     {
@@ -834,6 +870,41 @@ export default function Home() {
                     {
                       'name': 'Juliho García',
                       'image': 'juliho',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Jhazeel Martínez',
+                      'image': 'jhazeel',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Eduardo Calvo',
+                      'image': 'eduardo',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Nelson Ortiz',
+                      'image': 'nelson',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Alejandro García',
+                      'image': 'alex',
+                      'role': 'Delegado Estatal',
+                    },
+                    {
+                      'name': 'Daniel Gómez',
+                      'image': 'daniel',
+                      'role': 'Líder de Competencia',
+                    },
+                    {
+                      'name': 'Javier Alonso',
+                      'image': 'javi',
+                      'role': 'Profesor',
+                    },
+                    {
+                      'name': 'Giovanni Martínez',
+                      'image': 'gio',
                       'role': 'Profesor',
                     },
                   ].map((person) => (
@@ -884,7 +955,7 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true }}
             >
-              {[2026, 2024, 2023].map((convoYear) => (
+              {[2026, 2025, 2024, 2023].map((convoYear) => (
                 <motion.div
                   key={convoYear}
                   variants={itemVariants}
@@ -1225,20 +1296,29 @@ export default function Home() {
                 <ul className="space-y-2 text-sm">
                   {[
                     {
+                      title: "Documentación",
+                      url: "/blog",
+                      internal: true
+                    },
+                    {
                       title: "Material de Estudio",
-                      url: "https://wiki.omioaxaca.org/"
+                      url: "https://wiki.omioaxaca.org/",
+                      internal: false
                     },
                     {
                       title: "Github",
-                      url: "https://github.com/omioaxaca"
+                      url: "https://github.com/omioaxaca",
+                      internal: false
                     },
                     {
                       title: "Cursos",
-                      url: "https://www.youtube.com/channel/UC1vuv9F35Nlsg4X__AK6AZw/playlists"
+                      url: "https://www.youtube.com/channel/UC1vuv9F35Nlsg4X__AK6AZw/playlists",
+                      internal: false
                     },
                     {
                       title: "Preguntas Frecuentes",
-                      url: "https://wiki.omioaxaca.org/es/faq"
+                      url: "https://wiki.omioaxaca.org/es/faq",
+                      internal: false
                     },
                   ].map((item, index) => (
                     <motion.li
@@ -1247,7 +1327,7 @@ export default function Home() {
                       transition={{ duration: 0.2 }}
                     >
                       <Link href={item.url}
-                            target="_blank"
+                            target={item.internal ? undefined : "_blank"}
                             className="hover:text-white">
                         {item.title}
                       </Link>

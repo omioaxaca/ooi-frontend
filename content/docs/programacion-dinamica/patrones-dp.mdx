@@ -1,0 +1,351 @@
+---
+title: "Patrones de Programación Dinámica"
+description: "Aprende los patrones más comunes de DP: intervalos, árboles, bitmask y dígitos"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["DP", "patrones", "bitmask", "intervalos", "árboles"]
+syllabusId: 70
+order: 2
+---
+
+## DP en Intervalos
+
+Resuelve problemas sobre rangos [i, j].
+
+### Multiplicación de matrices encadenadas
+
+```cpp
+int mcm(vector<int>& dims) {
+    int n = dims.size() - 1;  // número de matrices
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+
+    // Longitud del intervalo
+    for (int len = 2; len <= n; len++) {
+        for (int i = 0; i <= n - len; i++) {
+            int j = i + len - 1;
+            dp[i][j] = INT_MAX;
+
+            // Probar todos los puntos de corte
+            for (int k = i; k < j; k++) {
+                int costo = dp[i][k] + dp[k + 1][j] +
+                           dims[i] * dims[k + 1] * dims[j + 1];
+                dp[i][j] = min(dp[i][j], costo);
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+}
+```
+
+### Palíndromo más largo
+
+```cpp
+int palindromoMasLargo(string& s) {
+    int n = s.size();
+    vector<vector<int>> dp(n, vector<int>(n, 0));
+
+    // Casos base: substrings de longitud 1
+    for (int i = 0; i < n; i++) {
+        dp[i][i] = 1;
+    }
+
+    for (int len = 2; len <= n; len++) {
+        for (int i = 0; i <= n - len; i++) {
+            int j = i + len - 1;
+
+            if (s[i] == s[j]) {
+                dp[i][j] = dp[i + 1][j - 1] + 2;
+            } else {
+                dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+}
+```
+
+## DP en Árboles
+
+El estado incluye el nodo actual, se calcula con DFS.
+
+### Máximo conjunto independiente
+
+```cpp
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int valor[MAXN];
+int dp[MAXN][2];  // dp[u][0] = sin u, dp[u][1] = con u
+
+void dfs(int u, int padre) {
+    dp[u][0] = 0;
+    dp[u][1] = valor[u];
+
+    for (int v : adj[u]) {
+        if (v == padre) continue;
+        dfs(v, u);
+
+        dp[u][0] += max(dp[v][0], dp[v][1]);  // u no incluido
+        dp[u][1] += dp[v][0];                  // u incluido → v no puede
+    }
+}
+
+int maxConjuntoIndep(int n) {
+    dfs(1, -1);
+    return max(dp[1][0], dp[1][1]);
+}
+```
+
+### Diámetro del árbol
+
+```cpp
+int diametro;
+
+int dfs(int u, int padre) {
+    int max1 = 0, max2 = 0;
+
+    for (int v : adj[u]) {
+        if (v == padre) continue;
+        int d = dfs(v, u) + 1;
+
+        if (d > max1) {
+            max2 = max1;
+            max1 = d;
+        } else if (d > max2) {
+            max2 = d;
+        }
+    }
+
+    diametro = max(diametro, max1 + max2);
+    return max1;
+}
+```
+
+## DP con Bitmask
+
+Para problemas con n ≤ 20 elementos donde importa qué subconjunto hemos usado.
+
+### Travelling Salesman Problem (TSP)
+
+```cpp
+int n;
+int dist[20][20];
+int dp[1 << 20][20];
+
+int tsp(int mask, int pos) {
+    if (mask == (1 << n) - 1) {
+        return dist[pos][0];  // Volver al inicio
+    }
+
+    if (dp[mask][pos] != -1) {
+        return dp[mask][pos];
+    }
+
+    int ans = INT_MAX;
+    for (int next = 0; next < n; next++) {
+        if (mask & (1 << next)) continue;  // Ya visitado
+
+        int newMask = mask | (1 << next);
+        ans = min(ans, dist[pos][next] + tsp(newMask, next));
+    }
+
+    return dp[mask][pos] = ans;
+}
+
+int main() {
+    // Leer n y dist...
+    memset(dp, -1, sizeof(dp));
+    cout << tsp(1, 0) << endl;  // Empezar en nodo 0
+}
+```
+
+### Asignación de tareas
+
+n personas, n tareas, costo[i][j] = costo de persona i haciendo tarea j.
+
+```cpp
+int n;
+int costo[20][20];
+int dp[1 << 20];
+
+int asignacion() {
+    fill(dp, dp + (1 << n), INT_MAX);
+    dp[0] = 0;
+
+    for (int mask = 0; mask < (1 << n); mask++) {
+        if (dp[mask] == INT_MAX) continue;
+
+        int persona = __builtin_popcount(mask);  // Número de bits en 1
+
+        for (int tarea = 0; tarea < n; tarea++) {
+            if (mask & (1 << tarea)) continue;
+
+            int newMask = mask | (1 << tarea);
+            dp[newMask] = min(dp[newMask], dp[mask] + costo[persona][tarea]);
+        }
+    }
+
+    return dp[(1 << n) - 1];
+}
+```
+
+### Subset Sum con bitmask
+
+```cpp
+bool subsetSum(vector<int>& nums, int target) {
+    int n = nums.size();
+    if (n > 20) {
+        // Usar DP normal para n grande
+    }
+
+    for (int mask = 0; mask < (1 << n); mask++) {
+        int suma = 0;
+        for (int i = 0; i < n; i++) {
+            if (mask & (1 << i)) {
+                suma += nums[i];
+            }
+        }
+        if (suma == target) return true;
+    }
+
+    return false;
+}
+```
+
+## DP de Dígitos
+
+Contar números con cierta propiedad en un rango [0, N].
+
+### Contar números sin dígito 4
+
+```cpp
+string num;
+int dp[20][2];  // [posición][tight]
+
+int solve(int pos, bool tight) {
+    if (pos == num.size()) return 1;
+
+    if (dp[pos][tight] != -1) return dp[pos][tight];
+
+    int limite = tight ? num[pos] - '0' : 9;
+    int resultado = 0;
+
+    for (int d = 0; d <= limite; d++) {
+        if (d == 4) continue;  // Evitar dígito 4
+
+        resultado += solve(pos + 1, tight && (d == limite));
+    }
+
+    return dp[pos][tight] = resultado;
+}
+
+int contarSin4(long long n) {
+    num = to_string(n);
+    memset(dp, -1, sizeof(dp));
+    return solve(0, true);
+}
+```
+
+### Suma de dígitos
+
+```cpp
+pair<int, long long> dp[20][2][200];  // [pos][tight][suma actual] → {count, sumTotal}
+
+pair<int, long long> solve(int pos, bool tight, int suma) {
+    if (pos == num.size()) {
+        return {1, suma};
+    }
+
+    if (!tight && dp[pos][tight][suma].first != -1) {
+        return dp[pos][tight][suma];
+    }
+
+    int limite = tight ? num[pos] - '0' : 9;
+    int count = 0;
+    long long sumTotal = 0;
+
+    for (int d = 0; d <= limite; d++) {
+        auto [c, s] = solve(pos + 1, tight && (d == limite), suma + d);
+        count += c;
+        sumTotal += s;
+    }
+
+    if (!tight) {
+        dp[pos][tight][suma] = {count, sumTotal};
+    }
+
+    return {count, sumTotal};
+}
+```
+
+## DP con Profile (Broken Profile)
+
+Para problemas de llenar grillas.
+
+### Domino Tiling
+
+```cpp
+int n, m;
+int dp[1005][1 << 8];
+
+void solve(int col, int mask, int nextMask, int row) {
+    if (row == n) {
+        dp[col + 1][nextMask] += dp[col][mask];
+        return;
+    }
+
+    if (mask & (1 << row)) {
+        // Celda ya ocupada
+        solve(col, mask, nextMask, row + 1);
+    } else {
+        // Poner dominó vertical (si cabe)
+        if (row + 1 < n && !(mask & (1 << (row + 1)))) {
+            solve(col, mask | (1 << row) | (1 << (row + 1)), nextMask, row + 2);
+        }
+
+        // Poner dominó horizontal
+        solve(col, mask | (1 << row), nextMask | (1 << row), row + 1);
+    }
+}
+```
+
+## Template: DP con memoización
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+map<tuple<int, int, int>, long long> memo;
+
+long long solve(int estado1, int estado2, int estado3) {
+    // Caso base
+    if (/* fin */) return /* valor */;
+
+    auto key = make_tuple(estado1, estado2, estado3);
+    if (memo.count(key)) return memo[key];
+
+    long long res = 0;
+    // Transiciones...
+
+    return memo[key] = res;
+}
+```
+
+## Resumen
+
+| Patrón | Uso típico | Complejidad típica |
+|--------|------------|-------------------|
+| Lineal | Secuencias | $O(n)$ o $O(n^2)$ |
+| Intervalos | Rangos [i,j] | $O(n^3)$ |
+| Árbol | Estructuras jerárquicas | $O(n)$ |
+| Bitmask | Subconjuntos (n ≤ 20) | $O(2^n \cdot n)$ |
+| Dígitos | Contar en rangos | $O(\log N \cdot estados)$ |
+
+## Ejercicios recomendados
+
+1. [CSES - Removal Game](https://cses.fi/problemset/task/1097) (Intervalos)
+2. [CSES - Tree Matching](https://cses.fi/problemset/task/1130) (Árbol)
+3. [CSES - Hamiltonian Flights](https://cses.fi/problemset/task/1690) (Bitmask)
+4. [CSES - Counting Numbers](https://cses.fi/problemset/task/2220) (Dígitos)
+5. [AtCoder - Matching](https://atcoder.jp/contests/dp/tasks/dp_o) (Bitmask)

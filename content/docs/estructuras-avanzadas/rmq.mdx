@@ -1,0 +1,331 @@
+---
+title: "Range Minimum Query (RMQ)"
+description: "Aprende a resolver consultas de mínimo en rangos con diferentes técnicas"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["RMQ", "sparse-table", "segment-tree", "consultas"]
+syllabusId: 57
+order: 1
+---
+
+## El problema RMQ
+
+**Range Minimum Query (RMQ)** consiste en responder consultas sobre el mínimo en un rango de un array.
+
+```
+Array: [2, 4, 3, 1, 6, 7, 8, 9, 1, 7]
+        0  1  2  3  4  5  6  7  8  9
+
+RMQ(2, 5) = mín(3, 1, 6, 7) = 1
+RMQ(0, 3) = mín(2, 4, 3, 1) = 1
+RMQ(6, 9) = mín(8, 9, 1, 7) = 1
+```
+
+## Enfoques
+
+| Método | Preprocesamiento | Consulta | Espacio | Actualizaciones |
+|--------|------------------|----------|---------|-----------------|
+| Fuerza bruta | $O(1)$ | $O(n)$ | $O(n)$ | $O(1)$ |
+| Preprocesar todo | $O(n^2)$ | $O(1)$ | $O(n^2)$ | $O(n^2)$ |
+| **Sparse Table** | $O(n \log n)$ | $O(1)$ | $O(n \log n)$ | ❌ |
+| **Segment Tree** | $O(n)$ | $O(\log n)$ | $O(n)$ | $O(\log n)$ |
+| **Sqrt Decomposition** | $O(n)$ | $O(\sqrt n)$ | $O(\sqrt n)$ | $O(\sqrt n)$ |
+
+## Sparse Table
+
+Ideal para RMQ **sin actualizaciones** con consultas O(1).
+
+### Idea
+
+Precalculamos el mínimo de todos los rangos de tamaño potencia de 2:
+- `st[i][j]` = mínimo desde índice `i` con longitud $2^j$
+
+### Implementación
+
+```cpp
+const int MAXN = 100005;
+const int LOG = 17;  // log2(MAXN) + 1
+
+int arr[MAXN];
+int st[MAXN][LOG];
+int logTable[MAXN];
+
+void construirSparseTable(int n) {
+    // Precalcular logaritmos
+    logTable[1] = 0;
+    for (int i = 2; i <= n; i++) {
+        logTable[i] = logTable[i / 2] + 1;
+    }
+
+    // Caso base: rangos de tamaño 1
+    for (int i = 0; i < n; i++) {
+        st[i][0] = arr[i];
+    }
+
+    // Llenar la tabla
+    for (int j = 1; j < LOG; j++) {
+        for (int i = 0; i + (1 << j) <= n; i++) {
+            st[i][j] = min(st[i][j-1], st[i + (1 << (j-1))][j-1]);
+        }
+    }
+}
+
+int rmq(int L, int R) {
+    int k = logTable[R - L + 1];
+    return min(st[L][k], st[R - (1 << k) + 1][k]);
+}
+```
+
+### Visualización
+
+```
+Array: [3, 2, 4, 5, 1, 6]
+        0  1  2  3  4  5
+
+st[i][0] (longitud 1):
+[3, 2, 4, 5, 1, 6]
+
+st[i][1] (longitud 2):
+[2, 2, 4, 1, 1, _]  // min(3,2), min(2,4), min(4,5), min(5,1), min(1,6)
+
+st[i][2] (longitud 4):
+[2, 1, 1, _, _, _]  // min(3,2,4,5), min(2,4,5,1), min(4,5,1,6)
+
+Consulta RMQ(1, 4):
+- k = log2(4) = 2
+- min(st[1][2], st[4-4+1][2]) = min(st[1][2], st[1][2]) = 1
+```
+
+## Sqrt Decomposition
+
+Divide el array en bloques de tamaño $\sqrt{n}$:
+
+```cpp
+const int MAXN = 100005;
+const int BLOCK = 320;  // sqrt(MAXN)
+
+int arr[MAXN];
+int bloque[BLOCK];  // Mínimo de cada bloque
+int n;
+
+void construir() {
+    fill(bloque, bloque + BLOCK, INT_MAX);
+
+    for (int i = 0; i < n; i++) {
+        bloque[i / BLOCK] = min(bloque[i / BLOCK], arr[i]);
+    }
+}
+
+int rmq(int L, int R) {
+    int resultado = INT_MAX;
+
+    // Recorrer elemento por elemento hasta el inicio del bloque
+    while (L <= R && L % BLOCK != 0) {
+        resultado = min(resultado, arr[L]);
+        L++;
+    }
+
+    // Recorrer bloques completos
+    while (L + BLOCK - 1 <= R) {
+        resultado = min(resultado, bloque[L / BLOCK]);
+        L += BLOCK;
+    }
+
+    // Recorrer elementos restantes
+    while (L <= R) {
+        resultado = min(resultado, arr[L]);
+        L++;
+    }
+
+    return resultado;
+}
+
+void actualizar(int i, int valor) {
+    int b = i / BLOCK;
+    arr[i] = valor;
+
+    // Recalcular el bloque
+    bloque[b] = INT_MAX;
+    int inicio = b * BLOCK;
+    int fin = min(inicio + BLOCK, n);
+    for (int j = inicio; j < fin; j++) {
+        bloque[b] = min(bloque[b], arr[j]);
+    }
+}
+```
+
+## RMQ con Segment Tree
+
+Ver el artículo dedicado a Segment Tree para una implementación completa.
+
+```cpp
+// Versión simplificada
+int st[4 * MAXN];
+
+void build(int node, int start, int end) {
+    if (start == end) {
+        st[node] = arr[start];
+    } else {
+        int mid = (start + end) / 2;
+        build(2*node, start, mid);
+        build(2*node+1, mid+1, end);
+        st[node] = min(st[2*node], st[2*node+1]);
+    }
+}
+
+int query(int node, int start, int end, int L, int R) {
+    if (R < start || end < L) return INT_MAX;
+    if (L <= start && end <= R) return st[node];
+
+    int mid = (start + end) / 2;
+    return min(query(2*node, start, mid, L, R),
+               query(2*node+1, mid+1, end, L, R));
+}
+```
+
+## Problema: LCA con RMQ
+
+El **Lowest Common Ancestor** (LCA) se puede reducir a RMQ usando Euler Tour:
+
+```cpp
+const int MAXN = 100005;
+const int LOG = 20;
+
+vector<int> adj[MAXN];
+int profundidad[MAXN];
+int primera[MAXN];       // Primera aparición en euler tour
+vector<int> euler;        // Euler tour
+vector<int> niveles;      // Profundidad en euler tour
+
+// Sparse table para niveles
+int st[2 * MAXN][LOG];
+int logTable[2 * MAXN];
+
+void dfs(int u, int padre, int prof) {
+    profundidad[u] = prof;
+    primera[u] = euler.size();
+    euler.push_back(u);
+    niveles.push_back(prof);
+
+    for (int v : adj[u]) {
+        if (v != padre) {
+            dfs(v, u, prof + 1);
+            euler.push_back(u);
+            niveles.push_back(prof);
+        }
+    }
+}
+
+void construirST() {
+    int n = niveles.size();
+
+    logTable[1] = 0;
+    for (int i = 2; i <= n; i++) {
+        logTable[i] = logTable[i/2] + 1;
+    }
+
+    for (int i = 0; i < n; i++) {
+        st[i][0] = i;
+    }
+
+    for (int j = 1; j < LOG; j++) {
+        for (int i = 0; i + (1 << j) <= n; i++) {
+            int izq = st[i][j-1];
+            int der = st[i + (1 << (j-1))][j-1];
+            st[i][j] = (niveles[izq] < niveles[der]) ? izq : der;
+        }
+    }
+}
+
+int lca(int u, int v) {
+    int L = primera[u];
+    int R = primera[v];
+    if (L > R) swap(L, R);
+
+    int k = logTable[R - L + 1];
+    int izq = st[L][k];
+    int der = st[R - (1 << k) + 1][k];
+
+    return (niveles[izq] < niveles[der]) ? euler[izq] : euler[der];
+}
+```
+
+## Aplicaciones de RMQ
+
+1. **LCA en árboles** - Usando Euler Tour
+2. **Subarreglo con mínimo dado** - Consultas de rango
+3. **Sliding window minimum** - Con deque o segment tree
+4. **Closest smaller element** - Combinado con búsqueda binaria
+
+## Código completo: Sparse Table
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+const int LOG = 17;
+
+int arr[MAXN];
+int st[MAXN][LOG];
+int logTable[MAXN];
+
+void build(int n) {
+    logTable[1] = 0;
+    for (int i = 2; i <= n; i++) {
+        logTable[i] = logTable[i/2] + 1;
+    }
+
+    for (int i = 0; i < n; i++) {
+        st[i][0] = arr[i];
+    }
+
+    for (int j = 1; j < LOG; j++) {
+        for (int i = 0; i + (1 << j) <= n; i++) {
+            st[i][j] = min(st[i][j-1], st[i + (1 << (j-1))][j-1]);
+        }
+    }
+}
+
+int query(int L, int R) {
+    int k = logTable[R - L + 1];
+    return min(st[L][k], st[R - (1 << k) + 1][k]);
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, q;
+    cin >> n >> q;
+
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+
+    build(n);
+
+    while (q--) {
+        int L, R;
+        cin >> L >> R;
+        cout << query(L, R) << "\n";
+    }
+
+    return 0;
+}
+```
+
+## Resumen
+
+| Si necesitas... | Usa... |
+|-----------------|--------|
+| Solo consultas, O(1) por consulta | Sparse Table |
+| Consultas y actualizaciones | Segment Tree |
+| Implementación simple, O(√n) | Sqrt Decomposition |
+
+## Ejercicios recomendados
+
+1. [CSES - Static Range Minimum Queries](https://cses.fi/problemset/task/1647)
+2. [SPOJ - RMQSQ](https://www.spoj.com/problems/RMQSQ/)
+3. [CSES - Company Queries I](https://cses.fi/problemset/task/1687)
+4. [Codeforces - Sereja and Brackets](https://codeforces.com/problemset/problem/380/C)

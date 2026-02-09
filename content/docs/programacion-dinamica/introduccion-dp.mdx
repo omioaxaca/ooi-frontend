@@ -1,0 +1,318 @@
+---
+title: "Introducción a Programación Dinámica"
+description: "Aprende los fundamentos de la programación dinámica y cómo identificar problemas DP"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["DP", "programación-dinámica", "optimización", "algoritmos"]
+syllabusId: 69
+order: 1
+---
+
+## ¿Qué es la Programación Dinámica?
+
+La **Programación Dinámica (DP)** es una técnica para resolver problemas dividiéndolos en subproblemas más pequeños y almacenando sus soluciones para evitar cálculos repetidos.
+
+## Características de un problema DP
+
+1. **Subestructura óptima:** La solución óptima contiene soluciones óptimas a subproblemas
+2. **Subproblemas superpuestos:** Los mismos subproblemas se resuelven múltiples veces
+
+## Ejemplo clásico: Fibonacci
+
+### Sin DP (exponencial)
+
+```cpp
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);  // ¡Recalcula los mismos valores!
+}
+// Complejidad: O(2^n)
+```
+
+### Con memoización (top-down)
+
+```cpp
+int memo[105];
+
+int fib(int n) {
+    if (n <= 1) return n;
+    if (memo[n] != -1) return memo[n];  // Ya calculado
+
+    return memo[n] = fib(n - 1) + fib(n - 2);
+}
+
+// Inicializar: memset(memo, -1, sizeof(memo));
+// Complejidad: O(n)
+```
+
+### Con tabulación (bottom-up)
+
+```cpp
+int fib(int n) {
+    if (n <= 1) return n;
+
+    int dp[n + 1];
+    dp[0] = 0;
+    dp[1] = 1;
+
+    for (int i = 2; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+
+    return dp[n];
+}
+// Complejidad: O(n), Espacio: O(n)
+```
+
+### Optimización de espacio
+
+```cpp
+int fib(int n) {
+    if (n <= 1) return n;
+
+    int prev2 = 0, prev1 = 1;
+
+    for (int i = 2; i <= n; i++) {
+        int curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+
+    return prev1;
+}
+// Complejidad: O(n), Espacio: O(1)
+```
+
+## Pasos para resolver problemas DP
+
+1. **Identificar el estado:** ¿Qué variables describen un subproblema?
+2. **Definir la transición:** ¿Cómo se relaciona un estado con estados anteriores?
+3. **Establecer casos base:** ¿Cuáles son los valores iniciales?
+4. **Determinar el orden:** ¿En qué orden calcular los estados?
+5. **Extraer la respuesta:** ¿Dónde está la solución final?
+
+## Problema: Subir escaleras
+
+Hay n escalones. Puedes subir 1 o 2 a la vez. ¿De cuántas formas puedes llegar arriba?
+
+```cpp
+int formasDeSubir(int n) {
+    if (n <= 2) return n;
+
+    int dp[n + 1];
+    dp[1] = 1;  // 1 forma de llegar al escalón 1
+    dp[2] = 2;  // 2 formas: (1+1) o (2)
+
+    for (int i = 3; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+
+    return dp[n];
+}
+```
+
+**Estado:** `dp[i]` = formas de llegar al escalón i
+**Transición:** `dp[i] = dp[i-1] + dp[i-2]`
+**Base:** `dp[1] = 1, dp[2] = 2`
+
+## Problema: Suma de rango máximo
+
+Dado un array, encuentra la suma máxima de un subarreglo contiguo.
+
+```cpp
+int maxSubarraySum(vector<int>& arr) {
+    int n = arr.size();
+    int maxSuma = arr[0];
+    int sumaActual = arr[0];
+
+    for (int i = 1; i < n; i++) {
+        // Decidir: empezar nuevo subarreglo o continuar
+        sumaActual = max(arr[i], sumaActual + arr[i]);
+        maxSuma = max(maxSuma, sumaActual);
+    }
+
+    return maxSuma;
+}
+```
+
+**Estado:** `sumaActual` = suma máxima terminando en posición actual
+**Transición:** `sumaActual = max(arr[i], sumaActual + arr[i])`
+
+## Problema: Mochila 0/1
+
+Tienes n objetos con pesos y valores. Capacidad máxima W. Maximiza el valor.
+
+```cpp
+int mochila(vector<int>& peso, vector<int>& valor, int W) {
+    int n = peso.size();
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            // No tomar objeto i
+            dp[i][w] = dp[i - 1][w];
+
+            // Tomar objeto i (si cabe)
+            if (peso[i - 1] <= w) {
+                dp[i][w] = max(dp[i][w],
+                               dp[i - 1][w - peso[i - 1]] + valor[i - 1]);
+            }
+        }
+    }
+
+    return dp[n][W];
+}
+```
+
+**Estado:** `dp[i][w]` = máximo valor usando primeros i objetos con capacidad w
+**Transición:** `dp[i][w] = max(no tomar, tomar)`
+
+### Optimización de espacio
+
+```cpp
+int mochilaOptimizado(vector<int>& peso, vector<int>& valor, int W) {
+    int n = peso.size();
+    vector<int> dp(W + 1, 0);
+
+    for (int i = 0; i < n; i++) {
+        // Recorrer de derecha a izquierda para no usar valores actualizados
+        for (int w = W; w >= peso[i]; w--) {
+            dp[w] = max(dp[w], dp[w - peso[i]] + valor[i]);
+        }
+    }
+
+    return dp[W];
+}
+```
+
+## Problema: LCS (Longest Common Subsequence)
+
+Encuentra la subsecuencia común más larga entre dos strings.
+
+```cpp
+int lcs(string& a, string& b) {
+    int n = a.size(), m = b.size();
+    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            if (a[i - 1] == b[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    return dp[n][m];
+}
+```
+
+## Problema: LIS (Longest Increasing Subsequence)
+
+Encuentra la subsecuencia creciente más larga.
+
+### O(n²)
+
+```cpp
+int lis(vector<int>& arr) {
+    int n = arr.size();
+    vector<int> dp(n, 1);
+
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (arr[j] < arr[i]) {
+                dp[i] = max(dp[i], dp[j] + 1);
+            }
+        }
+    }
+
+    return *max_element(dp.begin(), dp.end());
+}
+```
+
+### O(n log n)
+
+```cpp
+int lisOptimizado(vector<int>& arr) {
+    vector<int> lis;
+
+    for (int x : arr) {
+        auto it = lower_bound(lis.begin(), lis.end(), x);
+        if (it == lis.end()) {
+            lis.push_back(x);
+        } else {
+            *it = x;
+        }
+    }
+
+    return lis.size();
+}
+```
+
+## Problema: Cambio de monedas
+
+Mínimo número de monedas para formar una cantidad.
+
+```cpp
+int cambioMonedas(vector<int>& monedas, int cantidad) {
+    vector<int> dp(cantidad + 1, INT_MAX);
+    dp[0] = 0;
+
+    for (int c : monedas) {
+        for (int i = c; i <= cantidad; i++) {
+            if (dp[i - c] != INT_MAX) {
+                dp[i] = min(dp[i], dp[i - c] + 1);
+            }
+        }
+    }
+
+    return dp[cantidad] == INT_MAX ? -1 : dp[cantidad];
+}
+```
+
+## Tipos de DP
+
+| Tipo | Ejemplo |
+|------|---------|
+| Lineal | Fibonacci, LIS |
+| 2D | LCS, Mochila |
+| Intervalos | MCM, Palíndromos |
+| Árboles | Subárbol máximo |
+| Bitmask | TSP, Asignación |
+| Dígitos | Contar números |
+
+## Template genérico
+
+```cpp
+// Memoización (top-down)
+int memo[MAXN][MAXM];
+
+int solve(int estado1, int estado2) {
+    // Casos base
+    if (/* condición final */) return /* valor base */;
+
+    // Verificar memo
+    if (memo[estado1][estado2] != -1) {
+        return memo[estado1][estado2];
+    }
+
+    // Calcular respuesta
+    int respuesta = /* valor inicial */;
+    for (/* transiciones posibles */) {
+        respuesta = max/min(respuesta, /* transición */);
+    }
+
+    return memo[estado1][estado2] = respuesta;
+}
+
+// Inicializar: memset(memo, -1, sizeof(memo));
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Dice Combinations](https://cses.fi/problemset/task/1633)
+2. [CSES - Coin Combinations I](https://cses.fi/problemset/task/1635)
+3. [CSES - Grid Paths](https://cses.fi/problemset/task/1638)
+4. [LeetCode - Climbing Stairs](https://leetcode.com/problems/climbing-stairs/)
+5. [LeetCode - House Robber](https://leetcode.com/problems/house-robber/)

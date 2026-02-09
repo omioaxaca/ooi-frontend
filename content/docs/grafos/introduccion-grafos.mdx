@@ -1,0 +1,220 @@
+---
+title: "Introducción a Grafos"
+description: "Aprende los conceptos básicos de teoría de grafos y sus representaciones"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["grafos", "teoría", "representación", "adyacencia"]
+syllabusId: 74
+order: 1
+---
+
+## ¿Qué es un grafo?
+
+Un **grafo** es una estructura matemática que modela relaciones entre objetos. Consiste en:
+
+- **Vértices (nodos):** Los objetos
+- **Aristas (edges):** Las conexiones entre objetos
+
+## Tipos de grafos
+
+### Por dirección
+
+- **No dirigido:** Las aristas no tienen dirección (amistad)
+- **Dirigido:** Las aristas van de un nodo a otro (seguir en redes sociales)
+
+### Por peso
+
+- **Sin peso:** Todas las aristas son iguales
+- **Con peso:** Cada arista tiene un valor asociado (distancia, costo)
+
+### Propiedades especiales
+
+- **Conexo:** Existe camino entre cualquier par de nodos
+- **Acíclico:** No contiene ciclos
+- **Árbol:** Conexo y acíclico (n nodos, n-1 aristas)
+- **Bipartito:** Nodos divisibles en dos grupos sin aristas internas
+
+## Representación: Lista de adyacencia
+
+La forma más común y eficiente para grafos dispersos.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> adj[MAXN];  // Lista de adyacencia
+
+int main() {
+    int n, m;  // n = nodos, m = aristas
+    cin >> n >> m;
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);  // Arista u -> v
+        adj[v].push_back(u);  // Si es no dirigido
+    }
+
+    // Imprimir vecinos del nodo 1
+    cout << "Vecinos de 1: ";
+    for (int vecino : adj[1]) {
+        cout << vecino << " ";
+    }
+
+    return 0;
+}
+```
+
+### Con pesos
+
+```cpp
+vector<pair<int, int>> adj[MAXN];  // {vecino, peso}
+
+// Leer arista con peso
+int u, v, w;
+cin >> u >> v >> w;
+adj[u].push_back({v, w});
+adj[v].push_back({u, w});
+
+// Recorrer
+for (auto [vecino, peso] : adj[u]) {
+    cout << "Vecino: " << vecino << ", Peso: " << peso << "\n";
+}
+```
+
+## Representación: Matriz de adyacencia
+
+Útil para grafos densos o cuando necesitas consultas O(1).
+
+```cpp
+const int MAXN = 1005;
+int matriz[MAXN][MAXN];  // matriz[i][j] = peso de arista i->j
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    // Inicializar (0 = sin arista, o INF para pesos)
+    memset(matriz, 0, sizeof(matriz));
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        matriz[u][v] = 1;
+        matriz[v][u] = 1;  // Si es no dirigido
+    }
+
+    // Verificar si existe arista entre 1 y 2
+    if (matriz[1][2]) {
+        cout << "Existe arista entre 1 y 2\n";
+    }
+
+    return 0;
+}
+```
+
+### Comparación
+
+| Operación | Lista Adyacencia | Matriz Adyacencia |
+|-----------|------------------|-------------------|
+| Espacio | O(V + E) | O(V²) |
+| Agregar arista | O(1) | O(1) |
+| Verificar arista | O(grado) | O(1) |
+| Recorrer vecinos | O(grado) | O(V) |
+
+**Recomendación:** Usa lista de adyacencia casi siempre.
+
+## Lista de aristas
+
+Útil para algoritmos como Kruskal.
+
+```cpp
+struct Arista {
+    int u, v, peso;
+    bool operator<(const Arista& otra) const {
+        return peso < otra.peso;
+    }
+};
+
+vector<Arista> aristas;
+
+// Leer
+int u, v, w;
+cin >> u >> v >> w;
+aristas.push_back({u, v, w});
+
+// Ordenar por peso
+sort(aristas.begin(), aristas.end());
+```
+
+## Grado de un nodo
+
+El **grado** es el número de aristas conectadas a un nodo.
+
+```cpp
+// En lista de adyacencia
+int grado = adj[nodo].size();
+
+// En grafo dirigido
+// Grado de entrada (in-degree) + Grado de salida (out-degree)
+int inDegree[MAXN], outDegree[MAXN];
+
+for (int u = 1; u <= n; u++) {
+    for (int v : adj[u]) {
+        outDegree[u]++;
+        inDegree[v]++;
+    }
+}
+```
+
+## Propiedades importantes
+
+### Suma de grados
+
+En un grafo no dirigido:
+$$\sum_{v} \text{grado}(v) = 2 \cdot |E|$$
+
+### Número de aristas en árbol
+
+Un árbol con n nodos tiene exactamente n-1 aristas.
+
+### Grafo completo
+
+Un grafo completo $K_n$ tiene $\frac{n(n-1)}{2}$ aristas.
+
+## Template básico
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+bool visitado[MAXN];
+int n, m;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    cin >> n >> m;
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // Tu código aquí...
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Counting Rooms](https://cses.fi/problemset/task/1192)
+2. [CSES - Building Roads](https://cses.fi/problemset/task/1666)
+3. [Codeforces - Bear and Friendship](https://codeforces.com/problemset/problem/771/A)

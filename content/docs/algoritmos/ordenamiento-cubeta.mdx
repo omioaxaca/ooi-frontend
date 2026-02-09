@@ -1,0 +1,332 @@
+---
+title: "Ordenamiento por Cubeta (Counting Sort)"
+description: "Aprende el algoritmo de ordenamiento por conteo para ordenar en tiempo lineal"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "ordenamiento", "algoritmos", "counting-sort", "cubeta"]
+syllabusId: 24
+---
+
+## ¿Qué es Counting Sort?
+
+El ordenamiento por conteo (Counting Sort) ordena contando cuántas veces aparece cada valor. Es muy eficiente cuando el rango de valores es limitado.
+
+## Idea básica
+
+1. Contar la frecuencia de cada elemento
+2. Reconstruir el arreglo usando las frecuencias
+
+## Visualización
+
+```
+Arreglo: [4, 2, 2, 8, 3, 3, 1]
+Rango: 1-8
+
+Paso 1: Contar frecuencias
+valor:  1  2  3  4  5  6  7  8
+freq:   1  2  2  1  0  0  0  1
+
+Paso 2: Reconstruir
+[1, 2, 2, 3, 3, 4, 8]
+```
+
+## Implementación básica
+
+```cpp
+void countingSort(vector<int>& arr) {
+    if (arr.empty()) return;
+
+    int maxVal = *max_element(arr.begin(), arr.end());
+    int minVal = *min_element(arr.begin(), arr.end());
+    int rango = maxVal - minVal + 1;
+
+    vector<int> conteo(rango, 0);
+
+    // Contar frecuencias
+    for (int x : arr) {
+        conteo[x - minVal]++;
+    }
+
+    // Reconstruir el arreglo
+    int idx = 0;
+    for (int i = 0; i < rango; i++) {
+        while (conteo[i] > 0) {
+            arr[idx++] = i + minVal;
+            conteo[i]--;
+        }
+    }
+}
+```
+
+## Versión simplificada (valores positivos)
+
+Para valores en rango [0, k]:
+
+```cpp
+void countingSortSimple(vector<int>& arr, int k) {
+    vector<int> conteo(k + 1, 0);
+
+    for (int x : arr) {
+        conteo[x]++;
+    }
+
+    int idx = 0;
+    for (int i = 0; i <= k; i++) {
+        while (conteo[i]--) {
+            arr[idx++] = i;
+        }
+    }
+}
+```
+
+## Counting Sort estable
+
+Para preservar el orden relativo de elementos iguales:
+
+```cpp
+vector<int> countingSortEstable(vector<int>& arr, int maxVal) {
+    int n = arr.size();
+    vector<int> conteo(maxVal + 1, 0);
+    vector<int> resultado(n);
+
+    // Contar frecuencias
+    for (int x : arr) {
+        conteo[x]++;
+    }
+
+    // Acumular (prefijos)
+    for (int i = 1; i <= maxVal; i++) {
+        conteo[i] += conteo[i - 1];
+    }
+
+    // Construir resultado (de atrás hacia adelante para estabilidad)
+    for (int i = n - 1; i >= 0; i--) {
+        resultado[conteo[arr[i]] - 1] = arr[i];
+        conteo[arr[i]]--;
+    }
+
+    return resultado;
+}
+```
+
+## Análisis de complejidad
+
+| Aspecto | Complejidad |
+|---------|-------------|
+| Tiempo | $O(n + k)$ donde k = rango de valores |
+| Espacio | $O(k)$ |
+
+**Mejor que O(n log n)** cuando $k = O(n)$.
+
+## Cuándo usar Counting Sort
+
+✅ **Usar cuando:**
+- Rango de valores es pequeño y conocido
+- Los valores son enteros
+- Necesitas ordenamiento estable
+- k ≤ 10^6 aproximadamente
+
+❌ **No usar cuando:**
+- Los valores son flotantes
+- El rango es muy grande (k >> n)
+- Los valores son strings largos
+
+## Aplicaciones comunes
+
+### Ordenar edades
+
+```cpp
+void ordenarEdades(vector<int>& edades) {
+    vector<int> conteo(121, 0);  // Edades 0-120
+
+    for (int edad : edades) {
+        conteo[edad]++;
+    }
+
+    int idx = 0;
+    for (int i = 0; i <= 120; i++) {
+        while (conteo[i]--) {
+            edades[idx++] = i;
+        }
+    }
+}
+```
+
+### Ordenar calificaciones
+
+```cpp
+void ordenarCalificaciones(vector<int>& notas) {
+    // Notas de 0 a 100
+    vector<int> conteo(101, 0);
+
+    for (int nota : notas) {
+        conteo[nota]++;
+    }
+
+    int idx = 0;
+    for (int i = 0; i <= 100; i++) {
+        while (conteo[i]--) {
+            notas[idx++] = i;
+        }
+    }
+}
+```
+
+### Frecuencia de caracteres
+
+```cpp
+string ordenarCaracteres(string s) {
+    vector<int> freq(256, 0);
+
+    for (char c : s) {
+        freq[c]++;
+    }
+
+    string resultado = "";
+    for (int i = 0; i < 256; i++) {
+        while (freq[i]--) {
+            resultado += (char)i;
+        }
+    }
+
+    return resultado;
+}
+```
+
+## Radix Sort
+
+Usa Counting Sort como subrutina para ordenar por dígitos:
+
+```cpp
+void countingSortPorDigito(vector<int>& arr, int exp) {
+    int n = arr.size();
+    vector<int> resultado(n);
+    vector<int> conteo(10, 0);
+
+    // Contar ocurrencias del dígito
+    for (int i = 0; i < n; i++) {
+        conteo[(arr[i] / exp) % 10]++;
+    }
+
+    // Acumular
+    for (int i = 1; i < 10; i++) {
+        conteo[i] += conteo[i - 1];
+    }
+
+    // Construir resultado (de atrás para estabilidad)
+    for (int i = n - 1; i >= 0; i--) {
+        int digito = (arr[i] / exp) % 10;
+        resultado[conteo[digito] - 1] = arr[i];
+        conteo[digito]--;
+    }
+
+    arr = resultado;
+}
+
+void radixSort(vector<int>& arr) {
+    int maxVal = *max_element(arr.begin(), arr.end());
+
+    for (int exp = 1; maxVal / exp > 0; exp *= 10) {
+        countingSortPorDigito(arr, exp);
+    }
+}
+```
+
+## Bucket Sort
+
+Distribuye elementos en "cubetas" y ordena cada una:
+
+```cpp
+void bucketSort(vector<float>& arr) {
+    int n = arr.size();
+    vector<vector<float>> buckets(n);
+
+    // Distribuir en cubetas
+    for (float x : arr) {
+        int idx = n * x;  // Asume valores en [0, 1)
+        buckets[idx].push_back(x);
+    }
+
+    // Ordenar cada cubeta
+    for (auto& bucket : buckets) {
+        sort(bucket.begin(), bucket.end());
+    }
+
+    // Concatenar
+    int idx = 0;
+    for (auto& bucket : buckets) {
+        for (float x : bucket) {
+            arr[idx++] = x;
+        }
+    }
+}
+```
+
+## Comparación de algoritmos
+
+| Algoritmo | Tiempo | Espacio | Estable | Restricción |
+|-----------|--------|---------|---------|-------------|
+| Counting Sort | O(n+k) | O(k) | Sí | Enteros, rango pequeño |
+| Radix Sort | O(d(n+k)) | O(n+k) | Sí | Enteros |
+| Bucket Sort | O(n+k) | O(n) | Sí* | Distribución uniforme |
+| Quick Sort | O(n log n) | O(log n) | No | General |
+| Merge Sort | O(n log n) | O(n) | Sí | General |
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Ordena un arreglo de números donde cada número está en [1, 1000] con la máxima eficiencia.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+void ordenarRango1a1000(vector<int>& arr) {
+    vector<int> conteo(1001, 0);
+
+    for (int x : arr) {
+        conteo[x]++;
+    }
+
+    int idx = 0;
+    for (int i = 1; i <= 1000; i++) {
+        while (conteo[i]--) {
+            arr[idx++] = i;
+        }
+    }
+}
+```
+
+</details>
+
+### Ejercicio 2
+Encuentra el k-ésimo elemento más pequeño en O(n + k).
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int kEsimoMenor(vector<int>& arr, int k, int maxVal) {
+    vector<int> conteo(maxVal + 1, 0);
+
+    for (int x : arr) {
+        conteo[x]++;
+    }
+
+    int cuenta = 0;
+    for (int i = 0; i <= maxVal; i++) {
+        cuenta += conteo[i];
+        if (cuenta >= k) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Búsqueda Binaria](/blog/algoritmos/busqueda-binaria) para encontrar elementos eficientemente.

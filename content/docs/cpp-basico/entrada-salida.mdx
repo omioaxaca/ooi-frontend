@@ -1,0 +1,350 @@
+---
+title: "Entrada y Salida de Datos"
+description: "Aprende a leer datos de entrada y mostrar resultados usando cin y cout en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "entrada-salida", "cin", "cout", "básico"]
+syllabusId: 7
+---
+
+## Entrada estándar (stdin) y Salida estándar (stdout)
+
+En programación competitiva, los programas:
+- **Leen** datos de la entrada estándar (stdin)
+- **Escriben** resultados a la salida estándar (stdout)
+
+## Salida con cout
+
+`cout` (character output) muestra datos en pantalla:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hola, mundo!" << endl;
+    return 0;
+}
+```
+
+### Imprimir diferentes tipos
+
+```cpp
+int edad = 15;
+double altura = 1.75;
+char grado = 'A';
+string nombre = "Juan";
+
+cout << "Nombre: " << nombre << endl;
+cout << "Edad: " << edad << endl;
+cout << "Altura: " << altura << endl;
+cout << "Grado: " << grado << endl;
+```
+
+### Concatenar salidas
+
+```cpp
+int a = 5, b = 3;
+cout << a << " + " << b << " = " << (a + b) << endl;
+// Salida: 5 + 3 = 8
+```
+
+### Salto de línea
+
+```cpp
+cout << "Línea 1" << endl;    // endl hace flush del buffer
+cout << "Línea 2" << '\n';    // \n es más rápido
+cout << "Línea 3\n";          // Dentro del string
+```
+
+## Entrada con cin
+
+`cin` (character input) lee datos del teclado:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int numero;
+    cout << "Ingresa un número: ";
+    cin >> numero;
+    cout << "Ingresaste: " << numero << endl;
+    return 0;
+}
+```
+
+### Leer múltiples valores
+
+```cpp
+int a, b, c;
+
+// En líneas separadas o en la misma línea
+cin >> a >> b >> c;
+
+// Equivalente a:
+// cin >> a;
+// cin >> b;
+// cin >> c;
+```
+
+**Entrada:**
+```
+10 20 30
+```
+o
+```
+10
+20
+30
+```
+
+### Leer diferentes tipos
+
+```cpp
+int edad;
+double peso;
+string nombre;
+
+cin >> nombre >> edad >> peso;
+```
+
+**Entrada:**
+```
+Juan 15 65.5
+```
+
+### Leer líneas completas
+
+`cin >>` se detiene en espacios. Para leer líneas completas:
+
+```cpp
+string linea;
+getline(cin, linea);
+cout << "Leíste: " << linea << endl;
+```
+
+**Entrada:**
+```
+Hola mundo cruel
+```
+
+**Salida:**
+```
+Leíste: Hola mundo cruel
+```
+
+## Formato de entrada en competencias
+
+### Caso único
+
+```cpp
+int n;
+cin >> n;
+// procesar n
+```
+
+### Múltiples casos con cantidad conocida
+
+```cpp
+int t;
+cin >> t;
+while (t--) {
+    int n;
+    cin >> n;
+    // procesar n
+}
+```
+
+### Leer hasta fin de archivo (EOF)
+
+```cpp
+int n;
+while (cin >> n) {
+    // procesar n
+}
+```
+
+### Leer arreglos
+
+```cpp
+int n;
+cin >> n;
+
+vector<int> arr(n);
+for (int i = 0; i < n; i++) {
+    cin >> arr[i];
+}
+
+// O más elegante:
+for (int& x : arr) {
+    cin >> x;
+}
+```
+
+## Optimización de I/O
+
+Para programas con mucha entrada/salida:
+
+```cpp
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    // Tu código aquí
+
+    return 0;
+}
+```
+
+**¡Importante!** Después de esto, no mezcles `cin/cout` con `scanf/printf`.
+
+## Precisión de decimales
+
+```cpp
+#include <iomanip>
+
+double pi = 3.14159265358979;
+
+cout << pi << endl;                    // 3.14159
+cout << fixed << setprecision(2) << pi << endl;  // 3.14
+cout << fixed << setprecision(10) << pi << endl; // 3.1415926536
+```
+
+## Ejemplo completo: Promedio de calificaciones
+
+```cpp
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+
+    double suma = 0;
+    for (int i = 0; i < n; i++) {
+        double calif;
+        cin >> calif;
+        suma += calif;
+    }
+
+    double promedio = suma / n;
+    cout << fixed << setprecision(2) << promedio << endl;
+
+    return 0;
+}
+```
+
+**Entrada:**
+```
+5
+90 85 78 92 88
+```
+
+**Salida:**
+```
+86.60
+```
+
+## Errores comunes
+
+### 1. No leer todos los datos
+
+```cpp
+// Si la entrada es "5 10"
+int a;
+cin >> a;
+// ¡Olvidaste leer el segundo número!
+```
+
+### 2. Mezclar getline con cin
+
+```cpp
+int n;
+string linea;
+
+cin >> n;
+getline(cin, linea);  // ¡Lee una línea vacía!
+
+// Solución: limpiar el buffer
+cin >> n;
+cin.ignore();  // Ignora el salto de línea
+getline(cin, linea);
+```
+
+### 3. Tipos incorrectos
+
+```cpp
+int x;
+cin >> x;
+// Si el usuario ingresa "abc", x queda en estado inválido
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Lee dos números y muestra su suma, resta, multiplicación y división.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+
+    cout << a << " + " << b << " = " << (a + b) << endl;
+    cout << a << " - " << b << " = " << (a - b) << endl;
+    cout << a << " * " << b << " = " << (a * b) << endl;
+    cout << a << " / " << b << " = " << (a / b) << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Lee n números y muestra el mayor y el menor.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    int mayor = INT_MIN;
+    int menor = INT_MAX;
+
+    for (int i = 0; i < n; i++) {
+        int x;
+        cin >> x;
+        if (x > mayor) mayor = x;
+        if (x < menor) menor = x;
+    }
+
+    cout << "Mayor: " << mayor << endl;
+    cout << "Menor: " << menor << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Operadores Aritméticos](/blog/cpp-basico/operadores-aritmeticos) para realizar cálculos matemáticos.

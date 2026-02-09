@@ -1,0 +1,374 @@
+---
+title: "Strings en C++"
+description: "Aprende a manipular cadenas de texto en C++ para resolver problemas de competencias"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "strings", "cadenas", "texto", "STL"]
+syllabusId: 20
+---
+
+## Strings en C++
+
+En C++ puedes usar `string` de la STL, que es más cómodo que arreglos de `char`.
+
+```cpp
+#include <string>
+using namespace std;
+
+int main() {
+    string s = "Hola Mundo";
+    cout << s << endl;
+    return 0;
+}
+```
+
+## Operaciones básicas
+
+### Declaración e inicialización
+
+```cpp
+string s1;                    // String vacío ""
+string s2 = "Hola";           // "Hola"
+string s3("Mundo");           // "Mundo"
+string s4(5, 'a');            // "aaaaa"
+string s5 = s2 + " " + s3;    // "Hola Mundo"
+```
+
+### Acceso a caracteres
+
+```cpp
+string s = "Hola";
+
+cout << s[0] << endl;      // 'H'
+cout << s[1] << endl;      // 'o'
+cout << s.at(2) << endl;   // 'l' (con verificación de límites)
+cout << s.front() << endl; // 'H' (primer carácter)
+cout << s.back() << endl;  // 'a' (último carácter)
+```
+
+### Longitud
+
+```cpp
+string s = "Hola";
+
+cout << s.length() << endl;  // 4
+cout << s.size() << endl;    // 4 (equivalente)
+cout << s.empty() << endl;   // 0 (false, no está vacío)
+```
+
+## Modificación
+
+### Concatenación
+
+```cpp
+string s = "Hola";
+
+s += " Mundo";           // "Hola Mundo"
+s.append("!");           // "Hola Mundo!"
+s.push_back('?');        // "Hola Mundo!?"
+```
+
+### Inserción y eliminación
+
+```cpp
+string s = "Hola Mundo";
+
+s.insert(5, "Cruel ");   // "Hola Cruel Mundo"
+s.erase(5, 6);           // "Hola Mundo" (desde pos 5, eliminar 6 chars)
+s.clear();               // "" (vacía el string)
+```
+
+### Reemplazo
+
+```cpp
+string s = "Hola Mundo";
+
+s.replace(0, 4, "Adios");  // "Adios Mundo"
+```
+
+## Substrings
+
+```cpp
+string s = "Hola Mundo";
+
+string sub1 = s.substr(0, 4);   // "Hola" (desde 0, 4 caracteres)
+string sub2 = s.substr(5);      // "Mundo" (desde 5 hasta el final)
+```
+
+## Búsqueda
+
+```cpp
+string s = "Hola Mundo Hola";
+
+size_t pos1 = s.find("Hola");       // 0 (primera ocurrencia)
+size_t pos2 = s.rfind("Hola");      // 11 (última ocurrencia)
+size_t pos3 = s.find("xyz");        // string::npos (no encontrado)
+
+if (s.find("Mundo") != string::npos) {
+    cout << "Encontrado!" << endl;
+}
+
+// Buscar desde una posición
+size_t pos4 = s.find("Hola", 1);    // 11 (desde posición 1)
+```
+
+## Comparación
+
+```cpp
+string a = "abc", b = "abd";
+
+// Comparación lexicográfica
+if (a < b) cout << "a va antes" << endl;
+if (a == b) cout << "Son iguales" << endl;
+
+// Método compare
+int cmp = a.compare(b);
+// cmp < 0: a < b
+// cmp == 0: a == b
+// cmp > 0: a > b
+```
+
+## Conversiones
+
+### String a número
+
+```cpp
+string s = "12345";
+
+int n = stoi(s);           // 12345 (string to int)
+long l = stol(s);          // string to long
+double d = stod("3.14");   // 3.14 (string to double)
+```
+
+### Número a string
+
+```cpp
+int n = 12345;
+double d = 3.14159;
+
+string s1 = to_string(n);  // "12345"
+string s2 = to_string(d);  // "3.141590"
+```
+
+## Entrada de strings
+
+```cpp
+string palabra, linea;
+
+cin >> palabra;           // Lee una palabra (hasta espacio)
+getline(cin, linea);      // Lee toda la línea
+
+// Cuidado: después de cin >> x, hay un '\n' residual
+int n;
+cin >> n;
+cin.ignore();             // Ignorar el '\n'
+getline(cin, linea);
+```
+
+## Algoritmos útiles
+
+### Invertir
+
+```cpp
+string s = "Hola";
+reverse(s.begin(), s.end());  // "aloH"
+```
+
+### Ordenar
+
+```cpp
+string s = "dcba";
+sort(s.begin(), s.end());  // "abcd"
+```
+
+### Mayúsculas/Minúsculas
+
+```cpp
+string s = "HoLa MuNdO";
+
+// A minúsculas
+for (char& c : s) {
+    c = tolower(c);
+}
+// "hola mundo"
+
+// A mayúsculas
+for (char& c : s) {
+    c = toupper(c);
+}
+// "HOLA MUNDO"
+```
+
+### Verificar tipo de carácter
+
+```cpp
+char c = 'A';
+
+isalpha(c);   // true si es letra
+isdigit(c);   // true si es dígito
+isalnum(c);   // true si es letra o dígito
+isspace(c);   // true si es espacio/tab/newline
+isupper(c);   // true si es mayúscula
+islower(c);   // true si es minúscula
+```
+
+## Patrones comunes
+
+### Verificar palíndromo
+
+```cpp
+bool esPalindromo(string s) {
+    int i = 0, j = s.length() - 1;
+    while (i < j) {
+        if (s[i] != s[j]) return false;
+        i++;
+        j--;
+    }
+    return true;
+}
+```
+
+### Contar caracteres
+
+```cpp
+int contarCaracter(string s, char c) {
+    int cuenta = 0;
+    for (char x : s) {
+        if (x == c) cuenta++;
+    }
+    return cuenta;
+}
+
+// O usando count
+int cuenta = count(s.begin(), s.end(), 'a');
+```
+
+### Separar por delimitador
+
+```cpp
+vector<string> separar(string s, char delim) {
+    vector<string> resultado;
+    stringstream ss(s);
+    string token;
+
+    while (getline(ss, token, delim)) {
+        resultado.push_back(token);
+    }
+
+    return resultado;
+}
+// separar("a,b,c", ',') -> ["a", "b", "c"]
+```
+
+### Frecuencia de caracteres
+
+```cpp
+int freq[256] = {0};  // Para todos los caracteres ASCII
+
+for (char c : s) {
+    freq[c]++;
+}
+```
+
+## Ejemplo: Anagramas
+
+Dos palabras son anagramas si tienen las mismas letras:
+
+```cpp
+bool sonAnagramas(string a, string b) {
+    if (a.length() != b.length()) return false;
+
+    sort(a.begin(), a.end());
+    sort(b.begin(), b.end());
+
+    return a == b;
+}
+```
+
+## Ejemplo: Comprimir string
+
+```cpp
+string comprimir(string s) {
+    if (s.empty()) return s;
+
+    string resultado = "";
+    char actual = s[0];
+    int cuenta = 1;
+
+    for (int i = 1; i <= s.length(); i++) {
+        if (i < s.length() && s[i] == actual) {
+            cuenta++;
+        } else {
+            resultado += actual;
+            if (cuenta > 1) {
+                resultado += to_string(cuenta);
+            }
+            if (i < s.length()) {
+                actual = s[i];
+                cuenta = 1;
+            }
+        }
+    }
+
+    return resultado;
+}
+// "aaabbc" -> "a3b2c"
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Verifica si dos strings son rotaciones una de otra.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+bool sonRotaciones(string a, string b) {
+    if (a.length() != b.length()) return false;
+    string concatenado = a + a;
+    return concatenado.find(b) != string::npos;
+}
+// "abcd", "cdab" -> true
+```
+
+</details>
+
+### Ejercicio 2
+Encuentra el substring palíndromo más largo.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+string palindromoMasLargo(string s) {
+    int n = s.length();
+    if (n == 0) return "";
+
+    int inicio = 0, maxLen = 1;
+
+    auto expandir = [&](int i, int j) {
+        while (i >= 0 && j < n && s[i] == s[j]) {
+            if (j - i + 1 > maxLen) {
+                inicio = i;
+                maxLen = j - i + 1;
+            }
+            i--;
+            j++;
+        }
+    };
+
+    for (int i = 0; i < n; i++) {
+        expandir(i, i);     // Palindromos de longitud impar
+        expandir(i, i + 1); // Palindromos de longitud par
+    }
+
+    return s.substr(inicio, maxLen);
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Matrices](/blog/estructuras-de-datos/matrices) para trabajar con datos bidimensionales.

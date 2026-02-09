@@ -1,0 +1,379 @@
+---
+title: "Ciclo For"
+description: "Aprende a usar el ciclo for para repetir código un número determinado de veces"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "ciclos", "for", "iteración", "estructuras-de-control"]
+syllabusId: 15
+---
+
+## ¿Qué es un ciclo?
+
+Un ciclo (o bucle) permite ejecutar un bloque de código múltiples veces. El ciclo `for` es ideal cuando conocemos de antemano cuántas veces queremos repetir.
+
+## Sintaxis del for
+
+```cpp
+for (inicialización; condición; actualización) {
+    // Código a repetir
+}
+```
+
+### Componentes
+
+1. **Inicialización:** Se ejecuta una vez al inicio
+2. **Condición:** Se evalúa antes de cada iteración
+3. **Actualización:** Se ejecuta después de cada iteración
+
+### Flujo de ejecución
+
+```
+inicialización
+    │
+    ▼
+┌───────────┐
+│ condición │◄────┐
+└─────┬─────┘     │
+  true│     false │
+      ▼           │
+  ┌───────┐       │
+  │cuerpo │       │
+  └───┬───┘       │
+      │           │
+      ▼           │
+┌────────────┐    │
+│actualización│───┘
+└────────────┘
+      │ false
+      ▼
+   (fin)
+```
+
+## Ejemplos básicos
+
+### Contar del 1 al 10
+
+```cpp
+for (int i = 1; i <= 10; i++) {
+    cout << i << " ";
+}
+// Salida: 1 2 3 4 5 6 7 8 9 10
+```
+
+### Contar hacia atrás
+
+```cpp
+for (int i = 10; i >= 1; i--) {
+    cout << i << " ";
+}
+// Salida: 10 9 8 7 6 5 4 3 2 1
+```
+
+### Contar de 2 en 2
+
+```cpp
+for (int i = 0; i <= 20; i += 2) {
+    cout << i << " ";
+}
+// Salida: 0 2 4 6 8 10 12 14 16 18 20
+```
+
+## Recorrer arreglos
+
+### Con índice
+
+```cpp
+int arr[] = {10, 20, 30, 40, 50};
+int n = 5;
+
+for (int i = 0; i < n; i++) {
+    cout << arr[i] << " ";
+}
+```
+
+### Con range-based for (C++11)
+
+```cpp
+int arr[] = {10, 20, 30, 40, 50};
+
+for (int x : arr) {
+    cout << x << " ";
+}
+```
+
+### Con referencia para modificar
+
+```cpp
+vector<int> arr = {1, 2, 3, 4, 5};
+
+for (int& x : arr) {
+    x *= 2;  // Duplica cada elemento
+}
+// arr = {2, 4, 6, 8, 10}
+```
+
+## Ciclos anidados
+
+Un ciclo dentro de otro:
+
+```cpp
+for (int i = 1; i <= 3; i++) {
+    for (int j = 1; j <= 3; j++) {
+        cout << "(" << i << "," << j << ") ";
+    }
+    cout << endl;
+}
+```
+
+**Salida:**
+```
+(1,1) (1,2) (1,3)
+(2,1) (2,2) (2,3)
+(3,1) (3,2) (3,3)
+```
+
+### Ejemplo: Tabla de multiplicar
+
+```cpp
+for (int i = 1; i <= 10; i++) {
+    for (int j = 1; j <= 10; j++) {
+        cout << i * j << "\t";
+    }
+    cout << endl;
+}
+```
+
+### Ejemplo: Triángulo de asteriscos
+
+```cpp
+int n = 5;
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= i; j++) {
+        cout << "* ";
+    }
+    cout << endl;
+}
+```
+
+**Salida:**
+```
+*
+* *
+* * *
+* * * *
+* * * * *
+```
+
+## Control de flujo: break y continue
+
+### break
+
+Sale del ciclo inmediatamente:
+
+```cpp
+for (int i = 1; i <= 10; i++) {
+    if (i == 5) break;
+    cout << i << " ";
+}
+// Salida: 1 2 3 4
+```
+
+### continue
+
+Salta a la siguiente iteración:
+
+```cpp
+for (int i = 1; i <= 10; i++) {
+    if (i % 2 == 0) continue;  // Salta los pares
+    cout << i << " ";
+}
+// Salida: 1 3 5 7 9
+```
+
+## Ejemplo: Encontrar un elemento
+
+```cpp
+int arr[] = {4, 2, 7, 1, 9, 3};
+int n = 6;
+int objetivo = 7;
+
+int posicion = -1;
+for (int i = 0; i < n; i++) {
+    if (arr[i] == objetivo) {
+        posicion = i;
+        break;  // Ya lo encontramos, salir
+    }
+}
+
+if (posicion != -1) {
+    cout << "Encontrado en posición " << posicion << endl;
+} else {
+    cout << "No encontrado" << endl;
+}
+```
+
+## Ejemplo: Suma de elementos
+
+```cpp
+vector<int> arr = {1, 2, 3, 4, 5};
+
+int suma = 0;
+for (int x : arr) {
+    suma += x;
+}
+cout << "Suma: " << suma << endl;  // Suma: 15
+```
+
+## Ejemplo: Números primos hasta N
+
+```cpp
+int n;
+cin >> n;
+
+for (int num = 2; num <= n; num++) {
+    bool esPrimo = true;
+
+    for (int i = 2; i * i <= num; i++) {
+        if (num % i == 0) {
+            esPrimo = false;
+            break;
+        }
+    }
+
+    if (esPrimo) {
+        cout << num << " ";
+    }
+}
+```
+
+## Patrones comunes
+
+### Acumulador
+
+```cpp
+int suma = 0;
+for (int i = 1; i <= n; i++) {
+    suma += i;
+}
+```
+
+### Contador
+
+```cpp
+int cuenta = 0;
+for (int x : arr) {
+    if (x > 0) cuenta++;
+}
+```
+
+### Máximo/Mínimo
+
+```cpp
+int maximo = arr[0];
+for (int i = 1; i < n; i++) {
+    if (arr[i] > maximo) {
+        maximo = arr[i];
+    }
+}
+```
+
+## Errores comunes
+
+### 1. Off-by-one error
+
+```cpp
+// ❌ Error: no incluye el último elemento
+for (int i = 0; i < n - 1; i++)
+
+// ✅ Correcto
+for (int i = 0; i < n; i++)
+```
+
+### 2. Modificar el contador dentro del ciclo
+
+```cpp
+// ❌ Comportamiento confuso
+for (int i = 0; i < 10; i++) {
+    i++;  // Salta elementos
+}
+```
+
+### 3. Ciclo infinito
+
+```cpp
+// ❌ Nunca termina
+for (int i = 1; i > 0; i++) { }
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Imprime los primeros n números de Fibonacci.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+int a = 0, b = 1;
+for (int i = 0; i < n; i++) {
+    cout << a << " ";
+    int temp = a + b;
+    a = b;
+    b = temp;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Calcula el factorial de n.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+long long factorial = 1;
+for (int i = 2; i <= n; i++) {
+    factorial *= i;
+}
+cout << factorial << endl;
+```
+
+</details>
+
+### Ejercicio 3
+Imprime un rombo de asteriscos de tamaño n.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+// Parte superior
+for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << endl;
+}
+
+// Parte inferior
+for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << endl;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Ciclo While](/blog/estructuras-de-control/ciclo-while) para cuando no sabes cuántas iteraciones necesitas.

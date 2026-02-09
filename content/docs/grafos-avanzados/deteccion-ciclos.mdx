@@ -1,0 +1,340 @@
+---
+title: "Detección de Ciclos"
+description: "Aprende a detectar ciclos en grafos dirigidos y no dirigidos"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["grafos", "ciclos", "DFS", "detección"]
+syllabusId: 62
+order: 2
+---
+
+## El problema
+
+Dado un grafo, determinar si contiene ciclos. Las técnicas varían según el tipo de grafo.
+
+## Grafos no dirigidos
+
+### Método 1: DFS
+
+Un ciclo existe si encontramos un nodo ya visitado que no es el padre.
+
+```cpp
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+bool visitado[MAXN];
+
+bool dfsCiclo(int u, int padre) {
+    visitado[u] = true;
+
+    for (int v : adj[u]) {
+        if (!visitado[v]) {
+            if (dfsCiclo(v, u)) return true;
+        } else if (v != padre) {
+            return true;  // ¡Ciclo encontrado!
+        }
+    }
+
+    return false;
+}
+
+bool tieneCiclo(int n) {
+    fill(visitado, visitado + n + 1, false);
+
+    for (int i = 1; i <= n; i++) {
+        if (!visitado[i]) {
+            if (dfsCiclo(i, -1)) return true;
+        }
+    }
+
+    return false;
+}
+```
+
+### Método 2: Union-Find
+
+Si al agregar una arista ambos nodos ya están conectados, hay ciclo.
+
+```cpp
+int padre[MAXN];
+int rango[MAXN];
+
+void init(int n) {
+    for (int i = 0; i <= n; i++) {
+        padre[i] = i;
+        rango[i] = 0;
+    }
+}
+
+int find(int x) {
+    if (padre[x] != x) {
+        padre[x] = find(padre[x]);
+    }
+    return padre[x];
+}
+
+bool unite(int x, int y) {
+    int px = find(x), py = find(y);
+    if (px == py) return false;  // Ya conectados → ciclo
+
+    if (rango[px] < rango[py]) swap(px, py);
+    padre[py] = px;
+    if (rango[px] == rango[py]) rango[px]++;
+
+    return true;
+}
+
+bool tieneCicloUF(int n, vector<pair<int,int>>& aristas) {
+    init(n);
+    for (auto [u, v] : aristas) {
+        if (!unite(u, v)) return true;
+    }
+    return false;
+}
+```
+
+## Grafos dirigidos
+
+### Método: Coloreo (3 estados)
+
+Usamos tres colores:
+- **Blanco (0):** No visitado
+- **Gris (1):** En proceso (en el stack de recursión)
+- **Negro (2):** Completamente procesado
+
+Un ciclo existe si encontramos un nodo gris.
+
+```cpp
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int color[MAXN];  // 0=blanco, 1=gris, 2=negro
+
+bool dfsCiclo(int u) {
+    color[u] = 1;  // Marcamos como gris (en proceso)
+
+    for (int v : adj[u]) {
+        if (color[v] == 1) {
+            return true;  // Encontramos nodo gris → ciclo
+        }
+        if (color[v] == 0) {
+            if (dfsCiclo(v)) return true;
+        }
+    }
+
+    color[u] = 2;  // Marcamos como negro (terminado)
+    return false;
+}
+
+bool tieneCicloDirigido(int n) {
+    fill(color, color + n + 1, 0);
+
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == 0) {
+            if (dfsCiclo(i)) return true;
+        }
+    }
+
+    return false;
+}
+```
+
+## Encontrar el ciclo
+
+### En grafo no dirigido
+
+```cpp
+vector<int> adj[MAXN];
+bool visitado[MAXN];
+int padre[MAXN];
+int cicloInicio, cicloFin;
+
+bool dfsBuscarCiclo(int u, int p) {
+    visitado[u] = true;
+    padre[u] = p;
+
+    for (int v : adj[u]) {
+        if (!visitado[v]) {
+            if (dfsBuscarCiclo(v, u)) return true;
+        } else if (v != p) {
+            cicloInicio = v;
+            cicloFin = u;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+vector<int> obtenerCiclo(int n) {
+    fill(visitado, visitado + n + 1, false);
+    cicloInicio = cicloFin = -1;
+
+    for (int i = 1; i <= n; i++) {
+        if (!visitado[i] && dfsBuscarCiclo(i, -1)) {
+            break;
+        }
+    }
+
+    if (cicloInicio == -1) return {};  // No hay ciclo
+
+    vector<int> ciclo;
+    ciclo.push_back(cicloInicio);
+    for (int v = cicloFin; v != cicloInicio; v = padre[v]) {
+        ciclo.push_back(v);
+    }
+    ciclo.push_back(cicloInicio);
+
+    return ciclo;
+}
+```
+
+### En grafo dirigido
+
+```cpp
+vector<int> adj[MAXN];
+int color[MAXN];
+int padre[MAXN];
+int cicloInicio, cicloFin;
+
+bool dfsBuscarCiclo(int u) {
+    color[u] = 1;
+
+    for (int v : adj[u]) {
+        if (color[v] == 1) {
+            cicloInicio = v;
+            cicloFin = u;
+            return true;
+        }
+        if (color[v] == 0) {
+            padre[v] = u;
+            if (dfsBuscarCiclo(v)) return true;
+        }
+    }
+
+    color[u] = 2;
+    return false;
+}
+
+vector<int> obtenerCicloDirigido(int n) {
+    fill(color, color + n + 1, 0);
+    fill(padre, padre + n + 1, -1);
+    cicloInicio = cicloFin = -1;
+
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == 0 && dfsBuscarCiclo(i)) {
+            break;
+        }
+    }
+
+    if (cicloInicio == -1) return {};
+
+    vector<int> ciclo;
+    ciclo.push_back(cicloInicio);
+    for (int v = cicloFin; v != cicloInicio; v = padre[v]) {
+        ciclo.push_back(v);
+    }
+    ciclo.push_back(cicloInicio);
+    reverse(ciclo.begin(), ciclo.end());
+
+    return ciclo;
+}
+```
+
+## Ciclo de longitud específica
+
+### Ciclo de longitud 3 (triángulo)
+
+```cpp
+bool tieneTriangulo(int n) {
+    for (int u = 1; u <= n; u++) {
+        set<int> vecinos(adj[u].begin(), adj[u].end());
+        for (int v : adj[u]) {
+            for (int w : adj[v]) {
+                if (w != u && vecinos.count(w)) {
+                    return true;  // u-v-w-u forma triángulo
+                }
+            }
+        }
+    }
+    return false;
+}
+```
+
+### Ciclo negativo (Bellman-Ford)
+
+Ver sección de caminos más cortos.
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int color[MAXN];
+int parent[MAXN];
+int cycleStart, cycleEnd;
+
+bool dfs(int u) {
+    color[u] = 1;
+    for (int v : adj[u]) {
+        if (color[v] == 1) {
+            cycleStart = v;
+            cycleEnd = u;
+            return true;
+        }
+        if (color[v] == 0) {
+            parent[v] = u;
+            if (dfs(v)) return true;
+        }
+    }
+    color[u] = 2;
+    return false;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, m;
+    cin >> n >> m;
+
+    for (int i = 0; i < m; i++) {
+        int a, b;
+        cin >> a >> b;
+        adj[a].push_back(b);
+    }
+
+    cycleStart = -1;
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == 0 && dfs(i)) break;
+    }
+
+    if (cycleStart == -1) {
+        cout << "IMPOSSIBLE\n";
+    } else {
+        vector<int> cycle;
+        cycle.push_back(cycleStart);
+        for (int v = cycleEnd; v != cycleStart; v = parent[v]) {
+            cycle.push_back(v);
+        }
+        cycle.push_back(cycleStart);
+        reverse(cycle.begin(), cycle.end());
+
+        cout << cycle.size() << "\n";
+        for (int v : cycle) {
+            cout << v << " ";
+        }
+        cout << "\n";
+    }
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Round Trip](https://cses.fi/problemset/task/1669)
+2. [CSES - Round Trip II](https://cses.fi/problemset/task/1678)
+3. [LeetCode - Course Schedule](https://leetcode.com/problems/course-schedule/)
+4. [Codeforces - Bear and Friendship Condition](https://codeforces.com/problemset/problem/580/C)

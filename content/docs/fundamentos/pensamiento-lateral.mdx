@@ -1,0 +1,194 @@
+---
+title: "Pensamiento Lateral y Lógico"
+description: "Desarrolla habilidades de pensamiento lateral y lógico para resolver problemas de programación competitiva"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["pensamiento-lógico", "fundamentos", "resolución-de-problemas"]
+syllabusId: 1
+---
+
+## ¿Qué es el pensamiento lateral?
+
+El pensamiento lateral es una técnica de resolución de problemas que busca soluciones creativas e innovadoras, saliendo de los patrones de pensamiento tradicionales. En programación competitiva, esta habilidad es fundamental para encontrar soluciones elegantes y eficientes.
+
+## Razonamiento Inductivo vs Deductivo
+
+### Razonamiento Inductivo
+
+El razonamiento inductivo parte de casos específicos para llegar a conclusiones generales.
+
+**Ejemplo:** Si observamos que:
+- Para n=1, la suma de 1 a n es 1
+- Para n=2, la suma de 1 a n es 3
+- Para n=3, la suma de 1 a n es 6
+- Para n=4, la suma de 1 a n es 10
+
+Podemos inducir que la fórmula general es: $\frac{n(n+1)}{2}$
+
+### Razonamiento Deductivo
+
+El razonamiento deductivo parte de premisas generales para llegar a conclusiones específicas.
+
+**Ejemplo:** Si sabemos que:
+- Todos los números pares son divisibles entre 2
+- 8 es un número par
+- Por lo tanto, 8 es divisible entre 2
+
+## Técnicas de Pensamiento Lateral
+
+### 1. Reformular el problema
+
+A veces, ver el problema desde otro ángulo revela soluciones más simples.
+
+**Problema:** Encontrar si existe un par de números en un arreglo que sumen K.
+
+**Enfoque directo:** Probar todos los pares O(n²)
+
+**Enfoque lateral:** Para cada número x, buscar si existe K-x en el arreglo O(n) con un conjunto.
+
+```cpp
+bool existePar(vector<int>& arr, int k) {
+    set<int> vistos;
+    for (int x : arr) {
+        if (vistos.count(k - x)) return true;
+        vistos.insert(x);
+    }
+    return false;
+}
+```
+
+### 2. Trabajar hacia atrás
+
+Comenzar desde la solución deseada y retroceder.
+
+**Problema:** Llegar de 1 a N usando solo multiplicar por 2 o sumar 1.
+
+**Enfoque hacia atrás:** Desde N, dividir entre 2 si es par, restar 1 si es impar.
+
+```cpp
+int pasos(int n) {
+    int contador = 0;
+    while (n > 1) {
+        if (n % 2 == 0) n /= 2;
+        else n -= 1;
+        contador++;
+    }
+    return contador;
+}
+```
+
+### 3. Simplificar el problema
+
+Resolver una versión más simple primero.
+
+**Problema complejo:** Encontrar el camino más corto en un laberinto con paredes.
+
+**Versión simple:** Primero resolver sin paredes, luego agregar restricciones.
+
+## Patrones comunes en programación competitiva
+
+### Invariantes
+
+Una propiedad que se mantiene verdadera durante todo el algoritmo.
+
+```cpp
+// Invariante: en cada iteración, arr[0..i-1] está ordenado
+void insertionSort(vector<int>& arr) {
+    for (int i = 1; i < arr.size(); i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+```
+
+### Simetría
+
+Explotar propiedades simétricas del problema.
+
+```cpp
+// ¿Es palíndromo?
+bool esPalindromo(string s) {
+    int i = 0, j = s.length() - 1;
+    while (i < j) {
+        if (s[i] != s[j]) return false;
+        i++; j--;
+    }
+    return true;
+}
+```
+
+### Conteo
+
+Contar elementos en lugar de generarlos.
+
+**Problema:** ¿Cuántos números del 1 al N son divisibles por 3 o 5?
+
+```cpp
+int contar(int n) {
+    int div3 = n / 3;
+    int div5 = n / 5;
+    int div15 = n / 15; // Divisibles por ambos
+    return div3 + div5 - div15; // Inclusión-exclusión
+}
+```
+
+## Ejercicios de práctica
+
+### Problema 1: El Reloj
+
+Un reloj marca las 12:00. ¿Cuántas veces se cruzan las manecillas en 12 horas?
+
+<details>
+<summary>Ver pista</summary>
+
+Piensa en la velocidad relativa de las manecillas. La manecilla de minutos "adelanta" a la de horas.
+
+</details>
+
+<details>
+<summary>Ver solución</summary>
+
+Las manecillas se cruzan 11 veces en 12 horas (no 12, porque la posición inicial a las 12:00 y final coinciden).
+
+</details>
+
+### Problema 2: Intercambio sin variable auxiliar
+
+Intercambia dos variables sin usar una tercera.
+
+```cpp
+void intercambiar(int& a, int& b) {
+    // Tu código aquí
+}
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+void intercambiar(int& a, int& b) {
+    a = a ^ b;
+    b = a ^ b;
+    a = a ^ b;
+}
+// O usando aritmética:
+// a = a + b;
+// b = a - b;
+// a = a - b;
+```
+
+</details>
+
+## Recursos adicionales
+
+- [Canguro Matemático](https://www.ommenlinea.org/actividades/concursos/canguro-matematico/#PrevBen) - Excelentes problemas de lógica
+- Libro: "Lateral Thinking" de Edward de Bono
+
+## Siguiente paso
+
+Continúa aprendiendo sobre [Concepto de Algoritmos](/blog/fundamentos/concepto-algoritmos) para formalizar estas ideas.

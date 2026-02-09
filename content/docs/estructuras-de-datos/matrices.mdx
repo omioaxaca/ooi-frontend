@@ -1,0 +1,435 @@
+---
+title: "Matrices (Arreglos Bidimensionales)"
+description: "Aprende a trabajar con matrices y arreglos bidimensionales en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "matrices", "arreglos", "bidimensional", "estructuras-de-datos"]
+syllabusId: 21
+---
+
+## ¿Qué es una matriz?
+
+Una matriz es un arreglo bidimensional organizado en filas y columnas. Puedes pensar en ella como una tabla o cuadrícula.
+
+```
+Matriz 3x4 (3 filas, 4 columnas):
+
+        col 0   col 1   col 2   col 3
+       ┌───────┬───────┬───────┬───────┐
+fila 0 │   1   │   2   │   3   │   4   │
+       ├───────┼───────┼───────┼───────┤
+fila 1 │   5   │   6   │   7   │   8   │
+       ├───────┼───────┼───────┼───────┤
+fila 2 │   9   │  10   │  11   │  12   │
+       └───────┴───────┴───────┴───────┘
+```
+
+## Declaración
+
+### Arreglo tradicional
+
+```cpp
+int matriz[3][4];  // 3 filas, 4 columnas
+
+// Con inicialización
+int matriz[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+};
+```
+
+### Vector de vectores (recomendado)
+
+```cpp
+#include <vector>
+using namespace std;
+
+// Declaración vacía
+vector<vector<int>> matriz;
+
+// Con tamaño inicial (n filas, m columnas, valor 0)
+vector<vector<int>> matriz(n, vector<int>(m, 0));
+
+// Con inicialización
+vector<vector<int>> matriz = {
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+};
+```
+
+## Acceso a elementos
+
+```cpp
+int matriz[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+};
+
+cout << matriz[0][0] << endl;  // 1 (fila 0, columna 0)
+cout << matriz[1][2] << endl;  // 7 (fila 1, columna 2)
+cout << matriz[2][3] << endl;  // 12 (fila 2, columna 3)
+
+matriz[1][1] = 100;  // Modificar elemento
+```
+
+## Recorrer una matriz
+
+### Con for tradicional
+
+```cpp
+int n = 3, m = 4;
+
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        cout << matriz[i][j] << " ";
+    }
+    cout << endl;
+}
+```
+
+### Con range-based for
+
+```cpp
+vector<vector<int>> matriz = {{1,2,3}, {4,5,6}};
+
+for (auto& fila : matriz) {
+    for (int elemento : fila) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+}
+```
+
+## Lectura desde entrada
+
+```cpp
+int n, m;
+cin >> n >> m;
+
+vector<vector<int>> matriz(n, vector<int>(m));
+
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        cin >> matriz[i][j];
+    }
+}
+```
+
+## Operaciones comunes
+
+### Suma de todos los elementos
+
+```cpp
+int suma = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        suma += matriz[i][j];
+    }
+}
+```
+
+### Elemento máximo
+
+```cpp
+int maximo = matriz[0][0];
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        maximo = max(maximo, matriz[i][j]);
+    }
+}
+```
+
+### Suma por filas
+
+```cpp
+for (int i = 0; i < n; i++) {
+    int sumaFila = 0;
+    for (int j = 0; j < m; j++) {
+        sumaFila += matriz[i][j];
+    }
+    cout << "Fila " << i << ": " << sumaFila << endl;
+}
+```
+
+### Suma por columnas
+
+```cpp
+for (int j = 0; j < m; j++) {
+    int sumaCol = 0;
+    for (int i = 0; i < n; i++) {
+        sumaCol += matriz[i][j];
+    }
+    cout << "Columna " << j << ": " << sumaCol << endl;
+}
+```
+
+## Matrices cuadradas
+
+Una matriz cuadrada tiene el mismo número de filas y columnas.
+
+### Diagonal principal
+
+```cpp
+// Elementos donde i == j
+for (int i = 0; i < n; i++) {
+    cout << matriz[i][i] << " ";
+}
+```
+
+### Diagonal secundaria
+
+```cpp
+// Elementos donde i + j == n - 1
+for (int i = 0; i < n; i++) {
+    cout << matriz[i][n - 1 - i] << " ";
+}
+```
+
+### Traza (suma de diagonal)
+
+```cpp
+int traza = 0;
+for (int i = 0; i < n; i++) {
+    traza += matriz[i][i];
+}
+```
+
+## Recorridos especiales
+
+### Por diagonales
+
+```cpp
+// Todas las diagonales paralelas a la principal
+int n = matriz.size();
+int m = matriz[0].size();
+
+for (int d = 0; d < n + m - 1; d++) {
+    int fila = max(0, d - m + 1);
+    int col = max(0, m - 1 - d);
+
+    while (fila < n && col < m) {
+        cout << matriz[fila][col] << " ";
+        fila++;
+        col++;
+    }
+    cout << endl;
+}
+```
+
+### En espiral
+
+```cpp
+vector<int> recorridoEspiral(vector<vector<int>>& matriz) {
+    vector<int> resultado;
+    if (matriz.empty()) return resultado;
+
+    int top = 0, bottom = matriz.size() - 1;
+    int left = 0, right = matriz[0].size() - 1;
+
+    while (top <= bottom && left <= right) {
+        // Derecha
+        for (int i = left; i <= right; i++)
+            resultado.push_back(matriz[top][i]);
+        top++;
+
+        // Abajo
+        for (int i = top; i <= bottom; i++)
+            resultado.push_back(matriz[i][right]);
+        right--;
+
+        // Izquierda
+        if (top <= bottom) {
+            for (int i = right; i >= left; i--)
+                resultado.push_back(matriz[bottom][i]);
+            bottom--;
+        }
+
+        // Arriba
+        if (left <= right) {
+            for (int i = bottom; i >= top; i--)
+                resultado.push_back(matriz[i][left]);
+            left++;
+        }
+    }
+
+    return resultado;
+}
+```
+
+## Aplicación: Cuadrícula (Grid)
+
+Las cuadrículas son muy comunes en problemas de competencia.
+
+### Movimientos en 4 direcciones
+
+```cpp
+int dx[] = {0, 0, 1, -1};  // derecha, izquierda, abajo, arriba
+int dy[] = {1, -1, 0, 0};
+
+// Desde posición (x, y), visitar vecinos
+for (int d = 0; d < 4; d++) {
+    int nx = x + dx[d];
+    int ny = y + dy[d];
+
+    // Verificar límites
+    if (nx >= 0 && nx < n && ny >= 0 && ny < m) {
+        // Procesar vecino (nx, ny)
+    }
+}
+```
+
+### Movimientos en 8 direcciones
+
+```cpp
+int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+for (int d = 0; d < 8; d++) {
+    int nx = x + dx[d];
+    int ny = y + dy[d];
+    // ...
+}
+```
+
+## Ejemplo: Rotar matriz 90°
+
+```cpp
+void rotar90(vector<vector<int>>& matriz) {
+    int n = matriz.size();
+
+    // Transponer
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            swap(matriz[i][j], matriz[j][i]);
+        }
+    }
+
+    // Invertir cada fila
+    for (int i = 0; i < n; i++) {
+        reverse(matriz[i].begin(), matriz[i].end());
+    }
+}
+```
+
+## Ejemplo: Buscar en matriz ordenada
+
+Matriz donde cada fila y columna está ordenada:
+
+```cpp
+bool buscar(vector<vector<int>>& matriz, int objetivo) {
+    if (matriz.empty()) return false;
+
+    int n = matriz.size();
+    int m = matriz[0].size();
+
+    // Empezar desde esquina superior derecha
+    int fila = 0, col = m - 1;
+
+    while (fila < n && col >= 0) {
+        if (matriz[fila][col] == objetivo) {
+            return true;
+        } else if (matriz[fila][col] < objetivo) {
+            fila++;  // El objetivo está abajo
+        } else {
+            col--;   // El objetivo está a la izquierda
+        }
+    }
+
+    return false;
+}
+```
+
+## Ejemplo: Flood Fill (pintar región)
+
+```cpp
+void floodFill(vector<vector<int>>& imagen, int sr, int sc, int nuevoColor) {
+    int colorOriginal = imagen[sr][sc];
+    if (colorOriginal == nuevoColor) return;
+
+    int n = imagen.size(), m = imagen[0].size();
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    function<void(int, int)> dfs = [&](int x, int y) {
+        if (x < 0 || x >= n || y < 0 || y >= m) return;
+        if (imagen[x][y] != colorOriginal) return;
+
+        imagen[x][y] = nuevoColor;
+
+        for (int d = 0; d < 4; d++) {
+            dfs(x + dx[d], y + dy[d]);
+        }
+    };
+
+    dfs(sr, sc);
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Verifica si una matriz es simétrica (igual a su transpuesta).
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+bool esSimetrica(vector<vector<int>>& matriz) {
+    int n = matriz.size();
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (matriz[i][j] != matriz[j][i]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Cuenta el número de islas en una cuadrícula (grupos de 1s conectados).
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int contarIslas(vector<vector<int>>& grid) {
+    int n = grid.size(), m = grid[0].size();
+    int islas = 0;
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    function<void(int, int)> dfs = [&](int x, int y) {
+        if (x < 0 || x >= n || y < 0 || y >= m || grid[x][y] == 0) return;
+        grid[x][y] = 0;  // Marcar como visitado
+        for (int d = 0; d < 4; d++) {
+            dfs(x + dx[d], y + dy[d]);
+        }
+    };
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (grid[i][j] == 1) {
+                islas++;
+                dfs(i, j);
+            }
+        }
+    }
+
+    return islas;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Algoritmos de Ordenamiento](/blog/algoritmos/ordenamiento-sort-stl) para organizar datos eficientemente.

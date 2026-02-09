@@ -1,0 +1,464 @@
+---
+title: "Estructuras de Datos Persistentes"
+description: "Aprende estructuras de datos persistentes que preservan versiones anteriores"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["persistente", "segment-tree", "versiones", "inmutable"]
+syllabusId: 73
+order: 1
+---
+
+## ¿Qué es persistencia?
+
+Una estructura **persistente** mantiene todas las versiones anteriores después de modificaciones. En lugar de modificar datos existentes, crea nuevas versiones.
+
+**Tipos de persistencia:**
+- **Parcial:** Acceso a cualquier versión, solo modificar la última
+- **Total:** Acceso y modificación de cualquier versión
+- **Funcional:** Inmutable, toda operación crea nueva versión
+
+## Segment Tree Persistente
+
+El Segment Tree persistente mantiene un árbol por cada versión. En lugar de copiar todo el árbol, reutilizamos nodos no modificados.
+
+### Concepto
+
+```
+Versión 0: Árbol original
+Versión 1: Solo nuevos nodos en el camino modificado
+           Los demás apuntan a nodos de versión 0
+```
+
+### Implementación
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+const int MAXLOG = 20;
+
+struct Nodo {
+    int izq, der;  // Índices de hijos
+    int suma;      // Valor almacenado
+};
+
+Nodo arbol[MAXN * MAXLOG];
+int raiz[MAXN];  // Raíz de cada versión
+int nNodos = 0;
+
+int nuevoNodo(int suma = 0, int izq = 0, int der = 0) {
+    arbol[nNodos] = {izq, der, suma};
+    return nNodos++;
+}
+
+// Construir árbol inicial
+int construir(int l, int r, int arr[]) {
+    int nodo = nuevoNodo();
+
+    if (l == r) {
+        arbol[nodo].suma = arr[l];
+        return nodo;
+    }
+
+    int mid = (l + r) / 2;
+    arbol[nodo].izq = construir(l, mid, arr);
+    arbol[nodo].der = construir(mid + 1, r, arr);
+    arbol[nodo].suma = arbol[arbol[nodo].izq].suma +
+                       arbol[arbol[nodo].der].suma;
+
+    return nodo;
+}
+
+// Actualizar creando nueva versión
+int actualizar(int nodo, int l, int r, int pos, int val) {
+    if (l == r) {
+        return nuevoNodo(val);
+    }
+
+    int mid = (l + r) / 2;
+    int nuevoNodoIdx = nuevoNodo();
+
+    if (pos <= mid) {
+        arbol[nuevoNodoIdx].izq = actualizar(arbol[nodo].izq, l, mid, pos, val);
+        arbol[nuevoNodoIdx].der = arbol[nodo].der;  // Reutilizar
+    } else {
+        arbol[nuevoNodoIdx].izq = arbol[nodo].izq;  // Reutilizar
+        arbol[nuevoNodoIdx].der = actualizar(arbol[nodo].der, mid + 1, r, pos, val);
+    }
+
+    arbol[nuevoNodoIdx].suma = arbol[arbol[nuevoNodoIdx].izq].suma +
+                               arbol[arbol[nuevoNodoIdx].der].suma;
+
+    return nuevoNodoIdx;
+}
+
+// Consulta en cualquier versión
+int consultar(int nodo, int l, int r, int ql, int qr) {
+    if (qr < l || r < ql) return 0;
+    if (ql <= l && r <= qr) return arbol[nodo].suma;
+
+    int mid = (l + r) / 2;
+    return consultar(arbol[nodo].izq, l, mid, ql, qr) +
+           consultar(arbol[nodo].der, mid + 1, r, ql, qr);
+}
+
+int main() {
+    int n, q;
+    cin >> n >> q;
+
+    int arr[MAXN];
+    for (int i = 0; i < n; i++) cin >> arr[i];
+
+    // Versión 0: árbol inicial
+    raiz[0] = construir(0, n - 1, arr);
+    int version = 0;
+
+    while (q--) {
+        int tipo;
+        cin >> tipo;
+
+        if (tipo == 1) {
+            // Actualizar: crear nueva versión
+            int pos, val;
+            cin >> pos >> val;
+            version++;
+            raiz[version] = actualizar(raiz[version - 1], 0, n - 1, pos, val);
+        } else if (tipo == 2) {
+            // Consulta en versión específica
+            int v, l, r;
+            cin >> v >> l >> r;
+            cout << consultar(raiz[v], 0, n - 1, l, r) << "\n";
+        }
+    }
+
+    return 0;
+}
+```
+
+## K-ésimo elemento en rango
+
+Aplicación clásica: encontrar el k-ésimo elemento más pequeño en un rango [l, r].
+
+### Idea
+
+1. Versión i = Segment Tree con frecuencias de elementos [0, i]
+2. Para rango [l, r]: restar versión l-1 de versión r
+3. Búsqueda binaria implícita en el árbol
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 200005;
+const int MAXLOG = 20;
+
+struct Nodo {
+    int izq, der, cnt;
+};
+
+Nodo arbol[MAXN * MAXLOG];
+int raiz[MAXN];
+int nNodos = 0;
+
+int nuevoNodo() {
+    arbol[nNodos] = {0, 0, 0};
+    return nNodos++;
+}
+
+int construir(int l, int r) {
+    int nodo = nuevoNodo();
+    if (l < r) {
+        int mid = (l + r) / 2;
+        arbol[nodo].izq = construir(l, mid);
+        arbol[nodo].der = construir(mid + 1, r);
+    }
+    return nodo;
+}
+
+int actualizar(int nodo, int l, int r, int pos) {
+    int nuevoIdx = nuevoNodo();
+    arbol[nuevoIdx] = arbol[nodo];
+    arbol[nuevoIdx].cnt++;
+
+    if (l < r) {
+        int mid = (l + r) / 2;
+        if (pos <= mid) {
+            arbol[nuevoIdx].izq = actualizar(arbol[nodo].izq, l, mid, pos);
+        } else {
+            arbol[nuevoIdx].der = actualizar(arbol[nodo].der, mid + 1, r, pos);
+        }
+    }
+
+    return nuevoIdx;
+}
+
+// Encontrar k-ésimo en rango
+int kEsimo(int nodoL, int nodoR, int l, int r, int k) {
+    if (l == r) return l;
+
+    int mid = (l + r) / 2;
+    int cntIzq = arbol[arbol[nodoR].izq].cnt - arbol[arbol[nodoL].izq].cnt;
+
+    if (k <= cntIzq) {
+        return kEsimo(arbol[nodoL].izq, arbol[nodoR].izq, l, mid, k);
+    } else {
+        return kEsimo(arbol[nodoL].der, arbol[nodoR].der, mid + 1, r, k - cntIzq);
+    }
+}
+
+int main() {
+    int n, q;
+    cin >> n >> q;
+
+    vector<int> a(n), sorted;
+    for (int i = 0; i < n; i++) {
+        cin >> a[i];
+        sorted.push_back(a[i]);
+    }
+
+    // Compresión de coordenadas
+    sort(sorted.begin(), sorted.end());
+    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
+    int m = sorted.size();
+
+    auto getIdx = [&](int x) {
+        return lower_bound(sorted.begin(), sorted.end(), x) - sorted.begin();
+    };
+
+    // Construir versiones
+    raiz[0] = construir(0, m - 1);
+    for (int i = 0; i < n; i++) {
+        raiz[i + 1] = actualizar(raiz[i], 0, m - 1, getIdx(a[i]));
+    }
+
+    // Consultas
+    while (q--) {
+        int l, r, k;
+        cin >> l >> r >> k;  // 1-indexed
+
+        int idx = kEsimo(raiz[l - 1], raiz[r], 0, m - 1, k);
+        cout << sorted[idx] << "\n";
+    }
+
+    return 0;
+}
+```
+
+## Trie Persistente
+
+Útil para problemas de XOR con restricciones de rango.
+
+```cpp
+const int MAXN = 100005;
+const int MAXLOG = 20;
+
+struct NodoTrie {
+    int hijo[2];
+    int cnt;
+};
+
+NodoTrie trie[MAXN * 32];
+int raiz[MAXN];
+int nNodos = 0;
+
+int nuevoNodo() {
+    trie[nNodos] = {{0, 0}, 0};
+    return nNodos++;
+}
+
+int insertar(int nodo, int x, int bit = 30) {
+    int nuevoIdx = nuevoNodo();
+    trie[nuevoIdx] = trie[nodo];
+    trie[nuevoIdx].cnt++;
+
+    if (bit >= 0) {
+        int b = (x >> bit) & 1;
+        trie[nuevoIdx].hijo[b] = insertar(trie[nodo].hijo[b], x, bit - 1);
+    }
+
+    return nuevoIdx;
+}
+
+// Máximo XOR con x usando elementos en [l, r]
+int maxXOR(int nodoL, int nodoR, int x, int bit = 30) {
+    if (bit < 0) return 0;
+
+    int b = (x >> bit) & 1;
+    int opuesto = 1 - b;
+
+    // Contar elementos con bit opuesto
+    int cntOpuesto = trie[trie[nodoR].hijo[opuesto]].cnt -
+                     trie[trie[nodoL].hijo[opuesto]].cnt;
+
+    if (cntOpuesto > 0) {
+        return (1 << bit) + maxXOR(trie[nodoL].hijo[opuesto],
+                                    trie[nodoR].hijo[opuesto], x, bit - 1);
+    } else {
+        return maxXOR(trie[nodoL].hijo[b], trie[nodoR].hijo[b], x, bit - 1);
+    }
+}
+```
+
+## Arreglo Persistente (Funcional)
+
+Implementación simple usando un árbol:
+
+```cpp
+class ArregloPersistente {
+    struct Nodo {
+        int valor;
+        Nodo *izq, *der;
+        Nodo(int v = 0) : valor(v), izq(nullptr), der(nullptr) {}
+        Nodo(Nodo* i, Nodo* d) : valor(0), izq(i), der(d) {}
+    };
+
+    int n;
+    vector<Nodo*> versiones;
+
+    Nodo* construir(int l, int r, vector<int>& arr) {
+        if (l == r) return new Nodo(arr[l]);
+        int mid = (l + r) / 2;
+        return new Nodo(construir(l, mid, arr), construir(mid + 1, r, arr));
+    }
+
+    Nodo* actualizar(Nodo* nodo, int l, int r, int pos, int val) {
+        if (l == r) return new Nodo(val);
+        int mid = (l + r) / 2;
+        if (pos <= mid) {
+            return new Nodo(actualizar(nodo->izq, l, mid, pos, val), nodo->der);
+        } else {
+            return new Nodo(nodo->izq, actualizar(nodo->der, mid + 1, r, pos, val));
+        }
+    }
+
+    int obtener(Nodo* nodo, int l, int r, int pos) {
+        if (l == r) return nodo->valor;
+        int mid = (l + r) / 2;
+        if (pos <= mid) return obtener(nodo->izq, l, mid, pos);
+        return obtener(nodo->der, mid + 1, r, pos);
+    }
+
+public:
+    void init(vector<int>& arr) {
+        n = arr.size();
+        versiones.push_back(construir(0, n - 1, arr));
+    }
+
+    void set(int version, int pos, int val) {
+        versiones.push_back(actualizar(versiones[version], 0, n - 1, pos, val));
+    }
+
+    int get(int version, int pos) {
+        return obtener(versiones[version], 0, n - 1, pos);
+    }
+
+    int ultimaVersion() { return versiones.size() - 1; }
+};
+```
+
+## Union-Find Persistente
+
+```cpp
+class DSUPersistente {
+    struct Nodo {
+        int padre, rango;
+        Nodo *izq, *der;
+    };
+
+    int n;
+    vector<Nodo*> versiones;
+
+    Nodo* construir(int l, int r) {
+        Nodo* nodo = new Nodo();
+        if (l == r) {
+            nodo->padre = l;
+            nodo->rango = 0;
+            return nodo;
+        }
+        int mid = (l + r) / 2;
+        nodo->izq = construir(l, mid);
+        nodo->der = construir(mid + 1, r);
+        return nodo;
+    }
+
+    pair<int, int> get(Nodo* nodo, int l, int r, int pos) {
+        if (l == r) return {nodo->padre, nodo->rango};
+        int mid = (l + r) / 2;
+        if (pos <= mid) return get(nodo->izq, l, mid, pos);
+        return get(nodo->der, mid + 1, r, pos);
+    }
+
+    Nodo* set(Nodo* nodo, int l, int r, int pos, int padre, int rango) {
+        if (l == r) {
+            Nodo* nuevo = new Nodo();
+            nuevo->padre = padre;
+            nuevo->rango = rango;
+            return nuevo;
+        }
+        int mid = (l + r) / 2;
+        Nodo* nuevo = new Nodo();
+        if (pos <= mid) {
+            nuevo->izq = set(nodo->izq, l, mid, pos, padre, rango);
+            nuevo->der = nodo->der;
+        } else {
+            nuevo->izq = nodo->izq;
+            nuevo->der = set(nodo->der, mid + 1, r, pos, padre, rango);
+        }
+        return nuevo;
+    }
+
+public:
+    void init(int _n) {
+        n = _n;
+        versiones.push_back(construir(0, n - 1));
+    }
+
+    int find(int version, int x) {
+        auto [p, r] = get(versiones[version], 0, n - 1, x);
+        if (p == x) return x;
+        return find(version, p);
+    }
+
+    void unite(int version, int x, int y) {
+        int px = find(version, x);
+        int py = find(version, y);
+
+        if (px == py) {
+            versiones.push_back(versiones[version]);
+            return;
+        }
+
+        auto [_, rx] = get(versiones[version], 0, n - 1, px);
+        auto [__, ry] = get(versiones[version], 0, n - 1, py);
+
+        Nodo* nuevo;
+        if (rx < ry) {
+            nuevo = set(versiones[version], 0, n - 1, px, py, rx);
+        } else if (rx > ry) {
+            nuevo = set(versiones[version], 0, n - 1, py, px, ry);
+        } else {
+            auto temp = set(versiones[version], 0, n - 1, py, px, ry);
+            nuevo = set(temp, 0, n - 1, px, px, rx + 1);
+        }
+
+        versiones.push_back(nuevo);
+    }
+};
+```
+
+## Complejidad
+
+| Operación | Tiempo | Espacio adicional |
+|-----------|--------|-------------------|
+| Actualizar | O(log n) | O(log n) nodos |
+| Consultar | O(log n) | O(1) |
+| K versiones | - | O(k log n) |
+
+## Ejercicios recomendados
+
+1. [SPOJ - MKTHNUM](https://www.spoj.com/problems/MKTHNUM/)
+2. [Codeforces - Array Queries](https://codeforces.com/problemset/problem/797/E)
+3. [CSES - Range Queries and Copies](https://cses.fi/problemset/task/1737)
+4. [Codeforces - Xor Paths](https://codeforces.com/problemset/problem/1151/F)
+5. [CodeChef - GPD](https://www.codechef.com/problems/GPD)

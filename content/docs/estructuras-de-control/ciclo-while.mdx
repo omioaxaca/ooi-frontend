@@ -1,0 +1,374 @@
+---
+title: "Ciclo While"
+description: "Aprende a usar el ciclo while para repetir código mientras una condición sea verdadera"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "ciclos", "while", "iteración", "estructuras-de-control"]
+syllabusId: 16
+---
+
+## El ciclo while
+
+El ciclo `while` ejecuta código mientras una condición sea verdadera. Es útil cuando no sabemos exactamente cuántas iteraciones necesitamos.
+
+```cpp
+while (condición) {
+    // Código a repetir
+}
+```
+
+## Ejemplos básicos
+
+### Contar del 1 al 5
+
+```cpp
+int i = 1;
+while (i <= 5) {
+    cout << i << " ";
+    i++;
+}
+// Salida: 1 2 3 4 5
+```
+
+### Sumar hasta que el usuario ingrese 0
+
+```cpp
+int suma = 0;
+int numero;
+
+cin >> numero;
+while (numero != 0) {
+    suma += numero;
+    cin >> numero;
+}
+
+cout << "Suma total: " << suma << endl;
+```
+
+## while vs for
+
+| Usar `for` cuando... | Usar `while` cuando... |
+|---------------------|------------------------|
+| Conoces el número de iteraciones | No sabes cuántas veces repetir |
+| Iteras sobre un rango | Esperas una condición específica |
+| Recorres arreglos con índice | Lees datos hasta EOF |
+
+```cpp
+// for: sabemos que son n elementos
+for (int i = 0; i < n; i++) {
+    cout << arr[i];
+}
+
+// while: no sabemos cuántos datos hay
+while (cin >> x) {
+    procesar(x);
+}
+```
+
+## El ciclo do-while
+
+Ejecuta el código al menos una vez, luego verifica la condición:
+
+```cpp
+do {
+    // Código a ejecutar
+} while (condición);
+```
+
+### Ejemplo: Validar entrada
+
+```cpp
+int opcion;
+do {
+    cout << "Ingresa una opción (1-5): ";
+    cin >> opcion;
+} while (opcion < 1 || opcion > 5);
+
+cout << "Elegiste: " << opcion << endl;
+```
+
+### Diferencia entre while y do-while
+
+```cpp
+int x = 10;
+
+// while: no ejecuta nada (condición falsa desde el inicio)
+while (x < 5) {
+    cout << "while: " << x << endl;
+    x++;
+}
+
+// do-while: ejecuta una vez antes de verificar
+do {
+    cout << "do-while: " << x << endl;
+    x++;
+} while (x < 5);
+// Imprime: do-while: 10
+```
+
+## Patrones comunes
+
+### Leer hasta fin de archivo (EOF)
+
+```cpp
+int n;
+while (cin >> n) {
+    cout << n * 2 << endl;
+}
+```
+
+### Procesar dígitos de un número
+
+```cpp
+int n;
+cin >> n;
+
+while (n > 0) {
+    int digito = n % 10;
+    cout << digito << " ";
+    n /= 10;
+}
+// Si n = 12345, imprime: 5 4 3 2 1
+```
+
+### Algoritmo de Euclides (MCD)
+
+```cpp
+int mcd(int a, int b) {
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+```
+
+### Búsqueda binaria
+
+```cpp
+int busquedaBinaria(vector<int>& arr, int objetivo) {
+    int izq = 0, der = arr.size() - 1;
+
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;
+
+        if (arr[mid] == objetivo) return mid;
+        if (arr[mid] < objetivo) izq = mid + 1;
+        else der = mid - 1;
+    }
+
+    return -1;
+}
+```
+
+## Ejemplo: Número de dígitos
+
+```cpp
+int n;
+cin >> n;
+
+int digitos = 0;
+int temp = abs(n);  // Manejar negativos
+
+if (temp == 0) {
+    digitos = 1;
+} else {
+    while (temp > 0) {
+        digitos++;
+        temp /= 10;
+    }
+}
+
+cout << "Tiene " << digitos << " dígitos" << endl;
+```
+
+## Ejemplo: Potencia de 2
+
+Verificar si un número es potencia de 2:
+
+```cpp
+int n;
+cin >> n;
+
+bool esPotencia = (n > 0);
+int temp = n;
+
+while (temp > 1 && esPotencia) {
+    if (temp % 2 != 0) {
+        esPotencia = false;
+    }
+    temp /= 2;
+}
+
+if (esPotencia) {
+    cout << "Es potencia de 2" << endl;
+} else {
+    cout << "No es potencia de 2" << endl;
+}
+
+// Forma más elegante con bits:
+// bool esPotencia = (n > 0) && ((n & (n-1)) == 0);
+```
+
+## Ejemplo: Conjetura de Collatz
+
+La secuencia de Collatz: si n es par, dividir entre 2; si es impar, multiplicar por 3 y sumar 1.
+
+```cpp
+int n;
+cin >> n;
+
+int pasos = 0;
+while (n != 1) {
+    cout << n << " -> ";
+    if (n % 2 == 0) {
+        n /= 2;
+    } else {
+        n = 3 * n + 1;
+    }
+    pasos++;
+}
+cout << "1" << endl;
+cout << "Pasos: " << pasos << endl;
+```
+
+## Ciclos infinitos (con cuidado)
+
+A veces útiles con `break`:
+
+```cpp
+while (true) {
+    int comando;
+    cin >> comando;
+
+    if (comando == 0) {
+        break;  // Salir del ciclo
+    }
+
+    procesar(comando);
+}
+```
+
+## Errores comunes
+
+### 1. Ciclo infinito no deseado
+
+```cpp
+// ❌ La condición nunca cambia
+int i = 0;
+while (i < 10) {
+    cout << i;
+    // Olvidaste: i++;
+}
+
+// ✅ Correcto
+int i = 0;
+while (i < 10) {
+    cout << i;
+    i++;
+}
+```
+
+### 2. Condición incorrecta
+
+```cpp
+// ❌ Nunca entra al ciclo
+int i = 10;
+while (i < 5) {
+    cout << i;
+    i++;
+}
+```
+
+### 3. Modificar la condición incorrectamente
+
+```cpp
+// ❌ La variable cambia en dirección incorrecta
+int i = 0;
+while (i < 10) {
+    cout << i;
+    i--;  // Debería ser i++
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Invierte un número entero.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int n;
+cin >> n;
+
+int invertido = 0;
+while (n != 0) {
+    int digito = n % 10;
+    invertido = invertido * 10 + digito;
+    n /= 10;
+}
+
+cout << invertido << endl;
+```
+
+</details>
+
+### Ejercicio 2
+Encuentra el mayor divisor común de dos números usando el algoritmo de Euclides.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int a, b;
+cin >> a >> b;
+
+while (b != 0) {
+    int temp = b;
+    b = a % b;
+    a = temp;
+}
+
+cout << "MCD: " << a << endl;
+```
+
+</details>
+
+### Ejercicio 3
+Adivina el número: el programa piensa un número del 1 al 100 y da pistas.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <cstdlib>
+#include <ctime>
+
+srand(time(0));
+int secreto = rand() % 100 + 1;
+int intento;
+int intentos = 0;
+
+do {
+    cout << "Adivina (1-100): ";
+    cin >> intento;
+    intentos++;
+
+    if (intento < secreto) {
+        cout << "Muy bajo" << endl;
+    } else if (intento > secreto) {
+        cout << "Muy alto" << endl;
+    }
+} while (intento != secreto);
+
+cout << "¡Correcto! Lo lograste en " << intentos << " intentos." << endl;
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Funciones](/blog/estructuras-de-control/funciones) para organizar y reutilizar tu código.

@@ -1,0 +1,176 @@
+---
+title: "Configuración del Entorno de Desarrollo"
+description: "Guía paso a paso para configurar tu entorno de desarrollo para programación competitiva"
+date: "2026-02-02"
+author: "OOI Oaxaca"
+tags: ["configuración", "herramientas", "desarrollo"]
+order: 100
+---
+
+## Introducción
+
+Un buen entorno de desarrollo es esencial para practicar programación competitiva de manera eficiente. En esta guía, aprenderás a configurar todo lo necesario.
+
+## Selección del lenguaje
+
+Los lenguajes más utilizados en competencias son:
+
+| Lenguaje | Ventajas | Desventajas |
+|----------|----------|-------------|
+| C++ | Rápido, STL poderosa | Sintaxis compleja |
+| Python | Fácil de escribir, bibliotecas | Más lento |
+| Java | Orientado a objetos | Verboso |
+
+<Callout type="info">
+  Recomendamos **C++** por su velocidad y la potencia de la Standard Template Library (STL).
+</Callout>
+
+## Instalación de C++
+
+### En Windows
+
+<Steps>
+<Step>
+### Descarga MinGW-w64
+
+Visita [MinGW-w64](https://www.mingw-w64.org/) y descarga el instalador.
+</Step>
+
+<Step>
+### Configura las variables de entorno
+
+Agrega la ruta de MinGW al PATH del sistema.
+</Step>
+
+<Step>
+### Verifica la instalación
+
+Abre una terminal y ejecuta:
+
+```bash
+g++ --version
+```
+</Step>
+</Steps>
+
+### En macOS
+
+```bash
+# Instala Xcode Command Line Tools
+xcode-select --install
+
+# O usa Homebrew
+brew install gcc
+```
+
+### En Linux
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install g++
+
+# Fedora
+sudo dnf install gcc-c++
+```
+
+## Editor de código: VS Code
+
+Visual Studio Code es un editor gratuito y potente. Aquí te mostramos cómo configurarlo:
+
+### Extensiones recomendadas
+
+1. **C/C++** - Soporte para C++
+2. **Code Runner** - Ejecuta código rápidamente
+3. **Competitive Programming Helper** - Facilita la práctica
+
+### Configuración para competencias
+
+Crea un archivo `settings.json` con esta configuración:
+
+```json
+{
+  "code-runner.executorMap": {
+    "cpp": "g++ -std=c++17 -O2 -Wall $fileName -o $fileNameWithoutExt && ./$fileNameWithoutExt"
+  },
+  "code-runner.runInTerminal": true
+}
+```
+
+## Template básico de C++
+
+Usa este template como base para tus soluciones:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+#define int long long
+#define endl '\n'
+
+void solve() {
+    // Tu solución aquí
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t = 1;
+    // cin >> t; // Descomenta para múltiples casos
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
+```
+
+<Callout type="warning">
+  El macro `#define int long long` evita errores de overflow, pero usa más memoria. Úsalo con cuidado en problemas con límites estrictos.
+</Callout>
+
+## Estructura de carpetas recomendada
+
+```
+competencias/
+├── templates/
+│   └── template.cpp
+├── practicas/
+│   ├── omegaup/
+│   ├── codeforces/
+│   └── otros/
+└── competencias/
+    └── 2026/
+```
+
+## Verificación final
+
+Para verificar que todo está configurado correctamente:
+
+1. Crea un archivo `test.cpp` con el template
+2. Escribe un programa simple:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    cout << "¡Hola, mundo!" << endl;
+    return 0;
+}
+```
+
+3. Compila y ejecuta:
+
+```bash
+g++ -std=c++17 test.cpp -o test && ./test
+```
+
+<Callout type="success">
+  Si ves "¡Hola, mundo!", ¡tu entorno está listo! Ya puedes comenzar a practicar.
+</Callout>
+
+## Siguiente paso
+
+Ahora que tienes tu entorno configurado, es hora de aprender los [conceptos básicos de complejidad](/blog/introduccion/complejidad-algoritmica).

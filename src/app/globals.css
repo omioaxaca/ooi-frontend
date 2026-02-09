@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 
 html, body {
   max-width: 100%;
@@ -133,6 +134,43 @@ html, body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* KaTeX dark mode support */
+.dark .katex {
+  color: inherit;
+}
+
+.dark .katex .mord,
+.dark .katex .mopen,
+.dark .katex .mclose,
+.dark .katex .mpunct,
+.dark .katex .mrel,
+.dark .katex .mbin,
+.dark .katex .minner {
+  color: inherit;
+}
+
+/* MDX content styling */
+.mdx-content {
+  @apply text-foreground;
+}
+
+.mdx-content pre code {
+  @apply bg-transparent p-0;
+}
+
+/* Details/summary styling for exercises */
+.mdx-content details {
+  @apply my-4 rounded-lg border border-border bg-muted/30 p-4;
+}
+
+.mdx-content details summary {
+  @apply cursor-pointer font-medium text-primary hover:underline;
+}
+
+.mdx-content details[open] summary {
+  @apply mb-4;
 }
 
 html {

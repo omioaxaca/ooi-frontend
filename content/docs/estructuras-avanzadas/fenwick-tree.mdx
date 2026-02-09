@@ -1,0 +1,388 @@
+---
+title: "Fenwick Tree (BIT)"
+description: "Aprende a usar Binary Indexed Tree para sumas de prefijos y actualizaciones eficientes"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["fenwick-tree", "BIT", "estructuras-de-datos", "sumas-prefijos"]
+syllabusId: 59
+order: 3
+---
+
+## ¿Qué es un Fenwick Tree?
+
+Un **Fenwick Tree** (o **Binary Indexed Tree - BIT**) es una estructura de datos que permite:
+
+- **Actualizar** un elemento en $O(\log n)$
+- **Consultar sumas de prefijos** en $O(\log n)$
+
+Es más simple y usa menos memoria que un Segment Tree, pero menos versátil.
+
+## Comparación
+
+| Operación | Array | Segment Tree | Fenwick Tree |
+|-----------|-------|--------------|--------------|
+| Suma prefijo | $O(n)$ | $O(\log n)$ | $O(\log n)$ |
+| Actualización | $O(1)$ | $O(\log n)$ | $O(\log n)$ |
+| Memoria | $O(n)$ | $O(4n)$ | $O(n)$ |
+| Implementación | Trivial | Compleja | **Simple** |
+
+## Idea clave
+
+El Fenwick Tree aprovecha la representación binaria de los índices. Cada posición `i` almacena la suma de `lowbit(i)` elementos.
+
+```
+lowbit(i) = i & (-i)  // Último bit encendido
+
+i    binario   lowbit(i)   BIT[i] guarda suma de
+1    0001      1           arr[1]
+2    0010      2           arr[1..2]
+3    0011      1           arr[3]
+4    0100      4           arr[1..4]
+5    0101      1           arr[5]
+6    0110      2           arr[5..6]
+7    0111      1           arr[7]
+8    1000      8           arr[1..8]
+```
+
+## Visualización
+
+```
+Array:    [_, 3, 2, 4, 5, 1, 6, 2, 8]
+índices:      1  2  3  4  5  6  7  8
+
+BIT[1] = arr[1] = 3
+BIT[2] = arr[1] + arr[2] = 5
+BIT[3] = arr[3] = 4
+BIT[4] = arr[1] + ... + arr[4] = 14
+BIT[5] = arr[5] = 1
+BIT[6] = arr[5] + arr[6] = 7
+BIT[7] = arr[7] = 2
+BIT[8] = arr[1] + ... + arr[8] = 31
+```
+
+## Implementación
+
+```cpp
+const int MAXN = 100005;
+int BIT[MAXN];
+int n;
+
+// Sumar val a la posición idx
+void update(int idx, int val) {
+    while (idx <= n) {
+        BIT[idx] += val;
+        idx += idx & (-idx);  // Ir al siguiente
+    }
+}
+
+// Suma de arr[1..idx]
+int query(int idx) {
+    int suma = 0;
+    while (idx > 0) {
+        suma += BIT[idx];
+        idx -= idx & (-idx);  // Ir al padre
+    }
+    return suma;
+}
+
+// Suma de arr[L..R]
+int queryRange(int L, int R) {
+    return query(R) - query(L - 1);
+}
+```
+
+### Uso
+
+```cpp
+int main() {
+    n = 8;
+    int arr[] = {0, 3, 2, 4, 5, 1, 6, 2, 8};  // 1-indexed
+
+    // Construir BIT
+    for (int i = 1; i <= n; i++) {
+        update(i, arr[i]);
+    }
+
+    cout << query(5) << endl;        // Suma [1..5] = 15
+    cout << queryRange(2, 6) << endl; // Suma [2..6] = 18
+
+    update(3, 5);  // arr[3] += 5
+
+    cout << queryRange(2, 6) << endl; // Suma [2..6] = 23
+
+    return 0;
+}
+```
+
+## Visualización de operaciones
+
+### Query(7)
+
+```
+Suma de arr[1..7]:
+
+i=7: suma += BIT[7], 7 - lowbit(7) = 7 - 1 = 6
+i=6: suma += BIT[6], 6 - lowbit(6) = 6 - 2 = 4
+i=4: suma += BIT[4], 4 - lowbit(4) = 4 - 4 = 0
+i=0: terminar
+
+query(7) = BIT[7] + BIT[6] + BIT[4]
+         = arr[7] + arr[5..6] + arr[1..4]
+         = arr[1..7]
+```
+
+### Update(5, +10)
+
+```
+Sumar 10 a arr[5]:
+
+i=5: BIT[5] += 10, 5 + lowbit(5) = 5 + 1 = 6
+i=6: BIT[6] += 10, 6 + lowbit(6) = 6 + 2 = 8
+i=8: BIT[8] += 10, 8 + lowbit(8) = 8 + 8 = 16
+i=16: fuera de rango, terminar
+```
+
+## Construcción en O(n)
+
+En lugar de n updates, podemos construir en O(n):
+
+```cpp
+void build(int arr[], int n) {
+    for (int i = 1; i <= n; i++) {
+        BIT[i] += arr[i];
+        int j = i + (i & (-i));
+        if (j <= n) {
+            BIT[j] += BIT[i];
+        }
+    }
+}
+```
+
+## Fenwick Tree 2D
+
+Para matrices con actualizaciones y consultas de sumas:
+
+```cpp
+const int MAXN = 1005;
+int BIT[MAXN][MAXN];
+int n, m;
+
+void update(int x, int y, int val) {
+    for (int i = x; i <= n; i += i & (-i)) {
+        for (int j = y; j <= m; j += j & (-j)) {
+            BIT[i][j] += val;
+        }
+    }
+}
+
+int query(int x, int y) {
+    int suma = 0;
+    for (int i = x; i > 0; i -= i & (-i)) {
+        for (int j = y; j > 0; j -= j & (-j)) {
+            suma += BIT[i][j];
+        }
+    }
+    return suma;
+}
+
+// Suma en rectángulo (x1,y1) a (x2,y2)
+int queryRect(int x1, int y1, int x2, int y2) {
+    return query(x2, y2) - query(x1-1, y2)
+         - query(x2, y1-1) + query(x1-1, y1-1);
+}
+```
+
+## Aplicaciones
+
+### 1. Contar inversiones
+
+Una inversión es cuando `i < j` pero `arr[i] > arr[j]`.
+
+```cpp
+long long contarInversiones(vector<int>& arr) {
+    int n = arr.size();
+
+    // Comprimir coordenadas
+    vector<int> sorted = arr;
+    sort(sorted.begin(), sorted.end());
+    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
+
+    map<int, int> comp;
+    for (int i = 0; i < sorted.size(); i++) {
+        comp[sorted[i]] = i + 1;
+    }
+
+    // BIT para contar
+    fill(BIT, BIT + n + 2, 0);
+    long long inversiones = 0;
+
+    for (int i = n - 1; i >= 0; i--) {
+        int val = comp[arr[i]];
+        inversiones += query(val - 1);  // Elementos menores vistos
+        update(val, 1);
+    }
+
+    return inversiones;
+}
+```
+
+### 2. Range updates, Point queries
+
+Modificar rango [L, R] en +val, consultar valor en punto:
+
+```cpp
+// update(L, val) y update(R+1, -val)
+// query(i) da el valor en posición i
+```
+
+### 3. Encontrar k-ésimo elemento
+
+```cpp
+int kth(int k) {
+    int pos = 0;
+    int logN = 20;  // log2(n)
+
+    for (int i = logN; i >= 0; i--) {
+        if (pos + (1 << i) <= n && BIT[pos + (1 << i)] < k) {
+            pos += (1 << i);
+            k -= BIT[pos];
+        }
+    }
+
+    return pos + 1;
+}
+```
+
+## Fenwick Tree con range updates y point queries
+
+```cpp
+int BIT[MAXN];
+
+void updateRange(int L, int R, int val) {
+    update(L, val);
+    update(R + 1, -val);
+}
+
+int pointQuery(int idx) {
+    return query(idx);
+}
+```
+
+## Fenwick Tree con range updates y range queries
+
+Necesitamos dos BITs:
+
+```cpp
+long long BIT1[MAXN], BIT2[MAXN];
+
+void update(long long* b, int idx, long long val) {
+    while (idx <= n) {
+        b[idx] += val;
+        idx += idx & (-idx);
+    }
+}
+
+long long query(long long* b, int idx) {
+    long long suma = 0;
+    while (idx > 0) {
+        suma += b[idx];
+        idx -= idx & (-idx);
+    }
+    return suma;
+}
+
+void rangeUpdate(int L, int R, long long val) {
+    update(BIT1, L, val);
+    update(BIT1, R + 1, -val);
+    update(BIT2, L, val * (L - 1));
+    update(BIT2, R + 1, -val * R);
+}
+
+long long prefixSum(int idx) {
+    return query(BIT1, idx) * idx - query(BIT2, idx);
+}
+
+long long rangeQuery(int L, int R) {
+    return prefixSum(R) - prefixSum(L - 1);
+}
+```
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 200005;
+long long BIT[MAXN];
+int n;
+
+void update(int idx, long long val) {
+    while (idx <= n) {
+        BIT[idx] += val;
+        idx += idx & (-idx);
+    }
+}
+
+long long query(int idx) {
+    long long suma = 0;
+    while (idx > 0) {
+        suma += BIT[idx];
+        idx -= idx & (-idx);
+    }
+    return suma;
+}
+
+long long queryRange(int L, int R) {
+    return query(R) - query(L - 1);
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int q;
+    cin >> n >> q;
+
+    for (int i = 1; i <= n; i++) {
+        long long x;
+        cin >> x;
+        update(i, x);
+    }
+
+    while (q--) {
+        int tipo;
+        cin >> tipo;
+
+        if (tipo == 1) {
+            int k;
+            long long u;
+            cin >> k >> u;
+            update(k, u);
+        } else {
+            int a, b;
+            cin >> a >> b;
+            cout << queryRange(a, b) << "\n";
+        }
+    }
+
+    return 0;
+}
+```
+
+## Cuándo usar Fenwick vs Segment Tree
+
+| Usar Fenwick Tree | Usar Segment Tree |
+|-------------------|-------------------|
+| Sumas de prefijos | Mínimo/máximo en rango |
+| Código más corto | Operaciones más complejas |
+| Menos memoria | Lazy propagation |
+| Más rápido | Consultas generales |
+
+## Ejercicios recomendados
+
+1. [CSES - Dynamic Range Sum Queries](https://cses.fi/problemset/task/1648)
+2. [CSES - Range Update Queries](https://cses.fi/problemset/task/1651)
+3. [SPOJ - INVCNT](https://www.spoj.com/problems/INVCNT/)
+4. [Codeforces - Pashmak and Parmida's problem](https://codeforces.com/problemset/problem/459/D)
+5. [CSES - Nested Ranges Count](https://cses.fi/problemset/task/2169)

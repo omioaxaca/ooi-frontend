@@ -1,0 +1,352 @@
+---
+title: "Set y Multiset"
+description: "Aprende a usar conjuntos ordenados en C++ con set, multiset y sus variantes"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["set", "multiset", "unordered_set", "conjuntos", "STL"]
+syllabusId: 79
+order: 2
+---
+
+## ¿Qué es un set?
+
+Un **set** es un contenedor que almacena elementos **únicos** y **ordenados**. No permite duplicados.
+
+## set vs multiset vs unordered_set
+
+| Característica | `set` | `multiset` | `unordered_set` |
+|----------------|-------|------------|-----------------|
+| Duplicados | No | Sí | No |
+| Orden | Ordenado | Ordenado | Sin orden |
+| Búsqueda | O(log n) | O(log n) | O(1) promedio |
+
+## Uso básico de set
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    set<int> s;
+
+    // Insertar
+    s.insert(5);
+    s.insert(2);
+    s.insert(8);
+    s.insert(2);  // No se inserta (ya existe)
+
+    // Tamaño
+    cout << s.size() << endl;  // 3
+
+    // Verificar existencia
+    if (s.count(5)) {
+        cout << "5 existe\n";
+    }
+
+    // Eliminar
+    s.erase(2);
+
+    // Recorrer (ordenado)
+    for (int x : s) {
+        cout << x << " ";  // 5 8
+    }
+
+    return 0;
+}
+```
+
+## Operaciones con iteradores
+
+```cpp
+set<int> s = {1, 3, 5, 7, 9};
+
+// Primer elemento
+cout << *s.begin() << endl;  // 1
+
+// Último elemento
+cout << *s.rbegin() << endl;  // 9
+
+// Buscar elemento
+auto it = s.find(5);
+if (it != s.end()) {
+    cout << "Encontrado: " << *it << endl;
+}
+
+// Eliminar el menor
+s.erase(s.begin());
+
+// Eliminar el mayor
+s.erase(prev(s.end()));
+// O: s.erase(--s.end());
+```
+
+## lower_bound y upper_bound
+
+Muy útiles para búsquedas:
+
+```cpp
+set<int> s = {1, 3, 5, 7, 9};
+
+// lower_bound: primer elemento >= x
+auto it1 = s.lower_bound(4);  // Apunta a 5
+
+// upper_bound: primer elemento > x
+auto it2 = s.upper_bound(5);  // Apunta a 7
+
+// Elemento más cercano >= x
+int x = 4;
+if (s.lower_bound(x) != s.end()) {
+    cout << "Menor >= " << x << ": " << *s.lower_bound(x) << endl;
+}
+
+// Elemento más cercano < x
+if (s.lower_bound(x) != s.begin()) {
+    cout << "Mayor < " << x << ": " << *prev(s.lower_bound(x)) << endl;
+}
+```
+
+## multiset: Permite duplicados
+
+```cpp
+multiset<int> ms;
+
+ms.insert(5);
+ms.insert(3);
+ms.insert(5);  // Sí se inserta
+ms.insert(5);
+
+cout << ms.count(5) << endl;  // 3
+
+// erase(valor) elimina TODAS las ocurrencias
+ms.erase(5);  // Elimina los tres 5s
+
+// Para eliminar solo uno:
+ms.insert(5);
+ms.insert(5);
+auto it = ms.find(5);
+if (it != ms.end()) {
+    ms.erase(it);  // Elimina solo uno
+}
+```
+
+## unordered_set: Sin orden, O(1)
+
+```cpp
+unordered_set<int> us;
+
+us.insert(5);
+us.insert(3);
+us.insert(7);
+
+// Búsqueda O(1) promedio
+if (us.count(5)) {
+    cout << "5 existe\n";
+}
+
+// No tiene lower_bound ni upper_bound
+// El orden de iteración no está definido
+```
+
+## Problema: Elementos distintos
+
+```cpp
+int elementosDistintos(vector<int>& arr) {
+    set<int> s(arr.begin(), arr.end());
+    return s.size();
+}
+```
+
+## Problema: Elemento faltante más pequeño
+
+```cpp
+int menorFaltante(vector<int>& arr) {
+    set<int> s(arr.begin(), arr.end());
+
+    int faltante = 1;
+    while (s.count(faltante)) {
+        faltante++;
+    }
+
+    return faltante;
+}
+```
+
+## Problema: K-ésimo elemento más pequeño
+
+```cpp
+int kEsimo(vector<int>& arr, int k) {
+    set<int> s(arr.begin(), arr.end());
+
+    auto it = s.begin();
+    advance(it, k - 1);  // Avanzar k-1 posiciones
+
+    return *it;
+}
+
+// Con multiset (si hay duplicados que importan)
+int kEsimoConDuplicados(vector<int>& arr, int k) {
+    multiset<int> ms(arr.begin(), arr.end());
+
+    auto it = ms.begin();
+    advance(it, k - 1);
+
+    return *it;
+}
+```
+
+## Problema: Ventana deslizante con mediana
+
+Mantener la mediana en una ventana de tamaño k:
+
+```cpp
+vector<double> medianas(vector<int>& nums, int k) {
+    multiset<int> ventana(nums.begin(), nums.begin() + k);
+    auto mid = next(ventana.begin(), k / 2);
+
+    vector<double> resultado;
+
+    for (int i = k; ; i++) {
+        // Calcular mediana
+        if (k % 2 == 1) {
+            resultado.push_back(*mid);
+        } else {
+            resultado.push_back((*mid + *prev(mid)) / 2.0);
+        }
+
+        if (i >= nums.size()) break;
+
+        // Insertar nuevo elemento
+        ventana.insert(nums[i]);
+        if (nums[i] < *mid) mid--;
+
+        // Eliminar elemento viejo
+        if (nums[i - k] <= *mid) mid++;
+        ventana.erase(ventana.find(nums[i - k]));
+    }
+
+    return resultado;
+}
+```
+
+## Operaciones de conjuntos
+
+```cpp
+set<int> a = {1, 2, 3, 4};
+set<int> b = {3, 4, 5, 6};
+
+// Unión
+set<int> unionAB;
+set_union(a.begin(), a.end(), b.begin(), b.end(),
+          inserter(unionAB, unionAB.begin()));
+// {1, 2, 3, 4, 5, 6}
+
+// Intersección
+set<int> interseccion;
+set_intersection(a.begin(), a.end(), b.begin(), b.end(),
+                 inserter(interseccion, interseccion.begin()));
+// {3, 4}
+
+// Diferencia (A - B)
+set<int> diferencia;
+set_difference(a.begin(), a.end(), b.begin(), b.end(),
+               inserter(diferencia, diferencia.begin()));
+// {1, 2}
+```
+
+## Set con comparador personalizado
+
+```cpp
+// Orden descendente
+set<int, greater<int>> s = {1, 5, 3};
+// Orden: 5, 3, 1
+
+// Comparador personalizado
+auto cmp = [](int a, int b) {
+    return abs(a) < abs(b);  // Ordenar por valor absoluto
+};
+set<int, decltype(cmp)> s2(cmp);
+```
+
+## Set de pairs
+
+```cpp
+set<pair<int, int>> puntos;
+puntos.insert({3, 4});
+puntos.insert({1, 2});
+puntos.insert({3, 4});  // No se inserta
+
+// Ordenados por: primero x, luego y
+for (auto [x, y] : puntos) {
+    cout << "(" << x << ", " << y << ")\n";
+}
+```
+
+## Template: Manejo de set
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n, q;
+    cin >> n >> q;
+
+    multiset<int> s;
+    for (int i = 0; i < n; i++) {
+        int x;
+        cin >> x;
+        s.insert(x);
+    }
+
+    while (q--) {
+        int tipo;
+        cin >> tipo;
+
+        if (tipo == 1) {
+            // Insertar
+            int x;
+            cin >> x;
+            s.insert(x);
+        } else if (tipo == 2) {
+            // Eliminar uno
+            int x;
+            cin >> x;
+            auto it = s.find(x);
+            if (it != s.end()) s.erase(it);
+        } else if (tipo == 3) {
+            // Menor elemento >= x
+            int x;
+            cin >> x;
+            auto it = s.lower_bound(x);
+            if (it != s.end()) {
+                cout << *it << "\n";
+            } else {
+                cout << -1 << "\n";
+            }
+        } else if (tipo == 4) {
+            // Mayor elemento <= x
+            int x;
+            cin >> x;
+            auto it = s.upper_bound(x);
+            if (it != s.begin()) {
+                cout << *prev(it) << "\n";
+            } else {
+                cout << -1 << "\n";
+            }
+        }
+    }
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Distinct Numbers](https://cses.fi/problemset/task/1621)
+2. [CSES - Concert Tickets](https://cses.fi/problemset/task/1091)
+3. [CSES - Traffic Lights](https://cses.fi/problemset/task/1163)
+4. [Codeforces - Number of Different](https://codeforces.com/problemset/problem/1676/F)
+5. [LeetCode - Contains Duplicate](https://leetcode.com/problems/contains-duplicate/)

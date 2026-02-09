@@ -1,0 +1,310 @@
+---
+title: "Teoría de Juegos"
+description: "Aprende los fundamentos de teoría de juegos combinatorios: Nim, Sprague-Grundy"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["teoría-de-juegos", "Nim", "Sprague-Grundy", "estrategia"]
+syllabusId: 71
+order: 1
+---
+
+## Introducción
+
+La **teoría de juegos combinatorios** estudia juegos de dos jugadores con:
+- Información perfecta (ambos ven todo)
+- Sin azar
+- Turnos alternados
+- El que no puede mover pierde
+
+## Posiciones ganadoras y perdedoras
+
+- **Posición N (Next):** El jugador que mueve puede ganar
+- **Posición P (Previous):** El jugador que acaba de mover ganará
+
+**Reglas:**
+1. Toda posición desde la que puedes llegar a una P es N
+2. Si todas las posiciones alcanzables son N, entonces es P
+3. La posición final (sin movimientos) es P
+
+## El juego de Nim
+
+Hay n pilas de piedras. Cada turno, tomas cualquier cantidad de piedras de una pila. Gana quien toma la última piedra.
+
+### Teorema de Nim
+
+Una posición es **ganadora (N)** si:
+
+$$XOR(a_1, a_2, ..., a_n) \neq 0$$
+
+Donde $a_i$ es el número de piedras en la pila $i$.
+
+```cpp
+bool ganaJugador1(vector<int>& pilas) {
+    int xorSum = 0;
+    for (int x : pilas) {
+        xorSum ^= x;
+    }
+    return xorSum != 0;  // True si el jugador 1 gana
+}
+```
+
+### Encontrar movimiento ganador
+
+```cpp
+pair<int, int> movimientoGanador(vector<int>& pilas) {
+    int xorSum = 0;
+    for (int x : pilas) xorSum ^= x;
+
+    if (xorSum == 0) return {-1, -1};  // Posición perdedora
+
+    for (int i = 0; i < pilas.size(); i++) {
+        int objetivo = pilas[i] ^ xorSum;
+        if (objetivo < pilas[i]) {
+            // Reducir pila i de pilas[i] a objetivo
+            return {i, pilas[i] - objetivo};
+        }
+    }
+
+    return {-1, -1};
+}
+```
+
+## Sprague-Grundy
+
+El **teorema de Sprague-Grundy** generaliza Nim a cualquier juego imparcial.
+
+### Número de Grundy (nimber)
+
+Para cada posición, calculamos su número de Grundy:
+
+$$g(P) = mex(\{g(P') : P' \text{ alcanzable desde } P\})$$
+
+Donde $mex$ (minimum excludant) es el menor entero no negativo que no está en el conjunto.
+
+```cpp
+int mex(set<int>& s) {
+    int m = 0;
+    while (s.count(m)) m++;
+    return m;
+}
+```
+
+### Ejemplo: Juego de restar
+
+Puedes restar 1, 2 o 3 piedras de una pila. Calcula Grundy:
+
+```cpp
+int grundy[1005];
+
+void calcularGrundy(int maxN) {
+    grundy[0] = 0;  // Posición final
+
+    for (int n = 1; n <= maxN; n++) {
+        set<int> alcanzables;
+        if (n >= 1) alcanzables.insert(grundy[n - 1]);
+        if (n >= 2) alcanzables.insert(grundy[n - 2]);
+        if (n >= 3) alcanzables.insert(grundy[n - 3]);
+        grundy[n] = mex(alcanzables);
+    }
+}
+```
+
+### Composición de juegos
+
+Si tienes múltiples juegos independientes, el Grundy total es:
+
+$$g_{total} = g_1 \oplus g_2 \oplus ... \oplus g_n$$
+
+Ganas si $g_{total} \neq 0$.
+
+```cpp
+bool ganaConMultiplesJuegos(vector<int>& estados) {
+    int xorSum = 0;
+    for (int estado : estados) {
+        xorSum ^= grundy[estado];
+    }
+    return xorSum != 0;
+}
+```
+
+## Variantes de Nim
+
+### Nim con restricciones
+
+Solo puedes tomar hasta k piedras por turno:
+
+```cpp
+// Grundy[n] = n % (k + 1)
+bool ganaConLimite(vector<int>& pilas, int k) {
+    int xorSum = 0;
+    for (int x : pilas) {
+        xorSum ^= (x % (k + 1));
+    }
+    return xorSum != 0;
+}
+```
+
+### Nim Misère
+
+Gana quien NO toma la última piedra:
+
+```cpp
+bool ganaMisere(vector<int>& pilas) {
+    int xorSum = 0;
+    bool todasMenorOIgual1 = true;
+
+    for (int x : pilas) {
+        xorSum ^= x;
+        if (x > 1) todasMenorOIgual1 = false;
+    }
+
+    if (todasMenorOIgual1) {
+        // Número impar de pilas = pierde
+        int pilasNoVacias = 0;
+        for (int x : pilas) if (x > 0) pilasNoVacias++;
+        return pilasNoVacias % 2 == 0;
+    }
+
+    return xorSum != 0;
+}
+```
+
+### Nim en matriz
+
+Tablero n×m, tomar cualquier fila o columna completa de celdas:
+
+```cpp
+// Cada celda es un juego Nim independiente
+bool ganaMatriz(vector<vector<int>>& matriz) {
+    int xorSum = 0;
+    for (auto& fila : matriz) {
+        for (int x : fila) {
+            xorSum ^= x;
+        }
+    }
+    return xorSum != 0;
+}
+```
+
+## Juegos comunes
+
+### Juego de monedas
+
+n monedas en línea. Cada turno, tomas 1 o 2 monedas del final.
+
+```cpp
+int grundyMonedas[1005];
+
+void calcular() {
+    grundyMonedas[0] = 0;
+    grundyMonedas[1] = 1;
+    grundyMonedas[2] = 2;
+
+    for (int n = 3; n <= 1000; n++) {
+        set<int> s;
+        s.insert(grundyMonedas[n - 1]);  // Tomar 1
+        s.insert(grundyMonedas[n - 2]);  // Tomar 2
+        grundyMonedas[n] = mex(s);
+    }
+}
+```
+
+### Juego de divisores
+
+Empieza con n. Cada turno, resta un divisor propio de n.
+
+```cpp
+int grundyDivisores[1005];
+
+void calcularDivisores() {
+    grundyDivisores[1] = 0;  // 1 no tiene divisores propios
+
+    for (int n = 2; n <= 1000; n++) {
+        set<int> s;
+        for (int d = 1; d < n; d++) {
+            if (n % d == 0) {
+                s.insert(grundyDivisores[n - d]);
+            }
+        }
+        grundyDivisores[n] = mex(s);
+    }
+}
+```
+
+## Template: Grundy general
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 10005;
+int grundy[MAXN];
+
+int mex(set<int>& s) {
+    int m = 0;
+    while (s.count(m)) m++;
+    return m;
+}
+
+// Personalizar según el juego
+vector<int> movimientos(int estado) {
+    vector<int> siguientes;
+    // Agregar estados alcanzables
+    return siguientes;
+}
+
+void precalcularGrundy(int maxN) {
+    for (int n = 0; n <= maxN; n++) {
+        set<int> s;
+        for (int sig : movimientos(n)) {
+            s.insert(grundy[sig]);
+        }
+        grundy[n] = mex(s);
+    }
+}
+
+int main() {
+    precalcularGrundy(10000);
+
+    int t;
+    cin >> t;
+
+    while (t--) {
+        int n;
+        cin >> n;
+
+        // Para múltiples pilas/juegos
+        vector<int> estados(n);
+        for (int i = 0; i < n; i++) {
+            cin >> estados[i];
+        }
+
+        int xorSum = 0;
+        for (int e : estados) {
+            xorSum ^= grundy[e];
+        }
+
+        cout << (xorSum != 0 ? "First" : "Second") << "\n";
+    }
+
+    return 0;
+}
+```
+
+## Resumen
+
+| Juego | Condición de victoria |
+|-------|----------------------|
+| Nim clásico | XOR ≠ 0 |
+| Nim con límite k | XOR de (n mod k+1) ≠ 0 |
+| Nim Misère | Caso especial |
+| Juego general | Grundy ≠ 0 |
+| Múltiples juegos | XOR de Grundys ≠ 0 |
+
+## Ejercicios recomendados
+
+1. [CSES - Nim Game I](https://cses.fi/problemset/task/1730)
+2. [CSES - Nim Game II](https://cses.fi/problemset/task/1098)
+3. [CSES - Grundy's Game](https://cses.fi/problemset/task/2207)
+4. [Codeforces - Nim](https://codeforces.com/problemset/problem/12/D)
+5. [SPOJ - MCOINS](https://www.spoj.com/problems/MCOINS/)

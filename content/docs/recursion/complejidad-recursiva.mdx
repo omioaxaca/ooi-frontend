@@ -1,0 +1,288 @@
+---
+title: "Complejidad de Algoritmos Recursivos"
+description: "Aprende a analizar la complejidad temporal y espacial de funciones recursivas"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "recursión", "complejidad", "análisis", "algoritmos"]
+syllabusId: 35
+---
+
+## Análisis de recursión
+
+Analizar la complejidad de funciones recursivas requiere:
+1. Identificar la relación de recurrencia
+2. Resolver la recurrencia o aplicar el teorema maestro
+
+## Recurrencias comunes
+
+### Recursión lineal
+
+```cpp
+void f(int n) {
+    if (n == 0) return;
+    // O(1) trabajo
+    f(n - 1);  // Una llamada
+}
+```
+
+**Recurrencia:** $T(n) = T(n-1) + O(1)$
+
+**Complejidad:** $O(n)$
+
+### Recursión con trabajo lineal
+
+```cpp
+void f(int n) {
+    if (n == 0) return;
+    for (int i = 0; i < n; i++) {  // O(n) trabajo
+        // ...
+    }
+    f(n - 1);
+}
+```
+
+**Recurrencia:** $T(n) = T(n-1) + O(n)$
+
+**Complejidad:** $O(n^2)$
+
+### División por 2 (Búsqueda binaria)
+
+```cpp
+int buscar(vector<int>& arr, int x, int l, int r) {
+    if (l > r) return -1;
+    int mid = (l + r) / 2;  // O(1) trabajo
+    if (arr[mid] == x) return mid;
+    if (arr[mid] < x) return buscar(arr, x, mid+1, r);
+    return buscar(arr, x, l, mid-1);  // Una llamada
+}
+```
+
+**Recurrencia:** $T(n) = T(n/2) + O(1)$
+
+**Complejidad:** $O(\log n)$
+
+### Divide y vencerás (Merge Sort)
+
+```cpp
+void mergeSort(int l, int r) {
+    if (l >= r) return;
+    int mid = (l + r) / 2;
+    mergeSort(l, mid);       // T(n/2)
+    mergeSort(mid + 1, r);   // T(n/2)
+    merge(l, mid, r);        // O(n) trabajo
+}
+```
+
+**Recurrencia:** $T(n) = 2T(n/2) + O(n)$
+
+**Complejidad:** $O(n \log n)$
+
+## El Teorema Maestro
+
+Para recurrencias de la forma: $T(n) = aT(n/b) + f(n)$
+
+Donde:
+- $a$ = número de subproblemas
+- $b$ = factor de reducción
+- $f(n)$ = trabajo fuera de la recursión
+
+### Casos del teorema
+
+Sea $c = \log_b a$:
+
+1. **Si $f(n) = O(n^{c-\epsilon})$:** $T(n) = \Theta(n^c)$
+2. **Si $f(n) = \Theta(n^c)$:** $T(n) = \Theta(n^c \log n)$
+3. **Si $f(n) = \Omega(n^{c+\epsilon})$:** $T(n) = \Theta(f(n))$
+
+### Ejemplos de aplicación
+
+| Recurrencia | a | b | f(n) | $n^c$ | Caso | Complejidad |
+|-------------|---|---|------|-------|------|-------------|
+| $T(n) = T(n/2) + 1$ | 1 | 2 | 1 | 1 | 2 | $O(\log n)$ |
+| $T(n) = 2T(n/2) + n$ | 2 | 2 | n | n | 2 | $O(n \log n)$ |
+| $T(n) = 2T(n/2) + 1$ | 2 | 2 | 1 | n | 1 | $O(n)$ |
+| $T(n) = 4T(n/2) + n$ | 4 | 2 | n | $n^2$ | 1 | $O(n^2)$ |
+| $T(n) = 4T(n/2) + n^2$ | 4 | 2 | $n^2$ | $n^2$ | 2 | $O(n^2 \log n)$ |
+
+## Fibonacci: un análisis detallado
+
+### Sin memorización
+
+```cpp
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n-1) + fib(n-2);
+}
+```
+
+**Recurrencia:** $T(n) = T(n-1) + T(n-2) + O(1)$
+
+**Complejidad:** $O(\phi^n) \approx O(1.618^n)$ - ¡Exponencial!
+
+**Cota superior:** $O(2^n)$
+
+### Con memorización
+
+```cpp
+int memo[N];
+int fib(int n) {
+    if (n <= 1) return n;
+    if (memo[n] != -1) return memo[n];
+    return memo[n] = fib(n-1) + fib(n-2);
+}
+```
+
+**Complejidad:** $O(n)$ - Cada estado se calcula exactamente una vez.
+
+## Complejidad espacial
+
+La recursión usa espacio en la pila de llamadas:
+
+```cpp
+void f(int n) {
+    if (n == 0) return;
+    f(n - 1);  // Llamada pendiente
+}
+```
+
+**Espacio:** $O(n)$ - profundidad máxima de la pila.
+
+### Recursión de cola (optimizable)
+
+```cpp
+// Puede optimizarse a O(1) espacio
+int factorialCola(int n, int acc = 1) {
+    if (n <= 1) return acc;
+    return factorialCola(n - 1, n * acc);
+}
+```
+
+### Divide y vencerás
+
+```cpp
+void mergeSort(int l, int r) {
+    if (l >= r) return;
+    int mid = (l + r) / 2;
+    mergeSort(l, mid);
+    mergeSort(mid + 1, r);
+    merge(l, mid, r);
+}
+```
+
+**Espacio en pila:** $O(\log n)$ - profundidad del árbol de recursión.
+
+## Análisis de árboles de recursión
+
+### Método del árbol
+
+Para $T(n) = 2T(n/2) + n$:
+
+```
+Nivel 0:       n                    -> n
+Nivel 1:    n/2   n/2               -> n
+Nivel 2:  n/4 n/4 n/4 n/4           -> n
+...
+Nivel k: ...                        -> n
+
+Profundidad: log₂(n)
+Total: n × log₂(n) = O(n log n)
+```
+
+### Ejemplo: Potencia rápida
+
+```cpp
+long long pot(long long a, long long n) {
+    if (n == 0) return 1;
+    long long medio = pot(a, n/2);  // Una llamada
+    return (n % 2 == 0) ? medio * medio : medio * medio * a;
+}
+```
+
+**Análisis:**
+- Una llamada recursiva
+- Problema se reduce a la mitad
+- Trabajo O(1) por nivel
+
+**Complejidad:** $O(\log n)$
+
+## Resumen de complejidades
+
+| Patrón | Recurrencia | Complejidad |
+|--------|-------------|-------------|
+| Lineal simple | $T(n) = T(n-1) + O(1)$ | $O(n)$ |
+| Lineal con trabajo lineal | $T(n) = T(n-1) + O(n)$ | $O(n^2)$ |
+| Búsqueda binaria | $T(n) = T(n/2) + O(1)$ | $O(\log n)$ |
+| Merge sort | $T(n) = 2T(n/2) + O(n)$ | $O(n \log n)$ |
+| Fibonacci ingenuo | $T(n) = T(n-1) + T(n-2)$ | $O(2^n)$ |
+| Árbol binario | $T(n) = 2T(n-1) + O(1)$ | $O(2^n)$ |
+
+## Consejos para competencias
+
+1. **Recursión lineal:** Generalmente $O(n)$ o $O(n^2)$
+2. **División por 2:** Generalmente $O(\log n)$
+3. **Dos llamadas con n-1:** Probablemente exponencial
+4. **Memorización:** Reduce a O(número de estados)
+
+### Límites prácticos
+
+| Complejidad | n máximo aproximado |
+|-------------|-------------------|
+| $O(n!)$ | 10 |
+| $O(2^n)$ | 20-25 |
+| $O(n^3)$ | 500 |
+| $O(n^2)$ | 5,000 |
+| $O(n \log n)$ | 1,000,000 |
+| $O(n)$ | 10,000,000 |
+| $O(\log n)$ | 10^18 |
+
+## Ejercicios de análisis
+
+### Ejercicio 1
+¿Cuál es la complejidad?
+
+```cpp
+void f(int n) {
+    if (n <= 1) return;
+    f(n - 1);
+    f(n - 1);
+}
+```
+
+<details>
+<summary>Ver respuesta</summary>
+
+$T(n) = 2T(n-1) + O(1)$
+
+Complejidad: $O(2^n)$
+
+</details>
+
+### Ejercicio 2
+¿Cuál es la complejidad?
+
+```cpp
+void f(int n) {
+    if (n <= 1) return;
+    for (int i = 0; i < n; i++) {
+        cout << i << " ";
+    }
+    f(n / 2);
+}
+```
+
+<details>
+<summary>Ver respuesta</summary>
+
+$T(n) = T(n/2) + O(n)$
+
+Por teorema maestro: $a=1$, $b=2$, $f(n)=n$
+
+$n^c = n^0 = 1$, como $f(n) = n = \Omega(n^{0+\epsilon})$, caso 3.
+
+Complejidad: $O(n)$
+
+</details>
+
+## Siguiente paso
+
+Aplica estos conocimientos en [Algoritmos de Ordenamiento](/blog/algoritmos/ordenamiento-sort-stl).

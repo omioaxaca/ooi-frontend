@@ -1,0 +1,359 @@
+---
+title: "Algoritmo Minimax"
+description: "Aprende el algoritmo Minimax y su optimización con poda alfa-beta"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["minimax", "alfa-beta", "juegos", "estrategia", "adversarial"]
+syllabusId: 72
+order: 2
+---
+
+## ¿Qué es Minimax?
+
+**Minimax** es un algoritmo para juegos de dos jugadores (suma cero) que encuentra el movimiento óptimo asumiendo que ambos jugadores juegan perfectamente.
+
+- **Max:** Jugador que maximiza su puntuación
+- **Min:** Oponente que minimiza la puntuación de Max
+
+## Árbol de juego
+
+```
+         Max (turno)
+         /    |    \
+       Min   Min   Min
+       /\    /\    /\
+      3  5  2  9  0  7
+
+Max elige el hijo con mayor valor minimax.
+Min elige el hijo con menor valor minimax.
+
+Evaluación:
+- Nivel Min: min(3,5)=3, min(2,9)=2, min(0,7)=0
+- Nivel Max: max(3,2,0)=3
+```
+
+## Implementación básica
+
+```cpp
+int minimax(Estado estado, int profundidad, bool esMax) {
+    // Caso base: nodo terminal o profundidad máxima
+    if (profundidad == 0 || estado.esTerminal()) {
+        return estado.evaluar();
+    }
+
+    if (esMax) {
+        int maxEval = INT_MIN;
+        for (Estado& hijo : estado.generarMovimientos()) {
+            int eval = minimax(hijo, profundidad - 1, false);
+            maxEval = max(maxEval, eval);
+        }
+        return maxEval;
+    } else {
+        int minEval = INT_MAX;
+        for (Estado& hijo : estado.generarMovimientos()) {
+            int eval = minimax(hijo, profundidad - 1, true);
+            minEval = min(minEval, eval);
+        }
+        return minEval;
+    }
+}
+```
+
+## Poda Alfa-Beta
+
+Optimización que elimina ramas que no afectarán la decisión final.
+
+- **α (alfa):** Mejor valor que Max puede garantizar
+- **β (beta):** Mejor valor que Min puede garantizar
+
+Podamos cuando α ≥ β.
+
+```cpp
+int alfabeta(Estado estado, int profundidad, int alfa, int beta, bool esMax) {
+    if (profundidad == 0 || estado.esTerminal()) {
+        return estado.evaluar();
+    }
+
+    if (esMax) {
+        int maxEval = INT_MIN;
+        for (Estado& hijo : estado.generarMovimientos()) {
+            int eval = alfabeta(hijo, profundidad - 1, alfa, beta, false);
+            maxEval = max(maxEval, eval);
+            alfa = max(alfa, eval);
+            if (beta <= alfa) break;  // Poda beta
+        }
+        return maxEval;
+    } else {
+        int minEval = INT_MAX;
+        for (Estado& hijo : estado.generarMovimientos()) {
+            int eval = alfabeta(hijo, profundidad - 1, alfa, beta, true);
+            minEval = min(minEval, eval);
+            beta = min(beta, eval);
+            if (beta <= alfa) break;  // Poda alfa
+        }
+        return minEval;
+    }
+}
+
+// Uso:
+int mejorValor = alfabeta(estadoInicial, maxProfundidad, INT_MIN, INT_MAX, true);
+```
+
+## Ejemplo: Tic-Tac-Toe
+
+```cpp
+struct TicTacToe {
+    char tablero[3][3];  // 'X', 'O', ' '
+    char turno;          // 'X' o 'O'
+
+    bool esTerminal() {
+        return hayGanador() || tableroLleno();
+    }
+
+    int evaluar() {
+        if (gana('X')) return 10;
+        if (gana('O')) return -10;
+        return 0;  // Empate
+    }
+
+    bool gana(char jugador) {
+        // Verificar filas, columnas, diagonales
+        for (int i = 0; i < 3; i++) {
+            if (tablero[i][0] == jugador &&
+                tablero[i][1] == jugador &&
+                tablero[i][2] == jugador) return true;
+            if (tablero[0][i] == jugador &&
+                tablero[1][i] == jugador &&
+                tablero[2][i] == jugador) return true;
+        }
+        if (tablero[0][0] == jugador &&
+            tablero[1][1] == jugador &&
+            tablero[2][2] == jugador) return true;
+        if (tablero[0][2] == jugador &&
+            tablero[1][1] == jugador &&
+            tablero[2][0] == jugador) return true;
+        return false;
+    }
+
+    bool tableroLleno() {
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (tablero[i][j] == ' ') return false;
+        return true;
+    }
+
+    vector<TicTacToe> generarMovimientos() {
+        vector<TicTacToe> movimientos;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (tablero[i][j] == ' ') {
+                    TicTacToe nuevo = *this;
+                    nuevo.tablero[i][j] = turno;
+                    nuevo.turno = (turno == 'X') ? 'O' : 'X';
+                    movimientos.push_back(nuevo);
+                }
+            }
+        }
+        return movimientos;
+    }
+};
+
+pair<int, int> mejorMovimiento(TicTacToe& estado) {
+    int mejorVal = INT_MIN;
+    pair<int, int> mejorMov = {-1, -1};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (estado.tablero[i][j] == ' ') {
+                TicTacToe nuevo = estado;
+                nuevo.tablero[i][j] = estado.turno;
+                nuevo.turno = (estado.turno == 'X') ? 'O' : 'X';
+
+                int val = alfabeta(nuevo, 9, INT_MIN, INT_MAX, false);
+
+                if (val > mejorVal) {
+                    mejorVal = val;
+                    mejorMov = {i, j};
+                }
+            }
+        }
+    }
+
+    return mejorMov;
+}
+```
+
+## Negamax
+
+Versión simplificada de Minimax usando la propiedad:
+
+$$max(a, b) = -min(-a, -b)$$
+
+```cpp
+int negamax(Estado estado, int profundidad, int alfa, int beta, int color) {
+    if (profundidad == 0 || estado.esTerminal()) {
+        return color * estado.evaluar();
+    }
+
+    int maxEval = INT_MIN;
+    for (Estado& hijo : estado.generarMovimientos()) {
+        int eval = -negamax(hijo, profundidad - 1, -beta, -alfa, -color);
+        maxEval = max(maxEval, eval);
+        alfa = max(alfa, eval);
+        if (alfa >= beta) break;
+    }
+
+    return maxEval;
+}
+
+// Uso: negamax(estado, prof, INT_MIN, INT_MAX, 1)
+```
+
+## Memoización con Tablas de Transposición
+
+Para evitar recalcular estados repetidos:
+
+```cpp
+map<Estado, int> tablaTrans;
+
+int alfabetaConMemo(Estado estado, int profundidad, int alfa, int beta, bool esMax) {
+    if (tablaTrans.count(estado)) {
+        return tablaTrans[estado];
+    }
+
+    if (profundidad == 0 || estado.esTerminal()) {
+        return tablaTrans[estado] = estado.evaluar();
+    }
+
+    // ... resto del algoritmo ...
+
+    return tablaTrans[estado] = resultado;
+}
+```
+
+## Ejemplo: Juego de piedras
+
+Dos jugadores, n piedras. Cada turno puedes tomar 1, 2 o 3. Gana quien toma la última.
+
+```cpp
+int memo[1005];
+
+int minimax(int n, bool esMax) {
+    if (n <= 0) {
+        return esMax ? -1 : 1;  // El anterior tomó la última
+    }
+
+    if (memo[n] != -2) return memo[n];
+
+    if (esMax) {
+        int mejor = -1;
+        for (int tomar = 1; tomar <= min(3, n); tomar++) {
+            mejor = max(mejor, minimax(n - tomar, false));
+        }
+        return memo[n] = mejor;
+    } else {
+        int mejor = 1;
+        for (int tomar = 1; tomar <= min(3, n); tomar++) {
+            mejor = min(mejor, minimax(n - tomar, true));
+        }
+        return memo[n] = mejor;
+    }
+}
+
+int main() {
+    fill(memo, memo + 1005, -2);
+    int n;
+    cin >> n;
+    cout << (minimax(n, true) == 1 ? "First" : "Second") << endl;
+}
+```
+
+## Optimizaciones
+
+### Ordenamiento de movimientos
+
+Evaluar primero los movimientos más prometedores:
+
+```cpp
+vector<Estado> hijos = estado.generarMovimientos();
+sort(hijos.begin(), hijos.end(), [](Estado& a, Estado& b) {
+    return a.heuristica() > b.heuristica();  // Mejor primero
+});
+```
+
+### Profundización iterativa
+
+Buscar con profundidad creciente:
+
+```cpp
+int busquedaIterativa(Estado estado, int maxProf) {
+    int mejorMov = -1;
+    for (int prof = 1; prof <= maxProf; prof++) {
+        mejorMov = alfabeta(estado, prof, INT_MIN, INT_MAX, true);
+        // Guardar mejor movimiento de esta profundidad
+    }
+    return mejorMov;
+}
+```
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Estado {
+    // Definir estado del juego
+
+    bool esTerminal() { /* ... */ }
+    int evaluar() { /* ... */ }
+    vector<Estado> generarMovimientos() { /* ... */ }
+};
+
+int alfabeta(Estado estado, int prof, int alfa, int beta, bool esMax) {
+    if (prof == 0 || estado.esTerminal()) {
+        return estado.evaluar();
+    }
+
+    auto movimientos = estado.generarMovimientos();
+
+    if (esMax) {
+        int maxEval = INT_MIN;
+        for (auto& hijo : movimientos) {
+            int eval = alfabeta(hijo, prof - 1, alfa, beta, false);
+            maxEval = max(maxEval, eval);
+            alfa = max(alfa, eval);
+            if (beta <= alfa) break;
+        }
+        return maxEval;
+    } else {
+        int minEval = INT_MAX;
+        for (auto& hijo : movimientos) {
+            int eval = alfabeta(hijo, prof - 1, alfa, beta, true);
+            minEval = min(minEval, eval);
+            beta = min(beta, eval);
+            if (beta <= alfa) break;
+        }
+        return minEval;
+    }
+}
+
+int main() {
+    Estado inicial;
+    // Inicializar...
+
+    int resultado = alfabeta(inicial, 10, INT_MIN, INT_MAX, true);
+
+    cout << (resultado > 0 ? "First wins" : "Second wins") << endl;
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [LeetCode - Nim Game](https://leetcode.com/problems/nim-game/)
+2. [LeetCode - Predict the Winner](https://leetcode.com/problems/predict-the-winner/)
+3. [LeetCode - Stone Game](https://leetcode.com/problems/stone-game/)
+4. [Codeforces - Game](https://codeforces.com/problemset/problem/461/B)
+5. [HackerRank - Game of Stones](https://www.hackerrank.com/challenges/game-of-stones-1)

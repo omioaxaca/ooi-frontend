@@ -1,0 +1,429 @@
+---
+title: "Introducción a Listas Enlazadas"
+description: "Aprende qué son las listas enlazadas, sus tipos y cómo implementarlas en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["listas-enlazadas", "estructuras-de-datos", "punteros"]
+syllabusId: 51
+order: 1
+---
+
+## ¿Qué es una lista enlazada?
+
+Una **lista enlazada** es una estructura de datos lineal donde los elementos no están almacenados en posiciones contiguas de memoria. Cada elemento (nodo) contiene:
+
+1. **Dato:** El valor almacenado
+2. **Puntero:** La dirección del siguiente nodo
+
+```
+┌──────┬──────┐    ┌──────┬──────┐    ┌──────┬──────┐
+│  10  │  ●───┼───▶│  20  │  ●───┼───▶│  30  │ NULL │
+└──────┴──────┘    └──────┴──────┘    └──────┴──────┘
+  Nodo 1             Nodo 2             Nodo 3
+```
+
+## Comparación: Array vs Lista Enlazada
+
+| Operación | Array | Lista Enlazada |
+|-----------|-------|----------------|
+| Acceso por índice | $O(1)$ | $O(n)$ |
+| Inserción al inicio | $O(n)$ | $O(1)$ |
+| Inserción al final | $O(1)$* | $O(n)$ o $O(1)$** |
+| Inserción en medio | $O(n)$ | $O(1)$*** |
+| Eliminación | $O(n)$ | $O(1)$*** |
+| Uso de memoria | Compacto | Más overhead |
+
+\* Amortizado con vector
+\** Con puntero al final
+\*** Si ya tienes el puntero al nodo
+
+## Definición de un nodo
+
+```cpp
+struct Nodo {
+    int dato;
+    Nodo* siguiente;
+
+    // Constructor
+    Nodo(int valor) : dato(valor), siguiente(nullptr) {}
+};
+```
+
+## Lista enlazada simple
+
+### Implementación básica
+
+```cpp
+class ListaEnlazada {
+private:
+    Nodo* cabeza;
+    int tamano;
+
+public:
+    ListaEnlazada() : cabeza(nullptr), tamano(0) {}
+
+    // Insertar al inicio - O(1)
+    void insertarInicio(int valor) {
+        Nodo* nuevo = new Nodo(valor);
+        nuevo->siguiente = cabeza;
+        cabeza = nuevo;
+        tamano++;
+    }
+
+    // Insertar al final - O(n)
+    void insertarFinal(int valor) {
+        Nodo* nuevo = new Nodo(valor);
+
+        if (cabeza == nullptr) {
+            cabeza = nuevo;
+        } else {
+            Nodo* actual = cabeza;
+            while (actual->siguiente != nullptr) {
+                actual = actual->siguiente;
+            }
+            actual->siguiente = nuevo;
+        }
+        tamano++;
+    }
+
+    // Eliminar primer elemento - O(1)
+    void eliminarInicio() {
+        if (cabeza == nullptr) return;
+
+        Nodo* temp = cabeza;
+        cabeza = cabeza->siguiente;
+        delete temp;
+        tamano--;
+    }
+
+    // Buscar un valor - O(n)
+    bool buscar(int valor) {
+        Nodo* actual = cabeza;
+        while (actual != nullptr) {
+            if (actual->dato == valor) return true;
+            actual = actual->siguiente;
+        }
+        return false;
+    }
+
+    // Imprimir lista
+    void imprimir() {
+        Nodo* actual = cabeza;
+        while (actual != nullptr) {
+            cout << actual->dato << " -> ";
+            actual = actual->siguiente;
+        }
+        cout << "NULL" << endl;
+    }
+
+    // Obtener tamaño
+    int getTamano() { return tamano; }
+
+    // Destructor - liberar memoria
+    ~ListaEnlazada() {
+        while (cabeza != nullptr) {
+            eliminarInicio();
+        }
+    }
+};
+```
+
+### Uso
+
+```cpp
+int main() {
+    ListaEnlazada lista;
+
+    lista.insertarInicio(30);
+    lista.insertarInicio(20);
+    lista.insertarInicio(10);
+    lista.imprimir();  // 10 -> 20 -> 30 -> NULL
+
+    lista.insertarFinal(40);
+    lista.imprimir();  // 10 -> 20 -> 30 -> 40 -> NULL
+
+    cout << "Buscar 20: " << lista.buscar(20) << endl;  // 1 (true)
+    cout << "Buscar 50: " << lista.buscar(50) << endl;  // 0 (false)
+
+    lista.eliminarInicio();
+    lista.imprimir();  // 20 -> 30 -> 40 -> NULL
+
+    return 0;
+}
+```
+
+## Lista doblemente enlazada
+
+Cada nodo tiene punteros al nodo anterior y siguiente:
+
+```cpp
+struct NodoDoble {
+    int dato;
+    NodoDoble* anterior;
+    NodoDoble* siguiente;
+
+    NodoDoble(int valor) : dato(valor), anterior(nullptr), siguiente(nullptr) {}
+};
+
+class ListaDoble {
+private:
+    NodoDoble* cabeza;
+    NodoDoble* cola;
+    int tamano;
+
+public:
+    ListaDoble() : cabeza(nullptr), cola(nullptr), tamano(0) {}
+
+    // Insertar al inicio - O(1)
+    void insertarInicio(int valor) {
+        NodoDoble* nuevo = new NodoDoble(valor);
+
+        if (cabeza == nullptr) {
+            cabeza = cola = nuevo;
+        } else {
+            nuevo->siguiente = cabeza;
+            cabeza->anterior = nuevo;
+            cabeza = nuevo;
+        }
+        tamano++;
+    }
+
+    // Insertar al final - O(1)
+    void insertarFinal(int valor) {
+        NodoDoble* nuevo = new NodoDoble(valor);
+
+        if (cola == nullptr) {
+            cabeza = cola = nuevo;
+        } else {
+            nuevo->anterior = cola;
+            cola->siguiente = nuevo;
+            cola = nuevo;
+        }
+        tamano++;
+    }
+
+    // Eliminar al inicio - O(1)
+    void eliminarInicio() {
+        if (cabeza == nullptr) return;
+
+        NodoDoble* temp = cabeza;
+        cabeza = cabeza->siguiente;
+
+        if (cabeza != nullptr) {
+            cabeza->anterior = nullptr;
+        } else {
+            cola = nullptr;
+        }
+
+        delete temp;
+        tamano--;
+    }
+
+    // Eliminar al final - O(1)
+    void eliminarFinal() {
+        if (cola == nullptr) return;
+
+        NodoDoble* temp = cola;
+        cola = cola->anterior;
+
+        if (cola != nullptr) {
+            cola->siguiente = nullptr;
+        } else {
+            cabeza = nullptr;
+        }
+
+        delete temp;
+        tamano--;
+    }
+
+    // Imprimir hacia adelante
+    void imprimirAdelante() {
+        NodoDoble* actual = cabeza;
+        while (actual != nullptr) {
+            cout << actual->dato << " <-> ";
+            actual = actual->siguiente;
+        }
+        cout << "NULL" << endl;
+    }
+
+    // Imprimir hacia atrás
+    void imprimirAtras() {
+        NodoDoble* actual = cola;
+        while (actual != nullptr) {
+            cout << actual->dato << " <-> ";
+            actual = actual->anterior;
+        }
+        cout << "NULL" << endl;
+    }
+};
+```
+
+## Lista circular
+
+El último nodo apunta al primero:
+
+```cpp
+class ListaCircular {
+private:
+    Nodo* cabeza;
+
+public:
+    ListaCircular() : cabeza(nullptr) {}
+
+    void insertar(int valor) {
+        Nodo* nuevo = new Nodo(valor);
+
+        if (cabeza == nullptr) {
+            cabeza = nuevo;
+            nuevo->siguiente = cabeza;  // Apunta a sí mismo
+        } else {
+            // Encontrar el último nodo
+            Nodo* ultimo = cabeza;
+            while (ultimo->siguiente != cabeza) {
+                ultimo = ultimo->siguiente;
+            }
+            ultimo->siguiente = nuevo;
+            nuevo->siguiente = cabeza;
+        }
+    }
+
+    void imprimir() {
+        if (cabeza == nullptr) return;
+
+        Nodo* actual = cabeza;
+        do {
+            cout << actual->dato << " -> ";
+            actual = actual->siguiente;
+        } while (actual != cabeza);
+        cout << "(vuelta a cabeza)" << endl;
+    }
+};
+```
+
+## Operaciones comunes
+
+### Encontrar el nodo del medio
+
+```cpp
+Nodo* encontrarMedio(Nodo* cabeza) {
+    if (cabeza == nullptr) return nullptr;
+
+    Nodo* lento = cabeza;
+    Nodo* rapido = cabeza;
+
+    while (rapido->siguiente != nullptr && rapido->siguiente->siguiente != nullptr) {
+        lento = lento->siguiente;
+        rapido = rapido->siguiente->siguiente;
+    }
+
+    return lento;
+}
+```
+
+### Detectar ciclo (Floyd's Algorithm)
+
+```cpp
+bool tieneCiclo(Nodo* cabeza) {
+    if (cabeza == nullptr) return false;
+
+    Nodo* lento = cabeza;
+    Nodo* rapido = cabeza;
+
+    while (rapido != nullptr && rapido->siguiente != nullptr) {
+        lento = lento->siguiente;
+        rapido = rapido->siguiente->siguiente;
+
+        if (lento == rapido) {
+            return true;  // Hay ciclo
+        }
+    }
+
+    return false;  // No hay ciclo
+}
+```
+
+### Eliminar nodo por valor
+
+```cpp
+void eliminarValor(Nodo*& cabeza, int valor) {
+    // Caso especial: eliminar cabeza
+    while (cabeza != nullptr && cabeza->dato == valor) {
+        Nodo* temp = cabeza;
+        cabeza = cabeza->siguiente;
+        delete temp;
+    }
+
+    if (cabeza == nullptr) return;
+
+    // Buscar y eliminar
+    Nodo* actual = cabeza;
+    while (actual->siguiente != nullptr) {
+        if (actual->siguiente->dato == valor) {
+            Nodo* temp = actual->siguiente;
+            actual->siguiente = temp->siguiente;
+            delete temp;
+        } else {
+            actual = actual->siguiente;
+        }
+    }
+}
+```
+
+## Usando std::list de la STL
+
+En competencias, puedes usar `std::list`:
+
+```cpp
+#include <list>
+
+int main() {
+    list<int> lista;
+
+    // Insertar
+    lista.push_front(10);    // Al inicio
+    lista.push_back(30);     // Al final
+    lista.push_front(5);
+
+    // Iterar
+    for (int x : lista) {
+        cout << x << " ";  // 5 10 30
+    }
+    cout << endl;
+
+    // Eliminar
+    lista.pop_front();  // Eliminar del inicio
+    lista.pop_back();   // Eliminar del final
+
+    // Buscar e insertar en posición
+    auto it = find(lista.begin(), lista.end(), 10);
+    if (it != lista.end()) {
+        lista.insert(it, 7);  // Insertar 7 antes de 10
+    }
+
+    // Tamaño
+    cout << lista.size() << endl;
+
+    return 0;
+}
+```
+
+## ¿Cuándo usar listas enlazadas?
+
+**Usar lista enlazada cuando:**
+- Inserciones/eliminaciones frecuentes al inicio
+- No necesitas acceso aleatorio
+- El tamaño cambia mucho
+
+**Usar array/vector cuando:**
+- Acceso aleatorio frecuente
+- Tamaño relativamente estable
+- Cache-friendly es importante
+
+> 💡 **En competencias:** Generalmente `vector` es suficiente. Usa listas cuando específicamente necesites inserción/eliminación O(1) en posiciones conocidas.
+
+## Ejercicios recomendados
+
+1. [LeetCode - Reverse Linked List](https://leetcode.com/problems/reverse-linked-list/)
+2. [LeetCode - Linked List Cycle](https://leetcode.com/problems/linked-list-cycle/)
+3. [LeetCode - Middle of the Linked List](https://leetcode.com/problems/middle-of-the-linked-list/)
+4. [LeetCode - Merge Two Sorted Lists](https://leetcode.com/problems/merge-two-sorted-lists/)

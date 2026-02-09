@@ -4,7 +4,7 @@ import * as localStorageUtils from "@/utils/localStorage";
 import type { User, NewUser, LoggedUser, UpdateUser } from "@/types/user";
 import axiosInstance from "./authService";
 import { fetchCurrentContestCycle } from "./contestCycle";
-import { createParticipation } from "./participation";
+import { createParticipation, getUserParticipationForCycle } from "./participation";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -93,7 +93,8 @@ export const login = async (email: string, password: string): Promise<LoggedUser
 
 export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
   try {
-    const response = await axiosInstance.post(`/api/auth/local/register`, newUser);
+    // First, try normal registration
+    const response = await axiosInstance.post(`${API_URL}/api/auth/local/register`, newUser);
 
     if (!response.data) {
       throw new Error("Signup failed");
@@ -113,23 +114,7 @@ export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
     const userData = await getUserFullData();
 
     // Register user in current contest cycle (cohort)
-    try {
-      const currentCycle = await fetchCurrentContestCycle();
-
-      if (currentCycle) {
-        await createParticipation({
-          user: userData.id,
-          contestCycle: currentCycle.id,
-          signupDate: new Date().toISOString(),
-        });
-      } else {
-        console.warn("No current contest cycle found. User not registered in any cohort.");
-      }
-    } catch (participationError) {
-      // Log the error but don't fail the signup
-      // The user can be manually registered in the cohort later
-      console.error("Error creating participation for new user:", participationError);
-    }
+    await registerUserInCurrentCycle(userData.id);
 
     return {
       jwt: token,
@@ -137,8 +122,110 @@ export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
       user: userData,
     };
   } catch (error) {
+    // Check if the error is due to user already existing (email already taken)
+    const isUserExistsError = isEmailAlreadyTakenError(error);
+
+    if (isUserExistsError) {
+      // User already exists - try to login and update their info
+      return handleExistingUserSignup(newUser);
+    }
+
     console.error("Signup failed:", error);
     throw error;
+  }
+};
+
+/**
+ * Checks if the error is due to email already being registered
+ */
+const isEmailAlreadyTakenError = (error: unknown): boolean => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+    // Strapi typically returns this error message for duplicate emails
+    const errorMessage = responseData?.error?.message?.toLowerCase() || "";
+    return (
+      errorMessage.includes("email") &&
+      (errorMessage.includes("already") || errorMessage.includes("taken") || errorMessage.includes("registered"))
+    ) || errorMessage.includes("email or username are already taken");
+  }
+  return false;
+};
+
+/**
+ * Handles the signup flow for users who already have an account.
+ * Logs them in, updates their information, and registers them in the current cycle.
+ */
+const handleExistingUserSignup = async (newUser: NewUser): Promise<LoggedUser> => {
+  try {
+    // Login with the provided credentials
+    const loginResult = await login(newUser.email, newUser.password);
+
+    // Prepare update data from the signup form (excluding email, username, password)
+    const updateData: UpdateUser = {
+      phoneNumber: newUser.phoneNumber,
+      birthDate: newUser.birthDate,
+      schoolName: newUser.schoolName,
+      schoolLevel: newUser.schoolLevel,
+      schoolGrade: newUser.schoolGrade,
+      omegaupUserId: newUser.omegaupUserId,
+      discordUserId: newUser.discordUserId,
+      aboutYou: newUser.aboutYou,
+      hobbies: newUser.hobbies,
+      pastExperience: newUser.pastExperience,
+    };
+
+    // Update user information with the new data
+    const updatedUser = await updateUser(loginResult.user.documentId, updateData);
+
+    // Register user in current contest cycle (if not already registered)
+    await registerUserInCurrentCycle(updatedUser.id);
+
+    return {
+      jwt: loginResult.jwt,
+      refreshToken: loginResult.refreshToken,
+      user: updatedUser,
+    };
+  } catch (loginError) {
+    // If login fails (wrong password), throw a more specific error
+    console.error("Existing user signup failed:", loginError);
+    throw new Error(
+      "Ya existe una cuenta con este correo electrónico. Por favor usa la contraseña correcta o inicia sesión directamente."
+    );
+  }
+};
+
+/**
+ * Registers a user in the current contest cycle if not already registered.
+ * Silently succeeds if user is already registered or if no cycle exists.
+ */
+const registerUserInCurrentCycle = async (userId: number): Promise<void> => {
+  try {
+    const currentCycle = await fetchCurrentContestCycle();
+
+    if (!currentCycle) {
+      console.warn("No current contest cycle found. User not registered in any cohort.");
+      return;
+    }
+
+    // Check if user is already registered in current cycle
+    const existingParticipation = await getUserParticipationForCycle(currentCycle.id);
+
+    if (existingParticipation) {
+      // User is already registered in current cycle, nothing to do
+      console.log("User already registered in current contest cycle.");
+      return;
+    }
+
+    // Create new participation for current cycle
+    await createParticipation({
+      user: userId,
+      contestCycle: currentCycle.id,
+      signupDate: new Date().toISOString(),
+    });
+  } catch (participationError) {
+    // Log the error but don't fail the signup
+    // The user can be manually registered in the cohort later
+    console.error("Error registering user in current cycle:", participationError);
   }
 };
 

@@ -1,0 +1,414 @@
+---
+title: "Colas (Queue) - Concepto y Uso"
+description: "Aprende el concepto de cola y cómo implementarla usando std::queue en C++"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "estructuras-de-datos", "colas", "queue", "FIFO"]
+syllabusId: 39
+---
+
+## ¿Qué es una cola?
+
+Una **cola** (queue) es una estructura de datos lineal que sigue el principio **FIFO** (First In, First Out): el primer elemento en entrar es el primero en salir.
+
+### Analogía
+
+Piensa en una fila para comprar boletos:
+- Las personas llegan y se forman al final
+- La primera persona en llegar es la primera en ser atendida
+- No puedes "colarte"
+
+```
+Entrada (rear)                      Salida (front)
+    │                                    │
+    ▼                                    ▼
+┌───────┬───────┬───────┬───────┬───────┐
+│   5   │   4   │   3   │   2   │   1   │
+└───────┴───────┴───────┴───────┴───────┘
+  nuevo                           primero
+```
+
+## Operaciones básicas
+
+| Operación | Descripción | Complejidad |
+|-----------|-------------|-------------|
+| `push(x)` | Insertar elemento al final | O(1) |
+| `pop()` | Eliminar elemento del frente | O(1) |
+| `front()` | Ver el elemento del frente | O(1) |
+| `back()` | Ver el elemento del final | O(1) |
+| `empty()` | Verificar si está vacía | O(1) |
+| `size()` | Número de elementos | O(1) |
+
+## std::queue en C++
+
+```cpp
+#include <queue>
+using namespace std;
+
+int main() {
+    queue<int> cola;
+
+    // Insertar elementos
+    cola.push(10);
+    cola.push(20);
+    cola.push(30);
+
+    // Ver el frente y el final
+    cout << cola.front() << endl;  // 10
+    cout << cola.back() << endl;   // 30
+
+    // Eliminar del frente
+    cola.pop();
+    cout << cola.front() << endl;  // 20
+
+    // Tamaño
+    cout << cola.size() << endl;   // 2
+
+    // Verificar si está vacía
+    cout << cola.empty() << endl;  // 0 (false)
+
+    return 0;
+}
+```
+
+## Recorrer una cola
+
+Al igual que la pila, hay que ir sacando elementos:
+
+```cpp
+queue<int> cola;
+cola.push(1);
+cola.push(2);
+cola.push(3);
+
+while (!cola.empty()) {
+    cout << cola.front() << " ";  // 1 2 3
+    cola.pop();
+}
+```
+
+## Pila vs Cola
+
+| Característica | Pila (Stack) | Cola (Queue) |
+|----------------|--------------|--------------|
+| Principio | LIFO | FIFO |
+| Inserción | En el tope | Al final |
+| Eliminación | Del tope | Del frente |
+| Uso típico | Undo, recursión | BFS, tareas |
+
+## Implementación manual con arreglo circular
+
+```cpp
+class MiCola {
+private:
+    int arr[10000];
+    int frente = 0, final = 0;
+    int tam = 0;
+    int capacidad = 10000;
+
+public:
+    void push(int x) {
+        arr[final] = x;
+        final = (final + 1) % capacidad;
+        tam++;
+    }
+
+    void pop() {
+        if (!empty()) {
+            frente = (frente + 1) % capacidad;
+            tam--;
+        }
+    }
+
+    int front() {
+        return arr[frente];
+    }
+
+    int back() {
+        return arr[(final - 1 + capacidad) % capacidad];
+    }
+
+    bool empty() {
+        return tam == 0;
+    }
+
+    int size() {
+        return tam;
+    }
+};
+```
+
+## Aplicación: BFS (Búsqueda en Anchura)
+
+La cola es esencial para BFS en grafos y árboles:
+
+```cpp
+void bfs(vector<vector<int>>& grafo, int inicio) {
+    int n = grafo.size();
+    vector<bool> visitado(n, false);
+    queue<int> cola;
+
+    cola.push(inicio);
+    visitado[inicio] = true;
+
+    while (!cola.empty()) {
+        int nodo = cola.front();
+        cola.pop();
+
+        cout << nodo << " ";
+
+        for (int vecino : grafo[nodo]) {
+            if (!visitado[vecino]) {
+                visitado[vecino] = true;
+                cola.push(vecino);
+            }
+        }
+    }
+}
+```
+
+## Aplicación: Distancia mínima en una cuadrícula
+
+Encontrar la distancia mínima desde (0,0) hasta (n-1, m-1):
+
+```cpp
+int distanciaMinima(vector<vector<int>>& grid) {
+    int n = grid.size(), m = grid[0].size();
+    if (grid[0][0] == 1 || grid[n-1][m-1] == 1) return -1;
+
+    vector<vector<int>> dist(n, vector<int>(m, -1));
+    queue<pair<int,int>> cola;
+
+    cola.push({0, 0});
+    dist[0][0] = 0;
+
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    while (!cola.empty()) {
+        auto [x, y] = cola.front();
+        cola.pop();
+
+        for (int i = 0; i < 4; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+
+            if (nx >= 0 && nx < n && ny >= 0 && ny < m &&
+                grid[nx][ny] == 0 && dist[nx][ny] == -1) {
+                dist[nx][ny] = dist[x][y] + 1;
+                cola.push({nx, ny});
+            }
+        }
+    }
+
+    return dist[n-1][m-1];
+}
+```
+
+## Aplicación: Simulación de proceso
+
+Simular un proceso donde las tareas se atienden en orden:
+
+```cpp
+void simularProceso(vector<int>& tiempos, int quantum) {
+    queue<pair<int,int>> cola;  // {tiempo_restante, id}
+
+    for (int i = 0; i < tiempos.size(); i++) {
+        cola.push({tiempos[i], i});
+    }
+
+    int tiempo = 0;
+
+    while (!cola.empty()) {
+        auto [restante, id] = cola.front();
+        cola.pop();
+
+        if (restante <= quantum) {
+            tiempo += restante;
+            cout << "Proceso " << id << " terminó en tiempo " << tiempo << endl;
+        } else {
+            tiempo += quantum;
+            cola.push({restante - quantum, id});
+        }
+    }
+}
+```
+
+## Cola de prioridad (priority_queue)
+
+Una variante donde el elemento de mayor prioridad sale primero:
+
+```cpp
+#include <queue>
+using namespace std;
+
+int main() {
+    // Max-heap por defecto (mayor primero)
+    priority_queue<int> pq;
+
+    pq.push(30);
+    pq.push(10);
+    pq.push(20);
+
+    while (!pq.empty()) {
+        cout << pq.top() << " ";  // 30 20 10
+        pq.pop();
+    }
+
+    // Min-heap (menor primero)
+    priority_queue<int, vector<int>, greater<int>> minPQ;
+
+    minPQ.push(30);
+    minPQ.push(10);
+    minPQ.push(20);
+
+    while (!minPQ.empty()) {
+        cout << minPQ.top() << " ";  // 10 20 30
+        minPQ.pop();
+    }
+
+    return 0;
+}
+```
+
+## Deque (doble cola)
+
+Permite insertar y eliminar de ambos extremos:
+
+```cpp
+#include <deque>
+using namespace std;
+
+int main() {
+    deque<int> dq;
+
+    dq.push_back(2);    // [2]
+    dq.push_front(1);   // [1, 2]
+    dq.push_back(3);    // [1, 2, 3]
+
+    cout << dq.front() << endl;  // 1
+    cout << dq.back() << endl;   // 3
+
+    dq.pop_front();     // [2, 3]
+    dq.pop_back();      // [2]
+
+    // También permite acceso por índice
+    cout << dq[0] << endl;  // 2
+
+    return 0;
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Implementa una cola usando dos pilas.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+class ColaConPilas {
+private:
+    stack<int> entrada, salida;
+
+    void transferir() {
+        while (!entrada.empty()) {
+            salida.push(entrada.top());
+            entrada.pop();
+        }
+    }
+
+public:
+    void push(int x) {
+        entrada.push(x);
+    }
+
+    int front() {
+        if (salida.empty()) transferir();
+        return salida.top();
+    }
+
+    void pop() {
+        if (salida.empty()) transferir();
+        salida.pop();
+    }
+
+    bool empty() {
+        return entrada.empty() && salida.empty();
+    }
+};
+```
+
+</details>
+
+### Ejercicio 2
+Dado un arreglo y un tamaño de ventana k, encuentra el máximo en cada ventana deslizante.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+vector<int> maxVentana(vector<int>& arr, int k) {
+    vector<int> resultado;
+    deque<int> dq;  // Índices en orden decreciente de valor
+
+    for (int i = 0; i < arr.size(); i++) {
+        // Eliminar elementos fuera de la ventana
+        while (!dq.empty() && dq.front() <= i - k) {
+            dq.pop_front();
+        }
+
+        // Eliminar elementos menores al actual
+        while (!dq.empty() && arr[dq.back()] < arr[i]) {
+            dq.pop_back();
+        }
+
+        dq.push_back(i);
+
+        // Guardar el máximo de la ventana
+        if (i >= k - 1) {
+            resultado.push_back(arr[dq.front()]);
+        }
+    }
+
+    return resultado;
+}
+```
+
+</details>
+
+### Ejercicio 3
+Simula el juego de "Hot Potato": n niños pasan una papa caliente. Cada k pases, el niño que la tiene es eliminado.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int papaCaliente(int n, int k) {
+    queue<int> cola;
+
+    for (int i = 1; i <= n; i++) {
+        cola.push(i);
+    }
+
+    while (cola.size() > 1) {
+        // Pasar la papa k-1 veces
+        for (int i = 0; i < k - 1; i++) {
+            cola.push(cola.front());
+            cola.pop();
+        }
+        // Eliminar al que tiene la papa
+        cout << "Eliminado: " << cola.front() << endl;
+        cola.pop();
+    }
+
+    return cola.front();  // Ganador
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Practica con más [Problemas de Pilas y Colas](/blog/pilas-y-colas/problemas-pilas-colas).

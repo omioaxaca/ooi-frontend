@@ -1,0 +1,238 @@
+---
+title: "Algoritmos de Ordenamiento"
+description: "Comprende los principales algoritmos de ordenamiento y cuándo usar cada uno"
+date: "2026-02-05"
+author: "OOI Oaxaca"
+tags: ["ordenamiento", "algoritmos", "sorting"]
+syllabusId: 22
+---
+
+## Introducción
+
+Ordenar datos es una de las operaciones más fundamentales en programación. Conocer diferentes algoritmos de ordenamiento te ayudará a entender cuándo usar cada uno.
+
+## Comparación de algoritmos
+
+| Algoritmo | Mejor caso | Promedio | Peor caso | Espacio | Estable |
+|-----------|------------|----------|-----------|---------|---------|
+| Bubble Sort | O(n) | O(n²) | O(n²) | O(1) | Sí |
+| Selection Sort | O(n²) | O(n²) | O(n²) | O(1) | No |
+| Insertion Sort | O(n) | O(n²) | O(n²) | O(1) | Sí |
+| Merge Sort | O(n log n) | O(n log n) | O(n log n) | O(n) | Sí |
+| Quick Sort | O(n log n) | O(n log n) | O(n²) | O(log n) | No |
+| Counting Sort | O(n + k) | O(n + k) | O(n + k) | O(k) | Sí |
+
+<Callout type="info">
+  Un algoritmo es **estable** si mantiene el orden relativo de elementos con el mismo valor.
+</Callout>
+
+## Ordenamiento en C++
+
+### Usando sort()
+
+La función `sort()` de la STL usa Introsort (híbrido de Quick Sort, Heap Sort e Insertion Sort):
+
+```cpp
+#include <algorithm>
+#include <vector>
+
+vector<int> arr = {5, 2, 8, 1, 9};
+
+// Ordenar ascendente
+sort(arr.begin(), arr.end());
+// arr = {1, 2, 5, 8, 9}
+
+// Ordenar descendente
+sort(arr.begin(), arr.end(), greater<int>());
+// arr = {9, 8, 5, 2, 1}
+```
+
+### Ordenamiento con comparador personalizado
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+};
+
+// Ordenar por edad
+sort(personas.begin(), personas.end(), [](const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+});
+
+// Ordenar por nombre, si igual, por edad
+sort(personas.begin(), personas.end(), [](const Persona& a, const Persona& b) {
+    if (a.nombre != b.nombre) return a.nombre < b.nombre;
+    return a.edad < b.edad;
+});
+```
+
+### Ordenamiento estable
+
+Cuando necesitas mantener el orden relativo de elementos iguales:
+
+```cpp
+stable_sort(arr.begin(), arr.end());
+```
+
+## Implementaciones manuales
+
+### Merge Sort
+
+```cpp
+void merge(vector<int>& arr, int izq, int mid, int der) {
+    vector<int> temp(der - izq + 1);
+    int i = izq, j = mid + 1, k = 0;
+
+    while (i <= mid && j <= der) {
+        if (arr[i] <= arr[j]) {
+            temp[k++] = arr[i++];
+        } else {
+            temp[k++] = arr[j++];
+        }
+    }
+
+    while (i <= mid) temp[k++] = arr[i++];
+    while (j <= der) temp[k++] = arr[j++];
+
+    for (i = izq, k = 0; i <= der; i++, k++) {
+        arr[i] = temp[k];
+    }
+}
+
+void mergeSort(vector<int>& arr, int izq, int der) {
+    if (izq >= der) return;
+
+    int mid = izq + (der - izq) / 2;
+    mergeSort(arr, izq, mid);
+    mergeSort(arr, mid + 1, der);
+    merge(arr, izq, mid, der);
+}
+```
+
+### Quick Sort
+
+```cpp
+int partition(vector<int>& arr, int izq, int der) {
+    int pivot = arr[der];
+    int i = izq - 1;
+
+    for (int j = izq; j < der; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+
+    swap(arr[i + 1], arr[der]);
+    return i + 1;
+}
+
+void quickSort(vector<int>& arr, int izq, int der) {
+    if (izq >= der) return;
+
+    int pi = partition(arr, izq, der);
+    quickSort(arr, izq, pi - 1);
+    quickSort(arr, pi + 1, der);
+}
+```
+
+<Callout type="warning">
+  Quick Sort tiene peor caso O(n²) cuando el array ya está ordenado. En competencias, usa `sort()` de la STL que está optimizada.
+</Callout>
+
+### Counting Sort
+
+Ideal cuando el rango de valores es pequeño:
+
+```cpp
+void countingSort(vector<int>& arr, int maxVal) {
+    vector<int> count(maxVal + 1, 0);
+
+    // Contar ocurrencias
+    for (int x : arr) {
+        count[x]++;
+    }
+
+    // Reconstruir array ordenado
+    int idx = 0;
+    for (int i = 0; i <= maxVal; i++) {
+        while (count[i] > 0) {
+            arr[idx++] = i;
+            count[i]--;
+        }
+    }
+}
+```
+
+## Ordenamiento parcial
+
+A veces no necesitas ordenar todo el array:
+
+```cpp
+vector<int> arr = {5, 2, 8, 1, 9, 3, 7};
+
+// Encontrar los 3 elementos más pequeños (sin ordenar entre sí)
+nth_element(arr.begin(), arr.begin() + 3, arr.end());
+// Los primeros 3 elementos son los menores
+
+// Ordenar solo los primeros k elementos
+partial_sort(arr.begin(), arr.begin() + 3, arr.end());
+// arr[0..2] están ordenados y son los 3 menores
+```
+
+## Ordenando índices
+
+A veces necesitas saber las posiciones originales después de ordenar:
+
+```cpp
+vector<int> arr = {30, 10, 20, 50, 40};
+int n = arr.size();
+
+// Crear array de índices
+vector<int> indices(n);
+iota(indices.begin(), indices.end(), 0);  // {0, 1, 2, 3, 4}
+
+// Ordenar índices basándose en arr
+sort(indices.begin(), indices.end(), [&](int a, int b) {
+    return arr[a] < arr[b];
+});
+
+// indices = {1, 2, 0, 4, 3}
+// El elemento más pequeño estaba en posición 1
+```
+
+## Ejercicio práctico
+
+**Problema:** Dada una lista de eventos con inicio y fin, ordénalos por tiempo de fin. Si hay empate, ordena por tiempo de inicio.
+
+```cpp
+struct Evento {
+    int inicio, fin;
+};
+
+vector<Evento> eventos;
+// Tu código para ordenar aquí
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+sort(eventos.begin(), eventos.end(), [](const Evento& a, const Evento& b) {
+    if (a.fin != b.fin) return a.fin < b.fin;
+    return a.inicio < b.inicio;
+});
+```
+
+</details>
+
+## Problemas para practicar
+
+1. [Ordenando - omegaUp](https://omegaup.com/arena/problem/Ordenando)
+2. [Sort the Array - Codeforces](https://codeforces.com/problemset/problem/451/B)
+3. [Towers - CSES](https://cses.fi/problemset/task/1073)
+
+## Siguiente paso
+
+Ahora que dominas el ordenamiento, aprende sobre [estructuras de datos básicas](/blog/estructuras-de-datos/arreglos-y-vectores).

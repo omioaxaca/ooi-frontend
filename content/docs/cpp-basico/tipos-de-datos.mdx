@@ -1,0 +1,258 @@
+---
+title: "Tipos de Datos y Variables"
+description: "Conoce los tipos de datos fundamentales en C++ y cómo declarar variables"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["c++", "variables", "tipos-de-datos", "básico"]
+syllabusId: 6
+---
+
+## ¿Qué es una variable?
+
+Una **variable** es un espacio en memoria que almacena un valor. Tiene:
+- Un **nombre** (identificador)
+- Un **tipo** (qué clase de dato almacena)
+- Un **valor** (el dato en sí)
+
+```cpp
+int edad = 15;  // nombre: edad, tipo: int, valor: 15
+```
+
+## Tipos de datos básicos
+
+### Enteros
+
+| Tipo | Tamaño | Rango aproximado |
+|------|--------|------------------|
+| `int` | 4 bytes | -2×10⁹ a 2×10⁹ |
+| `long long` | 8 bytes | -9×10¹⁸ a 9×10¹⁸ |
+| `unsigned int` | 4 bytes | 0 a 4×10⁹ |
+
+```cpp
+int a = 100;
+long long b = 9000000000000000000LL;  // Nota la LL al final
+unsigned int c = 4000000000u;
+```
+
+### Decimales
+
+| Tipo | Tamaño | Precisión |
+|------|--------|-----------|
+| `float` | 4 bytes | ~7 dígitos |
+| `double` | 8 bytes | ~15 dígitos |
+
+```cpp
+float pi_aprox = 3.14159f;
+double pi = 3.141592653589793;
+```
+
+### Caracteres
+
+```cpp
+char letra = 'A';
+char numero = '5';  // Es el carácter '5', no el número 5
+```
+
+### Booleanos
+
+```cpp
+bool esMayor = true;
+bool esVacio = false;
+```
+
+## Declaración de variables
+
+### Sintaxis básica
+
+```cpp
+tipo nombre;           // Declaración
+tipo nombre = valor;   // Declaración con inicialización
+```
+
+### Ejemplos
+
+```cpp
+int edad;              // Declarada, valor indefinido
+int puntos = 0;        // Inicializada a 0
+double promedio = 8.5;
+char grado = 'A';
+bool aprobado = true;
+```
+
+### Múltiples variables
+
+```cpp
+int a, b, c;           // Tres enteros
+int x = 1, y = 2, z = 3;
+```
+
+## Reglas para nombres de variables
+
+✅ **Válidos:**
+- Empezar con letra o guion bajo
+- Contener letras, números y guiones bajos
+- Distinguen mayúsculas/minúsculas
+
+```cpp
+int edad;
+int _contador;
+int miVariable2;
+int MAXIMO;
+```
+
+❌ **Inválidos:**
+- Empezar con número
+- Contener espacios o caracteres especiales
+- Usar palabras reservadas
+
+```cpp
+int 2variable;    // ❌ Empieza con número
+int mi variable;  // ❌ Tiene espacio
+int int;          // ❌ Palabra reservada
+```
+
+## Constantes
+
+Variables cuyo valor no cambia:
+
+```cpp
+const int DIAS_SEMANA = 7;
+const double PI = 3.14159265358979;
+const int MOD = 1e9 + 7;  // Común en competencias
+```
+
+## Conversión de tipos (casting)
+
+### Implícita
+
+C++ convierte automáticamente en algunos casos:
+
+```cpp
+int a = 5;
+double b = a;  // b = 5.0 (int a double)
+
+double x = 3.7;
+int y = x;     // y = 3 (se trunca, no redondea)
+```
+
+### Explícita
+
+Puedes forzar la conversión:
+
+```cpp
+double resultado = (double) 5 / 2;  // resultado = 2.5
+int entero = (int) 3.99;            // entero = 3
+
+// Estilo moderno C++
+double r = static_cast<double>(5) / 2;
+```
+
+## Límites de los tipos
+
+```cpp
+#include <climits>
+#include <cfloat>
+
+cout << "Máximo int: " << INT_MAX << endl;      // 2147483647
+cout << "Mínimo int: " << INT_MIN << endl;      // -2147483648
+cout << "Máximo long long: " << LLONG_MAX << endl;
+```
+
+## Overflow
+
+Cuando un valor excede el límite del tipo:
+
+```cpp
+int a = 2000000000;
+int b = 2000000000;
+int c = a + b;  // ¡OVERFLOW! El resultado no cabe en int
+
+// Solución: usar long long
+long long x = 2000000000;
+long long y = 2000000000;
+long long z = x + y;  // Correcto: 4000000000
+```
+
+## Ejemplo práctico: Área de un círculo
+
+```cpp
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+int main() {
+    const double PI = 3.14159265358979;
+
+    double radio;
+    cout << "Ingresa el radio: ";
+    cin >> radio;
+
+    double area = PI * radio * radio;
+    // O usando pow: double area = PI * pow(radio, 2);
+
+    cout << "El área es: " << area << endl;
+
+    return 0;
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Declara variables para almacenar: tu edad, tu estatura en metros, la inicial de tu nombre, y si eres estudiante.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int edad = 16;
+double estatura = 1.70;
+char inicial = 'J';
+bool esEstudiante = true;
+```
+
+</details>
+
+### Ejercicio 2
+¿Cuál es el resultado de este código?
+
+```cpp
+int a = 7 / 2;
+double b = 7 / 2;
+double c = 7.0 / 2;
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```
+a = 3     (división entera)
+b = 3.0   (7/2 se calcula como enteros primero)
+c = 3.5   (uno es double, se hace división decimal)
+```
+
+</details>
+
+### Ejercicio 3
+¿Por qué este código da un resultado incorrecto?
+
+```cpp
+int segundos_en_anio = 365 * 24 * 60 * 60;
+```
+
+<details>
+<summary>Ver solución</summary>
+
+El resultado (31,536,000) sí cabe en un `int`, así que está correcto.
+Pero si multiplicáramos más: `365 * 24 * 60 * 60 * 100` causaría overflow.
+
+Solución segura:
+```cpp
+long long segundos = 365LL * 24 * 60 * 60;
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre [Entrada y Salida de Datos](/blog/cpp-basico/entrada-salida) para interactuar con el usuario.

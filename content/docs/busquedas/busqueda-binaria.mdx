@@ -1,0 +1,329 @@
+---
+title: "Búsqueda Binaria"
+description: "Domina la técnica de búsqueda binaria y sus variantes para resolver problemas eficientemente"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["búsqueda", "binaria", "algoritmos", "divide-y-vencerás"]
+syllabusId: 42
+order: 1
+---
+
+## ¿Qué es la búsqueda binaria?
+
+La búsqueda binaria es un algoritmo eficiente para encontrar un elemento en una colección **ordenada**. En cada paso, divide el espacio de búsqueda a la mitad, logrando una complejidad de **O(log n)**.
+
+> 📝 **Nota:** La búsqueda binaria requiere que los datos estén ordenados. Si no lo están, primero debes ordenarlos con un costo de O(n log n).
+
+## Implementación básica
+
+### Encontrar un elemento
+
+```cpp
+int busquedaBinaria(vector<int>& arr, int objetivo) {
+    int izq = 0;
+    int der = arr.size() - 1;
+
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;  // Evita overflow
+
+        if (arr[mid] == objetivo) {
+            return mid;  // Encontrado
+        }
+
+        if (arr[mid] < objetivo) {
+            izq = mid + 1;  // Buscar en la mitad derecha
+        } else {
+            der = mid - 1;  // Buscar en la mitad izquierda
+        }
+    }
+
+    return -1;  // No encontrado
+}
+```
+
+### Implementación recursiva
+
+```cpp
+int busquedaBinariaRecursiva(vector<int>& arr, int objetivo, int izq, int der) {
+    if (izq > der) return -1;
+
+    int mid = izq + (der - izq) / 2;
+
+    if (arr[mid] == objetivo) return mid;
+
+    if (arr[mid] < objetivo) {
+        return busquedaBinariaRecursiva(arr, objetivo, mid + 1, der);
+    } else {
+        return busquedaBinariaRecursiva(arr, objetivo, izq, mid - 1);
+    }
+}
+```
+
+## Variantes importantes
+
+### Lower Bound
+
+Encuentra la primera posición donde se puede insertar un elemento manteniendo el orden (primer elemento ≥ objetivo).
+
+```cpp
+int lowerBound(vector<int>& arr, int objetivo) {
+    int izq = 0, der = arr.size();
+
+    while (izq < der) {
+        int mid = izq + (der - izq) / 2;
+
+        if (arr[mid] < objetivo) {
+            izq = mid + 1;
+        } else {
+            der = mid;
+        }
+    }
+
+    return izq;
+}
+```
+
+### Upper Bound
+
+Encuentra la primera posición con un elemento mayor que el objetivo.
+
+```cpp
+int upperBound(vector<int>& arr, int objetivo) {
+    int izq = 0, der = arr.size();
+
+    while (izq < der) {
+        int mid = izq + (der - izq) / 2;
+
+        if (arr[mid] <= objetivo) {
+            izq = mid + 1;
+        } else {
+            der = mid;
+        }
+    }
+
+    return izq;
+}
+```
+
+## Usando la STL de C++
+
+La biblioteca estándar ya incluye estas funciones:
+
+```cpp
+#include <algorithm>
+
+vector<int> arr = {1, 2, 4, 4, 4, 5, 6};
+
+// Buscar si existe el elemento 4
+bool existe = binary_search(arr.begin(), arr.end(), 4);  // true
+
+// Lower bound: primer elemento >= 4
+auto it1 = lower_bound(arr.begin(), arr.end(), 4);
+int pos1 = it1 - arr.begin();  // pos1 = 2
+
+// Upper bound: primer elemento > 4
+auto it2 = upper_bound(arr.begin(), arr.end(), 4);
+int pos2 = it2 - arr.begin();  // pos2 = 5
+
+// Contar ocurrencias de 4
+int cuenta = upper_bound(arr.begin(), arr.end(), 4) -
+             lower_bound(arr.begin(), arr.end(), 4);  // cuenta = 3
+```
+
+## Búsqueda binaria sobre la respuesta
+
+Una técnica poderosa es aplicar búsqueda binaria no sobre un array, sino sobre el rango de posibles respuestas.
+
+### Ejemplo: Tiempo mínimo para completar tareas
+
+**Problema:** Tienes n trabajadores que pueden completar una tarea en tiempos `t[i]`. ¿Cuál es el tiempo mínimo para completar m tareas?
+
+```cpp
+bool esPosible(vector<int>& tiempos, int m, long long tiempo) {
+    long long tareas = 0;
+    for (int t : tiempos) {
+        tareas += tiempo / t;
+        if (tareas >= m) return true;
+    }
+    return false;
+}
+
+long long tiempoMinimo(vector<int>& tiempos, int m) {
+    long long izq = 1;
+    long long der = 1e18;  // Límite superior seguro
+
+    while (izq < der) {
+        long long mid = izq + (der - izq) / 2;
+
+        if (esPosible(tiempos, m, mid)) {
+            der = mid;
+        } else {
+            izq = mid + 1;
+        }
+    }
+
+    return izq;
+}
+```
+
+> ✅ Esta técnica se conoce como "Binary Search on Answer" y es extremadamente útil en competencias.
+
+## Búsqueda binaria en números reales
+
+Para búsqueda en números reales, usamos un número fijo de iteraciones o una tolerancia:
+
+```cpp
+double raizCuadrada(double n) {
+    double izq = 0, der = n;
+
+    // 100 iteraciones garantizan suficiente precisión
+    for (int i = 0; i < 100; i++) {
+        double mid = (izq + der) / 2;
+
+        if (mid * mid <= n) {
+            izq = mid;
+        } else {
+            der = mid;
+        }
+    }
+
+    return izq;
+}
+```
+
+## Errores comunes
+
+> ⚠️ **Cuidado:** Evita estos errores frecuentes en búsqueda binaria.
+
+### 1. Overflow en el cálculo de mid
+
+```cpp
+// ❌ Mal: puede causar overflow
+int mid = (izq + der) / 2;
+
+// ✅ Bien: evita overflow
+int mid = izq + (der - izq) / 2;
+```
+
+### 2. Loop infinito
+
+```cpp
+// ❌ Mal: si izq = der - 1, mid = izq siempre
+while (izq < der) {
+    int mid = (izq + der) / 2;
+    if (condicion) izq = mid;  // ¡Nunca avanza!
+    else der = mid;
+}
+
+// ✅ Bien: usar mid + 1
+while (izq < der) {
+    int mid = izq + (der - izq) / 2;
+    if (condicion) izq = mid + 1;
+    else der = mid;
+}
+```
+
+### 3. Límites incorrectos
+
+Siempre verifica que tu rango de búsqueda incluya todas las posibles respuestas.
+
+## Template completo
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Búsqueda binaria estándar
+int buscar(vector<int>& arr, int x) {
+    int izq = 0, der = arr.size() - 1;
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;
+        if (arr[mid] == x) return mid;
+        if (arr[mid] < x) izq = mid + 1;
+        else der = mid - 1;
+    }
+    return -1;
+}
+
+// Búsqueda binaria sobre respuesta
+// Encuentra mínimo x tal que f(x) es true
+template<typename F>
+long long buscarMinimo(long long lo, long long hi, F condicion) {
+    while (lo < hi) {
+        long long mid = lo + (hi - lo) / 2;
+        if (condicion(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+// Encuentra máximo x tal que f(x) es true
+template<typename F>
+long long buscarMaximo(long long lo, long long hi, F condicion) {
+    while (lo < hi) {
+        long long mid = lo + (hi - lo + 1) / 2;  // Nota el +1
+        if (condicion(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    return lo;
+}
+
+int main() {
+    vector<int> arr = {1, 3, 5, 7, 9, 11};
+
+    cout << buscar(arr, 7) << endl;  // 3
+
+    // Encontrar mínimo x tal que x*x >= 50
+    auto resultado = buscarMinimo(1LL, 100LL, [](long long x) {
+        return x * x >= 50;
+    });
+    cout << resultado << endl;  // 8
+
+    return 0;
+}
+```
+
+## Ejercicio práctico
+
+**Problema:** Dado un array ordenado, encuentra el número de elementos en el rango [a, b].
+
+```cpp
+int contarEnRango(vector<int>& arr, int a, int b) {
+    // Tu código aquí
+}
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+int contarEnRango(vector<int>& arr, int a, int b) {
+    auto inicio = lower_bound(arr.begin(), arr.end(), a);
+    auto fin = upper_bound(arr.begin(), arr.end(), b);
+    return fin - inicio;
+}
+```
+
+</details>
+
+## Resumen
+
+| Variante | Descripción | Complejidad |
+|----------|-------------|-------------|
+| Búsqueda estándar | Encontrar elemento exacto | $O(\log n)$ |
+| Lower bound | Primer elemento ≥ x | $O(\log n)$ |
+| Upper bound | Primer elemento > x | $O(\log n)$ |
+| Binary search on answer | Buscar valor óptimo | $O(\log R \cdot f(n))$ |
+
+## Ejercicios recomendados
+
+1. [CSES - Factory Machines](https://cses.fi/problemset/task/1620)
+2. [SPOJ - Aggressive Cows](https://www.spoj.com/problems/AGGRCOW/)
+3. [Codeforces - Hamburgers](https://codeforces.com/problemset/problem/371/C)
+4. [AtCoder - Snuke's Coloring](https://atcoder.jp/contests/abc155/tasks/abc155_d)

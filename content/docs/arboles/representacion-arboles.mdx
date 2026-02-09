@@ -1,0 +1,371 @@
+---
+title: "Representación de Árboles"
+description: "Aprende las diferentes formas de representar árboles en memoria para competencias"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["árboles", "estructuras-de-datos", "representación"]
+syllabusId: 53
+order: 1
+---
+
+## ¿Qué es un árbol?
+
+Un **árbol** es una estructura de datos jerárquica formada por nodos conectados. Tiene las siguientes propiedades:
+
+- Un nodo especial llamado **raíz**
+- Cada nodo (excepto la raíz) tiene exactamente un **padre**
+- Cada nodo puede tener cero o más **hijos**
+- No hay ciclos
+
+```
+         1          ← Raíz
+       / | \
+      2  3  4       ← Hijos de 1
+     / \    |
+    5   6   7       ← Hojas (sin hijos)
+```
+
+## Terminología
+
+| Término | Definición |
+|---------|------------|
+| **Raíz** | Nodo sin padre (inicio del árbol) |
+| **Hoja** | Nodo sin hijos |
+| **Padre** | Nodo inmediatamente superior |
+| **Hijo** | Nodo inmediatamente inferior |
+| **Hermanos** | Nodos con el mismo padre |
+| **Ancestro** | Cualquier nodo en el camino a la raíz |
+| **Descendiente** | Cualquier nodo en el subárbol |
+| **Profundidad** | Distancia desde la raíz |
+| **Altura** | Máxima profundidad de sus descendientes |
+| **Subárbol** | Árbol formado por un nodo y sus descendientes |
+
+## Representación 1: Lista de adyacencia
+
+La forma más común en competencias. Usamos un vector de vectores:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> hijos[MAXN];  // hijos[u] = lista de hijos de u
+
+int main() {
+    int n;  // número de nodos
+    cin >> n;
+
+    // Leer n-1 aristas (árbol tiene n-1 aristas)
+    for (int i = 0; i < n - 1; i++) {
+        int padre, hijo;
+        cin >> padre >> hijo;
+        hijos[padre].push_back(hijo);
+    }
+
+    // Imprimir hijos de cada nodo
+    for (int i = 1; i <= n; i++) {
+        cout << "Hijos de " << i << ": ";
+        for (int h : hijos[i]) {
+            cout << h << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}
+```
+
+### Para árboles no dirigidos
+
+Si no sabemos quién es padre de quién:
+
+```cpp
+vector<int> adj[MAXN];  // Lista de adyacencia bidireccional
+
+int main() {
+    int n;
+    cin >> n;
+
+    for (int i = 0; i < n - 1; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);  // Bidireccional
+    }
+
+    // DFS para determinar padre/hijos
+    // ...
+}
+```
+
+## Representación 2: Array de padres
+
+Cada nodo guarda el índice de su padre:
+
+```cpp
+int padre[MAXN];  // padre[i] = padre del nodo i, -1 si es raíz
+
+int main() {
+    int n;
+    cin >> n;
+
+    padre[1] = -1;  // 1 es la raíz
+
+    for (int i = 2; i <= n; i++) {
+        cin >> padre[i];
+    }
+
+    // Encontrar ancestros de un nodo
+    int nodo = 5;
+    cout << "Ancestros de " << nodo << ": ";
+    while (nodo != -1) {
+        cout << nodo << " ";
+        nodo = padre[nodo];
+    }
+}
+```
+
+**Ventajas:**
+- Espacio O(n)
+- Fácil encontrar ancestros
+
+**Desventajas:**
+- Difícil encontrar hijos
+
+## Representación 3: Nodos con punteros
+
+Similar a listas enlazadas, cada nodo tiene punteros a sus hijos:
+
+```cpp
+struct Nodo {
+    int valor;
+    vector<Nodo*> hijos;
+
+    Nodo(int v) : valor(v) {}
+
+    void agregarHijo(Nodo* hijo) {
+        hijos.push_back(hijo);
+    }
+};
+
+int main() {
+    Nodo* raiz = new Nodo(1);
+    Nodo* n2 = new Nodo(2);
+    Nodo* n3 = new Nodo(3);
+
+    raiz->agregarHijo(n2);
+    raiz->agregarHijo(n3);
+
+    // DFS
+    function<void(Nodo*)> dfs = [&](Nodo* nodo) {
+        cout << nodo->valor << " ";
+        for (Nodo* hijo : nodo->hijos) {
+            dfs(hijo);
+        }
+    };
+
+    dfs(raiz);  // 1 2 3
+}
+```
+
+## Representación 4: Árbol binario
+
+Para árboles donde cada nodo tiene máximo 2 hijos:
+
+```cpp
+struct NodoBinario {
+    int valor;
+    NodoBinario* izquierdo;
+    NodoBinario* derecho;
+
+    NodoBinario(int v) : valor(v), izquierdo(nullptr), derecho(nullptr) {}
+};
+
+// También con arrays
+int izquierdo[MAXN];  // izquierdo[i] = hijo izquierdo de i, 0 si no existe
+int derecho[MAXN];    // derecho[i] = hijo derecho de i, 0 si no existe
+```
+
+### Árbol binario completo en array
+
+Para heaps y árboles binarios completos, usamos un array plano:
+
+```
+        1
+       / \
+      2   3
+     / \ / \
+    4  5 6  7
+
+Array: [_, 1, 2, 3, 4, 5, 6, 7]
+       índices: 1, 2, 3, 4, 5, 6, 7
+```
+
+**Fórmulas (indexando desde 1):**
+- Padre de `i`: `i / 2`
+- Hijo izquierdo de `i`: `2 * i`
+- Hijo derecho de `i`: `2 * i + 1`
+
+```cpp
+int arbol[MAXN];
+
+int padre(int i) { return i / 2; }
+int hijoIzq(int i) { return 2 * i; }
+int hijoDer(int i) { return 2 * i + 1; }
+```
+
+## Ejemplo completo: Construir y recorrer árbol
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100005;
+vector<int> adj[MAXN];
+int profundidad[MAXN];
+int padre[MAXN];
+int tamano[MAXN];
+
+void dfs(int nodo, int p, int prof) {
+    padre[nodo] = p;
+    profundidad[nodo] = prof;
+    tamano[nodo] = 1;
+
+    for (int hijo : adj[nodo]) {
+        if (hijo != p) {  // No regresar al padre
+            dfs(hijo, nodo, prof + 1);
+            tamano[nodo] += tamano[hijo];
+        }
+    }
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+
+    // Leer árbol
+    for (int i = 0; i < n - 1; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // DFS desde raíz (asumimos nodo 1)
+    dfs(1, 0, 0);
+
+    // Información de cada nodo
+    for (int i = 1; i <= n; i++) {
+        cout << "Nodo " << i << ": ";
+        cout << "padre=" << padre[i] << ", ";
+        cout << "profundidad=" << profundidad[i] << ", ";
+        cout << "tamaño_subárbol=" << tamano[i] << endl;
+    }
+
+    return 0;
+}
+```
+
+## Entrada típica en competencias
+
+```
+Entrada:
+7
+1 2
+1 3
+1 4
+2 5
+2 6
+4 7
+
+Árbol resultante:
+        1
+      / | \
+     2  3  4
+    / \    |
+   5   6   7
+```
+
+## Comparación de representaciones
+
+| Representación | Espacio | Encontrar hijos | Encontrar padre | Uso típico |
+|----------------|---------|-----------------|-----------------|------------|
+| Lista de adyacencia | $O(n)$ | $O(1)$ | Necesita DFS | **General** |
+| Array de padres | $O(n)$ | $O(n)$ | $O(1)$ | LCA, ancestros |
+| Punteros | $O(n)$ | $O(1)$ | $O(1)$* | Implementación OOP |
+| Array (binario) | $O(n)$ | $O(1)$ | $O(1)$ | Heaps |
+
+\* Si guardamos puntero al padre
+
+## Tipos especiales de árboles
+
+### Árbol binario
+Cada nodo tiene máximo 2 hijos.
+
+### Árbol binario completo
+Todos los niveles están llenos, excepto posiblemente el último (llenado de izquierda a derecha).
+
+### Árbol binario perfecto
+Todos los niveles están completamente llenos.
+
+### Árbol balanceado
+La diferencia de altura entre subárboles es limitada (típicamente ≤ 1).
+
+### Árbol degenerado (lista)
+Cada nodo tiene máximo 1 hijo (equivalente a una lista).
+
+## Template para competencias
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 200005;
+vector<int> adj[MAXN];
+int parent[MAXN];
+int depth[MAXN];
+int subtree_size[MAXN];
+
+void dfs(int u, int p) {
+    parent[u] = p;
+    depth[u] = (p == 0) ? 0 : depth[p] + 1;
+    subtree_size[u] = 1;
+
+    for (int v : adj[u]) {
+        if (v != p) {
+            dfs(v, u);
+            subtree_size[u] += subtree_size[v];
+        }
+    }
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+
+    for (int i = 0; i < n - 1; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    dfs(1, 0);  // Raíz en 1
+
+    // Resolver problema...
+
+    return 0;
+}
+```
+
+## Ejercicios recomendados
+
+1. [CSES - Subordinates](https://cses.fi/problemset/task/1674)
+2. [CSES - Tree Matching](https://cses.fi/problemset/task/1130)
+3. [CSES - Tree Diameter](https://cses.fi/problemset/task/1131)

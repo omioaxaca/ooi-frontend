@@ -1,0 +1,264 @@
+---
+title: "Concepto de Algoritmos"
+description: "Aprende qué es un algoritmo y cómo diseñar soluciones paso a paso para resolver problemas"
+date: "2026-02-09"
+author: "OOI Oaxaca"
+tags: ["algoritmos", "fundamentos", "diseño"]
+syllabusId: 3
+---
+
+## ¿Qué es un algoritmo?
+
+Un **algoritmo** es una secuencia finita de instrucciones bien definidas que resuelven un problema específico. Es como una receta de cocina: tiene ingredientes (entrada), pasos a seguir (proceso) y un resultado final (salida).
+
+## Características de un algoritmo
+
+Todo algoritmo debe cumplir con estas propiedades:
+
+| Característica | Descripción |
+|----------------|-------------|
+| **Finito** | Debe terminar después de un número finito de pasos |
+| **Definido** | Cada paso debe estar claramente especificado |
+| **Entrada** | Tiene cero o más valores de entrada |
+| **Salida** | Produce al menos un valor de salida |
+| **Efectivo** | Cada operación debe ser suficientemente básica |
+
+## Ejemplo: Algoritmo para encontrar el máximo
+
+**Problema:** Dado un conjunto de números, encontrar el mayor.
+
+**Algoritmo en lenguaje natural:**
+1. Tomar el primer número como el máximo actual
+2. Para cada número restante:
+   - Si el número es mayor que el máximo actual, actualizarlo
+3. El máximo actual es la respuesta
+
+**Implementación en C++:**
+
+```cpp
+int encontrarMaximo(vector<int>& numeros) {
+    int maximo = numeros[0];
+
+    for (int i = 1; i < numeros.size(); i++) {
+        if (numeros[i] > maximo) {
+            maximo = numeros[i];
+        }
+    }
+
+    return maximo;
+}
+```
+
+## Diseño de algoritmos
+
+### Paso 1: Entender el problema
+
+Antes de escribir código, asegúrate de entender:
+- ¿Cuáles son las entradas?
+- ¿Cuál es la salida esperada?
+- ¿Hay restricciones o casos especiales?
+
+### Paso 2: Diseñar la solución
+
+Escribe los pasos en lenguaje natural o pseudocódigo:
+
+```
+ALGORITMO: Suma de números del 1 al N
+ENTRADA: Un número N
+SALIDA: La suma 1 + 2 + ... + N
+
+1. Inicializar suma = 0
+2. Para i desde 1 hasta N:
+   a. suma = suma + i
+3. Retornar suma
+```
+
+### Paso 3: Implementar
+
+```cpp
+int sumaHastaN(int n) {
+    int suma = 0;
+    for (int i = 1; i <= n; i++) {
+        suma += i;
+    }
+    return suma;
+}
+```
+
+### Paso 4: Verificar
+
+Probar con casos de ejemplo:
+- n = 1 → suma = 1 ✓
+- n = 5 → suma = 15 (1+2+3+4+5) ✓
+- n = 10 → suma = 55 ✓
+
+## Pseudocódigo
+
+El pseudocódigo es una forma de escribir algoritmos que combina lenguaje natural con estructuras de programación.
+
+### Estructuras comunes
+
+```
+SI condición ENTONCES
+    instrucciones
+SINO
+    otras instrucciones
+FIN SI
+
+MIENTRAS condición HACER
+    instrucciones
+FIN MIENTRAS
+
+PARA i DESDE inicio HASTA fin HACER
+    instrucciones
+FIN PARA
+
+FUNCIÓN nombre(parámetros)
+    instrucciones
+    RETORNAR valor
+FIN FUNCIÓN
+```
+
+### Ejemplo completo
+
+```
+ALGORITMO: Verificar si un número es primo
+ENTRADA: Un número n
+SALIDA: VERDADERO si n es primo, FALSO si no
+
+SI n < 2 ENTONCES
+    RETORNAR FALSO
+FIN SI
+
+PARA i DESDE 2 HASTA raíz_cuadrada(n) HACER
+    SI n MOD i == 0 ENTONCES
+        RETORNAR FALSO
+    FIN SI
+FIN PARA
+
+RETORNAR VERDADERO
+```
+
+**Implementación:**
+
+```cpp
+bool esPrimo(int n) {
+    if (n < 2) return false;
+
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0) return false;
+    }
+
+    return true;
+}
+```
+
+## Patrones algorítmicos básicos
+
+### Acumuladores
+
+Usados para sumar, contar o combinar valores:
+
+```cpp
+// Suma de elementos
+int suma = 0;
+for (int x : arr) {
+    suma += x;
+}
+
+// Producto de elementos
+int producto = 1;
+for (int x : arr) {
+    producto *= x;
+}
+
+// Contador
+int cuenta = 0;
+for (int x : arr) {
+    if (x > 0) cuenta++;
+}
+```
+
+### Búsqueda
+
+Encontrar un elemento específico:
+
+```cpp
+// Búsqueda lineal
+int buscar(vector<int>& arr, int objetivo) {
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] == objetivo) return i;
+    }
+    return -1; // No encontrado
+}
+```
+
+### Filtrado
+
+Seleccionar elementos que cumplan una condición:
+
+```cpp
+vector<int> filtrarPositivos(vector<int>& arr) {
+    vector<int> resultado;
+    for (int x : arr) {
+        if (x > 0) resultado.push_back(x);
+    }
+    return resultado;
+}
+```
+
+### Transformación
+
+Aplicar una operación a cada elemento:
+
+```cpp
+vector<int> duplicar(vector<int>& arr) {
+    vector<int> resultado;
+    for (int x : arr) {
+        resultado.push_back(x * 2);
+    }
+    return resultado;
+}
+```
+
+## Ejercicios de práctica
+
+### Ejercicio 1
+Escribe un algoritmo que determine si un año es bisiesto.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+bool esBisiesto(int anio) {
+    // Divisible por 4, excepto centenarios no divisibles por 400
+    if (anio % 400 == 0) return true;
+    if (anio % 100 == 0) return false;
+    if (anio % 4 == 0) return true;
+    return false;
+}
+```
+
+</details>
+
+### Ejercicio 2
+Escribe un algoritmo que calcule el factorial de un número.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+long long factorial(int n) {
+    long long resultado = 1;
+    for (int i = 2; i <= n; i++) {
+        resultado *= i;
+    }
+    return resultado;
+}
+```
+
+</details>
+
+## Siguiente paso
+
+Aprende a representar algoritmos visualmente con [Diagramas de Flujo](/blog/fundamentos/diagramas-de-flujo).

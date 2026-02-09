@@ -1,0 +1,370 @@
+---
+title: "Lower Bound y Upper Bound"
+description: "Domina las funciones de búsqueda de la STL: lower_bound y upper_bound para resolver problemas clásicos"
+date: "2026-02-10"
+author: "OOI Oaxaca"
+tags: ["búsqueda", "STL", "lower_bound", "upper_bound"]
+syllabusId: 46
+order: 2
+---
+
+## Introducción
+
+Las funciones `lower_bound` y `upper_bound` de la STL son herramientas esenciales para búsquedas eficientes en contenedores ordenados. Ambas usan búsqueda binaria internamente, garantizando **O(log n)**.
+
+## Definiciones precisas
+
+### lower_bound
+
+Retorna un iterador al **primer elemento que NO es menor** que el valor buscado (≥).
+
+```cpp
+vector<int> v = {1, 2, 4, 4, 4, 5, 7};
+//              0  1  2  3  4  5  6
+
+auto it = lower_bound(v.begin(), v.end(), 4);
+// it apunta a v[2] (primer 4)
+
+int pos = it - v.begin();  // pos = 2
+```
+
+### upper_bound
+
+Retorna un iterador al **primer elemento mayor** que el valor buscado (>).
+
+```cpp
+vector<int> v = {1, 2, 4, 4, 4, 5, 7};
+//              0  1  2  3  4  5  6
+
+auto it = upper_bound(v.begin(), v.end(), 4);
+// it apunta a v[5] (primer elemento > 4)
+
+int pos = it - v.begin();  // pos = 5
+```
+
+## Comparación visual
+
+```
+Array:        [1, 2, 4, 4, 4, 5, 7]
+Índices:       0  1  2  3  4  5  6
+
+Buscando 4:
+lower_bound:         ^           (índice 2, primer ≥ 4)
+upper_bound:                  ^  (índice 5, primer > 4)
+
+Buscando 3:
+lower_bound:         ^           (índice 2, primer ≥ 3)
+upper_bound:         ^           (índice 2, primer > 3)
+
+Buscando 8:
+lower_bound:                     ^ (v.end(), índice 7)
+upper_bound:                     ^ (v.end(), índice 7)
+```
+
+## Aplicaciones comunes
+
+### 1. Verificar si existe un elemento
+
+```cpp
+bool existe(vector<int>& v, int x) {
+    auto it = lower_bound(v.begin(), v.end(), x);
+    return it != v.end() && *it == x;
+}
+```
+
+### 2. Contar ocurrencias de un valor
+
+```cpp
+int contar(vector<int>& v, int x) {
+    return upper_bound(v.begin(), v.end(), x) -
+           lower_bound(v.begin(), v.end(), x);
+}
+```
+
+### 3. Contar elementos en un rango [a, b]
+
+```cpp
+int contarEnRango(vector<int>& v, int a, int b) {
+    auto inicio = lower_bound(v.begin(), v.end(), a);    // ≥ a
+    auto fin = upper_bound(v.begin(), v.end(), b);       // > b
+    return fin - inicio;
+}
+```
+
+### 4. Encontrar elemento más cercano
+
+```cpp
+int masCercano(vector<int>& v, int x) {
+    auto it = lower_bound(v.begin(), v.end(), x);
+
+    if (it == v.begin()) return *it;
+    if (it == v.end()) return *(it - 1);
+
+    int derecha = *it;
+    int izquierda = *(it - 1);
+
+    return (x - izquierda <= derecha - x) ? izquierda : derecha;
+}
+```
+
+## Comparadores personalizados
+
+Puedes usar comparadores personalizados para búsquedas no estándar:
+
+### Orden descendente
+
+```cpp
+vector<int> v = {7, 5, 4, 4, 4, 2, 1};
+
+// Para orden descendente, usa greater<int>()
+auto it = lower_bound(v.begin(), v.end(), 4, greater<int>());
+// Encuentra primer elemento NO mayor que 4 (≤)
+```
+
+### Estructuras personalizadas
+
+```cpp
+struct Persona {
+    string nombre;
+    int edad;
+};
+
+vector<Persona> personas = {{"Ana", 20}, {"Bob", 25}, {"Carlos", 30}};
+
+// Buscar por edad
+auto it = lower_bound(personas.begin(), personas.end(), 25,
+    [](const Persona& p, int edad) {
+        return p.edad < edad;
+    });
+
+// ¡Importante! Para upper_bound el orden de parámetros cambia
+auto it2 = upper_bound(personas.begin(), personas.end(), 25,
+    [](int edad, const Persona& p) {
+        return edad < p.edad;
+    });
+```
+
+## Uso con otros contenedores
+
+### Con set y multiset
+
+```cpp
+set<int> s = {1, 3, 5, 7, 9};
+
+// Los sets tienen sus propios métodos (más eficientes)
+auto it = s.lower_bound(4);  // Apunta a 5
+auto it2 = s.upper_bound(5); // Apunta a 7
+```
+
+### Con map
+
+```cpp
+map<int, string> m = {{1, "uno"}, {3, "tres"}, {5, "cinco"}};
+
+auto it = m.lower_bound(2);   // Apunta a {3, "tres"}
+auto it2 = m.upper_bound(3);  // Apunta a {5, "cinco"}
+```
+
+## Problemas clásicos
+
+### Problema 1: Búsqueda en array rotado
+
+Dado un array ordenado que fue rotado, encuentra un elemento.
+
+```cpp
+int buscarEnRotado(vector<int>& arr, int x) {
+    int izq = 0, der = arr.size() - 1;
+
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;
+
+        if (arr[mid] == x) return mid;
+
+        // Mitad izquierda ordenada
+        if (arr[izq] <= arr[mid]) {
+            if (arr[izq] <= x && x < arr[mid]) {
+                der = mid - 1;
+            } else {
+                izq = mid + 1;
+            }
+        }
+        // Mitad derecha ordenada
+        else {
+            if (arr[mid] < x && x <= arr[der]) {
+                izq = mid + 1;
+            } else {
+                der = mid - 1;
+            }
+        }
+    }
+
+    return -1;
+}
+```
+
+### Problema 2: Encontrar pico en array bitónico
+
+Un array bitónico primero crece y luego decrece. Encuentra el máximo.
+
+```cpp
+int encontrarPico(vector<int>& arr) {
+    int izq = 0, der = arr.size() - 1;
+
+    while (izq < der) {
+        int mid = izq + (der - izq) / 2;
+
+        if (arr[mid] < arr[mid + 1]) {
+            izq = mid + 1;  // El pico está a la derecha
+        } else {
+            der = mid;      // El pico es mid o está a la izquierda
+        }
+    }
+
+    return izq;  // Índice del pico
+}
+```
+
+### Problema 3: Primer y último índice
+
+Encuentra el primer y último índice de un elemento en un array ordenado.
+
+```cpp
+pair<int, int> encontrarRango(vector<int>& arr, int x) {
+    auto inicio = lower_bound(arr.begin(), arr.end(), x);
+
+    if (inicio == arr.end() || *inicio != x) {
+        return {-1, -1};  // No existe
+    }
+
+    auto fin = upper_bound(arr.begin(), arr.end(), x);
+
+    return {inicio - arr.begin(), (fin - 1) - arr.begin()};
+}
+```
+
+### Problema 4: Mediana en stream ordenado
+
+Mantener dos estructuras para encontrar la mediana en O(log n).
+
+```cpp
+class MedianFinder {
+    multiset<int> menores;  // Mitad inferior (max en rbegin)
+    multiset<int> mayores;  // Mitad superior (min en begin)
+
+public:
+    void agregar(int num) {
+        if (menores.empty() || num <= *menores.rbegin()) {
+            menores.insert(num);
+        } else {
+            mayores.insert(num);
+        }
+
+        // Balancear
+        if (menores.size() > mayores.size() + 1) {
+            mayores.insert(*menores.rbegin());
+            menores.erase(prev(menores.end()));
+        } else if (mayores.size() > menores.size()) {
+            menores.insert(*mayores.begin());
+            mayores.erase(mayores.begin());
+        }
+    }
+
+    double mediana() {
+        if (menores.size() > mayores.size()) {
+            return *menores.rbegin();
+        }
+        return (*menores.rbegin() + *mayores.begin()) / 2.0;
+    }
+};
+```
+
+## Template útil
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Funciones de utilidad
+template<typename T>
+int contarMenores(vector<T>& v, T x) {
+    return lower_bound(v.begin(), v.end(), x) - v.begin();
+}
+
+template<typename T>
+int contarMenoresOIgual(vector<T>& v, T x) {
+    return upper_bound(v.begin(), v.end(), x) - v.begin();
+}
+
+template<typename T>
+int contarMayores(vector<T>& v, T x) {
+    return v.end() - upper_bound(v.begin(), v.end(), x);
+}
+
+template<typename T>
+int contarMayoresOIgual(vector<T>& v, T x) {
+    return v.end() - lower_bound(v.begin(), v.end(), x);
+}
+
+template<typename T>
+int contarIguales(vector<T>& v, T x) {
+    return upper_bound(v.begin(), v.end(), x) -
+           lower_bound(v.begin(), v.end(), x);
+}
+
+int main() {
+    vector<int> v = {1, 2, 2, 3, 3, 3, 4, 5};
+
+    cout << "Menores que 3: " << contarMenores(v, 3) << endl;       // 3
+    cout << "Menores o igual a 3: " << contarMenoresOIgual(v, 3) << endl;  // 6
+    cout << "Mayores que 3: " << contarMayores(v, 3) << endl;       // 2
+    cout << "Iguales a 3: " << contarIguales(v, 3) << endl;         // 3
+
+    return 0;
+}
+```
+
+## Tabla resumen
+
+| Función | Retorna | Uso típico |
+|---------|---------|------------|
+| `lower_bound(x)` | Primer elemento ≥ x | Primer índice de x |
+| `upper_bound(x)` | Primer elemento > x | Siguiente después de x |
+| `upper - lower` | Cantidad de x | Contar ocurrencias |
+| `lower_bound(a)` a `upper_bound(b)` | Rango [a, b] | Elementos en rango |
+
+## Errores comunes
+
+> ⚠️ **Cuidado con estos errores:**
+
+1. **Olvidar verificar si el elemento existe:**
+```cpp
+auto it = lower_bound(v.begin(), v.end(), x);
+// ❌ Mal: no verificar antes de desreferenciar
+int valor = *it;
+
+// ✅ Bien: siempre verificar
+if (it != v.end() && *it == x) {
+    int valor = *it;
+}
+```
+
+2. **Usar con array no ordenado:**
+```cpp
+vector<int> v = {3, 1, 4, 1, 5};
+// ❌ Resultado indefinido
+auto it = lower_bound(v.begin(), v.end(), 3);
+```
+
+3. **Comparador inconsistente:**
+```cpp
+// El comparador debe definir un orden estricto débil
+// comp(a, a) debe ser false
+// Si comp(a, b) es true, comp(b, a) debe ser false
+```
+
+## Ejercicios recomendados
+
+1. [LeetCode - Search Insert Position](https://leetcode.com/problems/search-insert-position/)
+2. [LeetCode - Find First and Last Position](https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+3. [CSES - Sum of Three Values](https://cses.fi/problemset/task/1641)
+4. [Codeforces - Interesting Drink](https://codeforces.com/problemset/problem/706/B)
