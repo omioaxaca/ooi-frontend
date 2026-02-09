@@ -186,10 +186,7 @@ export default function Registro() {
         description: "Tu cuenta ha sido creada correctamente."
       });
 
-      // Redirect to homepage or login
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
+      // Redirect is handled by auth-context's signup function
 
     } catch (error) {
       console.error('Registration error:', error);
@@ -220,6 +217,16 @@ export default function Registro() {
                 Completa el formulario para participar en la Olimpiada Oaxaqueña de Informática
             </p>
           </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center">
+              <p className="text-ooi-text-dark">
+                ¿Ya tienes una cuenta?{" "}
+                <Link href="/login" className="text-ooi-second-blue font-semibold hover:underline">
+                  Inicia sesión aquí
+                </Link>{" "}
+                y desde tu perfil podrás inscribirte a la olimpiada.
+              </p>
+            </div>
 
             <motion.div
               className="bg-white rounded-lg shadow-md p-6 md:p-8"
