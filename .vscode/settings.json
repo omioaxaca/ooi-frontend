@@ -1,6 +1,10 @@
 {
   "chat.tools.terminal.autoApprove": {
     "npm install": true,
-    "npm outdated": true
+    "npm outdated": true,
+    "/^cd /Users/josegarfias/Documents/dev/personal/ooi-frontend && python3 << 'PYEOF'\nimport os, re\n\ndocs_dir = 'content/docs'\nissues = \\[\\]\n\nfor root, dirs, files in os\\.walk\\(docs_dir\\):\n    for fname in files:\n        if not fname\\.endswith\\('\\.mdx'\\):\n            continue\n        fpath = os\\.path\\.join\\(root, fname\\)\n        with open\\(fpath\\) as f:\n            lines = f\\.readlines\\(\\)\n        \n        in_code = False\n        for i, line in enumerate\\(lines, 1\\):\n            s = line\\.strip\\(\\)\n            if s\\.startswith\\('```'\\):\n                in_code = not in_code\n                continue\n            if in_code:\n                continue\n            # Remove inline code\n            clean = re\\.sub\\(r'`\\[\\^`\\]\\+`', '', line\\)\n            # Check for bare < not part of known JSX tags\n            if re\\.search\\(r'<\\(\\?!Callout\\|Steps\\|Step\\|details\\|summary\\|/\\)', clean\\):\n                issues\\.append\\(\\(fpath, i, s\\[:120\\]\\)\\)\n\nfor f, l, t in sorted\\(issues\\):\n    print\\(f\"\\{f\\}:\\{l\\}: \\{t\\}\"\\)\nPYEOF$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }
