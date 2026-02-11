@@ -1,254 +1,200 @@
 ---
 title: "Funciones Recursivas"
-description: "Domina la recursión para resolver problemas de manera elegante y eficiente"
+description: "Entiende la recursión: funciones que se llaman a sí mismas para resolver problemas"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "recursión", "funciones", "algoritmos"]
-syllabusId: 27
+tags: ["c++", "recursión", "funciones recursivas", "caso base"]
+syllabusId: 26
 ---
 
 ## ¿Qué es la recursión?
 
-La recursión es una técnica donde una función se llama a sí misma para resolver un problema dividiéndolo en subproblemas más pequeños.
+Imagina que estás en una fila para comprar boletos y quieres saber cuántas personas hay delante de ti. Le preguntas a la persona de enfrente: "¿Cuántas personas hay delante de ti?". Esa persona le pregunta lo mismo a la siguiente, y así sucesivamente. La primera persona de la fila dice "¡Ninguna!" (caso base), y la respuesta se va propagando de regreso: "Una", "Dos", "Tres"...
 
-## Elementos de una función recursiva
+Eso es recursión: **una función que se llama a sí misma** para resolver un problema más pequeño, hasta llegar a un caso tan simple que se resuelve directamente.
 
-1. **Caso base:** Condición de parada que retorna un valor directo
-2. **Caso recursivo:** La función se llama con un problema más pequeño
+## Anatomía de una función recursiva
 
-```cpp
-tipo funcion(parámetros) {
-    if (caso_base) {
-        return valor_directo;
-    }
-    // Caso recursivo
-    return operacion(funcion(subproblema));
-}
-```
+Toda función recursiva necesita dos cosas:
 
-## Ejemplo clásico: Factorial
-
-$n! = n \times (n-1) \times (n-2) \times ... \times 1$
-
-**Definición recursiva:**
-- $0! = 1$ (caso base)
-- $n! = n \times (n-1)!$ (caso recursivo)
+1. **Caso base**: La condición que detiene la recursión. Sin él, la función se llamaría infinitamente.
+2. **Caso recursivo**: La función se llama a sí misma con un problema más pequeño.
 
 ```cpp
-int factorial(int n) {
+void cuentaRegresiva(int n) {
     // Caso base
-    if (n <= 1) {
-        return 1;
+    if (n == 0) {
+        cout << "¡Despegue!" << endl;
+        return;
     }
+
     // Caso recursivo
-    return n * factorial(n - 1);
+    cout << n << "..." << endl;
+    cuentaRegresiva(n - 1);  // Se llama con n-1 (problema más pequeño)
+}
+
+// cuentaRegresiva(3) imprime:
+// 3...
+// 2...
+// 1...
+// ¡Despegue!
+```
+
+## El ejemplo clásico: factorial
+
+El factorial de $n$ (escrito $n!$) es: $n! = n \times (n-1) \times (n-2) \times ... \times 2 \times 1$
+
+Podemos definirlo recursivamente:
+- **Caso base:** $0! = 1$
+- **Caso recursivo:** $n! = n \times (n-1)!$
+
+```cpp
+long long factorial(int n) {
+    if (n == 0) return 1;        // Caso base
+    return n * factorial(n - 1);  // Caso recursivo
 }
 ```
 
-### Traza de ejecución
+**¿Cómo funciona `factorial(4)`?**
 
-Para `factorial(5)`:
 ```
-factorial(5)
-  └─ 5 * factorial(4)
-          └─ 4 * factorial(3)
-                  └─ 3 * factorial(2)
-                          └─ 2 * factorial(1)
-                                  └─ 1 (caso base)
-                          └─ 2 * 1 = 2
-                  └─ 3 * 2 = 6
-          └─ 4 * 6 = 24
-  └─ 5 * 24 = 120
+factorial(4) = 4 * factorial(3)
+                   = 3 * factorial(2)
+                          = 2 * factorial(1)
+                                 = 1 * factorial(0)
+                                        = 1          ← Caso base
+                                 = 1 * 1 = 1
+                          = 2 * 1 = 2
+                   = 3 * 2 = 6
+             = 4 * 6 = 24
 ```
 
-## Fibonacci
+Cada llamada "espera" a que la siguiente termine, y luego usa el resultado para calcular el suyo.
 
-**Definición:**
-- $F(0) = 0$ (caso base)
-- $F(1) = 1$ (caso base)
-- $F(n) = F(n-1) + F(n-2)$ (caso recursivo)
+## La pila de llamadas (Call Stack)
+
+Cuando una función se llama a sí misma, la computadora guarda el estado de cada llamada en una **pila** (stack). Es como apilar platos: el último plato que pones es el primero que quitas.
+
+```
+factorial(4)  ← Esperando resultado de factorial(3)
+  factorial(3)  ← Esperando resultado de factorial(2)
+    factorial(2)  ← Esperando resultado de factorial(1)
+      factorial(1)  ← Esperando resultado de factorial(0)
+        factorial(0) → retorna 1  ← Caso base: se resuelve
+      factorial(1) → retorna 1 * 1 = 1
+    factorial(2) → retorna 2 * 1 = 2
+  factorial(3) → retorna 3 * 2 = 6
+factorial(4) → retorna 4 * 6 = 24
+```
+
+<Callout type="warning">
+  La pila de llamadas tiene un tamaño limitado (generalmente ~1MB, suficiente para ~10,000-100,000 llamadas). Si la recursión es demasiado profunda, obtendrás un **Stack Overflow** (desbordamiento de pila). Para esos casos, necesitas convertir la recursión a un ciclo iterativo o usar memorización.
+</Callout>
+
+## Más ejemplos de recursión
+
+### Fibonacci
+
+La secuencia de Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...
+
+Cada número es la suma de los dos anteriores.
 
 ```cpp
-int fib(int n) {
-    if (n <= 1) return n;
-    return fib(n - 1) + fib(n - 2);
+int fibonacci(int n) {
+    if (n <= 1) return n;              // Casos base: fib(0)=0, fib(1)=1
+    return fibonacci(n-1) + fibonacci(n-2);  // Caso recursivo
 }
 ```
 
-**Problema:** Esta versión es muy ineficiente (exponencial $O(2^n)$).
+<Callout type="warning">
+  ¡Esta implementación es **muy lenta**! `fibonacci(40)` tarda varios segundos porque recalcula los mismos valores muchas veces. La solución es la **memorización**, que veremos en la siguiente lección.
+</Callout>
 
-## Potencia
-
-$a^n = a \times a^{n-1}$
+### Potencia
 
 ```cpp
-int potencia(int a, int n) {
-    if (n == 0) return 1;
-    return a * potencia(a, n - 1);
+long long potencia(long long base, int exp) {
+    if (exp == 0) return 1;
+    return base * potencia(base, exp - 1);
 }
 ```
 
 ### Potencia rápida (exponenciación binaria)
 
-Aprovecha que $a^n = (a^{n/2})^2$:
+Una versión mucho más eficiente: $O(\log n)$ en vez de $O(n)$.
 
 ```cpp
-long long potenciaRapida(long long a, long long n, long long mod) {
-    if (n == 0) return 1;
-
-    long long medio = potenciaRapida(a, n / 2, mod);
-    medio = (medio * medio) % mod;
-
-    if (n % 2 == 1) {
-        medio = (medio * a) % mod;
+long long potenciaRapida(long long base, int exp, long long mod) {
+    if (exp == 0) return 1;
+    long long half = potenciaRapida(base, exp / 2, mod);
+    long long result = (half * half) % mod;
+    if (exp % 2 == 1) {
+        result = (result * base) % mod;
     }
-
-    return medio;
+    return result;
 }
 ```
 
-**Complejidad:** $O(\log n)$
+La idea: $2^{10} = (2^5)^2$ y $2^5 = 2 \times (2^2)^2$. Reducimos el exponente a la mitad en cada paso.
 
-## Suma de dígitos
+### Suma de dígitos
 
 ```cpp
 int sumaDigitos(int n) {
-    if (n == 0) return 0;
-    return (n % 10) + sumaDigitos(n / 10);
+    if (n < 10) return n;                  // Caso base: un solo dígito
+    return (n % 10) + sumaDigitos(n / 10);  // Último dígito + suma del resto
 }
+
+// sumaDigitos(1234) = 4 + sumaDigitos(123)
+//                   = 4 + 3 + sumaDigitos(12)
+//                   = 4 + 3 + 2 + sumaDigitos(1)
+//                   = 4 + 3 + 2 + 1 = 10
 ```
 
-## Máximo común divisor (Euclides)
-
-$MCD(a, b) = MCD(b, a \mod b)$
+### GCD (Algoritmo de Euclides recursivo)
 
 ```cpp
-int mcd(int a, int b) {
+int gcd(int a, int b) {
     if (b == 0) return a;
-    return mcd(b, a % b);
+    return gcd(b, a % b);
 }
 ```
 
-## Torres de Hanoi
+### Torres de Hanoi
 
-Mueve n discos de la torre A a la torre C usando B como auxiliar:
+Un rompecabezas clásico: mover N discos de la torre A a la C, usando B como auxiliar. Regla: nunca poner un disco grande sobre uno pequeño.
 
 ```cpp
 void hanoi(int n, char origen, char destino, char auxiliar) {
-    if (n == 1) {
-        cout << "Mover disco de " << origen << " a " << destino << endl;
-        return;
-    }
+    if (n == 0) return;
 
-    // Mover n-1 discos de origen a auxiliar
     hanoi(n - 1, origen, auxiliar, destino);
-
-    // Mover el disco más grande
-    cout << "Mover disco de " << origen << " a " << destino << endl;
-
-    // Mover n-1 discos de auxiliar a destino
+    cout << "Mover disco " << n << " de " << origen << " a " << destino << endl;
     hanoi(n - 1, auxiliar, destino, origen);
 }
 
-// Uso: hanoi(3, 'A', 'C', 'B');
-```
-
-## Búsqueda binaria recursiva
-
-```cpp
-int busquedaBinaria(vector<int>& arr, int objetivo, int izq, int der) {
-    if (izq > der) return -1;  // No encontrado
-
-    int mid = izq + (der - izq) / 2;
-
-    if (arr[mid] == objetivo) return mid;
-
-    if (arr[mid] < objetivo) {
-        return busquedaBinaria(arr, objetivo, mid + 1, der);
-    } else {
-        return busquedaBinaria(arr, objetivo, izq, mid - 1);
-    }
-}
+// hanoi(3, 'A', 'C', 'B');
 ```
 
 ## Recursión vs Iteración
 
+Todo lo que se puede hacer con recursión se puede hacer con ciclos, y viceversa. La pregunta es: ¿cuál es más natural para el problema?
+
 | Recursión | Iteración |
 |-----------|-----------|
-| Código más elegante | Más eficiente en memoria |
-| Usa la pila de llamadas | Usa variables locales |
-| Puede causar stack overflow | Más seguro |
-| Natural para divide y vencerás | Natural para problemas lineales |
-
-### Factorial iterativo vs recursivo
+| Más intuitiva para problemas divisibles | Más eficiente (sin overhead de la pila) |
+| Necesaria para árboles y grafos | Preferida para cálculos simples |
+| Riesgo de stack overflow | Sin ese riesgo |
+| Código más corto y elegante | A veces más código |
 
 ```cpp
-// Recursivo
-int factorialRec(int n) {
-    if (n <= 1) return 1;
-    return n * factorialRec(n - 1);
-}
-
-// Iterativo
-int factorialIter(int n) {
-    int resultado = 1;
+// Factorial iterativo
+long long factorialIt(int n) {
+    long long resultado = 1;
     for (int i = 2; i <= n; i++) {
         resultado *= i;
     }
     return resultado;
-}
-```
-
-## Tipos de recursión
-
-### Recursión simple
-
-Una sola llamada recursiva:
-
-```cpp
-int factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
-}
-```
-
-### Recursión múltiple
-
-Múltiples llamadas recursivas:
-
-```cpp
-int fib(int n) {
-    if (n <= 1) return n;
-    return fib(n-1) + fib(n-2);  // Dos llamadas
-}
-```
-
-### Recursión de cola (Tail Recursion)
-
-La llamada recursiva es la última operación:
-
-```cpp
-int factorialCola(int n, int acum = 1) {
-    if (n <= 1) return acum;
-    return factorialCola(n - 1, n * acum);  // Última operación
-}
-```
-
-### Recursión mutua
-
-Dos funciones que se llaman entre sí:
-
-```cpp
-bool esImpar(int n);
-
-bool esPar(int n) {
-    if (n == 0) return true;
-    return esImpar(n - 1);
-}
-
-bool esImpar(int n) {
-    if (n == 0) return false;
-    return esPar(n - 1);
 }
 ```
 
@@ -257,107 +203,64 @@ bool esImpar(int n) {
 ### 1. Olvidar el caso base
 
 ```cpp
-// ❌ Recursión infinita
-int factorial(int n) {
-    return n * factorial(n - 1);  // Nunca termina
-}
-
-// ✅ Correcto
-int factorial(int n) {
-    if (n <= 1) return 1;  // Caso base
-    return n * factorial(n - 1);
+// ❌ Sin caso base: recursión infinita → Stack Overflow
+int malo(int n) {
+    return n * malo(n - 1);  // Nunca para
 }
 ```
 
-### 2. No reducir el problema
+### 2. Caso base que nunca se alcanza
 
 ```cpp
-// ❌ No avanza hacia el caso base
-int mal(int n) {
-    if (n == 0) return 0;
-    return mal(n);  // Siempre n, no reduce
+// ❌ Si n es negativo, nunca llega a 0
+int malo(int n) {
+    if (n == 0) return 1;
+    return n * malo(n - 1);  // ¿Qué pasa si n = -3?
 }
 
-// ✅ Correcto
-int bien(int n) {
-    if (n == 0) return 0;
-    return bien(n - 1);  // Reduce n
+// ✅ Manejar todos los casos
+int bueno(int n) {
+    if (n <= 0) return 1;
+    return n * bueno(n - 1);
 }
 ```
 
-### 3. Stack overflow
+## Ejercicio de práctica
 
-```cpp
-// ❌ Puede causar stack overflow para n grande
-int suma(int n) {
-    if (n == 0) return 0;
-    return n + suma(n - 1);
-}
+Escribe una función recursiva que invierta un string.
 
-// ✅ Usar iteración para valores grandes
-```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Calcula $a^b$ usando recursión.
+**Entrada:** `"hola"`
+**Salida:** `"aloh"`
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-long long potencia(int a, int b) {
-    if (b == 0) return 1;
-    if (b % 2 == 0) {
-        long long medio = potencia(a, b / 2);
-        return medio * medio;
-    }
-    return a * potencia(a, b - 1);
-}
-```
+#include <iostream>
+using namespace std;
 
-</details>
-
-### Ejercicio 2
-Invierte un string usando recursión.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
 string invertir(string s) {
-    if (s.length() <= 1) return s;
+    if (s.size() <= 1) return s;
     return invertir(s.substr(1)) + s[0];
 }
 
-// O modificando in-place:
-void invertir(string& s, int i, int j) {
-    if (i >= j) return;
-    swap(s[i], s[j]);
-    invertir(s, i + 1, j - 1);
+// invertir("hola") = invertir("ola") + 'h'
+//                  = (invertir("la") + 'o') + 'h'
+//                  = ((invertir("a") + 'l') + 'o') + 'h'
+//                  = (("a" + 'l') + 'o') + 'h'
+//                  = "al" + 'o' + 'h'
+//                  = "aloh"
+
+int main() {
+    string s;
+    cin >> s;
+    cout << invertir(s) << endl;
+    return 0;
 }
-```
-
-</details>
-
-### Ejercicio 3
-Verifica si un string es palíndromo usando recursión.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-bool esPalindromo(string s, int i, int j) {
-    if (i >= j) return true;
-    if (s[i] != s[j]) return false;
-    return esPalindromo(s, i + 1, j - 1);
-}
-
-// Uso: esPalindromo(s, 0, s.length() - 1);
 ```
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Memorización](/blog/recursion/memorizacion) para optimizar funciones recursivas.
+Aprende sobre **Memorización** para hacer la recursión mucho más eficiente evitando recalcular valores.

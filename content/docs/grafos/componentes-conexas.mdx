@@ -1,38 +1,46 @@
 ---
 title: "Componentes Conexas"
-description: "Aprende a identificar y trabajar con componentes conexas en grafos"
+description: "Identifica y cuenta los grupos de nodos conectados en un grafo"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "componentes", "conexidad", "DFS", "BFS"]
-syllabusId: 77
-order: 4
+tags: ["c++", "componentes conexas", "grafos", "DFS", "Union-Find"]
+syllabusId: 57
 ---
 
 ## ¿Qué es una componente conexa?
 
-Una **componente conexa** es un subgrafo máximo donde existe un camino entre cualquier par de nodos.
+Una **componente conexa** es un grupo máximo de nodos donde puedes llegar de cualquiera a cualquier otro siguiendo aristas.
 
-En un grafo no dirigido, dos nodos están en la misma componente si puedes llegar de uno al otro siguiendo aristas.
+**Analogía:** Piensa en islas. Cada isla es una componente conexa: puedes caminar entre cualquier par de puntos dentro de la misma isla, pero no puedes caminar de una isla a otra.
 
-## Identificar componentes
+```
+Componente 1:    Componente 2:    Componente 3:
+   1 - 2            5                7 - 8
+   |   |            |
+   3 - 4            6
+```
 
-### Usando DFS
+Este grafo tiene **3 componentes conexas**.
+
+## Encontrar componentes con DFS
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
 const int MAXN = 100005;
 vector<int> adj[MAXN];
-int componente[MAXN];  // componente[i] = número de componente del nodo i
-int numComponentes = 0;
+int comp[MAXN];  // comp[i] = número de componente del nodo i
+bool vis[MAXN];
 
-void dfs(int u, int comp) {
-    componente[u] = comp;
+void dfs(int u, int id) {
+    vis[u] = true;
+    comp[u] = id;
 
     for (int v : adj[u]) {
-        if (componente[v] == 0) {
-            dfs(v, comp);
+        if (!vis[v]) {
+            dfs(v, id);
         }
     }
 }
@@ -48,40 +56,40 @@ int main() {
         adj[v].push_back(u);
     }
 
-    // Encontrar todas las componentes
+    int numComponentes = 0;
     for (int i = 1; i <= n; i++) {
-        if (componente[i] == 0) {
+        if (!vis[i]) {
             numComponentes++;
             dfs(i, numComponentes);
         }
     }
 
-    cout << "Número de componentes: " << numComponentes << "\n";
+    cout << "Componentes: " << numComponentes << endl;
 
-    // Imprimir componente de cada nodo
+    // Imprimir la componente de cada nodo
     for (int i = 1; i <= n; i++) {
-        cout << "Nodo " << i << " está en componente " << componente[i] << "\n";
+        cout << "Nodo " << i << " → Componente " << comp[i] << endl;
     }
 
     return 0;
 }
 ```
 
-### Usando BFS
+## Encontrar componentes con BFS
 
 ```cpp
-void bfs(int inicio, int comp) {
+void bfs(int inicio, int id) {
     queue<int> q;
     q.push(inicio);
-    componente[inicio] = comp;
+    vis[inicio] = true;
+    comp[inicio] = id;
 
     while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-
+        int u = q.front(); q.pop();
         for (int v : adj[u]) {
-            if (componente[v] == 0) {
-                componente[v] = comp;
+            if (!vis[v]) {
+                vis[v] = true;
+                comp[v] = id;
                 q.push(v);
             }
         }
@@ -89,277 +97,155 @@ void bfs(int inicio, int comp) {
 }
 ```
 
-## Obtener nodos de cada componente
-
-```cpp
-vector<vector<int>> obtenerComponentes(int n) {
-    vector<vector<int>> comps(numComponentes + 1);
-
-    for (int i = 1; i <= n; i++) {
-        comps[componente[i]].push_back(i);
-    }
-
-    return comps;
-}
-
-// Uso
-auto comps = obtenerComponentes(n);
-for (int c = 1; c <= numComponentes; c++) {
-    cout << "Componente " << c << ": ";
-    for (int nodo : comps[c]) {
-        cout << nodo << " ";
-    }
-    cout << "\n";
-}
-```
-
 ## Tamaño de cada componente
 
 ```cpp
-int tamano[MAXN];  // tamano[c] = tamaño de la componente c
+vector<int> tamComp;
 
-void calcularTamanos(int n) {
-    for (int i = 1; i <= n; i++) {
-        tamano[componente[i]]++;
-    }
-}
-
-// La componente más grande
-int maxTamano = *max_element(tamano + 1, tamano + numComponentes + 1);
-```
-
-## Componentes en matriz (grid)
-
-Contar "islas" en una matriz:
-
-```cpp
-int n, m;
-char grid[1005][1005];
-int comp[1005][1005];
-int numComps = 0;
-
-int dx[] = {0, 0, 1, -1};
-int dy[] = {1, -1, 0, 0};
-
-void dfsGrid(int x, int y, int c) {
-    if (x < 0 || x >= n || y < 0 || y >= m) return;
-    if (grid[x][y] == '.' || comp[x][y] != 0) return;
-
-    comp[x][y] = c;
-
-    for (int d = 0; d < 4; d++) {
-        dfsGrid(x + dx[d], y + dy[d], c);
-    }
-}
-
-int contarIslas() {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (grid[i][j] == '#' && comp[i][j] == 0) {
-                numComps++;
-                dfsGrid(i, j, numComps);
-            }
+int dfsContar(int u) {
+    vis[u] = true;
+    int tam = 1;
+    for (int v : adj[u]) {
+        if (!vis[v]) {
+            tam += dfsContar(v);
         }
     }
-    return numComps;
+    return tam;
 }
-```
 
-## Verificar conectividad
-
-### ¿Están dos nodos conectados?
-
-```cpp
-bool conectados(int u, int v) {
-    return componente[u] == componente[v];
-}
-```
-
-### ¿El grafo es conexo?
-
-```cpp
-bool esConexo(int n) {
-    return numComponentes == 1;
-}
-```
-
-## Aristas para conectar el grafo
-
-Si el grafo tiene k componentes, necesitas **k-1 aristas** mínimo para conectarlo:
-
-```cpp
-int aristasParaConectar(int n) {
-    // Primero encontrar componentes
-    for (int i = 1; i <= n; i++) {
-        if (componente[i] == 0) {
-            numComponentes++;
-            dfs(i, numComponentes);
-        }
+// En main:
+for (int i = 1; i <= n; i++) {
+    if (!vis[i]) {
+        tamComp.push_back(dfsContar(i));
     }
-
-    return numComponentes - 1;
 }
 ```
 
-### Sugerir qué aristas agregar
+## Union-Find (Disjoint Set Union)
 
-```cpp
-vector<pair<int, int>> aristasNecesarias(int n) {
-    vector<int> representantes;
-
-    for (int i = 1; i <= n; i++) {
-        if (componente[i] == 0) {
-            numComponentes++;
-            dfs(i, numComponentes);
-            representantes.push_back(i);
-        }
-    }
-
-    vector<pair<int, int>> aristas;
-    for (int i = 1; i < representantes.size(); i++) {
-        aristas.push_back({representantes[i-1], representantes[i]});
-    }
-
-    return aristas;
-}
-```
-
-## Problema: Eliminar nodo y contar componentes
-
-```cpp
-int componentesSinNodo(int n, int nodoEliminar) {
-    int comps = 0;
-    vector<bool> vis(n + 1, false);
-    vis[nodoEliminar] = true;  // "Eliminarlo"
-
-    function<void(int)> dfs = [&](int u) {
-        vis[u] = true;
-        for (int v : adj[u]) {
-            if (!vis[v]) {
-                dfs(v);
-            }
-        }
-    };
-
-    for (int i = 1; i <= n; i++) {
-        if (!vis[i]) {
-            dfs(i);
-            comps++;
-        }
-    }
-
-    return comps;
-}
-```
-
-## Usando Union-Find
-
-Para consultas dinámicas de conectividad:
+Estructura eficiente para manejar componentes de forma **dinámica** (agregar aristas una por una).
 
 ```cpp
 int padre[MAXN], rango[MAXN];
 
-void init(int n) {
-    for (int i = 0; i <= n; i++) {
+void inicializar(int n) {
+    for (int i = 1; i <= n; i++) {
         padre[i] = i;
         rango[i] = 0;
     }
 }
 
-int find(int x) {
+int encontrar(int x) {
     if (padre[x] != x) {
-        padre[x] = find(padre[x]);
+        padre[x] = encontrar(padre[x]);  // Compresión de caminos
     }
     return padre[x];
 }
 
-void unite(int x, int y) {
-    int px = find(x), py = find(y);
-    if (px == py) return;
+bool unir(int a, int b) {
+    a = encontrar(a);
+    b = encontrar(b);
+    if (a == b) return false;  // Ya están en la misma componente
 
-    if (rango[px] < rango[py]) swap(px, py);
-    padre[py] = px;
-    if (rango[px] == rango[py]) rango[px]++;
+    // Unión por rango
+    if (rango[a] < rango[b]) swap(a, b);
+    padre[b] = a;
+    if (rango[a] == rango[b]) rango[a]++;
+
+    return true;
 }
 
-bool conectados(int x, int y) {
-    return find(x) == find(y);
-}
-
-int contarComponentes(int n) {
-    set<int> raices;
-    for (int i = 1; i <= n; i++) {
-        raices.insert(find(i));
-    }
-    return raices.size();
+bool mismaComponente(int a, int b) {
+    return encontrar(a) == encontrar(b);
 }
 ```
 
-## Template completo
+**Complejidad:** Casi $O(1)$ por operación (amortizado $O(\alpha(n))$ donde $\alpha$ es la inversa de Ackermann, prácticamente constante).
+
+### Ejemplo de uso
 
 ```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-int componente[MAXN];
-int tamano[MAXN];
-int numComponentes = 0;
-
-void dfs(int u, int comp) {
-    componente[u] = comp;
-    tamano[comp]++;
-
-    for (int v : adj[u]) {
-        if (componente[v] == 0) {
-            dfs(v, comp);
-        }
-    }
-}
-
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n, m;
     cin >> n >> m;
+
+    inicializar(n);
 
     for (int i = 0; i < m; i++) {
         int u, v;
         cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+        unir(u, v);
     }
+
+    // Contar componentes
+    set<int> componentes;
+    for (int i = 1; i <= n; i++) {
+        componentes.insert(encontrar(i));
+    }
+
+    cout << "Componentes: " << componentes.size() << endl;
+}
+```
+
+## ¿DFS/BFS o Union-Find?
+
+| Escenario | Mejor opción |
+|-----------|-------------|
+| Grafo estático, una sola vez | DFS o BFS |
+| Aristas se agregan dinámicamente | Union-Find |
+| Consultas "¿están conectados?" | Union-Find |
+| Necesitas recorrer la componente | DFS o BFS |
+
+## Ejercicio de práctica
+
+Dado un grafo con N nodos y M aristas, después responde Q consultas: "¿Los nodos A y B están en la misma componente?"
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int padre[100005], rango_arr[100005];
+
+int encontrar(int x) {
+    if (padre[x] != x) padre[x] = encontrar(padre[x]);
+    return padre[x];
+}
+
+void unir(int a, int b) {
+    a = encontrar(a); b = encontrar(b);
+    if (a == b) return;
+    if (rango_arr[a] < rango_arr[b]) swap(a, b);
+    padre[b] = a;
+    if (rango_arr[a] == rango_arr[b]) rango_arr[a]++;
+}
+
+int main() {
+    int n, m, q;
+    cin >> n >> m;
 
     for (int i = 1; i <= n; i++) {
-        if (componente[i] == 0) {
-            numComponentes++;
-            dfs(i, numComponentes);
-        }
+        padre[i] = i;
+        rango_arr[i] = 0;
     }
 
-    cout << numComponentes << "\n";
-
-    // Componente más grande
-    int maxComp = 1;
-    for (int c = 2; c <= numComponentes; c++) {
-        if (tamano[c] > tamano[maxComp]) {
-            maxComp = c;
-        }
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        unir(u, v);
     }
 
-    cout << "Componente más grande: " << maxComp;
-    cout << " (tamaño " << tamano[maxComp] << ")\n";
+    cin >> q;
+    while (q--) {
+        int a, b;
+        cin >> a >> b;
+        cout << (encontrar(a) == encontrar(b) ? "Sí" : "No") << endl;
+    }
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
-
-1. [CSES - Counting Rooms](https://cses.fi/problemset/task/1192)
-2. [CSES - Building Roads](https://cses.fi/problemset/task/1666)
-3. [LeetCode - Number of Islands](https://leetcode.com/problems/number-of-islands/)
-4. [LeetCode - Number of Provinces](https://leetcode.com/problems/number-of-provinces/)
-5. [Codeforces - Learning Languages](https://codeforces.com/problemset/problem/277/A)
+</details>

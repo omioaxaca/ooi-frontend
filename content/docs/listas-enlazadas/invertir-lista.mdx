@@ -1,441 +1,281 @@
 ---
 title: "Invertir una Lista Enlazada"
-description: "Domina las técnicas iterativa y recursiva para invertir listas enlazadas"
+description: "Domina la técnica de inversión de nodos, uno de los problemas clásicos más importantes"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["listas-enlazadas", "inversión", "algoritmos", "entrevistas"]
-syllabusId: 52
-order: 2
+tags: ["c++", "listas enlazadas", "invertir lista", "problemas clásicos"]
+syllabusId: 40
 ---
 
 ## El problema
 
-Dado el nodo cabeza de una lista enlazada, invertir la lista y retornar la nueva cabeza.
+Dada una lista enlazada `1 → 2 → 3 → 4 → nullptr`, transformarla en `4 → 3 → 2 → 1 → nullptr`.
 
-```
-Entrada:  1 -> 2 -> 3 -> 4 -> 5 -> NULL
-Salida:   5 -> 4 -> 3 -> 2 -> 1 -> NULL
-```
+Es como voltear una fila de fichas de dominó: cada ficha que apuntaba a la derecha ahora apunta a la izquierda.
 
-Este es uno de los problemas más clásicos en entrevistas y competencias.
+## Solución iterativa (tres punteros)
 
-## Estructura del nodo
+La idea es recorrer la lista y, nodo por nodo, **invertir la dirección** del puntero `siguiente`.
 
 ```cpp
-struct Nodo {
-    int dato;
-    Nodo* siguiente;
-    Nodo(int x) : dato(x), siguiente(nullptr) {}
-};
-```
-
-## Método 1: Iterativo
-
-La idea es recorrer la lista y cambiar la dirección de cada puntero:
-
-```
-Original: 1 -> 2 -> 3 -> NULL
-
-Paso 1: NULL <- 1    2 -> 3 -> NULL
-Paso 2: NULL <- 1 <- 2    3 -> NULL
-Paso 3: NULL <- 1 <- 2 <- 3
-
-Final: 3 -> 2 -> 1 -> NULL
-```
-
-### Implementación
-
-```cpp
-Nodo* invertirIterativo(Nodo* cabeza) {
+Nodo* invertir(Nodo* cabeza) {
     Nodo* anterior = nullptr;
     Nodo* actual = cabeza;
 
     while (actual != nullptr) {
-        Nodo* siguiente = actual->siguiente;  // Guardar siguiente
-        actual->siguiente = anterior;         // Invertir enlace
-        anterior = actual;                    // Mover anterior
-        actual = siguiente;                   // Mover actual
+        Nodo* siguiente = actual->siguiente; // Guardar referencia al siguiente
+        actual->siguiente = anterior;        // Invertir el puntero
+        anterior = actual;                   // Avanzar anterior
+        actual = siguiente;                  // Avanzar actual
     }
 
-    return anterior;  // Nueva cabeza
+    return anterior;  // anterior ahora es la nueva cabeza
 }
 ```
 
-### Visualización paso a paso
+### Paso a paso visual
+
+Lista original: `1 → 2 → 3 → nullptr`
+
+| Paso | anterior | actual | siguiente | Acción |
+|------|----------|--------|-----------|--------|
+| 0 | nullptr | 1 | - | Inicio |
+| 1 | nullptr | 1 | 2 | 1→nullptr, avanzar |
+| 2 | 1 | 2 | 3 | 2→1, avanzar |
+| 3 | 2 | 3 | nullptr | 3→2, avanzar |
+| 4 | 3 | nullptr | - | Fin. Cabeza = 3 |
+
+Resultado: `3 → 2 → 1 → nullptr` ✅
+
+## Solución recursiva
 
 ```cpp
-// Lista: 1 -> 2 -> 3 -> NULL
-//
-// Inicio:
-// anterior = NULL
-// actual = 1
-//
-// Iteración 1:
-// siguiente = 2
-// 1->siguiente = NULL  (1 -> NULL)
-// anterior = 1
-// actual = 2
-// Estado: NULL <- 1    2 -> 3 -> NULL
-//
-// Iteración 2:
-// siguiente = 3
-// 2->siguiente = 1     (2 -> 1)
-// anterior = 2
-// actual = 3
-// Estado: NULL <- 1 <- 2    3 -> NULL
-//
-// Iteración 3:
-// siguiente = NULL
-// 3->siguiente = 2     (3 -> 2)
-// anterior = 3
-// actual = NULL
-// Estado: NULL <- 1 <- 2 <- 3
-//
-// Fin: retornar 3 (nueva cabeza)
-```
-
-**Complejidad:**
-- Tiempo: $O(n)$
-- Espacio: $O(1)$
-
-## Método 2: Recursivo
-
-La recursión procesa del final hacia el inicio:
-
-```cpp
-Nodo* invertirRecursivo(Nodo* cabeza) {
-    // Caso base: lista vacía o un solo nodo
-    if (cabeza == nullptr || cabeza->siguiente == nullptr) {
-        return cabeza;
+Nodo* invertirRecursivo(Nodo* nodo) {
+    // Caso base: lista vacía o último nodo
+    if (nodo == nullptr || nodo->siguiente == nullptr) {
+        return nodo;
     }
 
     // Invertir el resto de la lista
-    Nodo* nuevaCabeza = invertirRecursivo(cabeza->siguiente);
+    Nodo* nuevaCabeza = invertirRecursivo(nodo->siguiente);
 
-    // Invertir el enlace actual
-    cabeza->siguiente->siguiente = cabeza;
-    cabeza->siguiente = nullptr;
-
-    return nuevaCabeza;
-}
-```
-
-### Visualización recursiva
-
-```
-invertir(1 -> 2 -> 3 -> NULL)
-│
-├─ invertir(2 -> 3 -> NULL)
-│  │
-│  ├─ invertir(3 -> NULL)
-│  │  └─ retorna 3 (caso base)
-│  │
-│  │  // 2->siguiente->siguiente = 2  =>  3->siguiente = 2
-│  │  // 2->siguiente = NULL
-│  │  // Estado: 3 -> 2 -> NULL
-│  └─ retorna 3
-│
-│  // 1->siguiente->siguiente = 1  =>  2->siguiente = 1
-│  // 1->siguiente = NULL
-│  // Estado: 3 -> 2 -> 1 -> NULL
-└─ retorna 3
-```
-
-**Complejidad:**
-- Tiempo: $O(n)$
-- Espacio: $O(n)$ (pila de recursión)
-
-## Método 3: Usando stack
-
-```cpp
-Nodo* invertirConStack(Nodo* cabeza) {
-    if (cabeza == nullptr) return nullptr;
-
-    stack<Nodo*> pila;
-    Nodo* actual = cabeza;
-
-    // Agregar todos los nodos al stack
-    while (actual != nullptr) {
-        pila.push(actual);
-        actual = actual->siguiente;
-    }
-
-    // La nueva cabeza es el tope del stack
-    Nodo* nuevaCabeza = pila.top();
-    pila.pop();
-
-    actual = nuevaCabeza;
-    while (!pila.empty()) {
-        actual->siguiente = pila.top();
-        pila.pop();
-        actual = actual->siguiente;
-    }
-    actual->siguiente = nullptr;
+    // El siguiente nodo debe apuntar a mí
+    nodo->siguiente->siguiente = nodo;
+    nodo->siguiente = nullptr;
 
     return nuevaCabeza;
 }
 ```
 
-**Complejidad:**
-- Tiempo: $O(n)$
-- Espacio: $O(n)$
+**¿Cómo funciona?** La recursión llega hasta el último nodo (que será la nueva cabeza). Al regresar, cada nodo le dice a su siguiente: "ahora apunta a mí" y se desconecta del que sigue.
 
-## Variantes del problema
+## Variantes comunes
 
-### Invertir en grupos de k
-
-Invertir la lista en grupos de tamaño k.
-
-```
-Entrada: 1 -> 2 -> 3 -> 4 -> 5, k = 2
-Salida:  2 -> 1 -> 4 -> 3 -> 5
-```
+### Invertir solo una porción (de posición L a R)
 
 ```cpp
-Nodo* invertirEnGrupos(Nodo* cabeza, int k) {
-    Nodo* actual = cabeza;
-    Nodo* anterior = nullptr;
-    Nodo* siguiente = nullptr;
-
-    // Verificar si hay al menos k nodos
-    Nodo* check = cabeza;
-    for (int i = 0; i < k; i++) {
-        if (check == nullptr) return cabeza;
-        check = check->siguiente;
-    }
-
-    // Invertir k nodos
-    int count = 0;
-    while (actual != nullptr && count < k) {
-        siguiente = actual->siguiente;
-        actual->siguiente = anterior;
-        anterior = actual;
-        actual = siguiente;
-        count++;
-    }
-
-    // Recursivamente invertir el resto
-    if (siguiente != nullptr) {
-        cabeza->siguiente = invertirEnGrupos(siguiente, k);
-    }
-
-    return anterior;  // Nueva cabeza del grupo
-}
-```
-
-### Invertir entre posiciones m y n
-
-```
-Entrada: 1 -> 2 -> 3 -> 4 -> 5, m = 2, n = 4
-Salida:  1 -> 4 -> 3 -> 2 -> 5
-```
-
-```cpp
-Nodo* invertirEntre(Nodo* cabeza, int m, int n) {
-    if (cabeza == nullptr || m == n) return cabeza;
+Nodo* invertirEntre(Nodo* cabeza, int L, int R) {
+    if (L == R) return cabeza;
 
     Nodo dummy(0);
     dummy.siguiente = cabeza;
-    Nodo* pre = &dummy;
+    Nodo* preL = &dummy;
 
-    // Mover pre al nodo antes de posición m
-    for (int i = 1; i < m; i++) {
-        pre = pre->siguiente;
+    for (int i = 1; i < L; i++) {
+        preL = preL->siguiente;
     }
 
-    Nodo* inicio = pre->siguiente;
-    Nodo* siguiente = inicio->siguiente;
-
-    // Invertir n - m veces
-    for (int i = 0; i < n - m; i++) {
-        inicio->siguiente = siguiente->siguiente;
-        siguiente->siguiente = pre->siguiente;
-        pre->siguiente = siguiente;
-        siguiente = inicio->siguiente;
+    Nodo* actual = preL->siguiente;
+    for (int i = 0; i < R - L; i++) {
+        Nodo* temp = actual->siguiente;
+        actual->siguiente = temp->siguiente;
+        temp->siguiente = preL->siguiente;
+        preL->siguiente = temp;
     }
 
     return dummy.siguiente;
 }
 ```
 
-### Verificar si es palíndromo
+### Invertir en grupos de K
 
-Usa inversión para verificar si la lista es un palíndromo.
+Invertir cada grupo de K nodos:
+
+`1 → 2 → 3 → 4 → 5 → 6` con K=3 → `3 → 2 → 1 → 6 → 5 → 4`
 
 ```cpp
-bool esPalindromo(Nodo* cabeza) {
-    if (cabeza == nullptr || cabeza->siguiente == nullptr) {
-        return true;
+Nodo* invertirEnGrupos(Nodo* cabeza, int k) {
+    Nodo* actual = cabeza;
+    int count = 0;
+
+    // Verificar que hay al menos k nodos
+    Nodo* temp = cabeza;
+    for (int i = 0; i < k; i++) {
+        if (temp == nullptr) return cabeza;  // Menos de k nodos
+        temp = temp->siguiente;
     }
 
-    // Encontrar el medio
+    // Invertir k nodos
+    Nodo* anterior = nullptr;
+    actual = cabeza;
+    while (actual != nullptr && count < k) {
+        Nodo* sig = actual->siguiente;
+        actual->siguiente = anterior;
+        anterior = actual;
+        actual = sig;
+        count++;
+    }
+
+    // Recursión para el resto
+    cabeza->siguiente = invertirEnGrupos(actual, k);
+
+    return anterior;
+}
+```
+
+## Detectar ciclo (Floyd)
+
+Otro problema clásico: ¿tiene la lista un ciclo?
+
+```cpp
+bool tieneCiclo(Nodo* cabeza) {
     Nodo* lento = cabeza;
     Nodo* rapido = cabeza;
-    while (rapido->siguiente != nullptr && rapido->siguiente->siguiente != nullptr) {
+
+    while (rapido != nullptr && rapido->siguiente != nullptr) {
+        lento = lento->siguiente;          // Avanza 1 paso
+        rapido = rapido->siguiente->siguiente;  // Avanza 2 pasos
+
+        if (lento == rapido) return true;   // Se encontraron: hay ciclo
+    }
+
+    return false;  // Rápido llegó al final: no hay ciclo
+}
+```
+
+**Analogía:** Dos corredores en una pista circular. El rápido (2x velocidad) eventualmente alcanza al lento si la pista es circular. Si la pista tiene fin, el rápido llega primero al final.
+
+## Encontrar el medio de la lista
+
+```cpp
+Nodo* encontrarMedio(Nodo* cabeza) {
+    Nodo* lento = cabeza;
+    Nodo* rapido = cabeza;
+
+    while (rapido != nullptr && rapido->siguiente != nullptr) {
         lento = lento->siguiente;
         rapido = rapido->siguiente->siguiente;
     }
 
-    // Invertir la segunda mitad
-    Nodo* segundaMitad = invertirIterativo(lento->siguiente);
+    return lento;  // Lento está en el medio
+}
+```
 
-    // Comparar
+Cuando el rápido llega al final (avanzando 2 pasos), el lento está exactamente a la mitad.
+
+## Programa completo de ejemplo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Nodo {
+    int dato;
+    Nodo* sig;
+    Nodo(int d) : dato(d), sig(nullptr) {}
+};
+
+void imprimir(Nodo* cabeza) {
+    Nodo* act = cabeza;
+    while (act) {
+        cout << act->dato;
+        if (act->sig) cout << " -> ";
+        act = act->sig;
+    }
+    cout << " -> nullptr" << endl;
+}
+
+Nodo* invertir(Nodo* cabeza) {
+    Nodo* ant = nullptr;
+    Nodo* act = cabeza;
+    while (act) {
+        Nodo* sig = act->sig;
+        act->sig = ant;
+        ant = act;
+        act = sig;
+    }
+    return ant;
+}
+
+int main() {
+    // Crear lista: 1 -> 2 -> 3 -> 4 -> 5
+    Nodo* cabeza = new Nodo(1);
+    Nodo* act = cabeza;
+    for (int i = 2; i <= 5; i++) {
+        act->sig = new Nodo(i);
+        act = act->sig;
+    }
+
+    cout << "Original: ";
+    imprimir(cabeza);
+
+    cabeza = invertir(cabeza);
+
+    cout << "Invertida: ";
+    imprimir(cabeza);
+
+    return 0;
+}
+```
+
+**Salida:**
+```
+Original: 1 -> 2 -> 3 -> 4 -> 5 -> nullptr
+Invertida: 5 -> 4 -> 3 -> 2 -> 1 -> nullptr
+```
+
+## Ejercicio de práctica
+
+Determina si una lista enlazada es un **palíndromo** (se lee igual al derecho y al revés). Ejemplo: `1 → 2 → 3 → 2 → 1` es palíndromo.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+bool esPalindromo(Nodo* cabeza) {
+    if (!cabeza || !cabeza->sig) return true;
+
+    // 1. Encontrar el medio
+    Nodo* lento = cabeza;
+    Nodo* rapido = cabeza;
+    while (rapido->sig && rapido->sig->sig) {
+        lento = lento->sig;
+        rapido = rapido->sig->sig;
+    }
+
+    // 2. Invertir la segunda mitad
+    Nodo* segundaMitad = invertir(lento->sig);
+
+    // 3. Comparar ambas mitades
     Nodo* p1 = cabeza;
     Nodo* p2 = segundaMitad;
     bool resultado = true;
-
-    while (p2 != nullptr) {
+    while (p2) {
         if (p1->dato != p2->dato) {
             resultado = false;
             break;
         }
-        p1 = p1->siguiente;
-        p2 = p2->siguiente;
+        p1 = p1->sig;
+        p2 = p2->sig;
     }
 
-    // Restaurar la lista (opcional)
-    lento->siguiente = invertirIterativo(segundaMitad);
+    // 4. Restaurar la lista (opcional)
+    lento->sig = invertir(segundaMitad);
 
     return resultado;
 }
 ```
 
-## Código completo para practicar
+La técnica combina tres ideas: encontrar el medio (dos punteros), invertir la segunda mitad, y comparar elemento por elemento.
 
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-struct Nodo {
-    int dato;
-    Nodo* siguiente;
-    Nodo(int x) : dato(x), siguiente(nullptr) {}
-};
-
-// Crear lista desde vector
-Nodo* crearLista(vector<int>& valores) {
-    if (valores.empty()) return nullptr;
-
-    Nodo* cabeza = new Nodo(valores[0]);
-    Nodo* actual = cabeza;
-
-    for (int i = 1; i < valores.size(); i++) {
-        actual->siguiente = new Nodo(valores[i]);
-        actual = actual->siguiente;
-    }
-
-    return cabeza;
-}
-
-// Imprimir lista
-void imprimir(Nodo* cabeza) {
-    while (cabeza != nullptr) {
-        cout << cabeza->dato;
-        if (cabeza->siguiente) cout << " -> ";
-        cabeza = cabeza->siguiente;
-    }
-    cout << " -> NULL" << endl;
-}
-
-// Invertir iterativo
-Nodo* invertir(Nodo* cabeza) {
-    Nodo* anterior = nullptr;
-    Nodo* actual = cabeza;
-
-    while (actual != nullptr) {
-        Nodo* siguiente = actual->siguiente;
-        actual->siguiente = anterior;
-        anterior = actual;
-        actual = siguiente;
-    }
-
-    return anterior;
-}
-
-// Liberar memoria
-void liberar(Nodo* cabeza) {
-    while (cabeza != nullptr) {
-        Nodo* temp = cabeza;
-        cabeza = cabeza->siguiente;
-        delete temp;
-    }
-}
-
-int main() {
-    vector<int> valores = {1, 2, 3, 4, 5};
-    Nodo* lista = crearLista(valores);
-
-    cout << "Original: ";
-    imprimir(lista);
-
-    lista = invertir(lista);
-
-    cout << "Invertida: ";
-    imprimir(lista);
-
-    liberar(lista);
-    return 0;
-}
-```
-
-## Errores comunes
-
-### 1. Perder la referencia al siguiente
-
-```cpp
-// ❌ MAL
-while (actual != nullptr) {
-    actual->siguiente = anterior;  // ¡Perdimos el siguiente!
-    anterior = actual;
-    actual = actual->siguiente;    // Siempre será anterior
-}
-
-// ✅ BIEN
-while (actual != nullptr) {
-    Nodo* siguiente = actual->siguiente;  // Guardar primero
-    actual->siguiente = anterior;
-    anterior = actual;
-    actual = siguiente;
-}
-```
-
-### 2. No manejar casos especiales
-
-```cpp
-// ✅ Siempre verificar
-if (cabeza == nullptr || cabeza->siguiente == nullptr) {
-    return cabeza;
-}
-```
-
-### 3. No actualizar el puntero de retorno
-
-```cpp
-// ❌ MAL
-Nodo* invertir(Nodo* cabeza) {
-    // ... invertir ...
-    return cabeza;  // ¡Sigue apuntando al viejo inicio!
-}
-
-// ✅ BIEN
-Nodo* invertir(Nodo* cabeza) {
-    // ... invertir ...
-    return anterior;  // Retornar la nueva cabeza
-}
-```
-
-## Resumen
-
-| Método | Tiempo | Espacio | Cuándo usar |
-|--------|--------|---------|-------------|
-| Iterativo | $O(n)$ | $O(1)$ | **Recomendado** |
-| Recursivo | $O(n)$ | $O(n)$ | Código más elegante |
-| Stack | $O(n)$ | $O(n)$ | Más intuitivo |
-
-## Ejercicios recomendados
-
-1. [LeetCode - Reverse Linked List](https://leetcode.com/problems/reverse-linked-list/)
-2. [LeetCode - Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/)
-3. [LeetCode - Reverse Nodes in k-Group](https://leetcode.com/problems/reverse-nodes-in-k-group/)
-4. [LeetCode - Palindrome Linked List](https://leetcode.com/problems/palindrome-linked-list/)
-5. [LeetCode - Swap Nodes in Pairs](https://leetcode.com/problems/swap-nodes-in-pairs/)
+</details>

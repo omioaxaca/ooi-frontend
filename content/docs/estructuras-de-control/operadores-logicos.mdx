@@ -1,306 +1,293 @@
 ---
-title: "Operadores de Comparación y Lógicos"
-description: "Aprende a usar operadores de comparación y lógicos para crear condiciones en C++"
+title: "Operadores Lógicos y de Comparación"
+description: "Aprende a comparar valores y combinar condiciones en C++"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "operadores", "comparación", "lógica", "condiciones"]
+tags: ["c++", "operadores lógicos", "comparación", "booleanos"]
 syllabusId: 12
 ---
 
+## ¿Qué son las condiciones?
+
+Piensa en tu vida diaria: tomas decisiones todo el tiempo basándote en condiciones.
+
+- **Si** llueve, llevo paraguas.
+- **Si** tengo hambre **y** hay comida, como.
+- **Si** es sábado **o** domingo, no voy a la escuela.
+
+En programación es exactamente igual. Tu programa necesita **evaluar condiciones** para tomar decisiones. Para eso usamos dos tipos de operadores: los de **comparación** y los **lógicos**.
+
 ## Operadores de comparación
 
-Los operadores de comparación comparan dos valores y devuelven un booleano (`true` o `false`):
+Estos operadores comparan dos valores y devuelven `true` (verdadero) o `false` (falso):
 
 | Operador | Significado | Ejemplo | Resultado |
-|----------|-------------|---------|-----------|
-| `==` | Igual a | `5 == 5` | `true` |
-| `!=` | Diferente de | `5 != 3` | `true` |
-| `<` | Menor que | `3 < 5` | `true` |
-| `>` | Mayor que | `5 > 3` | `true` |
-| `<=` | Menor o igual | `5 <= 5` | `true` |
-| `>=` | Mayor o igual | `5 >= 3` | `true` |
+|----------|------------|---------|-----------|
+| `==` | ¿Es igual a? | `5 == 5` | `true` |
+| `!=` | ¿Es diferente de? | `5 != 3` | `true` |
+| `<` | ¿Es menor que? | `3 < 5` | `true` |
+| `>` | ¿Es mayor que? | `5 > 3` | `true` |
+| `<=` | ¿Es menor o igual que? | `5 <= 5` | `true` |
+| `>=` | ¿Es mayor o igual que? | `3 >= 5` | `false` |
 
 ```cpp
-int a = 10, b = 20;
+int edad = 16;
 
-cout << (a == b) << endl;  // 0 (false)
-cout << (a != b) << endl;  // 1 (true)
-cout << (a < b) << endl;   // 1 (true)
-cout << (a > b) << endl;   // 0 (false)
-cout << (a <= 10) << endl; // 1 (true)
-cout << (b >= 20) << endl; // 1 (true)
+cout << (edad == 18) << endl;   // 0 (false)
+cout << (edad != 18) << endl;   // 1 (true)
+cout << (edad < 18) << endl;    // 1 (true)
+cout << (edad >= 16) << endl;   // 1 (true)
 ```
 
-## Error común: = vs ==
+<Callout type="warning">
+  **¡El error más común de principiantes!** No confundas `=` (asignación) con `==` (comparación).
+
+  - `x = 5` → "Guarda 5 en x"
+  - `x == 5` → "¿Es x igual a 5?"
+
+  Si escribes `if (x = 5)` en lugar de `if (x == 5)`, tu programa no comparará: ¡asignará 5 a x y siempre será verdadero!
+</Callout>
+
+### Comparar caracteres y strings
+
+Los caracteres se comparan por su valor ASCII:
 
 ```cpp
-int x = 5;
+cout << ('A' < 'B') << endl;    // 1 (true, porque 65 < 66)
+cout << ('a' > 'Z') << endl;    // 1 (true, porque 97 > 90)
+cout << ('5' < '9') << endl;    // 1 (true, porque 53 < 57)
+```
 
-// ❌ INCORRECTO: Asignación, no comparación
-if (x = 10) {  // Asigna 10 a x, siempre true
-    cout << "Siempre se ejecuta" << endl;
-}
+Los strings se comparan **lexicográficamente** (como en un diccionario):
 
-// ✅ CORRECTO: Comparación
-if (x == 10) {
-    cout << "x es 10" << endl;
-}
+```cpp
+string a = "abc", b = "abd";
+cout << (a < b) << endl;    // 1 (true, porque 'c' < 'd')
+
+string c = "abc", d = "abcd";
+cout << (c < d) << endl;    // 1 (true, "abc" viene antes que "abcd")
 ```
 
 ## Operadores lógicos
 
-Combinan múltiples condiciones:
+Los operadores lógicos **combinan condiciones**:
 
-| Operador | Nombre | Descripción |
-|----------|--------|-------------|
-| `&&` | AND (Y) | Verdadero si ambos son verdaderos |
-| `\|\|` | OR (O) | Verdadero si al menos uno es verdadero |
-| `!` | NOT (NO) | Invierte el valor |
+| Operador | Nombre | Significado | Analogía |
+|----------|--------|-------------|----------|
+| `&&` | AND (Y) | Ambas deben ser verdaderas | "Necesitas boleto **Y** identificación" |
+| `\|\|` | OR (O) | Al menos una debe ser verdadera | "Puedes pagar en efectivo **O** con tarjeta" |
+| `!` | NOT (NO) | Invierte el valor | "**No** está lloviendo" |
 
-### Tablas de verdad
+### AND (`&&`): "Y" lógico
 
-**AND (&&):**
-| A | B | A && B |
-|---|---|--------|
-| false | false | false |
-| false | true | false |
-| true | false | false |
-| true | true | true |
+Solo es `true` cuando **AMBAS** condiciones son verdaderas:
 
-**OR (||):**
-| A | B | A \|\| B |
-|---|---|---------|
-| false | false | false |
-| false | true | true |
-| true | false | true |
-| true | true | true |
+```
+true  && true  → true
+true  && false → false
+false && true  → false
+false && false → false
+```
 
-**NOT (!):**
-| A | !A |
-|---|-----|
-| false | true |
-| true | false |
-
-## Ejemplos prácticos
-
-### Verificar rango
+**Ejemplo:** Para inscribirte en la olimpiada necesitas tener 15 años o más **Y** estar en preparatoria:
 
 ```cpp
-int edad;
-cin >> edad;
+int edad = 16;
+bool enPrepa = true;
 
-// Verificar si está entre 18 y 65 años
-if (edad >= 18 && edad <= 65) {
-    cout << "Edad laboral" << endl;
+if (edad >= 15 && enPrepa) {
+    cout << "Puedes inscribirte" << endl;
 }
 ```
 
-### Múltiples condiciones
+### OR (`||`): "O" lógico
+
+Es `true` cuando **AL MENOS UNA** condición es verdadera:
+
+```
+true  || true  → true
+true  || false → true
+false || true  → true
+false || false → false
+```
+
+**Ejemplo:** Te puedes registrar si eres estudiante **O** si eres maestro:
 
 ```cpp
-int nota;
-cin >> nota;
+bool esEstudiante = false;
+bool esMaestro = true;
 
-// Aprobado si nota >= 60 O si tiene puntos extra
-bool tienePuntosExtra = true;
-
-if (nota >= 60 || tienePuntosExtra) {
-    cout << "Aprobado" << endl;
+if (esEstudiante || esMaestro) {
+    cout << "Puedes registrarte" << endl;  // Sí se imprime
 }
 ```
 
-### Negación
+### NOT (`!`): "NO" lógico
+
+Invierte el valor: verdadero se vuelve falso, y viceversa:
+
+```
+!true  → false
+!false → true
+```
 
 ```cpp
-bool estaLloviendo = false;
+bool llueve = false;
 
-if (!estaLloviendo) {
-    cout << "Podemos salir" << endl;
+if (!llueve) {
+    cout << "No llueve, sal sin paraguas" << endl;
 }
 ```
 
 ## Combinando operadores
 
-```cpp
-int edad = 25;
-bool tieneCarnet = true;
-bool estaSobrio = true;
+Puedes combinar múltiples condiciones:
 
-// Puede conducir si es mayor de 18, tiene carnet Y está sobrio
-if (edad >= 18 && tieneCarnet && estaSobrio) {
-    cout << "Puede conducir" << endl;
+```cpp
+int edad = 16;
+int promedio = 9;
+bool tienePermiso = true;
+
+// Ejemplo complejo
+if ((edad >= 15 && edad <= 18) && (promedio >= 8 || tienePermiso)) {
+    cout << "Aceptado" << endl;
 }
 ```
 
-### Precedencia de operadores
+**Lectura:** "Si la edad está entre 15 y 18 **Y** (el promedio es 8 o más **O** tiene permiso)".
 
-1. `!` (NOT) - Mayor prioridad
-2. `<`, `<=`, `>`, `>=`
-3. `==`, `!=`
-4. `&&` (AND)
-5. `||` (OR) - Menor prioridad
+### Precedencia de operadores lógicos
+
+De mayor a menor prioridad:
+1. `!` (NOT)
+2. `&&` (AND)
+3. `||` (OR)
 
 ```cpp
-// Estas expresiones son equivalentes:
-if (a > 5 && b < 10 || c == 0)
-if (((a > 5) && (b < 10)) || (c == 0))
+// Sin paréntesis:
+true || false && false
+// Se evalúa como: true || (false && false) = true || false = true
+
+// Con paréntesis para cambiar el orden:
+(true || false) && false
+// Se evalúa como: true && false = false
 ```
 
-**Recomendación:** Usa paréntesis para mayor claridad.
+<Callout type="info">
+  **Regla de oro:** Cuando combines `&&` y `||`, **siempre usa paréntesis** para dejar claro qué quieres. Incluso si la precedencia natural da el resultado correcto, los paréntesis hacen el código más legible.
+</Callout>
 
-## Evaluación de cortocircuito
+## Evaluación de cortocircuito (short-circuit)
 
-C++ deja de evaluar cuando ya conoce el resultado:
+C++ es "perezoso" al evaluar condiciones:
 
-### AND (&&)
+- **Con `&&`:** Si la primera condición es `false`, **no evalúa** la segunda (porque ya sabe que el resultado será `false`).
+- **Con `||`:** Si la primera condición es `true`, **no evalúa** la segunda (porque ya sabe que el resultado será `true`).
 
-Si el primer operando es `false`, no evalúa el segundo:
+Esto es útil para **evitar errores**:
 
 ```cpp
-int x = 0;
-if (x != 0 && 10/x > 2) {  // No hay división por cero
-    // ...
+int n = 0;
+
+// Sin cortocircuito, esto daría error (división entre cero)
+// Pero gracias al cortocircuito, si n == 0, no evalúa la segunda parte
+if (n != 0 && 10 / n > 2) {
+    cout << "Entró" << endl;
 }
 ```
 
-### OR (||)
+## Verificar rangos
 
-Si el primer operando es `true`, no evalúa el segundo:
+Un patrón muy común es verificar si un número está dentro de un rango:
 
 ```cpp
-bool encontrado = true;
-if (encontrado || funcionCostosa()) {  // No llama a funcionCostosa()
-    // ...
+int x = 15;
+
+// ❌ Incorrecto (error de principiante)
+if (10 < x < 20) {  // Esto NO funciona como esperas
+
+}
+
+// ✅ Correcto
+if (x > 10 && x < 20) {
+    cout << "x está entre 10 y 20" << endl;
+}
+
+// ✅ Incluyendo los extremos
+if (x >= 10 && x <= 20) {
+    cout << "x está entre 10 y 20 (inclusive)" << endl;
 }
 ```
 
-## Ejemplo: Año bisiesto
+¿Por qué `10 < x < 20` no funciona? Porque C++ evalúa de izquierda a derecha: primero `10 < x` (que da `true` = 1), luego `1 < 20` (que siempre es `true`). ¡No es lo que querías!
 
-Un año es bisiesto si:
-- Es divisible por 4 Y no por 100, O
-- Es divisible por 400
+## Tabla de verdad completa
+
+Para referencia, aquí están todas las combinaciones posibles:
+
+| A | B | A && B | A \|\| B | !A |
+|---|---|--------|----------|----|
+| `true` | `true` | `true` | `true` | `false` |
+| `true` | `false` | `false` | `true` | `false` |
+| `false` | `true` | `false` | `true` | `true` |
+| `false` | `false` | `false` | `false` | `true` |
+
+## Leyes de De Morgan
+
+Estas leyes te ayudan a simplificar condiciones negadas:
+
+- `!(A && B)` es equivalente a `!A || !B`
+- `!(A || B)` es equivalente a `!A && !B`
+
+**Ejemplo práctico:**
 
 ```cpp
-int anio;
-cin >> anio;
+// Estas dos condiciones son equivalentes:
+if (!(edad >= 18 && tieneID)) { ... }
+if (edad < 18 || !tieneID) { ... }
 
-if ((anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0)) {
-    cout << "Es bisiesto" << endl;
-} else {
-    cout << "No es bisiesto" << endl;
-}
+// Y estas también:
+if (!(esPar || esPositivo)) { ... }
+if (!esPar && !esPositivo) { ... }
 ```
 
-## Ejemplo: Validar triángulo
+La segunda forma suele ser más legible.
 
-Un triángulo es válido si la suma de dos lados es mayor que el tercero:
+## Ejercicio de práctica
 
-```cpp
-int a, b, c;
-cin >> a >> b >> c;
+Lee tres números y determina si pueden ser los lados de un triángulo. Un triángulo es válido si la suma de cualesquiera dos lados es mayor que el tercero.
 
-if (a + b > c && b + c > a && a + c > b) {
-    cout << "Triángulo válido" << endl;
-} else {
-    cout << "Triángulo inválido" << endl;
-}
-```
+**Entrada:** `3 4 5`
+**Salida:** `Si es un triangulo`
 
-## Ejemplo: Verificar número primo (simplificado)
+**Entrada:** `1 2 10`
+**Salida:** `No es un triangulo`
+
+<details>
+<summary>Ver solución</summary>
 
 ```cpp
-int n;
-cin >> n;
+#include <iostream>
+using namespace std;
 
-bool esPrimo = true;
+int main() {
+    int a, b, c;
+    cin >> a >> b >> c;
 
-if (n < 2) {
-    esPrimo = false;
-} else {
-    for (int i = 2; i * i <= n && esPrimo; i++) {
-        if (n % i == 0) {
-            esPrimo = false;
-        }
+    if (a + b > c && a + c > b && b + c > a) {
+        cout << "Si es un triangulo" << endl;
+    } else {
+        cout << "No es un triangulo" << endl;
     }
-}
 
-if (esPrimo) {
-    cout << "Es primo" << endl;
-} else {
-    cout << "No es primo" << endl;
+    return 0;
 }
 ```
 
-## Ejercicios de práctica
-
-### Ejercicio 1
-Verifica si un número está fuera del rango [1, 100].
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int n;
-cin >> n;
-
-if (n < 1 || n > 100) {
-    cout << "Fuera de rango" << endl;
-} else {
-    cout << "Dentro del rango" << endl;
-}
-```
-
-</details>
-
-### Ejercicio 2
-Determina si un carácter es una vocal.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-char c;
-cin >> c;
-c = tolower(c);
-
-if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
-    cout << "Es vocal" << endl;
-} else {
-    cout << "No es vocal" << endl;
-}
-```
-
-</details>
-
-### Ejercicio 3
-Dados tres números, determina si pueden formar un triángulo rectángulo.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int a, b, c;
-cin >> a >> b >> c;
-
-// Encontrar el mayor
-int mayor = max({a, b, c});
-int suma = a + b + c - mayor;  // Suma de los otros dos
-
-// Teorema de Pitágoras: a² + b² = c²
-if (mayor * mayor == (a*a + b*b + c*c - mayor*mayor)) {
-    cout << "Es triángulo rectángulo" << endl;
-} else {
-    cout << "No es triángulo rectángulo" << endl;
-}
-
-// O de forma más directa:
-if (a*a + b*b == c*c || b*b + c*c == a*a || a*a + c*c == b*b) {
-    cout << "Es triángulo rectángulo" << endl;
-}
-```
+Las tres condiciones deben cumplirse simultáneamente (por eso usamos `&&`).
 
 </details>
 
 ## Siguiente paso
 
-Aprende a usar [Estructura de Control if-else](/blog/estructuras-de-control/if-else) para tomar decisiones en tus programas.
+Ahora que sabes comparar y combinar condiciones, aprende a usarlas con **If-Else** para que tu programa tome decisiones.

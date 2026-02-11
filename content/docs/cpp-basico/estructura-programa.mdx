@@ -7,136 +7,11 @@ tags: ["c++", "estructura", "básico", "sintaxis"]
 syllabusId: 5
 ---
 
-## Estructura básica
+## Tu primer programa en C++
 
-Todo programa en C++ sigue una estructura fundamental:
+Imagina que quieres decirle algo a la computadora y que ella te responda. Para eso necesitas hablarle en un idioma que entienda. Ese idioma es **C++**, y en esta sección aprenderás las primeras "frases" de este lenguaje.
 
-```cpp
-#include <iostream>
-using namespace std;
-
-int main() {
-    // Tu código aquí
-    return 0;
-}
-```
-
-Analicemos cada parte:
-
-### Directivas de preprocesador
-
-```cpp
-#include <iostream>
-```
-
-Las directivas `#include` importan bibliotecas. Las más comunes son:
-
-| Biblioteca | Uso |
-|------------|-----|
-| `<iostream>` | Entrada/salida (cin, cout) |
-| `<cmath>` | Funciones matemáticas |
-| `<string>` | Manejo de cadenas |
-| `<vector>` | Arreglos dinámicos |
-| `<algorithm>` | Algoritmos (sort, find) |
-
-**Para competencias**, usamos el header que incluye todo:
-
-```cpp
-#include <bits/stdc++.h>
-```
-
-### Espacio de nombres
-
-```cpp
-using namespace std;
-```
-
-Esto nos permite usar `cout` en lugar de `std::cout`.
-
-### Función main
-
-```cpp
-int main() {
-    // Código
-    return 0;
-}
-```
-
-- `int` indica que devuelve un entero
-- `main()` es el punto de entrada del programa
-- `return 0` indica que el programa terminó correctamente
-
-## Template para competencias
-
-Este es el template recomendado para programación competitiva:
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-// Macros útiles
-#define int long long
-#define endl '\n'
-#define pb push_back
-#define all(x) (x).begin(), (x).end()
-
-void solve() {
-    // Tu solución aquí
-}
-
-signed main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int t = 1;
-    // cin >> t; // Descomenta si hay múltiples casos
-    while (t--) {
-        solve();
-    }
-
-    return 0;
-}
-```
-
-### Explicación del template
-
-#### Optimización de entrada/salida
-
-```cpp
-ios_base::sync_with_stdio(false);
-cin.tie(NULL);
-```
-
-Estas líneas aceleran significativamente la lectura y escritura de datos.
-
-#### Macro para evitar overflow
-
-```cpp
-#define int long long
-```
-
-Redefine `int` como `long long` para evitar errores de overflow.
-
-#### Usar signed main
-
-```cpp
-signed main()
-```
-
-Necesario cuando usamos `#define int long long`.
-
-## Comentarios
-
-```cpp
-// Esto es un comentario de una línea
-
-/*
-   Esto es un comentario
-   de múltiples líneas
-*/
-```
-
-## Ejemplo completo: Hola Mundo
+Todo programa en C++ tiene una estructura básica que siempre se repite, como la estructura de una carta: siempre tiene un saludo, un cuerpo y una despedida. Veamos:
 
 ```cpp
 #include <iostream>
@@ -148,75 +23,228 @@ int main() {
 }
 ```
 
-**Salida:**
-```
-¡Hola, Mundo!
-```
+Este es el programa más famoso del mundo: el "Hola, Mundo". Cuando lo ejecutas, muestra en pantalla el mensaje "¡Hola, Mundo!". Es simple, pero contiene todas las piezas fundamentales de un programa en C++. Vamos a analizarlo pieza por pieza.
 
-## Ejemplo: Sumar dos números
+## Anatomía de un programa C++
+
+### 1. Las directivas `#include`: "trayendo herramientas"
 
 ```cpp
 #include <iostream>
-using namespace std;
+```
 
+Esta línea le dice al compilador: **"Necesito usar herramientas de entrada y salida"**. Es como ir a una ferretería antes de empezar un proyecto: necesitas pedir las herramientas que vas a usar.
+
+`iostream` significa "input/output stream" (flujo de entrada/salida), y nos da acceso a `cin` (para leer datos) y `cout` (para mostrar datos).
+
+Las bibliotecas más comunes que usarás son:
+
+| Biblioteca | ¿Qué te da? | Analogía |
+|------------|------------|----------|
+| `<iostream>` | `cin` y `cout` para leer/escribir | Un teléfono para comunicarte |
+| `<cmath>` | Funciones matemáticas como `sqrt`, `pow` | Una calculadora científica |
+| `<string>` | Manejo de textos | Un procesador de palabras |
+| `<vector>` | Arreglos que pueden crecer | Una lista que se expande |
+| `<algorithm>` | Funciones útiles como `sort`, `min`, `max` | Una caja de herramientas |
+
+**Para competencias**, existe un atajo mágico que incluye TODAS las bibliotecas de una vez:
+
+```cpp
+#include <bits/stdc++.h>
+```
+
+Es como decir "tráeme TODAS las herramientas de la ferretería". Esto solo funciona con el compilador `g++` y es exclusivo para competencias (no lo uses en proyectos profesionales).
+
+### 2. El espacio de nombres: "de dónde vienen mis herramientas"
+
+```cpp
+using namespace std;
+```
+
+Todas las herramientas de C++ viven dentro de una "caja" llamada `std` (standard). Sin esta línea, cada vez que quieras usar `cout`, tendrías que escribir `std::cout`. Es como tener que decir "la llave inglesa de la caja roja" cada vez, en lugar de solo "la llave inglesa" (porque ya dijimos que todas nuestras herramientas vienen de la caja roja).
+
+### 3. La función `main`: "donde empieza todo"
+
+```cpp
 int main() {
-    int a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
+    // Tu código aquí
     return 0;
 }
 ```
 
-**Entrada:**
-```
-5 3
+La función `main` es el **punto de partida** de todo programa en C++. Cuando ejecutas tu programa, la computadora busca `main` y empieza a ejecutar las instrucciones que hay dentro, de arriba a abajo.
+
+- **`int`** indica que la función regresa un número entero.
+- **`main()`** es el nombre de la función. **Siempre** debe llamarse `main`.
+- **`{ }`** las llaves encierran el cuerpo de la función (las instrucciones).
+- **`return 0;`** le dice al sistema operativo "el programa terminó correctamente". El número 0 significa "sin errores".
+
+### 4. Las instrucciones: "las acciones del programa"
+
+Dentro de `main()`, cada línea de instrucción termina con un **punto y coma** (`;`). El punto y coma es como el punto al final de una oración: le dice al compilador "aquí termina esta instrucción".
+
+```cpp
+cout << "¡Hola, Mundo!" << endl;   // Instrucción 1
+return 0;                           // Instrucción 2
 ```
 
-**Salida:**
-```
-8
+### 5. Los comentarios: "notas para humanos"
+
+Los comentarios son texto que el compilador **ignora completamente**. Son notas que tú escribes para recordar qué hace cada parte del código. Es como escribir notas al margen de tu cuaderno.
+
+```cpp
+// Esto es un comentario de una línea.
+// El compilador lo ignora.
+
+/*
+   Esto es un comentario
+   de múltiples líneas.
+   Útil para explicaciones largas.
+*/
+
+int x = 5;  // También puedes poner comentarios al final de una línea
 ```
 
-## Errores comunes
+<Callout type="info">
+  Los comentarios son tu mejor amigo. Cuando vuelvas a leer tu código después de una semana, los comentarios te recordarán qué estabas pensando. Úsalos generosamente.
+</Callout>
+
+## El operador de salida: `cout`
+
+`cout` (pronunciado "si-aut", de "character output") es la forma de mostrar información en pantalla:
+
+```cpp
+cout << "Hola";           // Muestra texto
+cout << 42;               // Muestra un número
+cout << 3.14;             // Muestra un decimal
+cout << endl;             // Hace un salto de línea
+```
+
+El operador `<<` se llama "operador de inserción". Puedes pensar en `cout` como una pantalla y `<<` como una flecha que envía cosas a esa pantalla.
+
+Puedes encadenar múltiples valores:
+
+```cpp
+int edad = 15;
+cout << "Tengo " << edad << " años" << endl;
+// Muestra: Tengo 15 años
+```
+
+**Sobre `endl` vs `'\n'`:** Ambos hacen un salto de línea, pero `'\n'` es más rápido. `endl` además "vacía el buffer" (forza a que todo se muestre inmediatamente), lo cual es innecesario en competencias y lo hace más lento.
+
+```cpp
+cout << "Línea 1" << endl;   // Más lento (vacía el buffer)
+cout << "Línea 2" << '\n';   // Más rápido (solo salto de línea)
+cout << "Línea 3\n";         // Equivalente al anterior
+```
+
+## Template para competencias
+
+En la sección de Configuración del Entorno ya vimos el template completo. Aquí lo repasamos con una explicación más detallada de cada parte:
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+#define int long long
+#define endl '\n'
+#define pb push_back
+#define all(x) (x).begin(), (x).end()
+
+void solve() {
+    // Tu solución va aquí
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t = 1;
+    // cin >> t;
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
+```
+
+### ¿Por qué `signed main()` en lugar de `int main()`?
+
+Porque usamos `#define int long long`, que reemplaza TODAS las apariciones de `int` por `long long`. Si escribiéramos `int main()`, se convertiría en `long long main()`, y eso no es válido. `signed main()` no se ve afectado por el `#define`.
+
+### Los macros de atajo
+
+```cpp
+#define pb push_back     // v.pb(x) es lo mismo que v.push_back(x)
+#define all(x) (x).begin(), (x).end()  // sort(all(v)) es lo mismo que sort(v.begin(), v.end())
+```
+
+Estos macros te ahorran escritura. En competencias, cada segundo cuenta, y escribir `push_back` 50 veces puede ser tedioso.
+
+## Compilación y ejecución
+
+### El proceso completo
+
+```
+1. Escribes tu código → archivo.cpp
+2. Lo compilas → se crea archivo ejecutable
+3. Lo ejecutas → el programa corre
+```
+
+### Comandos en la terminal
+
+```bash
+# Compilar (crear el ejecutable)
+g++ -std=c++17 -O2 -Wall programa.cpp -o programa
+
+# Ejecutar
+./programa
+```
+
+**¿Qué hace cada flag (opción)?**
+
+| Flag | Significado | ¿Por qué usarlo? |
+|------|-------------|-------------------|
+| `-std=c++17` | Usar estándar C++17 | Acceso a funciones modernas del lenguaje |
+| `-O2` | Optimización nivel 2 | El programa corre más rápido |
+| `-Wall` | Mostrar todas las advertencias | Te ayuda a encontrar posibles errores |
+| `-o programa` | Nombrar el ejecutable "programa" | Si no, se llamará "a.out" |
+
+## Errores comunes (y cómo solucionarlos)
 
 ### 1. Olvidar el punto y coma
 
 ```cpp
-// ❌ Error
+// ❌ Error: falta el punto y coma
 cout << "Hola"
 
 // ✅ Correcto
 cout << "Hola";
 ```
 
-### 2. Usar comillas incorrectas
+El compilador te dará un error como: `expected ';' after expression`. Esto significa "esperaba un punto y coma".
+
+### 2. C++ distingue mayúsculas y minúsculas
 
 ```cpp
-// ❌ Error (comillas tipográficas)
-cout << "Hola";
-
-// ✅ Correcto (comillas rectas)
-cout << "Hola";
-```
-
-### 3. Case sensitivity
-
-```cpp
-// ❌ Error (C++ es sensible a mayúsculas)
+// ❌ Error: "Int" no existe, "COUT" no existe
 Int main()
 COUT << "Hola";
 
-// ✅ Correcto
+// ✅ Correcto: todo en minúsculas
 int main()
 cout << "Hola";
 ```
 
-### 4. Olvidar incluir bibliotecas
+En C++, `int`, `Int`, `INT` e `iNt` son cuatro cosas completamente diferentes. Solo `int` es la palabra reservada válida.
+
+### 3. Olvidar incluir bibliotecas
 
 ```cpp
-// ❌ Error (no se incluyó iostream)
+// ❌ Error: no incluyó iostream
 int main() {
-    cout << "Hola";
+    cout << "Hola";  // El compilador no sabe qué es "cout"
 }
 
 // ✅ Correcto
@@ -227,43 +255,60 @@ int main() {
 }
 ```
 
-## Compilación y ejecución
+### 4. Llaves desbalanceadas
 
-### En terminal (Linux/Mac)
+```cpp
+// ❌ Error: falta una llave de cierre
+int main() {
+    cout << "Hola";
+// Falta }
 
-```bash
-# Compilar
-g++ -o programa programa.cpp
-
-# Ejecutar
-./programa
+// ✅ Correcto
+int main() {
+    cout << "Hola";
+}
 ```
 
-### Con flags de competencia
+<Callout type="warning">
+  Cuando el compilador te muestra un error, lee el mensaje cuidadosamente. Te dice el número de línea donde detectó el problema. A veces el error real está una o dos líneas antes de donde el compilador lo señala.
+</Callout>
 
-```bash
-g++ -std=c++17 -O2 -Wall programa.cpp -o programa
+## Ejemplo completo: programa que suma dos números
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;          // Declaramos dos variables enteras
+    cin >> a >> b;      // Leemos dos números del teclado
+    cout << a + b << endl;  // Mostramos su suma
+    return 0;
+}
 ```
 
-| Flag | Significado |
-|------|-------------|
-| `-std=c++17` | Usar estándar C++17 |
-| `-O2` | Optimización nivel 2 |
-| `-Wall` | Mostrar todas las advertencias |
+**Entrada (lo que escribe el usuario):**
+```
+5 3
+```
+
+**Salida (lo que muestra el programa):**
+```
+8
+```
+
+**Paso a paso de lo que ocurre:**
+1. `int a, b;` — Se crean dos "cajitas" en memoria llamadas `a` y `b`.
+2. `cin >> a >> b;` — El programa espera que el usuario escriba dos números. Los guarda en `a` y `b`.
+3. `cout << a + b << endl;` — Calcula `a + b` (5 + 3 = 8) y lo muestra en pantalla.
+4. `return 0;` — El programa termina.
 
 ## Ejercicio de práctica
 
-Escribe un programa que lea tu nombre y lo salude:
+Escribe un programa que lea el nombre de una persona y la salude.
 
-**Entrada:**
-```
-Juan
-```
-
-**Salida:**
-```
-¡Hola, Juan!
-```
+**Entrada:** `María`
+**Salida:** `¡Hola, María!`
 
 <details>
 <summary>Ver solución</summary>
@@ -274,8 +319,8 @@ Juan
 using namespace std;
 
 int main() {
-    string nombre;
-    cin >> nombre;
+    string nombre;         // "string" es el tipo para texto
+    cin >> nombre;          // Leemos el nombre
     cout << "¡Hola, " << nombre << "!" << endl;
     return 0;
 }
@@ -285,4 +330,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre [Tipos de Datos y Variables](/blog/cpp-basico/tipos-de-datos) para almacenar información en tus programas.
+Aprende sobre **Tipos de Datos y Variables** para entender cómo la computadora almacena diferentes tipos de información.

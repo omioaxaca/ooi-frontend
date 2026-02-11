@@ -1,219 +1,286 @@
 ---
 title: "Ciclo While"
-description: "Aprende a usar el ciclo while para repetir código mientras una condición sea verdadera"
+description: "Aprende a usar while y do-while para repetir cuando no sabes cuántas veces"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "ciclos", "while", "iteración", "estructuras-de-control"]
+tags: ["c++", "while", "do-while", "ciclos", "loops"]
 syllabusId: 16
 ---
 
-## El ciclo while
+## ¿Cuándo usar `while`?
 
-El ciclo `while` ejecuta código mientras una condición sea verdadera. Es útil cuando no sabemos exactamente cuántas iteraciones necesitamos.
+El ciclo `for` es perfecto cuando sabes **cuántas veces** repetir. Pero, ¿qué pasa cuando no lo sabes? Por ejemplo:
+
+- "Sigue pidiendo una contraseña **mientras** sea incorrecta."
+- "Divide el número entre 2 **mientras** sea par."
+- "Lee datos **mientras** haya datos disponibles."
+
+Para estas situaciones usamos el ciclo `while`.
+
+**Analogía:** Imagina que estás llenando un vaso con agua. No sabes cuántos segundos tardará, pero sigues **mientras** el vaso no esté lleno.
+
+## El ciclo `while`
 
 ```cpp
 while (condición) {
-    // Código a repetir
+    // Este código se repite MIENTRAS la condición sea verdadera
 }
 ```
 
-## Ejemplos básicos
-
-### Contar del 1 al 5
+**Flujo:**
+1. Evalúa la condición.
+2. Si es `true`, ejecuta el bloque.
+3. Vuelve al paso 1.
+4. Si es `false`, el ciclo termina.
 
 ```cpp
 int i = 1;
 while (i <= 5) {
     cout << i << " ";
-    i++;
+    i++;     // ¡No olvides actualizar la variable!
 }
 // Salida: 1 2 3 4 5
 ```
 
-### Sumar hasta que el usuario ingrese 0
+**Paso a paso:**
+
+| Iteración | `i` | ¿`i <= 5`? | Acción |
+|-----------|-----|-----------|--------|
+| 1 | 1 | Sí | Imprime 1, i → 2 |
+| 2 | 2 | Sí | Imprime 2, i → 3 |
+| 3 | 3 | Sí | Imprime 3, i → 4 |
+| 4 | 4 | Sí | Imprime 4, i → 5 |
+| 5 | 5 | Sí | Imprime 5, i → 6 |
+| 6 | 6 | No | FIN |
+
+<Callout type="warning">
+  **¡Cuidado con los ciclos infinitos!** Si la condición nunca se vuelve falsa, el programa se ejecuta para siempre. Siempre asegúrate de que algo dentro del ciclo eventualmente haga la condición falsa.
+
+  ```cpp
+  // ❌ CICLO INFINITO - la condición nunca cambia
+  int x = 1;
+  while (x > 0) {
+      cout << x << endl;
+      // Olvidamos cambiar x
+  }
+  ```
+</Callout>
+
+## `while` vs `for`
+
+Cualquier `for` se puede reescribir como `while` y viceversa:
 
 ```cpp
-int suma = 0;
-int numero;
-
-cin >> numero;
-while (numero != 0) {
-    suma += numero;
-    cin >> numero;
-}
-
-cout << "Suma total: " << suma << endl;
-```
-
-## while vs for
-
-| Usar `for` cuando... | Usar `while` cuando... |
-|---------------------|------------------------|
-| Conoces el número de iteraciones | No sabes cuántas veces repetir |
-| Iteras sobre un rango | Esperas una condición específica |
-| Recorres arreglos con índice | Lees datos hasta EOF |
-
-```cpp
-// for: sabemos que son n elementos
+// Con for
 for (int i = 0; i < n; i++) {
-    cout << arr[i];
+    cout << i << endl;
 }
 
-// while: no sabemos cuántos datos hay
-while (cin >> x) {
-    procesar(x);
+// Equivalente con while
+int i = 0;
+while (i < n) {
+    cout << i << endl;
+    i++;
 }
 ```
 
-## El ciclo do-while
+**¿Cuándo usar cuál?**
+- **`for`:** Cuando sabes cuántas veces repetir (o tienes un rango claro).
+- **`while`:** Cuando la repetición depende de una condición que puede cambiar de formas más complejas.
 
-Ejecuta el código al menos una vez, luego verifica la condición:
+## El ciclo `do-while`
+
+La diferencia con `while` es que `do-while` **siempre ejecuta el bloque al menos una vez**, porque la condición se evalúa **después**:
 
 ```cpp
 do {
-    // Código a ejecutar
-} while (condición);
+    // Se ejecuta al menos una vez
+} while (condición);  // Nota el punto y coma al final
 ```
 
-### Ejemplo: Validar entrada
+**Analogía:** "Prueba el platillo, y **si no** te gusta, prueba otro." (Primero pruebas, luego decides.)
 
 ```cpp
 int opcion;
 do {
-    cout << "Ingresa una opción (1-5): ";
+    cout << "1. Jugar" << endl;
+    cout << "2. Opciones" << endl;
+    cout << "3. Salir" << endl;
+    cout << "Elige: ";
     cin >> opcion;
-} while (opcion < 1 || opcion > 5);
 
-cout << "Elegiste: " << opcion << endl;
+    if (opcion < 1 || opcion > 3) {
+        cout << "Opción no válida, intenta de nuevo." << endl;
+    }
+} while (opcion != 3);
+
+cout << "¡Hasta luego!" << endl;
 ```
 
-### Diferencia entre while y do-while
+Este menú se muestra al menos una vez, y se repite hasta que el usuario elija 3.
+
+## Usos comunes del `while`
+
+### 1. Extraer dígitos de un número
 
 ```cpp
-int x = 10;
+int n = 12345;
 
-// while: no ejecuta nada (condición falsa desde el inicio)
-while (x < 5) {
-    cout << "while: " << x << endl;
-    x++;
+while (n > 0) {
+    int digito = n % 10;    // Último dígito
+    cout << digito << " ";
+    n /= 10;                // Quitar el último dígito
 }
-
-// do-while: ejecuta una vez antes de verificar
-do {
-    cout << "do-while: " << x << endl;
-    x++;
-} while (x < 5);
-// Imprime: do-while: 10
+// Salida: 5 4 3 2 1 (los dígitos en orden inverso)
 ```
 
-## Patrones comunes
+**Paso a paso:**
 
-### Leer hasta fin de archivo (EOF)
+| `n` | `n % 10` (dígito) | `n / 10` (nuevo n) |
+|-----|-------------------|-------------------|
+| 12345 | 5 | 1234 |
+| 1234 | 4 | 123 |
+| 123 | 3 | 12 |
+| 12 | 2 | 1 |
+| 1 | 1 | 0 |
+| 0 | FIN | |
 
-```cpp
-int n;
-while (cin >> n) {
-    cout << n * 2 << endl;
-}
-```
-
-### Procesar dígitos de un número
+### 2. Suma de dígitos
 
 ```cpp
 int n;
 cin >> n;
 
+int suma = 0;
 while (n > 0) {
-    int digito = n % 10;
-    cout << digito << " ";
+    suma += n % 10;
     n /= 10;
 }
-// Si n = 12345, imprime: 5 4 3 2 1
+cout << "Suma de dígitos: " << suma << endl;
 ```
 
-### Algoritmo de Euclides (MCD)
+**Entrada:** `1234`
+**Salida:** `Suma de dígitos: 10` (porque 1+2+3+4 = 10)
 
-```cpp
-int mcd(int a, int b) {
-    while (b != 0) {
-        int temp = b;
-        b = a % b;
-        a = temp;
-    }
-    return a;
-}
-```
-
-### Búsqueda binaria
-
-```cpp
-int busquedaBinaria(vector<int>& arr, int objetivo) {
-    int izq = 0, der = arr.size() - 1;
-
-    while (izq <= der) {
-        int mid = izq + (der - izq) / 2;
-
-        if (arr[mid] == objetivo) return mid;
-        if (arr[mid] < objetivo) izq = mid + 1;
-        else der = mid - 1;
-    }
-
-    return -1;
-}
-```
-
-## Ejemplo: Número de dígitos
+### 3. Contar dígitos
 
 ```cpp
 int n;
 cin >> n;
 
 int digitos = 0;
-int temp = abs(n);  // Manejar negativos
+int temp = n;
 
-if (temp == 0) {
-    digitos = 1;
-} else {
-    while (temp > 0) {
-        digitos++;
-        temp /= 10;
-    }
+if (temp == 0) digitos = 1;  // Caso especial: el 0 tiene 1 dígito
+
+while (temp > 0) {
+    digitos++;
+    temp /= 10;
 }
 
-cout << "Tiene " << digitos << " dígitos" << endl;
+cout << n << " tiene " << digitos << " dígitos" << endl;
 ```
 
-## Ejemplo: Potencia de 2
-
-Verificar si un número es potencia de 2:
+### 4. Convertir decimal a binario
 
 ```cpp
 int n;
 cin >> n;
 
-bool esPotencia = (n > 0);
-int temp = n;
-
-while (temp > 1 && esPotencia) {
-    if (temp % 2 != 0) {
-        esPotencia = false;
-    }
-    temp /= 2;
+string binario = "";
+while (n > 0) {
+    binario = (char)('0' + n % 2) + binario;  // Agregar al inicio
+    n /= 2;
 }
 
-if (esPotencia) {
-    cout << "Es potencia de 2" << endl;
-} else {
-    cout << "No es potencia de 2" << endl;
-}
-
-// Forma más elegante con bits:
-// bool esPotencia = (n > 0) && ((n & (n-1)) == 0);
+if (binario.empty()) binario = "0";
+cout << binario << endl;
 ```
 
-## Ejemplo: Conjetura de Collatz
+**Entrada:** `13`
+**Salida:** `1101` (porque 13 = 8+4+1 = $2^3 + 2^2 + 2^0$)
 
-La secuencia de Collatz: si n es par, dividir entre 2; si es impar, multiplicar por 3 y sumar 1.
+### 5. Algoritmo de Euclides (GCD)
+
+El máximo común divisor usando el algoritmo de Euclides:
+
+```cpp
+int a, b;
+cin >> a >> b;
+
+while (b != 0) {
+    int temp = b;
+    b = a % b;
+    a = temp;
+}
+
+cout << "GCD: " << a << endl;
+```
+
+**Paso a paso con a=12, b=8:**
+
+| `a` | `b` | `a % b` |
+|-----|-----|---------|
+| 12 | 8 | 4 |
+| 8 | 4 | 0 |
+| 4 | 0 | FIN |
+
+GCD(12, 8) = 4. ✓
+
+### 6. Leer hasta EOF (fin de archivo)
+
+```cpp
+int x;
+while (cin >> x) {
+    cout << x * 2 << '\n';
+}
+```
+
+El ciclo continúa mientras haya datos para leer. Cuando el juez ya no envía más datos, `cin >> x` devuelve `false` y el ciclo termina.
+
+### 7. Buscar algo específico
+
+```cpp
+int n;
+cin >> n;
+
+// Encontrar la primera potencia de 2 mayor o igual a n
+int potencia = 1;
+while (potencia < n) {
+    potencia *= 2;
+}
+
+cout << potencia << endl;
+```
+
+**Entrada:** `10`
+**Salida:** `16` (porque 1, 2, 4, 8, **16** ≥ 10)
+
+## Patrones avanzados
+
+### Simulación paso a paso
+
+Muchos problemas de competencia te piden simular un proceso:
+
+```cpp
+// Problema: Una bacteria se duplica cada hora.
+// ¿Cuántas horas hasta que haya más de 1000 bacterias?
+
+int bacterias = 1;
+int horas = 0;
+
+while (bacterias <= 1000) {
+    bacterias *= 2;
+    horas++;
+}
+
+cout << horas << " horas" << endl;
+// Salida: 10 horas (2^10 = 1024 > 1000)
+```
+
+### Secuencia de Collatz
+
+Una secuencia famosa: empezando de cualquier número, si es par divídelo entre 2, si es impar multiplícalo por 3 y suma 1. Eventualmente llegas a 1.
 
 ```cpp
 int n;
@@ -229,146 +296,85 @@ while (n != 1) {
     }
     pasos++;
 }
-cout << "1" << endl;
+cout << 1 << endl;
 cout << "Pasos: " << pasos << endl;
 ```
 
-## Ciclos infinitos (con cuidado)
+**Entrada:** `6`
+**Salida:** `6 -> 3 -> 10 -> 5 -> 16 -> 8 -> 4 -> 2 -> 1` (8 pasos)
 
-A veces útiles con `break`:
+## `while(t--)`: el patrón de múltiples casos
+
+Muchos problemas en competencias tienen múltiples casos de prueba:
 
 ```cpp
-while (true) {
-    int comando;
-    cin >> comando;
+int t;
+cin >> t;
 
-    if (comando == 0) {
-        break;  // Salir del ciclo
+while (t--) {
+    // Resolver un caso
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << '\n';
+}
+```
+
+**¿Cómo funciona `while(t--)`?**
+1. Evalúa `t` (si no es 0, es verdadero).
+2. Decrementa `t`.
+3. Si era verdadero, ejecuta el cuerpo.
+
+Si `t = 3`, ejecuta el cuerpo 3 veces (con t tomando valores 2, 1, 0 internamente).
+
+## Ejercicio de práctica
+
+Lee un número positivo y determina si es una potencia de 2. Un número es potencia de 2 si se puede obtener dividiendo repetidamente entre 2 hasta llegar a 1.
+
+**Entrada:** `16` → **Salida:** `Si` (porque 16 → 8 → 4 → 2 → 1)
+**Entrada:** `12` → **Salida:** `No` (porque 12 → 6 → 3, y 3 no es divisible entre 2)
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    if (n <= 0) {
+        cout << "No" << endl;
+        return 0;
     }
 
-    procesar(comando);
-}
-```
-
-## Errores comunes
-
-### 1. Ciclo infinito no deseado
-
-```cpp
-// ❌ La condición nunca cambia
-int i = 0;
-while (i < 10) {
-    cout << i;
-    // Olvidaste: i++;
-}
-
-// ✅ Correcto
-int i = 0;
-while (i < 10) {
-    cout << i;
-    i++;
-}
-```
-
-### 2. Condición incorrecta
-
-```cpp
-// ❌ Nunca entra al ciclo
-int i = 10;
-while (i < 5) {
-    cout << i;
-    i++;
-}
-```
-
-### 3. Modificar la condición incorrectamente
-
-```cpp
-// ❌ La variable cambia en dirección incorrecta
-int i = 0;
-while (i < 10) {
-    cout << i;
-    i--;  // Debería ser i++
-}
-```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Invierte un número entero.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int n;
-cin >> n;
-
-int invertido = 0;
-while (n != 0) {
-    int digito = n % 10;
-    invertido = invertido * 10 + digito;
-    n /= 10;
-}
-
-cout << invertido << endl;
-```
-
-</details>
-
-### Ejercicio 2
-Encuentra el mayor divisor común de dos números usando el algoritmo de Euclides.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int a, b;
-cin >> a >> b;
-
-while (b != 0) {
-    int temp = b;
-    b = a % b;
-    a = temp;
-}
-
-cout << "MCD: " << a << endl;
-```
-
-</details>
-
-### Ejercicio 3
-Adivina el número: el programa piensa un número del 1 al 100 y da pistas.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-#include <cstdlib>
-#include <ctime>
-
-srand(time(0));
-int secreto = rand() % 100 + 1;
-int intento;
-int intentos = 0;
-
-do {
-    cout << "Adivina (1-100): ";
-    cin >> intento;
-    intentos++;
-
-    if (intento < secreto) {
-        cout << "Muy bajo" << endl;
-    } else if (intento > secreto) {
-        cout << "Muy alto" << endl;
+    while (n > 1) {
+        if (n % 2 != 0) {
+            cout << "No" << endl;
+            return 0;
+        }
+        n /= 2;
     }
-} while (intento != secreto);
 
-cout << "¡Correcto! Lo lograste en " << intentos << " intentos." << endl;
+    cout << "Si" << endl;
+
+    return 0;
+}
+```
+
+**Alternativa elegante** usando la propiedad de bits: una potencia de 2 en binario tiene exactamente un 1 (`100...0`). Entonces `n & (n-1)` es 0:
+
+```cpp
+if (n > 0 && (n & (n - 1)) == 0) {
+    cout << "Si" << endl;
+} else {
+    cout << "No" << endl;
+}
 ```
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Funciones](/blog/estructuras-de-control/funciones) para organizar y reutilizar tu código.
+Aprende sobre **Funciones** para organizar tu código en bloques reutilizables.

@@ -7,152 +7,291 @@ tags: ["complejidad", "big-o", "análisis", "fundamentos"]
 syllabusId: 25
 ---
 
-## ¿Qué es la complejidad algorítmica?
+## ¿Por qué importa la velocidad de un programa?
 
-La complejidad algorítmica nos permite medir qué tan eficiente es un algoritmo en términos de tiempo y espacio. Es fundamental para escribir código que funcione dentro de los límites de tiempo de las competencias.
+Imagina que tienes una lista de 1,000,000 de números y necesitas encontrar uno específico. Tienes dos opciones:
 
-## Notación Big O
+- **Opción A:** Revisar uno por uno desde el principio hasta encontrarlo. En el peor caso, revisarías los 1,000,000 de números.
+- **Opción B:** Si la lista está ordenada, puedes usar una técnica inteligente: abres la lista por la mitad, ves si el número que buscas es mayor o menor, y descartas la mitad que no te sirve. Repites esto hasta encontrarlo. Solo necesitarías unas 20 comparaciones.
 
-La notación Big O describe el comportamiento asintótico de un algoritmo, es decir, cómo crece el tiempo de ejecución cuando el tamaño de entrada aumenta.
+¿La diferencia? La opción A hace **1,000,000** de operaciones. La opción B hace **20**. Es una diferencia brutal. La **complejidad algorítmica** es la herramienta que nos permite medir y comparar estas diferencias.
 
-### Complejidades comunes
+En competencias de programación, tu programa tiene un **tiempo límite** (generalmente 1 o 2 segundos). Si tu solución es muy lenta, el juez te marcará "Tiempo Límite Excedido" (TLE), aunque tu respuesta sea correcta. Por eso, no basta con que tu programa funcione; debe funcionar **rápido**.
 
-| Complejidad | Nombre | Ejemplo |
-|------------|--------|---------|
-| O(1) | Constante | Acceso a array |
-| O(log n) | Logarítmica | Búsqueda binaria |
-| O(n) | Lineal | Recorrer array |
-| O(n log n) | Log-lineal | Merge sort |
-| O(n²) | Cuadrática | Bubble sort |
-| O(2ⁿ) | Exponencial | Subconjuntos |
-| O(n!) | Factorial | Permutaciones |
+## ¿Qué es la notación Big O?
 
-<Callout type="info">
-  En competencias, generalmente puedes hacer hasta **10⁸ operaciones por segundo**. Usa esta regla para estimar si tu solución pasará los límites de tiempo.
-</Callout>
+La notación **Big O** (se lee "O grande" o "orden de") es una forma matemática de describir **cómo crece el tiempo de ejecución de un algoritmo cuando el tamaño de la entrada aumenta**.
 
-## Ejemplos prácticos
+Vamos a desglosar esto:
 
-### O(1) - Tiempo constante
+- **O** es simplemente el símbolo que usamos. Puedes pensar en él como "Orden de magnitud".
+- **n** representa el **tamaño de la entrada**. Si te dan un arreglo de 100 números, n = 100. Si te dan 1,000,000, n = 1,000,000.
+- Lo que va dentro de los paréntesis describe la **relación** entre n y el número de operaciones.
+
+Por ejemplo:
+- **O(n)** significa que si n se duplica, el tiempo se duplica. La relación es proporcional.
+- **O(n²)** significa que si n se duplica, el tiempo se cuadruplica ($2^2 = 4$). Crece mucho más rápido.
+
+### Analogía: el cartero
+
+Imagina un cartero que entrega cartas en un vecindario:
+
+- **O(1):** El cartero siempre entrega una carta en la casa de enfrente. No importa cuántas casas haya en el vecindario, siempre tarda lo mismo.
+- **O(n):** El cartero tiene que entregar una carta a cada casa. Si hay 100 casas, visita 100. Si hay 1,000, visita 1,000.
+- **O(n²):** El cartero tiene que entregar una carta a cada casa, pero después de cada entrega vuelve a la oficina (que está al inicio de la calle) a buscar la siguiente. Va y viene muchas veces.
+- **O(log n):** El cartero tiene un directorio ordenado y busca la dirección como en un diccionario: abre por la mitad, descarta la mitad que no le sirve, y repite.
+
+## Complejidades comunes explicadas
+
+### O(1) — Tiempo constante
+
+El algoritmo siempre tarda lo mismo, sin importar el tamaño de la entrada. Como prender un interruptor de luz: no importa si tu casa tiene 2 cuartos o 20, prender un interruptor toma el mismo tiempo.
 
 ```cpp
+// Ejemplo: acceder a un elemento de un arreglo por su posición
 int obtenerPrimero(vector<int>& arr) {
-    return arr[0];  // Siempre una operación
+    return arr[0];  // Siempre es UNA sola operación
 }
 ```
 
-### O(n) - Tiempo lineal
+**¿Por qué es O(1)?** No importa si el arreglo tiene 10 o 10 millones de elementos, acceder a `arr[0]` siempre toma la misma cantidad de tiempo. La computadora sabe exactamente dónde está ese dato en la memoria.
+
+**Ejemplos en la vida real:** Buscar un contacto en tu teléfono por su nombre (si ya lo tienes guardado), sacar el primer plato de una pila.
+
+---
+
+### O(log n) — Tiempo logarítmico
+
+El algoritmo reduce el problema a la mitad en cada paso. Es increíblemente eficiente. Piensa en cómo buscas una palabra en un **diccionario físico**: no lees página por página desde el inicio. Abres el diccionario por la mitad, ves si la palabra que buscas está antes o después, y repites con la mitad correspondiente.
 
 ```cpp
-int suma(vector<int>& arr) {
-    int total = 0;
-    for (int x : arr) {     // n operaciones
-        total += x;
+// Ejemplo: búsqueda binaria
+int busquedaBinaria(vector<int>& arr, int objetivo) {
+    int izq = 0, der = arr.size() - 1;
+
+    while (izq <= der) {
+        int mid = izq + (der - izq) / 2;  // Encontrar el punto medio
+
+        if (arr[mid] == objetivo) return mid;       // ¡Lo encontramos!
+        if (arr[mid] < objetivo) izq = mid + 1;     // Buscar en la mitad derecha
+        else der = mid - 1;                          // Buscar en la mitad izquierda
     }
-    return total;
+
+    return -1;  // No se encontró
 }
 ```
 
-### O(n²) - Tiempo cuadrático
+**¿Por qué es O(log n)?** En cada iteración del while, descartamos la mitad de los elementos. Si tenemos 1,000,000 de elementos:
+- Paso 1: quedan 500,000
+- Paso 2: quedan 250,000
+- Paso 3: quedan 125,000
+- ... después de ~20 pasos: queda 1 elemento
+
+$\log_2(1,000,000) \approx 20$. ¡Solo 20 pasos para buscar entre un millón!
+
+**Ejemplos en la vida real:** Buscar una palabra en un diccionario, adivinar un número del 1 al 100 usando "mayor o menor", encontrar un nombre en un directorio telefónico.
+
+---
+
+### O(n) — Tiempo lineal
+
+El algoritmo visita cada elemento una vez. Si la entrada se duplica, el tiempo se duplica. Como contar cuántas personas hay en una fila: necesitas ver a cada persona una por una.
 
 ```cpp
+// Ejemplo: sumar todos los elementos de un arreglo
+int suma(vector<int>& arr) {
+    int total = 0;           // Empezamos con total = 0
+    for (int x : arr) {      // Para CADA elemento x del arreglo...
+        total += x;           // ...sumamos x al total
+    }
+    return total;             // Regresamos la suma
+}
+```
+
+**¿Por qué es O(n)?** El ciclo `for` recorre cada elemento exactamente una vez. Si el arreglo tiene 100 elementos, el ciclo se ejecuta 100 veces. Si tiene 1,000,000, se ejecuta 1,000,000 de veces. La relación es directamente proporcional.
+
+**Ejemplos en la vida real:** Contar cuántos alumnos hay en un salón (necesitas ver a cada uno), leer un libro completo, buscar algo en una lista no ordenada.
+
+---
+
+### O(n log n) — Tiempo log-lineal
+
+Esta complejidad aparece en los algoritmos de ordenamiento eficientes. Es como si por cada elemento (n), hicieras una búsqueda binaria (log n). Es la complejidad del `sort()` de C++.
+
+```cpp
+// Ejemplo: ordenar un arreglo
+vector<int> arr = {5, 2, 8, 1, 9, 3};
+sort(arr.begin(), arr.end());
+// Ahora arr = {1, 2, 3, 5, 8, 9}
+```
+
+**Ejemplos en la vida real:** Ordenar una baraja de cartas usando merge sort, organizar una lista de nombres alfabéticamente de forma eficiente.
+
+---
+
+### O(n²) — Tiempo cuadrático
+
+El algoritmo tiene dos ciclos anidados, cada uno recorriendo n elementos. Si n se duplica, el tiempo se cuadruplica. Como si cada persona en un salón tuviera que saludar de mano a todas las demás personas.
+
+```cpp
+// Ejemplo: Bubble Sort (ordenamiento burbuja)
 void bubbleSort(vector<int>& arr) {
     int n = arr.size();
-    for (int i = 0; i < n; i++) {         // n veces
-        for (int j = 0; j < n - 1; j++) { // n veces
+    for (int i = 0; i < n; i++) {            // Recorremos n veces
+        for (int j = 0; j < n - 1; j++) {    // Por cada vez, comparamos n-1 pares
             if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
+                swap(arr[j], arr[j + 1]);    // Intercambiamos si están desordenados
             }
         }
     }
 }
 ```
 
-### O(log n) - Tiempo logarítmico
+**¿Por qué es O(n²)?** Tenemos un ciclo dentro de otro. El ciclo externo se ejecuta n veces, y por cada una de esas veces, el ciclo interno se ejecuta ~n veces. Total: n × n = n².
+
+Si n = 1,000, hacemos 1,000,000 de operaciones. Si n = 10,000, hacemos 100,000,000. ¡Crece muy rápido!
+
+**Ejemplos en la vida real:** En una fiesta de 100 personas, si cada persona saluda a todas las demás, hay 100 × 99 / 2 ≈ 5,000 saludos. Si son 1,000 personas, ¡hay casi 500,000 saludos!
+
+---
+
+### O(2ⁿ) — Tiempo exponencial
+
+El tiempo se duplica con cada elemento adicional. Es extremadamente lento para entradas grandes. Como si tuvieras que probar todas las combinaciones posibles de una contraseña.
 
 ```cpp
-int busquedaBinaria(vector<int>& arr, int objetivo) {
-    int izq = 0, der = arr.size() - 1;
-    while (izq <= der) {
-        int mid = izq + (der - izq) / 2;
-        if (arr[mid] == objetivo) return mid;
-        if (arr[mid] < objetivo) izq = mid + 1;
-        else der = mid - 1;
+// Ejemplo: generar todos los subconjuntos
+void subconjuntos(vector<int>& arr, int i, vector<int>& actual) {
+    if (i == arr.size()) {
+        // Imprimir actual
+        return;
     }
-    return -1;
+    // Opción 1: incluir arr[i]
+    actual.push_back(arr[i]);
+    subconjuntos(arr, i + 1, actual);
+    actual.pop_back();
+    // Opción 2: no incluir arr[i]
+    subconjuntos(arr, i + 1, actual);
 }
 ```
 
-## Reglas para calcular complejidad
+**¿Por qué es O(2ⁿ)?** Para cada elemento, tenemos 2 opciones (incluirlo o no). Con n elementos: 2 × 2 × 2 × ... × 2 = 2ⁿ opciones.
 
-### 1. Operaciones consecutivas se suman
+Si n = 20, son ~1,000,000 de subconjuntos. Si n = 30, son ~1,000,000,000. ¡Con solo agregar 10 elementos, el tiempo se multiplica por 1,000!
+
+---
+
+### O(n!) — Tiempo factorial
+
+El tiempo crece como el factorial. Es la complejidad más lenta de las comunes. Aparece cuando generas todas las permutaciones (todos los posibles órdenes) de n elementos.
+
+Con solo n = 12, ya son 479,001,600 permutaciones. Con n = 20, son más que todos los granos de arena del planeta.
+
+## Reglas para calcular la complejidad
+
+### Regla 1: Operaciones consecutivas se SUMAN
+
+Si haces dos cosas una después de la otra, sumas sus complejidades:
 
 ```cpp
 void ejemplo(int n) {
-    // O(n)
-    for (int i = 0; i < n; i++) { }
+    // Bloque 1: O(n)
+    for (int i = 0; i < n; i++) {
+        cout << i << " ";
+    }
 
-    // O(n)
-    for (int i = 0; i < n; i++) { }
+    // Bloque 2: O(n)
+    for (int i = 0; i < n; i++) {
+        cout << i * 2 << " ";
+    }
 }
 // Total: O(n) + O(n) = O(2n) = O(n)
 ```
 
-### 2. Loops anidados se multiplican
+**¿Por qué O(2n) se convierte en O(n)?** Porque en Big O, las constantes no importan. Lo que nos interesa es cómo **crece** el tiempo, no el valor exacto. Tanto O(n) como O(2n) crecen de forma lineal.
+
+### Regla 2: Loops anidados se MULTIPLICAN
+
+Si haces un ciclo dentro de otro, multiplicas sus complejidades:
 
 ```cpp
 void ejemplo(int n) {
-    for (int i = 0; i < n; i++) {        // O(n)
-        for (int j = 0; j < n; j++) {    // O(n)
-            // operación O(1)
+    for (int i = 0; i < n; i++) {           // Este loop se ejecuta n veces
+        for (int j = 0; j < n; j++) {       // Por cada i, este loop se ejecuta n veces
+            cout << i << "," << j << " ";   // Esto se ejecuta n × n = n² veces
         }
     }
 }
 // Total: O(n) × O(n) = O(n²)
 ```
 
-### 3. Se ignoran constantes
+### Regla 3: Se ignoran las constantes
 
-- O(2n) → O(n)
-- O(n + 100) → O(n)
-- O(3n² + 5n) → O(n²)
+- O(2n) → **O(n)** (la constante 2 no importa)
+- O(n + 100) → **O(n)** (el 100 es insignificante cuando n es grande)
+- O(3n² + 5n) → **O(n²)** (solo nos importa el término más grande)
+- O(n/2) → **O(n)** (dividir por 2 es una constante)
 
-### 4. Se toma el término dominante
+**¿Por qué ignoramos las constantes?** Porque Big O mide el **comportamiento a largo plazo**. Si n = 1,000,000, la diferencia entre 2n y n es solo un factor de 2. Pero la diferencia entre n y n² es un factor de 1,000,000. Las constantes son "ruido" comparadas con los cambios fundamentales en cómo crece el tiempo.
 
-- O(n² + n) → O(n²)
-- O(n³ + n² + n) → O(n³)
+### Regla 4: Se toma el término dominante
 
-## Tabla de referencia rápida
+Cuando hay varios términos, solo importa el que crece más rápido:
 
-Esta tabla te ayuda a elegir la complejidad adecuada según el tamaño de entrada:
+- O(n² + n) → **O(n²)** — cuando n es grande, n² domina sobre n
+- O(n³ + n² + n) → **O(n³)** — n³ es el término más grande
+- O(n + log n) → **O(n)** — n crece más rápido que log n
 
-| n máximo | Complejidad aceptable |
-|----------|----------------------|
-| ≤ 10 | O(n!), O(2ⁿ) |
-| ≤ 20 | O(2ⁿ) |
-| ≤ 500 | O(n³) |
-| ≤ 5,000 | O(n²) |
-| ≤ 10⁶ | O(n log n) |
-| ≤ 10⁸ | O(n) |
-| > 10⁸ | O(log n), O(1) |
+Es como comparar la velocidad de un avión (n²) con la de un auto (n). A distancias largas, el avión siempre gana, sin importar los detalles menores.
 
-<Callout type="warning">
-  Siempre verifica los límites del problema antes de implementar. Una solución O(n²) no funcionará si n = 10⁶.
+## Comparación visual
+
+Para entender la diferencia entre complejidades, veamos cuántas operaciones haría cada una para distintos valores de n:
+
+| n | O(1) | O(log n) | O(n) | O(n log n) | O(n²) | O(2ⁿ) |
+|---|------|----------|------|------------|-------|-------|
+| 10 | 1 | 3 | 10 | 33 | 100 | 1,024 |
+| 100 | 1 | 7 | 100 | 664 | 10,000 | 1.27 × 10³⁰ |
+| 1,000 | 1 | 10 | 1,000 | 9,966 | 1,000,000 | ∞ |
+| 1,000,000 | 1 | 20 | 1,000,000 | 19,931,568 | 10¹² | ∞ |
+
+Observa cómo O(2ⁿ) explota rapidísimo. Con n = 100, el número de operaciones es mayor que el número de átomos en el universo. Por eso, los algoritmos exponenciales solo sirven para entradas muy pequeñas.
+
+## ¿Cómo saber qué complejidad necesitas?
+
+<Callout type="info">
+  En competencias, una computadora puede hacer aproximadamente **10⁸ operaciones por segundo** (cien millones). Si el límite de tiempo es 1 segundo, tu programa no puede hacer más de ~100,000,000 de operaciones.
 </Callout>
 
-## Complejidad de espacio
+Usa esta tabla como referencia rápida. Si el problema te dice que n puede ser hasta cierto valor, necesitas un algoritmo con la complejidad indicada:
 
-Además del tiempo, también debemos considerar la memoria:
+| n máximo | Complejidad aceptable | Ejemplo |
+|----------|----------------------|---------|
+| ≤ 10 | O(n!) o O(2ⁿ) | Fuerza bruta, todas las permutaciones |
+| ≤ 20 | O(2ⁿ) | Subconjuntos, bitmask DP |
+| ≤ 500 | O(n³) | Multiplicación de matrices, Floyd-Warshall |
+| ≤ 5,000 | O(n²) | Ciclos anidados, DP cuadrática |
+| ≤ 10⁶ | O(n log n) | Ordenar, árboles de segmentos |
+| ≤ 10⁸ | O(n) | Un solo recorrido lineal |
+| > 10⁸ | O(log n) o O(1) | Búsqueda binaria, fórmulas matemáticas |
+
+<Callout type="warning">
+  Siempre lee los **límites del problema** (las restricciones o constraints) antes de empezar a programar. Si el problema dice que n puede ser hasta 10⁶ y tu solución es O(n²), **no funcionará** (10¹² operaciones tardarían ~10,000 segundos). Necesitas pensar en algo más eficiente.
+</Callout>
+
+## Complejidad de espacio (memoria)
+
+Además del tiempo, también debemos considerar cuánta **memoria** usa nuestro programa. La memoria también tiene límites (generalmente 256 MB).
 
 ```cpp
-// O(1) espacio - solo variables locales
+// O(1) espacio — solo usa unas pocas variables
 int suma(vector<int>& arr) {
     int total = 0;
     for (int x : arr) total += x;
     return total;
 }
 
-// O(n) espacio - crea una copia
+// O(n) espacio — crea un arreglo nuevo del mismo tamaño
 vector<int> duplicar(vector<int>& arr) {
     vector<int> resultado(arr.size());
     for (int i = 0; i < arr.size(); i++) {
@@ -162,31 +301,48 @@ vector<int> duplicar(vector<int>& arr) {
 }
 ```
 
+**Regla práctica:** Un `int` ocupa 4 bytes. Un arreglo de 10⁶ enteros ocupa ~4 MB. Un arreglo de 10⁸ enteros ocupa ~400 MB (¡posiblemente demasiado!).
+
 ## Ejercicio práctico
 
 ¿Cuál es la complejidad de este código?
 
 ```cpp
 void misterio(int n) {
-    for (int i = 1; i <= n; i *= 2) {
-        for (int j = 0; j < n; j++) {
+    for (int i = 1; i <= n; i *= 2) {       // ¿Cuántas veces se ejecuta?
+        for (int j = 0; j < n; j++) {        // Este loop se ejecuta n veces
             cout << i << " " << j << endl;
         }
     }
 }
 ```
 
+Piénsalo antes de ver la respuesta...
+
 <details>
 <summary>Ver respuesta</summary>
 
 **Respuesta: O(n log n)**
 
-- El loop externo ejecuta log₂(n) veces (i se duplica cada iteración)
-- El loop interno ejecuta n veces
-- Total: O(n log n)
+Analicemos:
+- **Loop externo:** `i` empieza en 1 y se **multiplica por 2** en cada iteración (1, 2, 4, 8, 16, ...). ¿Cuántas veces se ejecuta? Se ejecuta hasta que `i > n`, lo cual ocurre después de $\log_2(n)$ pasos. Por ejemplo, si n = 16: i toma los valores 1, 2, 4, 8, 16 → 5 pasos = $\log_2(16) + 1$.
+- **Loop interno:** Se ejecuta exactamente n veces por cada iteración del loop externo.
+- **Total:** $\log_2(n) \times n = n \log n$ → **O(n log n)**
 
 </details>
 
+## Resumen
+
+| Complejidad | Nombre | Crece... | Bueno para... |
+|------------|--------|----------|---------------|
+| O(1) | Constante | No crece | Acceso directo |
+| O(log n) | Logarítmica | Muy lento | Búsqueda binaria |
+| O(n) | Lineal | Proporcionalmente | Recorrer arreglos |
+| O(n log n) | Log-lineal | Moderado | Ordenamiento |
+| O(n²) | Cuadrática | Rápido | Ciclos anidados simples |
+| O(2ⁿ) | Exponencial | Extremadamente rápido | Solo n ≤ 20 |
+| O(n!) | Factorial | Absurdamente rápido | Solo n ≤ 10 |
+
 ## Siguiente paso
 
-Ahora que entiendes la complejidad, aprende sobre [búsqueda binaria](/blog/algoritmos/busqueda-binaria), uno de los algoritmos más importantes.
+Ahora que entiendes cómo medir la eficiencia, dirígete a **Fundamentos** para aprender sobre pensamiento lógico y el concepto formal de algoritmo.

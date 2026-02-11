@@ -1,203 +1,136 @@
 ---
 title: "Introducción a Grafos"
-description: "Aprende los conceptos básicos de teoría de grafos y sus representaciones"
+description: "Entiende qué son los grafos, sus tipos y cómo representarlos en código"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "teoría", "representación", "adyacencia"]
-syllabusId: 74
-order: 1
+tags: ["c++", "grafos", "lista de adyacencia", "matriz de adyacencia"]
+syllabusId: 54
 ---
 
 ## ¿Qué es un grafo?
 
-Un **grafo** es una estructura matemática que modela relaciones entre objetos. Consiste en:
+Un **grafo** es una colección de **nodos** (vértices) conectados por **aristas** (edges). Es la forma más general de representar relaciones entre objetos.
 
-- **Vértices (nodos):** Los objetos
-- **Aristas (edges):** Las conexiones entre objetos
+**Analogía:** Piensa en un mapa de ciudades. Las ciudades son los nodos, y las carreteras son las aristas. Algunas carreteras son de un solo sentido (grafo dirigido), otras van en ambas direcciones (no dirigido).
 
 ## Tipos de grafos
 
-### Por dirección
+| Tipo | Descripción | Ejemplo |
+|------|-------------|---------|
+| **No dirigido** | Las aristas van en ambos sentidos | Amistades en redes sociales |
+| **Dirigido** | Las aristas tienen dirección | Seguidores en Twitter |
+| **Ponderado** | Las aristas tienen peso (costo) | Distancias entre ciudades |
+| **No ponderado** | Todas las aristas pesan igual | Conexiones de red |
 
-- **No dirigido:** Las aristas no tienen dirección (amistad)
-- **Dirigido:** Las aristas van de un nodo a otro (seguir en redes sociales)
+## Terminología
 
-### Por peso
+- **Grado** de un nodo: cantidad de aristas que le llegan.
+- **Camino:** Secuencia de nodos conectados por aristas.
+- **Ciclo:** Camino que empieza y termina en el mismo nodo.
+- **Conexo:** Puedes llegar de cualquier nodo a cualquier otro.
+- **Componente conexa:** Grupo máximo de nodos mutuamente alcanzables.
+- **Árbol:** Grafo conexo sin ciclos ($n$ nodos, $n-1$ aristas).
+- **DAG:** Grafo dirigido acíclico (Directed Acyclic Graph).
 
-- **Sin peso:** Todas las aristas son iguales
-- **Con peso:** Cada arista tiene un valor asociado (distancia, costo)
+## Representación 1: Lista de adyacencia ⭐
 
-### Propiedades especiales
-
-- **Conexo:** Existe camino entre cualquier par de nodos
-- **Acíclico:** No contiene ciclos
-- **Árbol:** Conexo y acíclico (n nodos, n-1 aristas)
-- **Bipartito:** Nodos divisibles en dos grupos sin aristas internas
-
-## Representación: Lista de adyacencia
-
-La forma más común y eficiente para grafos dispersos.
+La más usada en competencias. Para cada nodo, guardamos la lista de sus vecinos.
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
 const int MAXN = 100005;
-vector<int> adj[MAXN];  // Lista de adyacencia
+vector<int> adj[MAXN];
 
 int main() {
-    int n, m;  // n = nodos, m = aristas
+    int n, m;  // n nodos, m aristas
     cin >> n >> m;
 
     for (int i = 0; i < m; i++) {
         int u, v;
         cin >> u >> v;
-        adj[u].push_back(v);  // Arista u -> v
-        adj[v].push_back(u);  // Si es no dirigido
+        adj[u].push_back(v);
+        adj[v].push_back(u);  // Quitar esta línea si es dirigido
     }
 
     // Imprimir vecinos del nodo 1
     cout << "Vecinos de 1: ";
-    for (int vecino : adj[1]) {
-        cout << vecino << " ";
-    }
+    for (int v : adj[1]) cout << v << " ";
 
     return 0;
 }
 ```
 
+**Memoria:** $O(n + m)$ — eficiente.
+
 ### Con pesos
 
 ```cpp
-vector<pair<int, int>> adj[MAXN];  // {vecino, peso}
+vector<pair<int,int>> adj[MAXN];  // {vecino, peso}
 
-// Leer arista con peso
+// Leer
 int u, v, w;
 cin >> u >> v >> w;
 adj[u].push_back({v, w});
 adj[v].push_back({u, w});
 
 // Recorrer
-for (auto [vecino, peso] : adj[u]) {
-    cout << "Vecino: " << vecino << ", Peso: " << peso << "\n";
+for (auto [vecino, peso] : adj[nodo]) {
+    // ...
 }
 ```
 
-## Representación: Matriz de adyacencia
+## Representación 2: Matriz de adyacencia
 
-Útil para grafos densos o cuando necesitas consultas O(1).
+Una tabla 2D donde `mat[i][j] = 1` si hay arista de `i` a `j`.
 
 ```cpp
-const int MAXN = 1005;
-int matriz[MAXN][MAXN];  // matriz[i][j] = peso de arista i->j
+int mat[1005][1005];  // Solo para n ≤ 1000
 
 int main() {
     int n, m;
     cin >> n >> m;
 
-    // Inicializar (0 = sin arista, o INF para pesos)
-    memset(matriz, 0, sizeof(matriz));
-
     for (int i = 0; i < m; i++) {
         int u, v;
         cin >> u >> v;
-        matriz[u][v] = 1;
-        matriz[v][u] = 1;  // Si es no dirigido
+        mat[u][v] = 1;
+        mat[v][u] = 1;  // Si no dirigido
     }
 
-    // Verificar si existe arista entre 1 y 2
-    if (matriz[1][2]) {
-        cout << "Existe arista entre 1 y 2\n";
-    }
+    // ¿Hay arista entre 2 y 5?
+    if (mat[2][5]) cout << "Sí" << endl;
 
     return 0;
 }
 ```
 
-### Comparación
+**Memoria:** $O(n^2)$ — solo para grafos pequeños.
 
-| Operación | Lista Adyacencia | Matriz Adyacencia |
-|-----------|------------------|-------------------|
-| Espacio | O(V + E) | O(V²) |
-| Agregar arista | O(1) | O(1) |
-| Verificar arista | O(grado) | O(1) |
-| Recorrer vecinos | O(grado) | O(V) |
+## ¿Cuál usar?
 
-**Recomendación:** Usa lista de adyacencia casi siempre.
+| Criterio | Lista de adyacencia | Matriz de adyacencia |
+|----------|--------------------|-----------------------|
+| Memoria | $O(n + m)$ ✅ | $O(n^2)$ |
+| ¿Hay arista u→v? | $O(\text{grado})$ | $O(1)$ ✅ |
+| Recorrer vecinos | $O(\text{grado})$ ✅ | $O(n)$ |
+| Grafos grandes | ✅ | ❌ |
 
-## Lista de aristas
+**Regla general:** Usa lista de adyacencia siempre, excepto cuando $n \leq 1000$ y necesitas consultar aristas frecuentemente.
 
-Útil para algoritmos como Kruskal.
-
-```cpp
-struct Arista {
-    int u, v, peso;
-    bool operator<(const Arista& otra) const {
-        return peso < otra.peso;
-    }
-};
-
-vector<Arista> aristas;
-
-// Leer
-int u, v, w;
-cin >> u >> v >> w;
-aristas.push_back({u, v, w});
-
-// Ordenar por peso
-sort(aristas.begin(), aristas.end());
-```
-
-## Grado de un nodo
-
-El **grado** es el número de aristas conectadas a un nodo.
+## Ejemplo: leer y recorrer un grafo
 
 ```cpp
-// En lista de adyacencia
-int grado = adj[nodo].size();
-
-// En grafo dirigido
-// Grado de entrada (in-degree) + Grado de salida (out-degree)
-int inDegree[MAXN], outDegree[MAXN];
-
-for (int u = 1; u <= n; u++) {
-    for (int v : adj[u]) {
-        outDegree[u]++;
-        inDegree[v]++;
-    }
-}
-```
-
-## Propiedades importantes
-
-### Suma de grados
-
-En un grafo no dirigido:
-$$\sum_{v} \text{grado}(v) = 2 \cdot |E|$$
-
-### Número de aristas en árbol
-
-Un árbol con n nodos tiene exactamente n-1 aristas.
-
-### Grafo completo
-
-Un grafo completo $K_n$ tiene $\frac{n(n-1)}{2}$ aristas.
-
-## Template básico
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-bool visitado[MAXN];
-int n, m;
+vector<int> adj[100005];
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
+    int n, m;
     cin >> n >> m;
 
     for (int i = 0; i < m; i++) {
@@ -207,14 +140,34 @@ int main() {
         adj[v].push_back(u);
     }
 
-    // Tu código aquí...
+    // Imprimir el grafo
+    for (int i = 1; i <= n; i++) {
+        cout << i << ": ";
+        for (int v : adj[i]) cout << v << " ";
+        cout << endl;
+    }
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+**Input:**
+```
+5 4
+1 2
+1 3
+2 4
+3 5
+```
+**Output:**
+```
+1: 2 3
+2: 1 4
+3: 1 5
+4: 2
+5: 3
+```
 
-1. [CSES - Counting Rooms](https://cses.fi/problemset/task/1192)
-2. [CSES - Building Roads](https://cses.fi/problemset/task/1666)
-3. [Codeforces - Bear and Friendship](https://codeforces.com/problemset/problem/771/A)
+## Siguiente paso
+
+Aprende a recorrer grafos con **BFS** y **DFS** para resolver problemas de caminos y componentes.

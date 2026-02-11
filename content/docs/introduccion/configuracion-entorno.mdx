@@ -7,86 +7,155 @@ tags: ["configuración", "herramientas", "desarrollo"]
 order: 100
 ---
 
-## Introducción
+## ¿Por qué necesitas un entorno de desarrollo?
 
-Un buen entorno de desarrollo es esencial para practicar programación competitiva de manera eficiente. En esta guía, aprenderás a configurar todo lo necesario.
+Antes de poder escribir tu primer programa, necesitas preparar las herramientas adecuadas en tu computadora. Es como si quisieras cocinar un pastel: antes de empezar, necesitas tener los ingredientes, los utensilios y el horno listo. En programación, tus "utensilios" son:
+
+1. **Un compilador:** Es el programa que traduce lo que tú escribes (en un lenguaje que los humanos entienden) a instrucciones que la computadora puede ejecutar. Piensa en el compilador como un **traductor**: tú escribes en C++ (tu idioma) y el compilador lo traduce al idioma de la máquina (ceros y unos).
+
+2. **Un editor de código:** Es donde escribes tu programa. Podrías usar el Bloc de Notas, pero un editor de código es como un cuaderno inteligente que te ayuda coloreando las palabras clave, señalándote errores y autocompletando código. Nosotros usaremos **Visual Studio Code** (VS Code).
+
+3. **La terminal (o consola):** Es una pantalla de texto donde puedes darle instrucciones directas a tu computadora. En lugar de hacer clic en botones, escribes comandos. Al principio puede parecer intimidante, pero es una herramienta muy poderosa. Es como hablarle directamente a la computadora en lugar de señalarle cosas con el mouse.
+
+<Callout type="info">
+  No te preocupes si estos conceptos suenan nuevos. En esta guía te llevaremos paso a paso. Solo necesitas seguir las instrucciones.
+</Callout>
 
 ## Selección del lenguaje
 
-Los lenguajes más utilizados en competencias son:
+En la Olimpiada de Informática, los lenguajes más utilizados son:
 
 | Lenguaje | Ventajas | Desventajas |
 |----------|----------|-------------|
-| C++ | Rápido, STL poderosa | Sintaxis compleja |
-| Python | Fácil de escribir, bibliotecas | Más lento |
-| Java | Orientado a objetos | Verboso |
+| **C++** | Muy rápido, tiene una biblioteca estándar (STL) muy potente con herramientas listas para usar | La sintaxis puede parecer compleja al principio |
+| Python | Fácil de aprender y escribir | Más lento en ejecución, puede no pasar los límites de tiempo |
+| Java | Muy usado en la industria | Requiere escribir mucho código para cosas simples |
 
 <Callout type="info">
-  Recomendamos **C++** por su velocidad y la potencia de la Standard Template Library (STL).
+  Recomendamos **C++** por su velocidad y la potencia de la Standard Template Library (STL). En competencias, la velocidad importa mucho: tu programa tiene un tiempo límite (generalmente 1-2 segundos) para dar la respuesta correcta. C++ es el lenguaje favorito de los competidores a nivel mundial.
 </Callout>
 
-## Instalación de C++
+## Instalación de C++ paso a paso
 
 ### En Windows
 
+La mayoría de ustedes probablemente usa Windows, así que vamos con detalle extra aquí.
+
+**¿Qué es MinGW?** MinGW (Minimalist GNU for Windows) es un paquete que incluye el compilador `g++` para Windows. Recuerda: el compilador es el "traductor" que convierte tu código C++ en un programa ejecutable.
+
 <Steps>
 <Step>
-### Descarga MinGW-w64
+### Descarga MSYS2
 
-Visita [MinGW-w64](https://www.mingw-w64.org/) y descarga el instalador.
+Visita [msys2.org](https://www.msys2.org/) y descarga el instalador. MSYS2 es la forma más fácil de instalar el compilador en Windows.
+
+Ejecuta el instalador y sigue las instrucciones. Deja las opciones por defecto (la carpeta `C:\msys2`).
 </Step>
 
 <Step>
-### Configura las variables de entorno
+### Instala el compilador g++
 
-Agrega la ruta de MinGW al PATH del sistema.
+Una vez instalado MSYS2, ábrelo y escribe este comando en la ventana que aparece:
+
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gcc
+```
+
+Cuando te pregunte si quieres proceder, escribe `Y` y presiona Enter. Esto instalará el compilador de C++.
+</Step>
+
+<Step>
+### Agrega el compilador al PATH
+
+El **PATH** es una lista de carpetas donde Windows busca los programas. Necesitamos agregar la carpeta del compilador para poder usarlo desde cualquier lugar.
+
+1. Busca "Variables de entorno" en el menú de inicio de Windows.
+2. Haz clic en "Editar las variables de entorno del sistema".
+3. Haz clic en el botón "Variables de entorno".
+4. En "Variables del sistema", busca la variable `Path` y haz doble clic.
+5. Haz clic en "Nuevo" y agrega: `C:\msys2\ucrt64\bin`
+6. Acepta todo con "Aceptar".
 </Step>
 
 <Step>
 ### Verifica la instalación
 
-Abre una terminal y ejecuta:
+Abre una **nueva** ventana de la terminal (busca "cmd" o "PowerShell" en el menú de inicio) y escribe:
 
 ```bash
 g++ --version
 ```
+
+Si ves algo como `g++ (Rev...) 13.2.0` (o cualquier número de versión), ¡felicidades! El compilador está instalado correctamente.
+
+**Si ves un error** como "no se reconoce el comando", cierra la terminal y ábrela de nuevo. Si sigue sin funcionar, verifica que la ruta del PATH esté correcta.
 </Step>
 </Steps>
 
 ### En macOS
 
-```bash
-# Instala Xcode Command Line Tools
-xcode-select --install
+macOS incluye herramientas de desarrollo que puedes instalar fácilmente. Abre la aplicación **Terminal** (búscala en Spotlight con Cmd+Espacio) y ejecuta:
 
-# O usa Homebrew
+```bash
+xcode-select --install
+```
+
+Aparecerá una ventana preguntándote si quieres instalar las herramientas de línea de comandos. Haz clic en "Instalar" y espera a que termine. Esto puede tomar unos minutos.
+
+Una vez terminado, verifica con:
+
+```bash
+g++ --version
+```
+
+Si prefieres instalar la versión más reciente de GCC, puedes usar Homebrew:
+
+```bash
+# Primero instala Homebrew (si no lo tienes)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Luego instala gcc
 brew install gcc
 ```
 
-### En Linux
+### En Linux (Ubuntu/Debian)
+
+Linux es el sistema favorito de muchos programadores. Abre la terminal y ejecuta:
 
 ```bash
-# Ubuntu/Debian
 sudo apt update
-sudo apt install g++
-
-# Fedora
-sudo dnf install gcc-c++
+sudo apt install g++ build-essential
 ```
 
-## Editor de código: VS Code
+El sistema te pedirá tu contraseña. Escríbela (no verás los caracteres, es normal) y presiona Enter.
 
-Visual Studio Code es un editor gratuito y potente. Aquí te mostramos cómo configurarlo:
+Verifica con:
+
+```bash
+g++ --version
+```
+
+## Editor de código: Visual Studio Code
+
+VS Code es un editor gratuito, ligero y muy potente. Es como un cuaderno súper inteligente que te ayuda mientras programas.
+
+### Instalación
+
+1. Ve a [code.visualstudio.com](https://code.visualstudio.com)
+2. Descarga la versión para tu sistema operativo
+3. Ejecuta el instalador y sigue las instrucciones
 
 ### Extensiones recomendadas
 
-1. **C/C++** - Soporte para C++
-2. **Code Runner** - Ejecuta código rápidamente
-3. **Competitive Programming Helper** - Facilita la práctica
+Las extensiones son como "poderes extra" para tu editor. Instálalas desde el menú de extensiones (ícono de cuadrados en la barra lateral izquierda):
 
-### Configuración para competencias
+1. **C/C++** (por Microsoft) — Agrega soporte para C++: coloreado de sintaxis, autocompletado y detección de errores.
+2. **Code Runner** — Te permite ejecutar tu código con un solo clic o atajo de teclado.
+3. **Competitive Programming Helper (cph)** — Facilita probar tu código con múltiples casos de prueba, muy útil para competencias.
 
-Crea un archivo `settings.json` con esta configuración:
+### Configuración de Code Runner
+
+Para que Code Runner compile y ejecute tu código C++ correctamente, necesitamos configurarlo. Ve a **Archivo > Preferencias > Configuración** (o `Ctrl+,`), busca "Code Runner Executor Map" y haz clic en "Editar en settings.json". Agrega lo siguiente:
 
 ```json
 {
@@ -97,9 +166,35 @@ Crea un archivo `settings.json` con esta configuración:
 }
 ```
 
-## Template básico de C++
+**¿Qué significa cada parte?**
+- `g++` — El compilador de C++.
+- `-std=c++17` — Usa la versión C++17 del lenguaje (la más moderna y compatible).
+- `-O2` — Optimiza el código para que corra más rápido.
+- `-Wall` — Muestra todas las advertencias (te ayuda a encontrar posibles errores).
+- `$fileName` — El nombre de tu archivo.
+- `-o $fileNameWithoutExt` — El nombre del programa ejecutable que se creará.
+- `&& ./$fileNameWithoutExt` — Después de compilar exitosamente, ejecuta el programa.
 
-Usa este template como base para tus soluciones:
+## ¿Qué significa "compilar"?
+
+Cuando escribes código en C++, estás escribiendo en un lenguaje que los humanos pueden leer. Pero la computadora no entiende C++ directamente; ella solo entiende **código máquina** (secuencias de ceros y unos).
+
+**Compilar** es el proceso de traducir tu código C++ a código máquina. Es como si escribieras una carta en español y necesitaras que alguien la tradujera al japonés para que tu amigo en Japón la entienda.
+
+El proceso es:
+
+```
+Tu código (.cpp)  →  Compilador (g++)  →  Programa ejecutable
+   (español)          (traductor)           (japonés)
+```
+
+Cuando compilas, pueden pasar dos cosas:
+- **Éxito:** El compilador creó el programa ejecutable. ¡Puedes correrlo!
+- **Error:** El compilador encontró algo que no entiende en tu código. Te mostrará un mensaje de error señalando dónde está el problema. Es como si el traductor te dijera: "esta frase no tiene sentido, revísala".
+
+## Template básico para competencias
+
+En programación competitiva, usamos un "template" (plantilla) base para no tener que escribir lo mismo una y otra vez. Aquí está el template que recomendamos, con una explicación **línea por línea**:
 
 ```cpp
 #include <bits/stdc++.h>
@@ -109,7 +204,7 @@ using namespace std;
 #define endl '\n'
 
 void solve() {
-    // Tu solución aquí
+    // Tu solución va aquí
 }
 
 signed main() {
@@ -117,7 +212,7 @@ signed main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t; // Descomenta para múltiples casos
+    // cin >> t; // Descomenta si hay múltiples casos de prueba
     while (t--) {
         solve();
     }
@@ -126,51 +221,144 @@ signed main() {
 }
 ```
 
+### Explicación línea por línea
+
+**`#include <bits/stdc++.h>`**
+Esta línea incluye **TODAS** las bibliotecas estándar de C++ de una sola vez. Es como decir "quiero tener acceso a todas las herramientas disponibles". En una clase de arte, sería como pedir que te traigan todos los colores, pinceles y materiales de una vez en lugar de ir pidiéndolos uno por uno. Esto solo funciona con el compilador g++ y es exclusivo para competencias (no se usa en desarrollo profesional).
+
+**`using namespace std;`**
+Esto nos permite usar las funciones de C++ sin escribir `std::` antes de cada una. Sin esta línea, tendríamos que escribir `std::cout` en lugar de solo `cout`. Es como decir "cuando diga 'cout', me refiero al 'cout' de la biblioteca estándar".
+
+**`#define int long long`**
+Esta es una "trampa" de competencias. Reemplaza el tipo `int` (que puede almacenar números hasta ~2 mil millones) con `long long` (que puede almacenar números hasta ~9 trillones). Muchos problemas usan números grandes, y este truco evita errores de **overflow** (cuando un número es demasiado grande para caber en el tipo de dato).
+
+**`#define endl '\n'`**
+Reemplaza `endl` con `'\n'`. Ambos hacen un salto de línea, pero `'\n'` es más rápido porque `endl` hace una operación extra (vaciar el buffer). En competencias, la velocidad importa.
+
+**`void solve() { ... }`**
+Ponemos nuestra solución en una función separada por organización. Si hay múltiples casos de prueba, esta función se ejecutará una vez por cada caso.
+
+**`signed main()`**
+Normalmente escribiríamos `int main()`, pero como redefinimos `int` como `long long`, necesitamos usar `signed` para que el compilador no se confunda.
+
+**`ios_base::sync_with_stdio(false);` y `cin.tie(NULL);`**
+Estas dos líneas **aceleran dramáticamente** la lectura y escritura de datos. Sin ellas, programas con mucha entrada/salida pueden ser hasta 10 veces más lentos. Es como cambiar de un camino de terracería a una autopista.
+
 <Callout type="warning">
-  El macro `#define int long long` evita errores de overflow, pero usa más memoria. Úsalo con cuidado en problemas con límites estrictos.
+  Después de usar `ios_base::sync_with_stdio(false)`, **no mezcles** `cin/cout` con `scanf/printf`. Usa solo uno de los dos. Nosotros usaremos siempre `cin` y `cout`.
 </Callout>
+
+**`int t = 1; while (t--) { solve(); }`**
+Algunos problemas tienen múltiples "casos de prueba" (te dan varios problemas en una sola entrada). Si el problema lo indica, descomentamos `cin >> t;` para leer cuántos casos hay y resolver cada uno.
 
 ## Estructura de carpetas recomendada
 
+Te recomendamos organizar tus archivos así:
+
 ```
-competencias/
+olimpiada/
 ├── templates/
-│   └── template.cpp
+│   └── template.cpp        ← Tu plantilla base
 ├── practicas/
-│   ├── omegaup/
-│   ├── codeforces/
+│   ├── omegaup/             ← Problemas de omegaUp
+│   │   ├── suma.cpp
+│   │   └── mayor.cpp
+│   ├── codeforces/          ← Problemas de Codeforces
 │   └── otros/
 └── competencias/
     └── 2026/
+        ├── estatal/
+        └── nacional/
 ```
+
+Esto te ayudará a mantener todo organizado. Crea la carpeta `olimpiada` en un lugar fácil de encontrar, como tu Escritorio o Documentos.
 
 ## Verificación final
 
-Para verificar que todo está configurado correctamente:
+Vamos a verificar que todo funciona correctamente creando y ejecutando un programa simple.
 
-1. Crea un archivo `test.cpp` con el template
-2. Escribe un programa simple:
+<Steps>
+<Step>
+### Crea tu primer archivo
+
+Abre VS Code, ve a **Archivo > Nuevo Archivo** y guárdalo como `test.cpp` en tu carpeta de prácticas.
+</Step>
+
+<Step>
+### Escribe el código
+
+Copia este programa en el archivo:
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
 using namespace std;
 
 int main() {
-    cout << "¡Hola, mundo!" << endl;
+    cout << "¡Hola, mundo! Mi entorno está listo." << endl;
+
+    int a, b;
+    cout << "Dame dos números: ";
+    cin >> a >> b;
+    cout << "La suma es: " << a + b << endl;
+
     return 0;
 }
 ```
+</Step>
 
-3. Compila y ejecuta:
+<Step>
+### Compila y ejecuta
+
+**Opción A — Con Code Runner:** Haz clic derecho en el editor y selecciona "Run Code", o presiona `Ctrl+Alt+N`.
+
+**Opción B — Desde la terminal:** Abre la terminal integrada de VS Code (`Ctrl+ñ` o `Terminal > New Terminal`) y escribe:
 
 ```bash
 g++ -std=c++17 test.cpp -o test && ./test
 ```
+</Step>
+
+<Step>
+### Verifica el resultado
+
+Deberías ver el mensaje "¡Hola, mundo! Mi entorno está listo." y luego el programa te pedirá dos números. Escribe por ejemplo `5 3` y presiona Enter. Debería responder "La suma es: 8".
+</Step>
+</Steps>
 
 <Callout type="success">
-  Si ves "¡Hola, mundo!", ¡tu entorno está listo! Ya puedes comenzar a practicar.
+  Si todo funcionó, ¡tu entorno está listo! 🎉 Ya puedes comenzar a aprender a programar. Si tuviste algún problema, revisa la sección de solución de problemas a continuación.
 </Callout>
+
+## Solución de problemas comunes
+
+### "g++ no se reconoce como comando"
+
+Esto significa que el compilador no está en el PATH. Revisa los pasos de instalación y asegúrate de que la ruta del compilador está correctamente agregada. Recuerda **cerrar y abrir** una nueva terminal después de cambiar el PATH.
+
+### "Permission denied" (en Mac/Linux)
+
+Intenta agregar `sudo` al inicio del comando de instalación:
+
+```bash
+sudo apt install g++
+```
+
+### "No such file or directory" al compilar
+
+Asegúrate de que estás en la misma carpeta que tu archivo. Usa el comando `cd` para navegar:
+
+```bash
+cd ~/Escritorio/olimpiada/practicas
+```
+
+### El programa se cierra inmediatamente (Windows)
+
+Si ejecutas tu programa haciendo doble clic en el `.exe`, se cerrará al terminar. Siempre ejecútalo desde la terminal o desde VS Code.
+
+### Los acentos se ven raros
+
+Asegúrate de que tu archivo esté guardado en codificación **UTF-8**. En VS Code, mira la esquina inferior derecha; si dice algo diferente a "UTF-8", haz clic y cámbialo.
 
 ## Siguiente paso
 
-Ahora que tienes tu entorno configurado, es hora de aprender los [conceptos básicos de complejidad](/blog/introduccion/complejidad-algoritmica).
+Ahora que tienes tu entorno configurado, es hora de aprender los conceptos básicos. Ve a **Complejidad Algorítmica** para entender cómo medir la eficiencia de tus programas.

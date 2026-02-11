@@ -1,305 +1,179 @@
 ---
-title: "DFS - Búsqueda en Profundidad"
-description: "Aprende el algoritmo DFS para recorrer grafos y detectar propiedades"
+title: "DFS en Grafos"
+description: "Búsqueda en profundidad para detectar ciclos, clasificar aristas y más"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "DFS", "recorrido", "recursión"]
-syllabusId: 76
-order: 3
+tags: ["c++", "DFS", "grafos", "ciclos", "back edge"]
+syllabusId: 56
 ---
 
-## ¿Qué es DFS?
+## DFS en grafos: repaso y extensiones
 
-**DFS (Depth-First Search)** es un algoritmo que explora un grafo yendo lo más profundo posible antes de retroceder.
+DFS en grafos es idéntico al concepto general, pero aquí exploramos aplicaciones más avanzadas.
 
-## Características
+## Clasificación de aristas (grafos dirigidos)
 
-- Usa **recursión** o una **pila (stack)**
-- Útil para detectar ciclos, componentes, y propiedades estructurales
-- Complejidad: **O(V + E)**
-
-## Implementación recursiva
+Durante un DFS, cada arista se clasifica en uno de 4 tipos:
 
 ```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-bool visitado[MAXN];
+enum Estado { BLANCO, GRIS, NEGRO };
+Estado estado[MAXN];
+int tin[MAXN], tout[MAXN], timer = 0;
 
 void dfs(int u) {
-    visitado[u] = true;
-    cout << u << " ";  // Procesar nodo
+    estado[u] = GRIS;
+    tin[u] = timer++;
 
     for (int v : adj[u]) {
-        if (!visitado[v]) {
+        if (estado[v] == BLANCO) {
+            // Arista de árbol (tree edge)
             dfs(v);
+        } else if (estado[v] == GRIS) {
+            // Arista de retroceso (back edge) → ¡CICLO!
+        } else {
+            // Arista de avance o cruce
+            if (tin[u] < tin[v]) {
+                // Arista de avance (forward edge)
+            } else {
+                // Arista de cruce (cross edge)
+            }
         }
     }
-}
 
-int main() {
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    dfs(1);
-
-    return 0;
+    estado[u] = NEGRO;
+    tout[u] = timer++;
 }
 ```
 
-## Implementación iterativa
+- **BLANCO:** No visitado
+- **GRIS:** En el stack de DFS (siendo procesado)
+- **NEGRO:** Completamente procesado
 
-Útil cuando la recursión es muy profunda:
+## Detectar ciclos en grafo dirigido
+
+Hay ciclo si encontramos una **arista de retroceso** (back edge):
 
 ```cpp
-void dfsIterativo(int inicio) {
-    stack<int> s;
-    s.push(inicio);
+bool tieneCiclo = false;
 
-    while (!s.empty()) {
-        int u = s.top();
-        s.pop();
+void dfs(int u) {
+    estado[u] = GRIS;
 
-        if (visitado[u]) continue;
-        visitado[u] = true;
+    for (int v : adj[u]) {
+        if (estado[v] == GRIS) {
+            tieneCiclo = true;
+            return;
+        }
+        if (estado[v] == BLANCO) {
+            dfs(v);
+        }
+    }
 
-        cout << u << " ";
+    estado[u] = NEGRO;
+}
 
-        for (int v : adj[u]) {
-            if (!visitado[v]) {
-                s.push(v);
+bool hayCiclo(int n) {
+    fill(estado, estado + n + 1, BLANCO);
+    tieneCiclo = false;
+
+    for (int i = 1; i <= n; i++) {
+        if (estado[i] == BLANCO) {
+            dfs(i);
+            if (tieneCiclo) return true;
+        }
+    }
+    return false;
+}
+```
+
+## Tiempos de entrada y salida
+
+Los tiempos `tin` y `tout` son muy útiles:
+
+```cpp
+void dfs(int u, int p) {
+    tin[u] = timer++;
+
+    for (int v : adj[u]) {
+        if (v != p) {
+            dfs(v, u);
+        }
+    }
+
+    tout[u] = timer++;
+}
+```
+
+**Propiedad:** `u` es ancestro de `v` si y solo si `tin[u] < tin[v]` y `tout[u] > tout[v]`.
+
+```cpp
+bool esAncestro(int u, int v) {
+    return tin[u] <= tin[v] && tout[u] >= tout[v];
+}
+```
+
+## DFS para encontrar puentes y puntos de articulación
+
+Un **puente** es una arista cuya eliminación desconecta el grafo. Un **punto de articulación** es un nodo cuya eliminación desconecta el grafo.
+
+```cpp
+int low[MAXN], tin[MAXN], timer = 0;
+bool vis[MAXN];
+vector<pair<int,int>> puentes;
+
+void dfsPuentes(int u, int padre) {
+    vis[u] = true;
+    tin[u] = low[u] = timer++;
+
+    for (int v : adj[u]) {
+        if (v == padre) continue;
+
+        if (vis[v]) {
+            low[u] = min(low[u], tin[v]);
+        } else {
+            dfsPuentes(v, u);
+            low[u] = min(low[u], low[v]);
+
+            if (low[v] > tin[u]) {
+                puentes.push_back({u, v});
             }
         }
     }
 }
 ```
 
-## Tiempos de entrada y salida
+`low[u]` = el menor `tin` alcanzable desde el subárbol de `u` usando aristas de retroceso.
 
-Los tiempos de descubrimiento y finalización son útiles para muchos algoritmos:
+Si `low[v] > tin[u]`, la arista `(u, v)` es un puente.
 
-```cpp
-int tiempoEntrada[MAXN], tiempoSalida[MAXN];
-int tiempo = 0;
+## Ejercicio de práctica
 
-void dfs(int u, int padre = -1) {
-    tiempoEntrada[u] = ++tiempo;
-    visitado[u] = true;
+Dado un grafo dirigido, determina si tiene un ciclo.
 
-    for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfs(v, u);
-        }
-    }
-
-    tiempoSalida[u] = ++tiempo;
-}
-```
-
-### Propiedad de ancestro
-
-El nodo `u` es ancestro de `v` si y solo si:
-```cpp
-tiempoEntrada[u] < tiempoEntrada[v] && tiempoSalida[u] > tiempoSalida[v]
-```
-
-## DFS en matriz (grid)
+<details>
+<summary>Ver solución</summary>
 
 ```cpp
-int n, m;
-char grid[1005][1005];
-bool visitado[1005][1005];
-
-int dx[] = {0, 0, 1, -1};
-int dy[] = {1, -1, 0, 0};
-
-void dfsGrid(int x, int y) {
-    if (x < 0 || x >= n || y < 0 || y >= m) return;
-    if (visitado[x][y] || grid[x][y] == '#') return;
-
-    visitado[x][y] = true;
-
-    for (int d = 0; d < 4; d++) {
-        dfsGrid(x + dx[d], y + dy[d]);
-    }
-}
-```
-
-## Contar componentes conexas
-
-```cpp
-int contarComponentes(int n) {
-    int componentes = 0;
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            dfs(i);
-            componentes++;
-        }
-    }
-
-    return componentes;
-}
-```
-
-## Tamaño de componente
-
-```cpp
-int tamanoComponente;
-
-void dfs(int u) {
-    visitado[u] = true;
-    tamanoComponente++;
-
-    for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfs(v);
-        }
-    }
-}
-
-// Uso
-tamanoComponente = 0;
-dfs(inicio);
-cout << "Tamaño: " << tamanoComponente << endl;
-```
-
-## Verificar si es bipartito
-
-```cpp
-int color[MAXN];  // -1 = sin color, 0 y 1 = colores
-
-bool dfsBipartito(int u, int c) {
-    color[u] = c;
-
-    for (int v : adj[u]) {
-        if (color[v] == -1) {
-            if (!dfsBipartito(v, 1 - c)) return false;
-        } else if (color[v] == c) {
-            return false;  // Mismo color = no bipartito
-        }
-    }
-
-    return true;
-}
-
-bool esBipartito(int n) {
-    memset(color, -1, sizeof(color));
-
-    for (int i = 1; i <= n; i++) {
-        if (color[i] == -1) {
-            if (!dfsBipartito(i, 0)) return false;
-        }
-    }
-
-    return true;
-}
-```
-
-## Detectar ciclo en grafo no dirigido
-
-```cpp
-bool tieneCiclo = false;
-
-void dfsCiclo(int u, int padre) {
-    visitado[u] = true;
-
-    for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfsCiclo(v, u);
-        } else if (v != padre) {
-            tieneCiclo = true;
-        }
-    }
-}
-```
-
-## Encontrar camino entre dos nodos
-
-```cpp
-vector<int> camino;
-bool encontrado = false;
-
-void dfsCamino(int u, int destino) {
-    if (encontrado) return;
-
-    visitado[u] = true;
-    camino.push_back(u);
-
-    if (u == destino) {
-        encontrado = true;
-        return;
-    }
-
-    for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfsCamino(v, destino);
-            if (encontrado) return;
-        }
-    }
-
-    camino.pop_back();  // Backtrack
-}
-```
-
-## DFS con profundidad
-
-```cpp
-int profundidad[MAXN];
-
-void dfs(int u, int padre = -1, int prof = 0) {
-    visitado[u] = true;
-    profundidad[u] = prof;
-
-    for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfs(v, u, prof + 1);
-        }
-    }
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
 const int MAXN = 100005;
 vector<int> adj[MAXN];
-bool visitado[MAXN];
-int tiempoEntrada[MAXN], tiempoSalida[MAXN];
-int padre[MAXN], profundidad[MAXN];
-int tiempo = 0;
+int estado[MAXN];  // 0=blanco, 1=gris, 2=negro
+bool ciclo = false;
 
-void dfs(int u, int p = -1, int prof = 0) {
-    visitado[u] = true;
-    padre[u] = p;
-    profundidad[u] = prof;
-    tiempoEntrada[u] = ++tiempo;
-
+void dfs(int u) {
+    estado[u] = 1;
     for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfs(v, u, prof + 1);
-        }
+        if (estado[v] == 1) { ciclo = true; return; }
+        if (estado[v] == 0) dfs(v);
+        if (ciclo) return;
     }
-
-    tiempoSalida[u] = ++tiempo;
+    estado[u] = 2;
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n, m;
     cin >> n >> m;
 
@@ -307,42 +181,15 @@ int main() {
         int u, v;
         cin >> u >> v;
         adj[u].push_back(v);
-        adj[v].push_back(u);
     }
 
-    // DFS desde nodo 1
-    dfs(1);
-
-    // Contar componentes
-    int componentes = 1;
-    for (int i = 2; i <= n; i++) {
-        if (!visitado[i]) {
-            dfs(i);
-            componentes++;
-        }
+    for (int i = 1; i <= n; i++) {
+        if (estado[i] == 0) dfs(i);
     }
 
-    cout << "Componentes: " << componentes << "\n";
-
+    cout << (ciclo ? "Tiene ciclo" : "No tiene ciclo") << endl;
     return 0;
 }
 ```
 
-## BFS vs DFS
-
-| Característica | BFS | DFS |
-|----------------|-----|-----|
-| Estructura | Cola | Pila/Recursión |
-| Camino más corto | ✅ Sin peso | ❌ |
-| Memoria | O(ancho máximo) | O(profundidad) |
-| Detectar ciclos | ✅ | ✅ |
-| Componentes | ✅ | ✅ |
-| Orden topológico | ❌ | ✅ |
-
-## Ejercicios recomendados
-
-1. [CSES - Counting Rooms](https://cses.fi/problemset/task/1192)
-2. [CSES - Building Teams](https://cses.fi/problemset/task/1668)
-3. [CSES - Round Trip](https://cses.fi/problemset/task/1669)
-4. [Codeforces - Connected Components](https://codeforces.com/problemset/problem/920/E)
-5. [LeetCode - Number of Islands](https://leetcode.com/problems/number-of-islands/)
+</details>

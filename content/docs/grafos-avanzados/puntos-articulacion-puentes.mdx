@@ -1,282 +1,113 @@
 ---
 title: "Puntos de Articulación y Puentes"
-description: "Aprende a encontrar puntos críticos y aristas críticas en grafos"
+description: "Identifica nodos y aristas críticas cuya eliminación desconecta el grafo"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "articulación", "puentes", "DFS"]
-syllabusId: 68
-order: 8
+tags: ["c++", "puntos de articulación", "puentes", "Tarjan", "grafos"]
+syllabusId: 65
 ---
 
-## Definiciones
+## ¿Qué son?
 
-- **Punto de articulación:** Nodo cuya eliminación desconecta el grafo
-- **Puente:** Arista cuya eliminación desconecta el grafo
+- **Punto de articulación:** Un nodo cuya eliminación desconecta el grafo.
+- **Puente:** Una arista cuya eliminación desconecta el grafo.
 
-```
-    1 --- 2 --- 3 --- 4
-          |     |
-          5 --- 6
+**Analogía:** En una red eléctrica, un punto de articulación es una subestación cuya falla deja sin luz a parte de la ciudad. Un puente es un cable único cuya rotura desconecta zonas.
 
-Puntos de articulación: 2, 3
-Puentes: (1,2), (3,4)
-```
+## Algoritmo de Tarjan
 
-## Algoritmo (basado en Tarjan)
-
-Usamos DFS con tiempos de descubrimiento (`disc`) y valores `low`:
-- `disc[u]`: Tiempo cuando se descubrió u
-- `low[u]`: Menor tiempo alcanzable desde el subárbol de u
+Usa DFS con dos arreglos:
+- `tin[u]`: tiempo de descubrimiento de u.
+- `low[u]`: menor `tin` alcanzable desde el subárbol de u usando aristas de retroceso.
 
 ```cpp
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-int disc[MAXN], low[MAXN];
-bool esArticulacion[MAXN];
-vector<pair<int, int>> puentes;
-int timer = 0;
-
-void dfs(int u, int padre) {
-    disc[u] = low[u] = ++timer;
-    int hijos = 0;
-
-    for (int v : adj[u]) {
-        if (v == padre) continue;
-
-        if (disc[v] == 0) {  // No visitado
-            hijos++;
-            dfs(v, u);
-            low[u] = min(low[u], low[v]);
-
-            // Verificar si u es punto de articulación
-            if (padre != -1 && low[v] >= disc[u]) {
-                esArticulacion[u] = true;
-            }
-
-            // Verificar si (u, v) es puente
-            if (low[v] > disc[u]) {
-                puentes.push_back({u, v});
-            }
-        } else {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-
-    // Caso especial: raíz es articulación si tiene > 1 hijo
-    if (padre == -1 && hijos > 1) {
-        esArticulacion[u] = true;
-    }
-}
-
-void encontrar(int n) {
-    fill(disc, disc + n + 1, 0);
-    fill(low, low + n + 1, 0);
-    fill(esArticulacion, esArticulacion + n + 1, false);
-    puentes.clear();
-    timer = 0;
-
-    for (int i = 1; i <= n; i++) {
-        if (disc[i] == 0) {
-            dfs(i, -1);
-        }
-    }
-}
-```
-
-## Solo puentes
-
-Versión simplificada si solo necesitas puentes:
-
-```cpp
-void dfsPuentes(int u, int padre) {
-    disc[u] = low[u] = ++timer;
-
-    for (int v : adj[u]) {
-        if (v == padre) continue;
-
-        if (disc[v] == 0) {
-            dfsPuentes(v, u);
-            low[u] = min(low[u], low[v]);
-
-            if (low[v] > disc[u]) {
-                puentes.push_back({min(u, v), max(u, v)});
-            }
-        } else {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-}
-```
-
-## Solo puntos de articulación
-
-```cpp
-void dfsArticulacion(int u, int padre) {
-    disc[u] = low[u] = ++timer;
-    int hijos = 0;
-
-    for (int v : adj[u]) {
-        if (v == padre) continue;
-
-        if (disc[v] == 0) {
-            hijos++;
-            dfsArticulacion(v, u);
-            low[u] = min(low[u], low[v]);
-
-            if ((padre == -1 && hijos > 1) || (padre != -1 && low[v] >= disc[u])) {
-                esArticulacion[u] = true;
-            }
-        } else {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-}
-```
-
-## Manejo de aristas múltiples
-
-Si puede haber aristas repetidas:
-
-```cpp
-vector<pair<int, int>> adj[MAXN];  // {vecino, índice de arista}
-
-void dfs(int u, int aristaEntrada) {
-    disc[u] = low[u] = ++timer;
-    int hijos = 0;
-
-    for (auto [v, idx] : adj[u]) {
-        if (idx == aristaEntrada) continue;  // Usar índice en vez de padre
-
-        if (disc[v] == 0) {
-            hijos++;
-            dfs(v, idx);
-            low[u] = min(low[u], low[v]);
-
-            if (low[v] > disc[u]) {
-                puentes.push_back({u, v});
-            }
-        } else {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-}
-```
-
-## Componentes biconexas (por aristas)
-
-Agrupar aristas en componentes biconexas:
-
-```cpp
-stack<pair<int, int>> pilaAristas;
-vector<vector<pair<int, int>>> componentesBiconexas;
-
-void dfsBiconexas(int u, int padre) {
-    disc[u] = low[u] = ++timer;
-
-    for (int v : adj[u]) {
-        if (v == padre) continue;
-
-        if (disc[v] == 0) {
-            pilaAristas.push({u, v});
-            dfsBiconexas(v, u);
-            low[u] = min(low[u], low[v]);
-
-            if (low[v] >= disc[u]) {
-                // Nueva componente biconexa
-                vector<pair<int, int>> componente;
-                while (true) {
-                    auto arista = pilaAristas.top();
-                    pilaAristas.pop();
-                    componente.push_back(arista);
-                    if (arista == make_pair(u, v)) break;
-                }
-                componentesBiconexas.push_back(componente);
-            }
-        } else if (disc[v] < disc[u]) {
-            pilaAristas.push({u, v});
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <set>
 using namespace std;
 
 const int MAXN = 100005;
 vector<int> adj[MAXN];
-int disc[MAXN], low[MAXN];
-bool isArt[MAXN];
-vector<pair<int, int>> bridges;
-int timer;
+int tin[MAXN], low[MAXN], timer_val = 0;
+bool vis[MAXN];
+set<int> articulaciones;
+vector<pair<int,int>> puentes;
 
-void dfs(int u, int p) {
-    disc[u] = low[u] = ++timer;
-    int children = 0;
+void dfs(int u, int padre) {
+    vis[u] = true;
+    tin[u] = low[u] = timer_val++;
+    int hijos = 0;
 
     for (int v : adj[u]) {
-        if (v == p) continue;
+        if (v == padre) continue;
 
-        if (!disc[v]) {
-            children++;
+        if (vis[v]) {
+            low[u] = min(low[u], tin[v]);
+        } else {
+            hijos++;
             dfs(v, u);
             low[u] = min(low[u], low[v]);
 
-            if (p != -1 && low[v] >= disc[u])
-                isArt[u] = true;
+            // Punto de articulación
+            if (padre == -1 && hijos > 1) {
+                articulaciones.insert(u);
+            }
+            if (padre != -1 && low[v] >= tin[u]) {
+                articulaciones.insert(u);
+            }
 
-            if (low[v] > disc[u])
-                bridges.push_back({min(u,v), max(u,v)});
-        } else {
-            low[u] = min(low[u], disc[v]);
+            // Puente
+            if (low[v] > tin[u]) {
+                puentes.push_back({u, v});
+            }
         }
     }
-
-    if (p == -1 && children > 1)
-        isArt[u] = true;
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n, m;
     cin >> n >> m;
 
     for (int i = 0; i < m; i++) {
-        int a, b;
-        cin >> a >> b;
-        adj[a].push_back(b);
-        adj[b].push_back(a);
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
     }
 
-    timer = 0;
     for (int i = 1; i <= n; i++) {
-        if (!disc[i]) dfs(i, -1);
+        if (!vis[i]) dfs(i, -1);
     }
 
     cout << "Puntos de articulación: ";
-    for (int i = 1; i <= n; i++) {
-        if (isArt[i]) cout << i << " ";
-    }
-    cout << "\n";
+    for (int v : articulaciones) cout << v << " ";
+    cout << endl;
 
     cout << "Puentes: ";
-    for (auto [a, b] : bridges) {
-        cout << "(" << a << "," << b << ") ";
-    }
-    cout << "\n";
+    for (auto [u, v] : puentes) cout << "(" << u << "," << v << ") ";
+    cout << endl;
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+**Complejidad:** $O(V + E)$
 
-1. [CSES - Critical Cities](https://cses.fi/problemset/task/2077)
-2. [CSES - Critical Edges](https://cses.fi/problemset/task/2078)
-3. [SPOJ - EC_P](https://www.spoj.com/problems/EC_P/)
-4. [Codeforces - Break Up](https://codeforces.com/problemset/problem/700/C)
+### Condiciones
+
+**Puente** (u, v): `low[v] > tin[u]` — el subárbol de v no puede "regresar" más arriba de u.
+
+**Punto de articulación** u:
+- Si u es la raíz del DFS: tiene **más de un hijo** en el árbol DFS.
+- Si no es la raíz: existe un hijo v donde `low[v] >= tin[u]`.
+
+## Ejercicio de práctica
+
+Dado un grafo no dirigido, encuentra todos los puentes.
+
+<details>
+<summary>Ver solución</summary>
+
+Usa el algoritmo de Tarjan. Los puentes son las aristas donde `low[v] > tin[u]`.
+
+</details>

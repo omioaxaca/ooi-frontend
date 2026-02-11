@@ -1,260 +1,127 @@
 ---
 title: "Búsqueda en Amplitud (BFS)"
-description: "Aprende el algoritmo BFS para explorar grafos nivel por nivel y encontrar caminos más cortos"
-date: "2026-02-11"
+description: "Explora nivel por nivel para encontrar caminos más cortos en grafos no ponderados"
+date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "BFS", "búsqueda", "camino-más-corto"]
-syllabusId: 47
-order: 3
+tags: ["c++", "BFS", "búsqueda en amplitud", "grafos", "cola"]
+syllabusId: 34
 ---
 
-## ¿Qué es BFS?
+## La analogía: una onda expansiva
 
-**BFS** (Breadth-First Search o Búsqueda en Amplitud) es un algoritmo para explorar grafos que visita todos los nodos **nivel por nivel**, empezando desde un nodo origen.
+Imagina que dejas caer una piedra en un estanque. Las ondas se expanden en **círculos concéntricos**, tocando primero lo más cercano y después lo más lejano. **BFS** (Breadth-First Search) funciona exactamente así: explora **todos los vecinos** de un nodo antes de pasar al siguiente nivel.
 
-Es como lanzar una piedra al agua: primero exploras el nodo inicial, luego todos sus vecinos directos, luego los vecinos de esos vecinos, y así sucesivamente.
+Otra forma de verlo: estás buscando a alguien en un edificio. Primero revisas **todas** las habitaciones del piso actual, y solo después subes al siguiente piso.
 
-> 💡 **Aplicación principal:** BFS encuentra el **camino más corto** en grafos sin pesos (o con pesos iguales).
+## ¿Cuándo usar BFS?
 
-## Visualización
-
-```
-Grafo:
-    1 --- 2 --- 5
-    |     |
-    3 --- 4
-
-Orden de visita desde nodo 1:
-Nivel 0: [1]
-Nivel 1: [2, 3]
-Nivel 2: [5, 4]
-
-Orden: 1 → 2 → 3 → 5 → 4
-```
+- Encontrar el **camino más corto** en un grafo sin pesos (o donde todas las aristas pesan lo mismo).
+- Explorar todos los nodos **nivel por nivel**.
+- Encontrar la **distancia mínima** desde un punto de partida.
+- Recorrer una cuadrícula paso a paso.
 
 ## Implementación básica
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <queue>
 using namespace std;
 
-vector<int> adj[100005];  // Lista de adyacencia
+vector<int> adj[100005]; // Lista de adyacencia
 bool visitado[100005];
+int distancia[100005];
 
 void bfs(int inicio) {
     queue<int> cola;
     cola.push(inicio);
     visitado[inicio] = true;
+    distancia[inicio] = 0;
 
     while (!cola.empty()) {
-        int nodo = cola.front();
+        int actual = cola.front();
         cola.pop();
 
-        cout << nodo << " ";  // Procesar nodo
-
-        for (int vecino : adj[nodo]) {
+        for (int vecino : adj[actual]) {
             if (!visitado[vecino]) {
                 visitado[vecino] = true;
+                distancia[vecino] = distancia[actual] + 1;
                 cola.push(vecino);
             }
         }
     }
 }
-
-int main() {
-    int n, m;  // n nodos, m aristas
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);  // Si es no dirigido
-    }
-
-    bfs(1);  // Empezar desde nodo 1
-
-    return 0;
-}
 ```
 
-## Complejidad
+**Línea por línea:**
 
-| Aspecto | Complejidad |
-|---------|-------------|
-| Tiempo | $O(V + E)$ |
-| Espacio | $O(V)$ |
+1. **`queue<int> cola`** — Usamos una cola (FIFO) porque queremos procesar nodos en el orden en que los descubrimos.
+2. **`cola.push(inicio)`** — Metemos el nodo inicial a la cola.
+3. **`visitado[inicio] = true`** — Lo marcamos para no visitarlo otra vez.
+4. **`while (!cola.empty())`** — Mientras haya nodos por explorar…
+5. **`int actual = cola.front(); cola.pop()`** — Sacamos el primero de la cola (el más antiguo).
+6. **`for (int vecino : adj[actual])`** — Revisamos todos sus vecinos.
+7. **`if (!visitado[vecino])`** — Si no hemos visitado al vecino…
+8. **`distancia[vecino] = distancia[actual] + 1`** — Su distancia es un paso más.
+9. **`cola.push(vecino)`** — Lo metemos a la cola para explorarlo después.
 
-Donde $V$ es el número de vértices y $E$ es el número de aristas.
+## Ejemplo visual
 
-## Encontrar distancias mínimas
+Grafo: `0 -- 1 -- 3 -- 4`, `0 -- 2 -- 4`
 
-Una de las aplicaciones más importantes de BFS es encontrar las distancias mínimas desde un nodo origen:
+BFS desde 0:
 
-```cpp
-vector<int> adj[100005];
-int distancia[100005];
+| Paso | Cola | Procesando | Distancias actualizadas |
+|------|------|------------|------------------------|
+| 1 | [0] | 0 | dist[0]=0 |
+| 2 | [1, 2] | 1 | dist[1]=1 |
+| 3 | [2, 3] | 2 | dist[2]=1 |
+| 4 | [3, 4] | 3 | dist[3]=2 |
+| 5 | [4] | 4 | dist[4]=2 |
 
-void bfs(int inicio, int n) {
-    // Inicializar distancias como -1 (no visitado)
-    fill(distancia, distancia + n + 1, -1);
+Resultado: el camino más corto de 0 a 4 tiene longitud **2** (por 0→2→4).
 
-    queue<int> cola;
-    cola.push(inicio);
-    distancia[inicio] = 0;
+## BFS en cuadrícula
 
-    while (!cola.empty()) {
-        int nodo = cola.front();
-        cola.pop();
-
-        for (int vecino : adj[nodo]) {
-            if (distancia[vecino] == -1) {
-                distancia[vecino] = distancia[nodo] + 1;
-                cola.push(vecino);
-            }
-        }
-    }
-}
-
-int main() {
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    bfs(1, n);
-
-    // Imprimir distancia desde nodo 1 a todos los demás
-    for (int i = 1; i <= n; i++) {
-        cout << "Distancia a " << i << ": " << distancia[i] << endl;
-    }
-
-    return 0;
-}
-```
-
-## Reconstruir el camino más corto
-
-Para reconstruir el camino, guardamos el padre de cada nodo:
+Uno de los usos más comunes en competencias: encontrar el camino más corto en un laberinto.
 
 ```cpp
-vector<int> adj[100005];
-int distancia[100005];
-int padre[100005];
-
-void bfs(int inicio, int n) {
-    fill(distancia, distancia + n + 1, -1);
-    fill(padre, padre + n + 1, -1);
-
-    queue<int> cola;
-    cola.push(inicio);
-    distancia[inicio] = 0;
-
-    while (!cola.empty()) {
-        int nodo = cola.front();
-        cola.pop();
-
-        for (int vecino : adj[nodo]) {
-            if (distancia[vecino] == -1) {
-                distancia[vecino] = distancia[nodo] + 1;
-                padre[vecino] = nodo;
-                cola.push(vecino);
-            }
-        }
-    }
-}
-
-vector<int> reconstruirCamino(int inicio, int fin) {
-    if (distancia[fin] == -1) {
-        return {};  // No hay camino
-    }
-
-    vector<int> camino;
-    for (int nodo = fin; nodo != -1; nodo = padre[nodo]) {
-        camino.push_back(nodo);
-    }
-    reverse(camino.begin(), camino.end());
-    return camino;
-}
-
-int main() {
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    bfs(1, n);
-
-    int destino = n;
-    vector<int> camino = reconstruirCamino(1, destino);
-
-    if (camino.empty()) {
-        cout << "IMPOSSIBLE" << endl;
-    } else {
-        cout << camino.size() << endl;
-        for (int nodo : camino) {
-            cout << nodo << " ";
-        }
-        cout << endl;
-    }
-
-    return 0;
-}
-```
-
-## BFS en matrices (grillas)
-
-Muchos problemas de BFS usan matrices 2D. Por ejemplo, encontrar el camino más corto en un laberinto:
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <queue>
 using namespace std;
 
 int n, m;
 char grid[1005][1005];
 int dist[1005][1005];
+bool vis[1005][1005];
 
-// Direcciones: arriba, abajo, izquierda, derecha
+// 4 direcciones: arriba, abajo, izquierda, derecha
 int dx[] = {-1, 1, 0, 0};
 int dy[] = {0, 0, -1, 1};
 
-bool esValido(int x, int y) {
-    return x >= 0 && x < n && y >= 0 && y < m && grid[x][y] != '#';
+bool valida(int x, int y) {
+    return x >= 0 && x < n && y >= 0 && y < m
+           && grid[x][y] != '#' && !vis[x][y];
 }
 
-int bfsMatriz(int inicioX, int inicioY, int finX, int finY) {
-    // Inicializar distancias
-    memset(dist, -1, sizeof(dist));
-
-    queue<pair<int, int>> cola;
-    cola.push({inicioX, inicioY});
-    dist[inicioX][inicioY] = 0;
+int bfsGrid(int sx, int sy, int ex, int ey) {
+    queue<pair<int,int>> cola;
+    cola.push({sx, sy});
+    vis[sx][sy] = true;
+    dist[sx][sy] = 0;
 
     while (!cola.empty()) {
         auto [x, y] = cola.front();
         cola.pop();
 
-        // Si llegamos al destino
-        if (x == finX && y == finY) {
-            return dist[x][y];
-        }
+        if (x == ex && y == ey) return dist[x][y];
 
-        // Explorar las 4 direcciones
-        for (int i = 0; i < 4; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
 
-            if (esValido(nx, ny) && dist[nx][ny] == -1) {
+            if (valida(nx, ny)) {
+                vis[nx][ny] = true;
                 dist[nx][ny] = dist[x][y] + 1;
                 cola.push({nx, ny});
             }
@@ -267,271 +134,160 @@ int bfsMatriz(int inicioX, int inicioY, int finX, int finY) {
 int main() {
     cin >> n >> m;
 
-    int inicioX, inicioY, finX, finY;
-
+    int sx, sy, ex, ey;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             cin >> grid[i][j];
-            if (grid[i][j] == 'A') {
-                inicioX = i;
-                inicioY = j;
-            }
-            if (grid[i][j] == 'B') {
-                finX = i;
-                finY = j;
-            }
+            if (grid[i][j] == 'S') { sx = i; sy = j; }
+            if (grid[i][j] == 'E') { ex = i; ey = j; }
         }
     }
 
-    int resultado = bfsMatriz(inicioX, inicioY, finX, finY);
-
-    if (resultado == -1) {
-        cout << "IMPOSSIBLE" << endl;
-    } else {
-        cout << resultado << endl;
-    }
+    cout << bfsGrid(sx, sy, ex, ey) << endl;
 
     return 0;
 }
 ```
 
-## BFS con múltiples fuentes
-
-A veces necesitamos BFS desde múltiples puntos de inicio (por ejemplo, encontrar la distancia al punto más cercano de un conjunto):
-
-```cpp
-void bfsMultipleFuentes(vector<pair<int,int>>& fuentes, int n, int m) {
-    queue<pair<int, int>> cola;
-    memset(dist, -1, sizeof(dist));
-
-    // Agregar todas las fuentes a la cola
-    for (auto [x, y] : fuentes) {
-        cola.push({x, y});
-        dist[x][y] = 0;
-    }
-
-    while (!cola.empty()) {
-        auto [x, y] = cola.front();
-        cola.pop();
-
-        for (int i = 0; i < 4; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-
-            if (esValido(nx, ny) && dist[nx][ny] == -1) {
-                dist[nx][ny] = dist[x][y] + 1;
-                cola.push({nx, ny});
-            }
-        }
-    }
-}
+**Input de ejemplo:**
+```
+5 5
+S . . . .
+. # # # .
+. # . . .
+. # . # .
+. . . # E
 ```
 
-## 0-1 BFS
+## BFS desde múltiples fuentes
 
-Cuando el grafo tiene aristas con peso 0 o 1, podemos usar una deque en lugar de cola para obtener O(V + E):
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-vector<pair<int, int>> adj[100005];  // {vecino, peso}
-int dist[100005];
-
-void bfs01(int inicio, int n) {
-    fill(dist, dist + n + 1, INT_MAX);
-
-    deque<int> dq;
-    dq.push_back(inicio);
-    dist[inicio] = 0;
-
-    while (!dq.empty()) {
-        int nodo = dq.front();
-        dq.pop_front();
-
-        for (auto [vecino, peso] : adj[nodo]) {
-            if (dist[nodo] + peso < dist[vecino]) {
-                dist[vecino] = dist[nodo] + peso;
-
-                if (peso == 0) {
-                    dq.push_front(vecino);  // Peso 0: al frente
-                } else {
-                    dq.push_back(vecino);   // Peso 1: al final
-                }
-            }
-        }
-    }
-}
-```
-
-> 💡 **¿Por qué funciona?** Las aristas de peso 0 mantienen el nivel actual, mientras que las de peso 1 avanzan al siguiente nivel.
-
-## Problemas clásicos
-
-### 1. Componentes conexas
+A veces necesitas calcular la distancia desde **varios** puntos de partida simultáneamente. Solo agrega todos los orígenes a la cola al inicio.
 
 ```cpp
-int contarComponentes(int n) {
-    int componentes = 0;
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            bfs(i);
-            componentes++;
-        }
-    }
-
-    return componentes;
-}
-```
-
-### 2. Verificar si el grafo es bipartito
-
-Un grafo es bipartito si se puede colorear con 2 colores sin que dos nodos adyacentes tengan el mismo color.
-
-```cpp
-int color[100005];
-
-bool esBipartito(int inicio, int n) {
-    fill(color, color + n + 1, -1);
-
+void bfsMultiple(vector<int> &fuentes) {
     queue<int> cola;
-    cola.push(inicio);
-    color[inicio] = 0;
+    for (int f : fuentes) {
+        cola.push(f);
+        visitado[f] = true;
+        distancia[f] = 0;
+    }
 
     while (!cola.empty()) {
-        int nodo = cola.front();
+        int actual = cola.front();
         cola.pop();
-
-        for (int vecino : adj[nodo]) {
-            if (color[vecino] == -1) {
-                color[vecino] = 1 - color[nodo];
+        for (int vecino : adj[actual]) {
+            if (!visitado[vecino]) {
+                visitado[vecino] = true;
+                distancia[vecino] = distancia[actual] + 1;
                 cola.push(vecino);
-            } else if (color[vecino] == color[nodo]) {
-                return false;  // Conflicto de colores
-            }
-        }
-    }
-
-    return true;
-}
-```
-
-### 3. Llenar con agua (Flood Fill)
-
-```cpp
-void floodFill(int x, int y, char original, char nuevo) {
-    if (!esValido(x, y) || grid[x][y] != original) return;
-
-    queue<pair<int, int>> cola;
-    cola.push({x, y});
-    grid[x][y] = nuevo;
-
-    while (!cola.empty()) {
-        auto [cx, cy] = cola.front();
-        cola.pop();
-
-        for (int i = 0; i < 4; i++) {
-            int nx = cx + dx[i];
-            int ny = cy + dy[i];
-
-            if (esValido(nx, ny) && grid[nx][ny] == original) {
-                grid[nx][ny] = nuevo;
-                cola.push({nx, ny});
             }
         }
     }
 }
 ```
 
-## Template completo
+Ejemplo: tienes un tablero con varios incendios. ¿Cuánto tarda cada celda en quemarse?
+
+## Complejidad
+
+- **Tiempo:** $O(V + E)$ donde $V$ = vértices y $E$ = aristas
+- **Espacio:** $O(V)$ para la cola y los arreglos auxiliares
+- En cuadrícula: $O(n \times m)$
+
+## Reconstruir el camino
+
+BFS encuentra la **distancia** más corta, pero ¿cómo saber **cuál** es el camino? Guarda el **padre** de cada nodo:
 
 ```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-int dist[MAXN];
-int padre[MAXN];
-bool vis[MAXN];
+int padre[100005];
 
 void bfs(int inicio) {
-    fill(dist, dist + MAXN, -1);
-    fill(padre, padre + MAXN, -1);
+    queue<int> cola;
+    cola.push(inicio);
+    visitado[inicio] = true;
+    padre[inicio] = -1;
 
-    queue<int> q;
-    q.push(inicio);
-    dist[inicio] = 0;
-
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-
-        for (int v : adj[u]) {
-            if (dist[v] == -1) {
-                dist[v] = dist[u] + 1;
-                padre[v] = u;
-                q.push(v);
+    while (!cola.empty()) {
+        int actual = cola.front();
+        cola.pop();
+        for (int vecino : adj[actual]) {
+            if (!visitado[vecino]) {
+                visitado[vecino] = true;
+                padre[vecino] = actual;
+                cola.push(vecino);
             }
         }
     }
 }
 
-vector<int> getPath(int destino) {
-    if (dist[destino] == -1) return {};
-    vector<int> path;
+void imprimirCamino(int destino) {
+    vector<int> camino;
     for (int v = destino; v != -1; v = padre[v]) {
-        path.push_back(v);
+        camino.push_back(v);
     }
-    reverse(path.begin(), path.end());
-    return path;
+    reverse(camino.begin(), camino.end());
+    for (int v : camino) cout << v << " ";
+    cout << endl;
 }
+```
+
+## Ejercicio de práctica
+
+Dada una cuadrícula de N×M, encuentra la menor cantidad de pasos para ir de `S` a `E`. Los `#` son paredes y los `.` son caminos libres.
+
+<details>
+<summary>Ver solución</summary>
+
+Usa el BFS en cuadrícula que se mostró arriba. El truco es representar cada celda como un par `(fila, columna)` y explorar las 4 direcciones.
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <cstring>
+using namespace std;
+
+int n, m;
+char grid[1005][1005];
+int dist[1005][1005];
+
+int dx[] = {-1, 1, 0, 0};
+int dy[] = {0, 0, -1, 1};
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int n, m;
     cin >> n >> m;
+    int sx, sy, ex, ey;
 
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++) {
+            cin >> grid[i][j];
+            if (grid[i][j] == 'S') { sx = i; sy = j; }
+            if (grid[i][j] == 'E') { ex = i; ey = j; }
+        }
+
+    memset(dist, -1, sizeof(dist));
+    queue<pair<int,int>> q;
+    q.push({sx, sy});
+    dist[sx][sy] = 0;
+
+    while (!q.empty()) {
+        auto [x, y] = q.front(); q.pop();
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d], ny = y + dy[d];
+            if (nx >= 0 && nx < n && ny >= 0 && ny < m
+                && grid[nx][ny] != '#' && dist[nx][ny] == -1) {
+                dist[nx][ny] = dist[x][y] + 1;
+                q.push({nx, ny});
+            }
+        }
     }
 
-    bfs(1);
-
-    // Ejemplo: camino más corto de 1 a n
-    vector<int> camino = getPath(n);
-    if (camino.empty()) {
-        cout << "IMPOSSIBLE\n";
-    } else {
-        cout << camino.size() << "\n";
-        for (int v : camino) cout << v << " ";
-        cout << "\n";
-    }
-
+    cout << dist[ex][ey] << endl;
     return 0;
 }
 ```
 
-## Resumen
+</details>
 
-| Característica | BFS |
-|----------------|-----|
-| Estructura | Cola (FIFO) |
-| Orden de visita | Por niveles |
-| Camino más corto | ✅ En grafos sin peso |
-| Complejidad | $O(V + E)$ |
-| Espacio | $O(V)$ |
+## Siguiente paso
 
-## Ejercicios recomendados
-
-1. [CSES - Labyrinth](https://cses.fi/problemset/task/1193)
-2. [CSES - Message Route](https://cses.fi/problemset/task/1667)
-3. [CSES - Building Teams](https://cses.fi/problemset/task/1668)
-4. [LeetCode - 01 Matrix](https://leetcode.com/problems/01-matrix/)
-5. [Codeforces - Fire](https://codeforces.com/problemset/problem/1293/A)
+Aprende **Búsqueda en Profundidad (DFS)**, la contraparte de BFS que explora lo más lejos posible antes de retroceder.

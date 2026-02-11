@@ -1,499 +1,247 @@
 ---
 title: "Implementación de Heap"
-description: "Aprende a implementar un heap (montículo) desde cero y entiende priority_queue"
+description: "Construye y usa un heap (montículo) para acceder al mínimo o máximo eficientemente"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["heap", "montículo", "priority-queue", "estructuras-de-datos"]
-syllabusId: 54
-order: 2
+tags: ["c++", "heap", "priority queue", "montículo"]
+syllabusId: 53
 ---
 
 ## ¿Qué es un Heap?
 
-Un **heap** (montículo) es un árbol binario completo que satisface la **propiedad de heap**:
+Un **heap** (montículo) es un árbol binario **casi completo** donde cada padre es mayor (max-heap) o menor (min-heap) que sus hijos.
 
-- **Max-Heap:** Cada padre es mayor o igual que sus hijos
-- **Min-Heap:** Cada padre es menor o igual que sus hijos
+**Analogía:** Imagina una pirámide donde el jefe más importante está arriba, y cada empleado está arriba de los menos importantes que él. El CEO (raíz) es siempre el más importante.
 
-```
-Max-Heap:          Min-Heap:
-      90                 10
-     /  \               /  \
-   80    70           20    30
-  / \   /            / \   /
- 50 60 65           40 50 35
-```
-
-## ¿Para qué sirve?
-
-| Operación | Complejidad |
-|-----------|-------------|
-| Obtener máximo/mínimo | $O(1)$ |
-| Insertar | $O(\log n)$ |
-| Eliminar máximo/mínimo | $O(\log n)$ |
-| Construir desde array | $O(n)$ |
-
-Ideal para:
-- Encontrar el k-ésimo elemento más grande/pequeño
-- Ordenamiento (HeapSort)
-- Algoritmos de Dijkstra y Prim
-- Merge de k listas ordenadas
-
-## Representación en array
-
-Almacenamos el heap en un array usando estas fórmulas (indexando desde 1):
+### Max-heap
 
 ```
-Array:    [_, 90, 80, 70, 50, 60, 65]
-Índices:      1   2   3   4   5   6
-
-        90 (índice 1)
+        50
        /  \
-     80    70  (índices 2, 3)
-    / \    /
-   50 60  65   (índices 4, 5, 6)
+     30    40
+    / \   /
+   10 20 15
 ```
 
-```cpp
-int padre(int i) { return i / 2; }
-int hijoIzq(int i) { return 2 * i; }
-int hijoDer(int i) { return 2 * i + 1; }
+Cada padre ≥ sus hijos. La raíz es el **máximo**.
+
+### Min-heap
+
+```
+        5
+       / \
+     10   8
+    / \  /
+   15 20 12
 ```
 
-## Implementación de Max-Heap
+Cada padre ≤ sus hijos. La raíz es el **mínimo**.
+
+## ¿Por qué usar un Heap?
+
+| Operación | Heap | Arreglo ordenado | Arreglo no ordenado |
+|-----------|------|-------------------|---------------------|
+| Insertar | $O(\log n)$ | $O(n)$ | $O(1)$ |
+| Obtener máx/mín | $O(1)$ | $O(1)$ | $O(n)$ |
+| Eliminar máx/mín | $O(\log n)$ | $O(1)$ o $O(n)$ | $O(n)$ |
+
+El heap es perfecto cuando necesitas acceder repetidamente al mayor o menor elemento.
+
+## Representación con arreglo
+
+Un heap se almacena en un arreglo (no necesitas punteros):
+
+```
+Índice:  0   1   2   3   4   5
+Valor:  50  30  40  10  20  15
+```
+
+Para un nodo en el índice `i`:
+- **Padre:** `(i - 1) / 2`
+- **Hijo izquierdo:** `2 * i + 1`
+- **Hijo derecho:** `2 * i + 2`
+
+## Implementación manual (max-heap)
 
 ```cpp
 class MaxHeap {
-private:
     vector<int> heap;
-    int tam;
 
-    void subir(int i) {
-        while (i > 1 && heap[padre(i)] < heap[i]) {
-            swap(heap[padre(i)], heap[i]);
-            i = padre(i);
+    void subirNodo(int i) {
+        while (i > 0) {
+            int padre = (i - 1) / 2;
+            if (heap[i] > heap[padre]) {
+                swap(heap[i], heap[padre]);
+                i = padre;
+            } else break;
         }
     }
 
-    void bajar(int i) {
+    void bajarNodo(int i) {
+        int n = heap.size();
         while (true) {
             int mayor = i;
-            int izq = hijoIzq(i);
-            int der = hijoDer(i);
+            int izq = 2 * i + 1;
+            int der = 2 * i + 2;
 
-            if (izq <= tam && heap[izq] > heap[mayor]) {
-                mayor = izq;
-            }
-            if (der <= tam && heap[der] > heap[mayor]) {
-                mayor = der;
-            }
+            if (izq < n && heap[izq] > heap[mayor]) mayor = izq;
+            if (der < n && heap[der] > heap[mayor]) mayor = der;
 
-            if (mayor == i) break;
-
-            swap(heap[i], heap[mayor]);
-            i = mayor;
+            if (mayor != i) {
+                swap(heap[i], heap[mayor]);
+                i = mayor;
+            } else break;
         }
     }
-
-    int padre(int i) { return i / 2; }
-    int hijoIzq(int i) { return 2 * i; }
-    int hijoDer(int i) { return 2 * i + 1; }
 
 public:
-    MaxHeap() {
-        heap.push_back(0);  // Índice 0 no se usa
-        tam = 0;
+    void insertar(int val) {
+        heap.push_back(val);
+        subirNodo(heap.size() - 1);
     }
 
-    void insertar(int valor) {
-        heap.push_back(valor);
-        tam++;
-        subir(tam);
+    int maximo() {
+        return heap[0];
     }
 
-    int obtenerMax() {
-        if (tam == 0) throw runtime_error("Heap vacío");
-        return heap[1];
-    }
-
-    int extraerMax() {
-        if (tam == 0) throw runtime_error("Heap vacío");
-
-        int maximo = heap[1];
-        heap[1] = heap[tam];
+    void eliminarMaximo() {
+        heap[0] = heap.back();
         heap.pop_back();
-        tam--;
-
-        if (tam > 0) {
-            bajar(1);
-        }
-
-        return maximo;
+        if (!heap.empty()) bajarNodo(0);
     }
 
-    bool vacio() { return tam == 0; }
-    int size() { return tam; }
+    int tamano() { return heap.size(); }
+    bool vacio() { return heap.empty(); }
 };
 ```
 
-### Uso
+### Insertar: "subir"
 
-```cpp
-int main() {
-    MaxHeap heap;
+1. Agrega el elemento al final del arreglo.
+2. Compara con su padre. Si es mayor, intercámbialos.
+3. Repite hasta que esté en su lugar.
 
-    heap.insertar(50);
-    heap.insertar(30);
-    heap.insertar(70);
-    heap.insertar(10);
-    heap.insertar(90);
+### Eliminar máximo: "bajar"
 
-    cout << "Máximo: " << heap.obtenerMax() << endl;  // 90
+1. Reemplaza la raíz con el último elemento.
+2. Compara con sus hijos. Intercambia con el mayor.
+3. Repite hasta que esté en su lugar.
 
-    while (!heap.vacio()) {
-        cout << heap.extraerMax() << " ";  // 90 70 50 30 10
-    }
-    cout << endl;
+## En la práctica: priority_queue
 
-    return 0;
-}
-```
-
-## Visualización de operaciones
-
-### Insertar
-
-```
-Heap inicial:     Insertar 85:        Subir (heapify up):
-      90                90                  90
-     /  \              /  \                /  \
-   80    70    →     80    70      →     85    70
-  / \               / \   /             / \   /
- 50 60            50 60 85            50 60 80
-
-1. Agregar al final
-2. Subir mientras sea mayor que su padre
-```
-
-### Extraer máximo
-
-```
-Heap inicial:     Mover último a raíz:   Bajar (heapify down):
-      90                65                   80
-     /  \              /  \                 /  \
-   80    70    →     80    70      →      65    70
-  / \   /           / \                  / \
- 50 60 65          50 60                50 60
-
-1. Guardar raíz (máximo)
-2. Mover último elemento a raíz
-3. Bajar mientras sea menor que algún hijo
-```
-
-## Min-Heap
-
-Simplemente invertimos las comparaciones:
-
-```cpp
-class MinHeap {
-private:
-    vector<int> heap;
-    int tam;
-
-    void subir(int i) {
-        while (i > 1 && heap[padre(i)] > heap[i]) {  // Cambio: > en vez de <
-            swap(heap[padre(i)], heap[i]);
-            i = padre(i);
-        }
-    }
-
-    void bajar(int i) {
-        while (true) {
-            int menor = i;  // Cambio: buscamos menor
-            int izq = hijoIzq(i);
-            int der = hijoDer(i);
-
-            if (izq <= tam && heap[izq] < heap[menor]) {  // Cambio: <
-                menor = izq;
-            }
-            if (der <= tam && heap[der] < heap[menor]) {  // Cambio: <
-                menor = der;
-            }
-
-            if (menor == i) break;
-
-            swap(heap[i], heap[menor]);
-            i = menor;
-        }
-    }
-
-    // ... resto igual
-};
-```
-
-## Usando priority_queue de STL
-
-En competencias, usa `priority_queue`:
+C++ tiene `priority_queue` que es un max-heap:
 
 ```cpp
 #include <queue>
+using namespace std;
 
-int main() {
-    // Max-heap (por defecto)
-    priority_queue<int> maxHeap;
+// Max-heap (default)
+priority_queue<int> maxPQ;
+maxPQ.push(10);
+maxPQ.push(30);
+maxPQ.push(20);
+cout << maxPQ.top() << endl;  // 30
+maxPQ.pop();  // Elimina el 30
 
-    maxHeap.push(50);
-    maxHeap.push(30);
-    maxHeap.push(70);
-
-    cout << maxHeap.top() << endl;  // 70
-    maxHeap.pop();
-    cout << maxHeap.top() << endl;  // 50
-
-    // Min-heap
-    priority_queue<int, vector<int>, greater<int>> minHeap;
-
-    minHeap.push(50);
-    minHeap.push(30);
-    minHeap.push(70);
-
-    cout << minHeap.top() << endl;  // 30
-
-    return 0;
-}
+// Min-heap
+priority_queue<int, vector<int>, greater<int>> minPQ;
+minPQ.push(10);
+minPQ.push(30);
+minPQ.push(20);
+cout << minPQ.top() << endl;  // 10
 ```
 
-### Con pares
+## Heapsort
+
+Ordena un arreglo construyendo un heap y extrayendo el máximo repetidamente. Complejidad: $O(n \log n)$.
 
 ```cpp
-// Ordenar por primer elemento (menor primero), luego por segundo
-priority_queue<
-    pair<int, int>,
-    vector<pair<int, int>>,
-    greater<pair<int, int>>
-> pq;
+void heapify(vector<int> &v, int n, int i) {
+    int mayor = i;
+    int izq = 2 * i + 1, der = 2 * i + 2;
 
-pq.push({3, 100});
-pq.push({1, 200});
-pq.push({2, 300});
+    if (izq < n && v[izq] > v[mayor]) mayor = izq;
+    if (der < n && v[der] > v[mayor]) mayor = der;
 
-while (!pq.empty()) {
-    auto [a, b] = pq.top();
-    pq.pop();
-    cout << a << " " << b << endl;
-}
-// Salida: 1 200, 2 300, 3 100
-```
-
-### Con estructuras personalizadas
-
-```cpp
-struct Tarea {
-    int prioridad;
-    string nombre;
-};
-
-// Comparador: mayor prioridad primero
-struct Comparador {
-    bool operator()(const Tarea& a, const Tarea& b) {
-        return a.prioridad < b.prioridad;  // < para max-heap
-    }
-};
-
-priority_queue<Tarea, vector<Tarea>, Comparador> pq;
-
-pq.push({3, "Baja"});
-pq.push({10, "Alta"});
-pq.push({5, "Media"});
-
-while (!pq.empty()) {
-    cout << pq.top().nombre << " (" << pq.top().prioridad << ")" << endl;
-    pq.pop();
-}
-// Alta (10), Media (5), Baja (3)
-```
-
-## Construir heap en O(n)
-
-En lugar de n inserciones O(log n), podemos construir en O(n):
-
-```cpp
-void construirHeap(vector<int>& arr) {
-    int n = arr.size();
-    // Empezar desde el último nodo no-hoja
-    for (int i = n / 2; i >= 1; i--) {
-        bajar(arr, i, n);
+    if (mayor != i) {
+        swap(v[i], v[mayor]);
+        heapify(v, n, mayor);
     }
 }
 
-void bajar(vector<int>& arr, int i, int n) {
-    while (true) {
-        int mayor = i;
-        int izq = 2 * i;
-        int der = 2 * i + 1;
-
-        if (izq <= n && arr[izq] > arr[mayor]) mayor = izq;
-        if (der <= n && arr[der] > arr[mayor]) mayor = der;
-
-        if (mayor == i) break;
-        swap(arr[i], arr[mayor]);
-        i = mayor;
-    }
-}
-```
-
-## HeapSort
-
-Ordenar usando heap en O(n log n):
-
-```cpp
-void heapSort(vector<int>& arr) {
-    int n = arr.size() - 1;  // Ignoramos índice 0
+void heapSort(vector<int> &v) {
+    int n = v.size();
 
     // Construir max-heap
-    for (int i = n / 2; i >= 1; i--) {
-        bajar(arr, i, n);
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(v, n, i);
     }
 
-    // Extraer elementos uno por uno
-    for (int i = n; i > 1; i--) {
-        swap(arr[1], arr[i]);  // Mover máximo al final
-        bajar(arr, 1, i - 1);  // Restaurar heap
+    // Extraer uno por uno
+    for (int i = n - 1; i > 0; i--) {
+        swap(v[0], v[i]);
+        heapify(v, i, 0);
     }
 }
 ```
 
-## Problemas clásicos
+## Aplicaciones en competencias
 
 ### K elementos más grandes
 
 ```cpp
-vector<int> kMasGrandes(vector<int>& nums, int k) {
-    // Min-heap de tamaño k
-    priority_queue<int, vector<int>, greater<int>> pq;
+// Los K más grandes de un arreglo
+priority_queue<int, vector<int>, greater<int>> minPQ;  // min-heap de tamaño K
 
-    for (int num : nums) {
-        pq.push(num);
-        if (pq.size() > k) {
-            pq.pop();  // Eliminar el menor
-        }
-    }
-
-    vector<int> resultado;
-    while (!pq.empty()) {
-        resultado.push_back(pq.top());
-        pq.pop();
-    }
-    return resultado;
+for (int x : v) {
+    minPQ.push(x);
+    if (minPQ.size() > k) minPQ.pop();
 }
+// El min-heap contiene los K más grandes
 ```
 
-### Mediana en stream
+### Mediana dinámica
+
+Mantén dos heaps: un max-heap para la mitad inferior y un min-heap para la superior.
+
+## Ejercicio de práctica
+
+Implementa un sistema que soporte:
+1. Insertar un número
+2. Obtener el mínimo actual
+3. Eliminar el mínimo
+
+<details>
+<summary>Ver solución</summary>
 
 ```cpp
-class MedianFinder {
-    priority_queue<int> maxHeap;  // Mitad menor
-    priority_queue<int, vector<int>, greater<int>> minHeap;  // Mitad mayor
-
-public:
-    void agregar(int num) {
-        maxHeap.push(num);
-        minHeap.push(maxHeap.top());
-        maxHeap.pop();
-
-        if (minHeap.size() > maxHeap.size()) {
-            maxHeap.push(minHeap.top());
-            minHeap.pop();
-        }
-    }
-
-    double mediana() {
-        if (maxHeap.size() > minHeap.size()) {
-            return maxHeap.top();
-        }
-        return (maxHeap.top() + minHeap.top()) / 2.0;
-    }
-};
-```
-
-### Merge k listas ordenadas
-
-```cpp
-ListNode* mergeKListas(vector<ListNode*>& listas) {
-    auto cmp = [](ListNode* a, ListNode* b) {
-        return a->val > b->val;  // Min-heap
-    };
-    priority_queue<ListNode*, vector<ListNode*>, decltype(cmp)> pq(cmp);
-
-    for (auto lista : listas) {
-        if (lista) pq.push(lista);
-    }
-
-    ListNode dummy(0);
-    ListNode* actual = &dummy;
-
-    while (!pq.empty()) {
-        ListNode* nodo = pq.top();
-        pq.pop();
-
-        actual->next = nodo;
-        actual = actual->next;
-
-        if (nodo->next) {
-            pq.push(nodo->next);
-        }
-    }
-
-    return dummy.next;
-}
-```
-
-## Template para competencias
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <queue>
 using namespace std;
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+    int q;
+    cin >> q;
 
-    // Max-heap
-    priority_queue<int> maxPQ;
-
-    // Min-heap
     priority_queue<int, vector<int>, greater<int>> minPQ;
 
-    // Con pares (ordenar por distancia, luego por nodo)
-    priority_queue<
-        pair<int, int>,
-        vector<pair<int, int>>,
-        greater<pair<int, int>>
-    > dijkstraPQ;
+    while (q--) {
+        int op;
+        cin >> op;
 
-    // Operaciones comunes
-    // pq.push(x);     // Insertar
-    // pq.top();       // Ver tope
-    // pq.pop();       // Eliminar tope
-    // pq.empty();     // ¿Está vacío?
-    // pq.size();      // Tamaño
+        if (op == 1) {
+            int x;
+            cin >> x;
+            minPQ.push(x);
+        } else if (op == 2) {
+            cout << minPQ.top() << endl;
+        } else {
+            minPQ.pop();
+        }
+    }
 
     return 0;
 }
 ```
 
-## Resumen
-
-| Estructura | Obtener extremo | Insertar | Eliminar |
-|------------|-----------------|----------|----------|
-| Array no ordenado | $O(n)$ | $O(1)$ | $O(n)$ |
-| Array ordenado | $O(1)$ | $O(n)$ | $O(1)$ |
-| **Heap** | $O(1)$ | $O(\log n)$ | $O(\log n)$ |
-
-## Ejercicios recomendados
-
-1. [LeetCode - Kth Largest Element](https://leetcode.com/problems/kth-largest-element-in-an-array/)
-2. [LeetCode - Find Median from Data Stream](https://leetcode.com/problems/find-median-from-data-stream/)
-3. [LeetCode - Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/)
-4. [CSES - Traffic Lights](https://cses.fi/problemset/task/1163)
-5. [Codeforces - Deque Summations](https://codeforces.com/problemset/problem/1579/E1)
+</details>

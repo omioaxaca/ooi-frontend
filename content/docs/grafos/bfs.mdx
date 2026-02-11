@@ -1,267 +1,43 @@
 ---
-title: "BFS - Búsqueda en Anchura"
-description: "Aprende el algoritmo BFS para recorrer grafos y encontrar caminos mínimos"
+title: "BFS en Grafos"
+description: "Búsqueda en amplitud aplicada a grafos para caminos más cortos y exploraciones nivel a nivel"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "BFS", "recorrido", "camino-mínimo"]
-syllabusId: 75
-order: 2
+tags: ["c++", "BFS", "grafos", "camino más corto"]
+syllabusId: 55
 ---
 
-## ¿Qué es BFS?
+## BFS en grafos: repaso rápido
 
-**BFS (Breadth-First Search)** es un algoritmo que recorre un grafo nivel por nivel, explorando primero todos los vecinos antes de pasar a los vecinos de los vecinos.
+Ya vimos BFS en la sección de búsquedas. Aquí nos enfocamos en sus **aplicaciones específicas en grafos**.
 
-## Características
-
-- Usa una **cola (queue)** para procesar nodos
-- Encuentra el **camino más corto** en grafos sin peso
-- Complejidad: **O(V + E)**
-
-## Implementación básica
+## Camino más corto (sin pesos)
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <queue>
 using namespace std;
 
 const int MAXN = 100005;
 vector<int> adj[MAXN];
-bool visitado[MAXN];
-int distancia[MAXN];
-
-void bfs(int inicio) {
-    queue<int> q;
-    q.push(inicio);
-    visitado[inicio] = true;
-    distancia[inicio] = 0;
-
-    while (!q.empty()) {
-        int actual = q.front();
-        q.pop();
-
-        for (int vecino : adj[actual]) {
-            if (!visitado[vecino]) {
-                visitado[vecino] = true;
-                distancia[vecino] = distancia[actual] + 1;
-                q.push(vecino);
-            }
-        }
-    }
-}
-
-int main() {
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    bfs(1);
-
-    // Distancia del nodo 1 a todos los demás
-    for (int i = 1; i <= n; i++) {
-        cout << "Distancia a " << i << ": " << distancia[i] << "\n";
-    }
-
-    return 0;
-}
-```
-
-## Reconstruir camino
-
-Para obtener el camino, guardamos el padre de cada nodo:
-
-```cpp
+int dist[MAXN];
 int padre[MAXN];
+bool vis[MAXN];
 
-void bfs(int inicio) {
+void bfs(int inicio, int n) {
+    fill(dist, dist + n + 1, -1);
+    fill(padre, padre + n + 1, -1);
+
     queue<int> q;
     q.push(inicio);
-    visitado[inicio] = true;
-    padre[inicio] = -1;
-
-    while (!q.empty()) {
-        int actual = q.front();
-        q.pop();
-
-        for (int vecino : adj[actual]) {
-            if (!visitado[vecino]) {
-                visitado[vecino] = true;
-                padre[vecino] = actual;
-                q.push(vecino);
-            }
-        }
-    }
-}
-
-vector<int> reconstruirCamino(int destino) {
-    vector<int> camino;
-
-    if (!visitado[destino]) return camino;  // No existe camino
-
-    for (int v = destino; v != -1; v = padre[v]) {
-        camino.push_back(v);
-    }
-
-    reverse(camino.begin(), camino.end());
-    return camino;
-}
-```
-
-## BFS en matriz (grid)
-
-Muy común en problemas de laberintos:
-
-```cpp
-int n, m;
-char grid[1005][1005];
-int dist[1005][1005];
-
-int dx[] = {0, 0, 1, -1};  // Direcciones: derecha, izquierda, abajo, arriba
-int dy[] = {1, -1, 0, 0};
-
-bool valido(int x, int y) {
-    return x >= 0 && x < n && y >= 0 && y < m && grid[x][y] != '#';
-}
-
-int bfsGrid(int inicioX, int inicioY, int finX, int finY) {
-    memset(dist, -1, sizeof(dist));
-
-    queue<pair<int, int>> q;
-    q.push({inicioX, inicioY});
-    dist[inicioX][inicioY] = 0;
-
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
-
-        if (x == finX && y == finY) {
-            return dist[x][y];
-        }
-
-        for (int d = 0; d < 4; d++) {
-            int nx = x + dx[d];
-            int ny = y + dy[d];
-
-            if (valido(nx, ny) && dist[nx][ny] == -1) {
-                dist[nx][ny] = dist[x][y] + 1;
-                q.push({nx, ny});
-            }
-        }
-    }
-
-    return -1;  // No hay camino
-}
-```
-
-## BFS 0-1
-
-Para grafos donde las aristas tienen peso 0 o 1, usamos un **deque**:
-
-```cpp
-int bfs01(int inicio, int fin) {
-    vector<int> dist(n + 1, INT_MAX);
-    deque<int> dq;
-
     dist[inicio] = 0;
-    dq.push_front(inicio);
-
-    while (!dq.empty()) {
-        int u = dq.front();
-        dq.pop_front();
-
-        for (auto [v, peso] : adj[u]) {  // adj tiene {vecino, peso}
-            if (dist[u] + peso < dist[v]) {
-                dist[v] = dist[u] + peso;
-                if (peso == 0) {
-                    dq.push_front(v);  // Peso 0: al frente
-                } else {
-                    dq.push_back(v);   // Peso 1: al final
-                }
-            }
-        }
-    }
-
-    return dist[fin];
-}
-```
-
-## BFS Multi-fuente
-
-Iniciar BFS desde múltiples nodos simultáneamente:
-
-```cpp
-void bfsMultiFuente(vector<int>& fuentes) {
-    queue<int> q;
-
-    for (int s : fuentes) {
-        q.push(s);
-        visitado[s] = true;
-        distancia[s] = 0;
-    }
 
     while (!q.empty()) {
-        int actual = q.front();
-        q.pop();
-
-        for (int vecino : adj[actual]) {
-            if (!visitado[vecino]) {
-                visitado[vecino] = true;
-                distancia[vecino] = distancia[actual] + 1;
-                q.push(vecino);
-            }
-        }
-    }
-}
-```
-
-## Problema: Contar componentes conexas
-
-```cpp
-int contarComponentes(int n) {
-    int componentes = 0;
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            bfs(i);
-            componentes++;
-        }
-    }
-
-    return componentes;
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-bool visitado[MAXN];
-int distancia[MAXN], padre[MAXN];
-
-void bfs(int inicio) {
-    queue<int> q;
-    q.push(inicio);
-    visitado[inicio] = true;
-    distancia[inicio] = 0;
-    padre[inicio] = -1;
-
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-
+        int u = q.front(); q.pop();
         for (int v : adj[u]) {
-            if (!visitado[v]) {
-                visitado[v] = true;
-                distancia[v] = distancia[u] + 1;
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
                 padre[v] = u;
                 q.push(v);
             }
@@ -269,9 +45,8 @@ void bfs(int inicio) {
     }
 }
 
-vector<int> getCamino(int destino) {
+vector<int> reconstruirCamino(int destino) {
     vector<int> camino;
-    if (!visitado[destino]) return camino;
     for (int v = destino; v != -1; v = padre[v]) {
         camino.push_back(v);
     }
@@ -280,9 +55,6 @@ vector<int> getCamino(int destino) {
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n, m;
     cin >> n >> m;
 
@@ -293,25 +65,155 @@ int main() {
         adj[v].push_back(u);
     }
 
-    bfs(1);
+    int origen, destino;
+    cin >> origen >> destino;
 
-    // Imprimir distancias
-    for (int i = 1; i <= n; i++) {
-        if (visitado[i]) {
-            cout << distancia[i] << " ";
-        } else {
-            cout << -1 << " ";
+    bfs(origen, n);
+
+    if (dist[destino] == -1) {
+        cout << "No hay camino" << endl;
+    } else {
+        cout << "Distancia: " << dist[destino] << endl;
+        cout << "Camino: ";
+        for (int v : reconstruirCamino(destino)) {
+            cout << v << " ";
         }
+        cout << endl;
     }
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+## BFS 0-1
 
-1. [CSES - Labyrinth](https://cses.fi/problemset/task/1193)
-2. [CSES - Message Route](https://cses.fi/problemset/task/1667)
-3. [CSES - Monsters](https://cses.fi/problemset/task/1194)
-4. [Codeforces - Three States](https://codeforces.com/problemset/problem/590/C)
-5. [LeetCode - Shortest Path in Binary Matrix](https://leetcode.com/problems/shortest-path-in-binary-matrix/)
+Cuando las aristas tienen peso **0 o 1**, puedes usar una variante de BFS con un **deque** en lugar de una cola normal:
+
+```cpp
+void bfs01(int inicio, int n) {
+    fill(dist, dist + n + 1, INT_MAX);
+    deque<int> dq;
+
+    dist[inicio] = 0;
+    dq.push_front(inicio);
+
+    while (!dq.empty()) {
+        int u = dq.front(); dq.pop_front();
+
+        for (auto [v, w] : adj[u]) {  // adj almacena {vecino, peso}
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                if (w == 0) {
+                    dq.push_front(v);  // Peso 0: alta prioridad
+                } else {
+                    dq.push_back(v);   // Peso 1: baja prioridad
+                }
+            }
+        }
+    }
+}
+```
+
+Complejidad: $O(V + E)$, igual que BFS normal.
+
+## Verificar si un grafo es bipartito
+
+Un grafo es **bipartito** si puedes colorear sus nodos con 2 colores sin que dos nodos adyacentes tengan el mismo color.
+
+```cpp
+int color[MAXN];  // -1 = sin color
+
+bool esBipartito(int inicio) {
+    queue<int> q;
+    q.push(inicio);
+    color[inicio] = 0;
+
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : adj[u]) {
+            if (color[v] == -1) {
+                color[v] = 1 - color[u];
+                q.push(v);
+            } else if (color[v] == color[u]) {
+                return false;  // Conflicto
+            }
+        }
+    }
+    return true;
+}
+```
+
+## BFS multi-fuente
+
+Calcular la distancia mínima desde **cualquier** fuente:
+
+```cpp
+void bfsMultiFuente(vector<int> &fuentes, int n) {
+    fill(dist, dist + n + 1, -1);
+    queue<int> q;
+
+    for (int f : fuentes) {
+        dist[f] = 0;
+        q.push(f);
+    }
+
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : adj[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
+                q.push(v);
+            }
+        }
+    }
+}
+```
+
+## Ejercicio de práctica
+
+Dado un grafo no dirigido con N nodos y M aristas, encuentra la distancia más corta entre los nodos S y T. Si no hay camino, imprime -1.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+vector<int> adj[100005];
+int dist[100005];
+
+int main() {
+    int n, m, s, t;
+    cin >> n >> m >> s >> t;
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    fill(dist, dist + n + 1, -1);
+    queue<int> q;
+    q.push(s);
+    dist[s] = 0;
+
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : adj[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
+                q.push(v);
+            }
+        }
+    }
+
+    cout << dist[t] << endl;
+    return 0;
+}
+```
+
+</details>

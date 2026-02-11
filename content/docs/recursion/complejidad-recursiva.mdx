@@ -1,288 +1,147 @@
 ---
-title: "Complejidad de Algoritmos Recursivos"
+title: "Complejidad de la Recursión"
 description: "Aprende a analizar la complejidad temporal y espacial de funciones recursivas"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "recursión", "complejidad", "análisis", "algoritmos"]
-syllabusId: 35
+tags: ["c++", "complejidad", "recursión", "análisis"]
+syllabusId: 28
 ---
 
-## Análisis de recursión
+## ¿Por qué analizar la recursión?
 
-Analizar la complejidad de funciones recursivas requiere:
-1. Identificar la relación de recurrencia
-2. Resolver la recurrencia o aplicar el teorema maestro
+Cuando escribes una función recursiva, necesitas saber: ¿cuánto tiempo tarda? ¿cuánta memoria usa? Esto es especialmente importante en competencias, donde hay límites estrictos de tiempo y memoria.
+
+## Método 1: Árbol de recursión
+
+Dibuja todas las llamadas como un árbol y cuenta:
+
+### Factorial: $O(n)$
+
+```
+factorial(5)
+└── factorial(4)
+    └── factorial(3)
+        └── factorial(2)
+            └── factorial(1)
+                └── factorial(0)  ← caso base
+```
+
+Es una cadena lineal de $n+1$ llamadas. Cada llamada hace $O(1)$ trabajo. **Total: $O(n)$.**
+
+### Fibonacci (sin memo): $O(2^n)$
+
+```
+fib(5)
+├── fib(4)
+│   ├── fib(3)
+│   │   ├── fib(2) ──...
+│   │   └── fib(1)
+│   └── fib(2) ──...
+└── fib(3)
+    ├── fib(2) ──...
+    └── fib(1)
+```
+
+Es un árbol binario de profundidad $n$. Tiene hasta $2^n$ nodos. **Total: $O(2^n)$.**
+
+### Fibonacci (con memo): $O(n)$
+
+Cada valor de 0 a n se calcula exactamente una vez. **Total: $O(n)$.**
+
+## Método 2: Relación de recurrencia
+
+Expresa el tiempo como una fórmula recursiva y resuélvela:
+
+### Ejemplo: Búsqueda binaria
+
+```cpp
+int busqueda(vector<int> &v, int lo, int hi, int x) {
+    if (lo > hi) return -1;
+    int mid = (lo + hi) / 2;
+    if (v[mid] == x) return mid;
+    if (v[mid] < x) return busqueda(v, mid+1, hi, x);
+    return busqueda(v, lo, mid-1, x);
+}
+```
+
+Recurrencia: $T(n) = T(n/2) + O(1)$
+
+En cada llamada, el problema se reduce a la mitad. Después de $k$ pasos, $n / 2^k = 1$, así que $k = \log_2 n$.
+
+**Total: $O(\log n)$.**
+
+### Ejemplo: Merge Sort
+
+```cpp
+void mergeSort(vector<int> &v, int lo, int hi) {
+    if (lo >= hi) return;
+    int mid = (lo + hi) / 2;
+    mergeSort(v, lo, mid);      // Primera mitad
+    mergeSort(v, mid+1, hi);    // Segunda mitad
+    merge(v, lo, mid, hi);      // Combinar: O(n)
+}
+```
+
+Recurrencia: $T(n) = 2T(n/2) + O(n)$
+
+Dos subproblemas de tamaño $n/2$, más $O(n)$ para combinar. **Total: $O(n \log n)$.**
 
 ## Recurrencias comunes
 
-### Recursión lineal
-
-```cpp
-void f(int n) {
-    if (n == 0) return;
-    // O(1) trabajo
-    f(n - 1);  // Una llamada
-}
-```
-
-**Recurrencia:** $T(n) = T(n-1) + O(1)$
-
-**Complejidad:** $O(n)$
-
-### Recursión con trabajo lineal
-
-```cpp
-void f(int n) {
-    if (n == 0) return;
-    for (int i = 0; i < n; i++) {  // O(n) trabajo
-        // ...
-    }
-    f(n - 1);
-}
-```
-
-**Recurrencia:** $T(n) = T(n-1) + O(n)$
-
-**Complejidad:** $O(n^2)$
-
-### División por 2 (Búsqueda binaria)
-
-```cpp
-int buscar(vector<int>& arr, int x, int l, int r) {
-    if (l > r) return -1;
-    int mid = (l + r) / 2;  // O(1) trabajo
-    if (arr[mid] == x) return mid;
-    if (arr[mid] < x) return buscar(arr, x, mid+1, r);
-    return buscar(arr, x, l, mid-1);  // Una llamada
-}
-```
-
-**Recurrencia:** $T(n) = T(n/2) + O(1)$
-
-**Complejidad:** $O(\log n)$
-
-### Divide y vencerás (Merge Sort)
-
-```cpp
-void mergeSort(int l, int r) {
-    if (l >= r) return;
-    int mid = (l + r) / 2;
-    mergeSort(l, mid);       // T(n/2)
-    mergeSort(mid + 1, r);   // T(n/2)
-    merge(l, mid, r);        // O(n) trabajo
-}
-```
-
-**Recurrencia:** $T(n) = 2T(n/2) + O(n)$
-
-**Complejidad:** $O(n \log n)$
-
-## El Teorema Maestro
-
-Para recurrencias de la forma: $T(n) = aT(n/b) + f(n)$
-
-Donde:
-- $a$ = número de subproblemas
-- $b$ = factor de reducción
-- $f(n)$ = trabajo fuera de la recursión
-
-### Casos del teorema
-
-Sea $c = \log_b a$:
-
-1. **Si $f(n) = O(n^{c-\epsilon})$:** $T(n) = \Theta(n^c)$
-2. **Si $f(n) = \Theta(n^c)$:** $T(n) = \Theta(n^c \log n)$
-3. **Si $f(n) = \Omega(n^{c+\epsilon})$:** $T(n) = \Theta(f(n))$
-
-### Ejemplos de aplicación
-
-| Recurrencia | a | b | f(n) | $n^c$ | Caso | Complejidad |
-|-------------|---|---|------|-------|------|-------------|
-| $T(n) = T(n/2) + 1$ | 1 | 2 | 1 | 1 | 2 | $O(\log n)$ |
-| $T(n) = 2T(n/2) + n$ | 2 | 2 | n | n | 2 | $O(n \log n)$ |
-| $T(n) = 2T(n/2) + 1$ | 2 | 2 | 1 | n | 1 | $O(n)$ |
-| $T(n) = 4T(n/2) + n$ | 4 | 2 | n | $n^2$ | 1 | $O(n^2)$ |
-| $T(n) = 4T(n/2) + n^2$ | 4 | 2 | $n^2$ | $n^2$ | 2 | $O(n^2 \log n)$ |
-
-## Fibonacci: un análisis detallado
-
-### Sin memorización
-
-```cpp
-int fib(int n) {
-    if (n <= 1) return n;
-    return fib(n-1) + fib(n-2);
-}
-```
-
-**Recurrencia:** $T(n) = T(n-1) + T(n-2) + O(1)$
-
-**Complejidad:** $O(\phi^n) \approx O(1.618^n)$ - ¡Exponencial!
-
-**Cota superior:** $O(2^n)$
-
-### Con memorización
-
-```cpp
-int memo[N];
-int fib(int n) {
-    if (n <= 1) return n;
-    if (memo[n] != -1) return memo[n];
-    return memo[n] = fib(n-1) + fib(n-2);
-}
-```
-
-**Complejidad:** $O(n)$ - Cada estado se calcula exactamente una vez.
+| Recurrencia | Complejidad | Ejemplo |
+|------------|-------------|---------|
+| $T(n) = T(n-1) + O(1)$ | $O(n)$ | Factorial, búsqueda lineal recursiva |
+| $T(n) = T(n-1) + O(n)$ | $O(n^2)$ | Selection sort recursivo |
+| $T(n) = 2T(n-1) + O(1)$ | $O(2^n)$ | Fibonacci, torres de Hanoi |
+| $T(n) = T(n/2) + O(1)$ | $O(\log n)$ | Búsqueda binaria |
+| $T(n) = 2T(n/2) + O(n)$ | $O(n \log n)$ | Merge sort |
+| $T(n) = 2T(n/2) + O(1)$ | $O(n)$ | Recorrer árbol binario |
 
 ## Complejidad espacial
 
-La recursión usa espacio en la pila de llamadas:
+La recursión usa espacio en la **pila de llamadas**. La profundidad máxima de la pila = la profundidad del árbol de recursión.
+
+| Función | Profundidad de recursión | Espacio |
+|---------|------------------------|---------|
+| Factorial | $n$ | $O(n)$ |
+| Fibonacci (sin memo) | $n$ | $O(n)$ |
+| Búsqueda binaria | $\log n$ | $O(\log n)$ |
+| Merge sort | $\log n$ | $O(n)$ (por el arreglo auxiliar) |
+
+## Consejos prácticos
+
+1. **Si la recursión es lineal** (una sola llamada recursiva por nivel), la complejidad suele ser simple de analizar.
+
+2. **Si hay dos llamadas recursivas** (como Fibonacci), la complejidad crece exponencialmente sin memorización.
+
+3. **Con memorización**, la complejidad es: (número de estados) × (trabajo por estado).
+
+4. **En competencias**, si $n \leq 20$, puedes usar $O(2^n)$. Si $n \leq 10^6$, necesitas $O(n)$ o $O(n \log n)$.
+
+## Ejercicio de práctica
+
+Analiza la complejidad de esta función. ¿Cuántas veces se imprime "hola"?
 
 ```cpp
-void f(int n) {
-    if (n == 0) return;
-    f(n - 1);  // Llamada pendiente
-}
-```
-
-**Espacio:** $O(n)$ - profundidad máxima de la pila.
-
-### Recursión de cola (optimizable)
-
-```cpp
-// Puede optimizarse a O(1) espacio
-int factorialCola(int n, int acc = 1) {
-    if (n <= 1) return acc;
-    return factorialCola(n - 1, n * acc);
-}
-```
-
-### Divide y vencerás
-
-```cpp
-void mergeSort(int l, int r) {
-    if (l >= r) return;
-    int mid = (l + r) / 2;
-    mergeSort(l, mid);
-    mergeSort(mid + 1, r);
-    merge(l, mid, r);
-}
-```
-
-**Espacio en pila:** $O(\log n)$ - profundidad del árbol de recursión.
-
-## Análisis de árboles de recursión
-
-### Método del árbol
-
-Para $T(n) = 2T(n/2) + n$:
-
-```
-Nivel 0:       n                    -> n
-Nivel 1:    n/2   n/2               -> n
-Nivel 2:  n/4 n/4 n/4 n/4           -> n
-...
-Nivel k: ...                        -> n
-
-Profundidad: log₂(n)
-Total: n × log₂(n) = O(n log n)
-```
-
-### Ejemplo: Potencia rápida
-
-```cpp
-long long pot(long long a, long long n) {
-    if (n == 0) return 1;
-    long long medio = pot(a, n/2);  // Una llamada
-    return (n % 2 == 0) ? medio * medio : medio * medio * a;
-}
-```
-
-**Análisis:**
-- Una llamada recursiva
-- Problema se reduce a la mitad
-- Trabajo O(1) por nivel
-
-**Complejidad:** $O(\log n)$
-
-## Resumen de complejidades
-
-| Patrón | Recurrencia | Complejidad |
-|--------|-------------|-------------|
-| Lineal simple | $T(n) = T(n-1) + O(1)$ | $O(n)$ |
-| Lineal con trabajo lineal | $T(n) = T(n-1) + O(n)$ | $O(n^2)$ |
-| Búsqueda binaria | $T(n) = T(n/2) + O(1)$ | $O(\log n)$ |
-| Merge sort | $T(n) = 2T(n/2) + O(n)$ | $O(n \log n)$ |
-| Fibonacci ingenuo | $T(n) = T(n-1) + T(n-2)$ | $O(2^n)$ |
-| Árbol binario | $T(n) = 2T(n-1) + O(1)$ | $O(2^n)$ |
-
-## Consejos para competencias
-
-1. **Recursión lineal:** Generalmente $O(n)$ o $O(n^2)$
-2. **División por 2:** Generalmente $O(\log n)$
-3. **Dos llamadas con n-1:** Probablemente exponencial
-4. **Memorización:** Reduce a O(número de estados)
-
-### Límites prácticos
-
-| Complejidad | n máximo aproximado |
-|-------------|-------------------|
-| $O(n!)$ | 10 |
-| $O(2^n)$ | 20-25 |
-| $O(n^3)$ | 500 |
-| $O(n^2)$ | 5,000 |
-| $O(n \log n)$ | 1,000,000 |
-| $O(n)$ | 10,000,000 |
-| $O(\log n)$ | 10^18 |
-
-## Ejercicios de análisis
-
-### Ejercicio 1
-¿Cuál es la complejidad?
-
-```cpp
-void f(int n) {
-    if (n <= 1) return;
-    f(n - 1);
-    f(n - 1);
+void misterio(int n) {
+    if (n <= 0) return;
+    cout << "hola" << endl;
+    misterio(n / 3);
+    misterio(n / 3);
 }
 ```
 
 <details>
-<summary>Ver respuesta</summary>
+<summary>Ver solución</summary>
 
-$T(n) = 2T(n-1) + O(1)$
+$T(n) = 2T(n/3) + O(1)$
 
-Complejidad: $O(2^n)$
+Usando el teorema maestro con $a=2$, $b=3$, $c=0$: como $\log_3 2 \approx 0.63 > 0$, la complejidad es $O(n^{\log_3 2}) \approx O(n^{0.63})$.
 
-</details>
-
-### Ejercicio 2
-¿Cuál es la complejidad?
-
-```cpp
-void f(int n) {
-    if (n <= 1) return;
-    for (int i = 0; i < n; i++) {
-        cout << i << " ";
-    }
-    f(n / 2);
-}
-```
-
-<details>
-<summary>Ver respuesta</summary>
-
-$T(n) = T(n/2) + O(n)$
-
-Por teorema maestro: $a=1$, $b=2$, $f(n)=n$
-
-$n^c = n^0 = 1$, como $f(n) = n = \Omega(n^{0+\epsilon})$, caso 3.
-
-Complejidad: $O(n)$
+En términos simples: crece más rápido que $O(\log n)$ pero mucho más lento que $O(n)$.
 
 </details>
 
 ## Siguiente paso
 
-Aplica estos conocimientos en [Algoritmos de Ordenamiento](/blog/algoritmos/ordenamiento-sort-stl).
+Aprende sobre **Pilas y Colas**, estructuras de datos fundamentales que tienen conexión directa con la recursión.

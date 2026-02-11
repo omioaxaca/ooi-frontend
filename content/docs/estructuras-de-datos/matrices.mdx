@@ -1,430 +1,295 @@
 ---
-title: "Matrices (Arreglos Bidimensionales)"
-description: "Aprende a trabajar con matrices y arreglos bidimensionales en C++"
+title: "Matrices"
+description: "Aprende a trabajar con arreglos bidimensionales y matrices en C++"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "matrices", "arreglos", "bidimensional", "estructuras-de-datos"]
-syllabusId: 21
+tags: ["c++", "matrices", "arreglos 2D", "bidimensional"]
+syllabusId: 20
 ---
 
 ## ¿Qué es una matriz?
 
-Una matriz es un arreglo bidimensional organizado en filas y columnas. Puedes pensar en ella como una tabla o cuadrícula.
+Si un arreglo es una **fila de casilleros**, una matriz es una **cuadrícula de casilleros** con filas y columnas. Piensa en un tablero de ajedrez, un campo de minas, una hoja de cálculo de Excel, o la pantalla de píxeles de tu computadora.
 
 ```
-Matriz 3x4 (3 filas, 4 columnas):
-
-        col 0   col 1   col 2   col 3
-       ┌───────┬───────┬───────┬───────┐
-fila 0 │   1   │   2   │   3   │   4   │
-       ├───────┼───────┼───────┼───────┤
-fila 1 │   5   │   6   │   7   │   8   │
-       ├───────┼───────┼───────┼───────┤
-fila 2 │   9   │  10   │  11   │  12   │
-       └───────┴───────┴───────┴───────┘
+Matriz 3×4:
+         Col 0  Col 1  Col 2  Col 3
+Fila 0 [  1  ,  2  ,  3  ,  4  ]
+Fila 1 [  5  ,  6  ,  7  ,  8  ]
+Fila 2 [  9  , 10  , 11  , 12  ]
 ```
 
-## Declaración
+Para acceder a un elemento, necesitas **dos índices**: la fila y la columna. `mat[1][2]` es el elemento en la fila 1, columna 2, que en el ejemplo es `7`.
 
-### Arreglo tradicional
+## Declarar matrices
+
+### Arreglo estático 2D
 
 ```cpp
-int matriz[3][4];  // 3 filas, 4 columnas
-
-// Con inicialización
-int matriz[3][4] = {
-    {1, 2, 3, 4},
-    {5, 6, 7, 8},
-    {9, 10, 11, 12}
-};
-```
-
-### Vector de vectores (recomendado)
-
-```cpp
-#include <vector>
-using namespace std;
-
-// Declaración vacía
-vector<vector<int>> matriz;
-
-// Con tamaño inicial (n filas, m columnas, valor 0)
-vector<vector<int>> matriz(n, vector<int>(m, 0));
-
-// Con inicialización
-vector<vector<int>> matriz = {
+int mat[3][4];                // Matriz 3×4 sin inicializar
+int mat[3][4] = {{0}};        // Matriz 3×4 toda en ceros
+int mat[3][3] = {
     {1, 2, 3},
     {4, 5, 6},
     {7, 8, 9}
 };
 ```
 
-## Acceso a elementos
+### Con vectores (más flexible)
 
 ```cpp
-int matriz[3][4] = {
-    {1, 2, 3, 4},
-    {5, 6, 7, 8},
-    {9, 10, 11, 12}
-};
-
-cout << matriz[0][0] << endl;  // 1 (fila 0, columna 0)
-cout << matriz[1][2] << endl;  // 7 (fila 1, columna 2)
-cout << matriz[2][3] << endl;  // 12 (fila 2, columna 3)
-
-matriz[1][1] = 100;  // Modificar elemento
+int filas = 3, cols = 4;
+vector<vector<int>> mat(filas, vector<int>(cols, 0));  // 3×4, todo ceros
 ```
 
-## Recorrer una matriz
-
-### Con for tradicional
+### Global (recomendado en competencias)
 
 ```cpp
-int n = 3, m = 4;
-
-for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-        cout << matriz[i][j] << " ";
-    }
-    cout << endl;
-}
+const int MAXN = 1001;
+int mat[MAXN][MAXN];  // Se inicializa a 0 automáticamente por ser global
 ```
 
-### Con range-based for
+## Leer y escribir matrices
+
+### Leer
 
 ```cpp
-vector<vector<int>> matriz = {{1,2,3}, {4,5,6}};
-
-for (auto& fila : matriz) {
-    for (int elemento : fila) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-}
-```
-
-## Lectura desde entrada
-
-```cpp
-int n, m;
+int n, m;  // n filas, m columnas
 cin >> n >> m;
 
-vector<vector<int>> matriz(n, vector<int>(m));
-
+int mat[1001][1001];
 for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-        cin >> matriz[i][j];
+        cin >> mat[i][j];
     }
 }
 ```
 
-## Operaciones comunes
-
-### Suma de todos los elementos
-
-```cpp
-int suma = 0;
-for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-        suma += matriz[i][j];
-    }
-}
-```
-
-### Elemento máximo
-
-```cpp
-int maximo = matriz[0][0];
-for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-        maximo = max(maximo, matriz[i][j]);
-    }
-}
-```
-
-### Suma por filas
+### Escribir
 
 ```cpp
 for (int i = 0; i < n; i++) {
-    int sumaFila = 0;
     for (int j = 0; j < m; j++) {
-        sumaFila += matriz[i][j];
+        if (j > 0) cout << " ";
+        cout << mat[i][j];
     }
-    cout << "Fila " << i << ": " << sumaFila << endl;
+    cout << '\n';
 }
 ```
 
-### Suma por columnas
+## Recorridos de una matriz
+
+### Recorrer por filas (lo más natural)
 
 ```cpp
-for (int j = 0; j < m; j++) {
-    int sumaCol = 0;
-    for (int i = 0; i < n; i++) {
-        sumaCol += matriz[i][j];
+for (int i = 0; i < n; i++) {       // Para cada fila
+    for (int j = 0; j < m; j++) {   // Para cada columna
+        // Procesar mat[i][j]
     }
-    cout << "Columna " << j << ": " << sumaCol << endl;
 }
 ```
 
-## Matrices cuadradas
-
-Una matriz cuadrada tiene el mismo número de filas y columnas.
-
-### Diagonal principal
+### Recorrer por columnas
 
 ```cpp
-// Elementos donde i == j
+for (int j = 0; j < m; j++) {       // Para cada columna
+    for (int i = 0; i < n; i++) {   // Para cada fila
+        // Procesar mat[i][j]
+    }
+}
+```
+
+### Recorrer la diagonal principal
+
+```cpp
+// Solo funciona si es cuadrada (n×n)
 for (int i = 0; i < n; i++) {
-    cout << matriz[i][i] << " ";
+    cout << mat[i][i] << " ";
 }
 ```
 
-### Diagonal secundaria
+### Recorrer la diagonal secundaria
 
 ```cpp
-// Elementos donde i + j == n - 1
 for (int i = 0; i < n; i++) {
-    cout << matriz[i][n - 1 - i] << " ";
+    cout << mat[i][n - 1 - i] << " ";
 }
 ```
 
-### Traza (suma de diagonal)
+## Los 4 (u 8) vecinos
 
-```cpp
-int traza = 0;
-for (int i = 0; i < n; i++) {
-    traza += matriz[i][i];
-}
+En muchos problemas, necesitas visitar las celdas vecinas de una posición `(i, j)`:
+
+```
+        (i-1,j)
+           ↑
+(i,j-1) ← (i,j) → (i,j+1)
+           ↓
+        (i+1,j)
 ```
 
-## Recorridos especiales
-
-### Por diagonales
+### 4 vecinos (arriba, abajo, izquierda, derecha)
 
 ```cpp
-// Todas las diagonales paralelas a la principal
-int n = matriz.size();
-int m = matriz[0].size();
+int dx[] = {-1, 1, 0, 0};
+int dy[] = {0, 0, -1, 1};
 
-for (int d = 0; d < n + m - 1; d++) {
-    int fila = max(0, d - m + 1);
-    int col = max(0, m - 1 - d);
-
-    while (fila < n && col < m) {
-        cout << matriz[fila][col] << " ";
-        fila++;
-        col++;
-    }
-    cout << endl;
-}
-```
-
-### En espiral
-
-```cpp
-vector<int> recorridoEspiral(vector<vector<int>>& matriz) {
-    vector<int> resultado;
-    if (matriz.empty()) return resultado;
-
-    int top = 0, bottom = matriz.size() - 1;
-    int left = 0, right = matriz[0].size() - 1;
-
-    while (top <= bottom && left <= right) {
-        // Derecha
-        for (int i = left; i <= right; i++)
-            resultado.push_back(matriz[top][i]);
-        top++;
-
-        // Abajo
-        for (int i = top; i <= bottom; i++)
-            resultado.push_back(matriz[i][right]);
-        right--;
-
-        // Izquierda
-        if (top <= bottom) {
-            for (int i = right; i >= left; i--)
-                resultado.push_back(matriz[bottom][i]);
-            bottom--;
-        }
-
-        // Arriba
-        if (left <= right) {
-            for (int i = bottom; i >= top; i--)
-                resultado.push_back(matriz[i][left]);
-            left++;
-        }
-    }
-
-    return resultado;
-}
-```
-
-## Aplicación: Cuadrícula (Grid)
-
-Las cuadrículas son muy comunes en problemas de competencia.
-
-### Movimientos en 4 direcciones
-
-```cpp
-int dx[] = {0, 0, 1, -1};  // derecha, izquierda, abajo, arriba
-int dy[] = {1, -1, 0, 0};
-
-// Desde posición (x, y), visitar vecinos
 for (int d = 0; d < 4; d++) {
-    int nx = x + dx[d];
-    int ny = y + dy[d];
+    int ni = i + dx[d];
+    int nj = j + dy[d];
 
-    // Verificar límites
-    if (nx >= 0 && nx < n && ny >= 0 && ny < m) {
-        // Procesar vecino (nx, ny)
+    // Verificar que esté dentro de los límites
+    if (ni >= 0 && ni < n && nj >= 0 && nj < m) {
+        // mat[ni][nj] es un vecino válido
     }
 }
 ```
 
-### Movimientos en 8 direcciones
+### 8 vecinos (incluye diagonales)
 
 ```cpp
 int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
 int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
 for (int d = 0; d < 8; d++) {
-    int nx = x + dx[d];
-    int ny = y + dy[d];
-    // ...
-}
-```
-
-## Ejemplo: Rotar matriz 90°
-
-```cpp
-void rotar90(vector<vector<int>>& matriz) {
-    int n = matriz.size();
-
-    // Transponer
-    for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
-            swap(matriz[i][j], matriz[j][i]);
-        }
-    }
-
-    // Invertir cada fila
-    for (int i = 0; i < n; i++) {
-        reverse(matriz[i].begin(), matriz[i].end());
+    int ni = i + dx[d];
+    int nj = j + dy[d];
+    if (ni >= 0 && ni < n && nj >= 0 && nj < m) {
+        // Procesar vecino mat[ni][nj]
     }
 }
 ```
 
-## Ejemplo: Buscar en matriz ordenada
+## Problemas clásicos con matrices
 
-Matriz donde cada fila y columna está ordenada:
+### 1. Suma de elementos
 
 ```cpp
-bool buscar(vector<vector<int>>& matriz, int objetivo) {
-    if (matriz.empty()) return false;
+int suma = 0;
+for (int i = 0; i < n; i++)
+    for (int j = 0; j < m; j++)
+        suma += mat[i][j];
+```
 
-    int n = matriz.size();
-    int m = matriz[0].size();
+### 2. Transponer una matriz
 
-    // Empezar desde esquina superior derecha
-    int fila = 0, col = m - 1;
+La transpuesta intercambia filas por columnas: `mat[i][j]` se convierte en `mat[j][i]`.
 
-    while (fila < n && col >= 0) {
-        if (matriz[fila][col] == objetivo) {
-            return true;
-        } else if (matriz[fila][col] < objetivo) {
-            fila++;  // El objetivo está abajo
-        } else {
-            col--;   // El objetivo está a la izquierda
-        }
+```cpp
+int transpuesta[1001][1001];
+for (int i = 0; i < n; i++)
+    for (int j = 0; j < m; j++)
+        transpuesta[j][i] = mat[i][j];
+```
+
+### 3. Rotar 90 grados (en sentido horario)
+
+```cpp
+int rotada[1001][1001];
+for (int i = 0; i < n; i++)
+    for (int j = 0; j < m; j++)
+        rotada[j][n - 1 - i] = mat[i][j];
+```
+
+### 4. Matriz de cuadrícula (grid) como mapa
+
+Muchos problemas representan mapas como matrices de caracteres:
+
+```
+5 5
+.....
+.###.
+.#...
+.###.
+.....
+```
+
+```cpp
+int n, m;
+cin >> n >> m;
+
+char grid[1001][1001];
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        cin >> grid[i][j];
     }
-
-    return false;
 }
+
+// O leer como strings
+string grid2[1001];
+for (int i = 0; i < n; i++) {
+    cin >> grid2[i];
+}
+// Acceso: grid2[i][j]
 ```
 
-## Ejemplo: Flood Fill (pintar región)
+### 5. Suma de prefijos 2D
+
+Para responder rápidamente "¿cuál es la suma del subrectángulo de (r1,c1) a (r2,c2)?":
 
 ```cpp
-void floodFill(vector<vector<int>>& imagen, int sr, int sc, int nuevoColor) {
-    int colorOriginal = imagen[sr][sc];
-    if (colorOriginal == nuevoColor) return;
-
-    int n = imagen.size(), m = imagen[0].size();
-    int dx[] = {0, 0, 1, -1};
-    int dy[] = {1, -1, 0, 0};
-
-    function<void(int, int)> dfs = [&](int x, int y) {
-        if (x < 0 || x >= n || y < 0 || y >= m) return;
-        if (imagen[x][y] != colorOriginal) return;
-
-        imagen[x][y] = nuevoColor;
-
-        for (int d = 0; d < 4; d++) {
-            dfs(x + dx[d], y + dy[d]);
-        }
-    };
-
-    dfs(sr, sc);
+// Construir la tabla de prefijos
+int prefix[1001][1001] = {0};
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+        prefix[i][j] = mat[i][j]
+                      + prefix[i-1][j]
+                      + prefix[i][j-1]
+                      - prefix[i-1][j-1];
+    }
 }
+
+// Consultar suma del subrectángulo (r1,c1) a (r2,c2)
+int suma = prefix[r2][c2]
+         - prefix[r1-1][c2]
+         - prefix[r2][c1-1]
+         + prefix[r1-1][c1-1];
 ```
 
-## Ejercicios de práctica
+Esto permite responder cada consulta en $O(1)$ después de $O(n \times m)$ de preprocesamiento.
 
-### Ejercicio 1
-Verifica si una matriz es simétrica (igual a su transpuesta).
+## Ejercicio de práctica
+
+Lee una matriz de N×M y encuentra el valor máximo junto con su posición (fila y columna).
+
+**Entrada:**
+```
+3 4
+1 2 3 4
+5 6 7 8
+9 10 11 12
+```
+**Salida:** `12 2 3` (el máximo es 12, en fila 2, columna 3, contando desde 0)
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-bool esSimetrica(vector<vector<int>>& matriz) {
-    int n = matriz.size();
+#include <iostream>
+using namespace std;
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (matriz[i][j] != matriz[j][i]) {
-                return false;
-            }
-        }
-    }
+int main() {
+    int n, m;
+    cin >> n >> m;
 
-    return true;
-}
-```
-
-</details>
-
-### Ejercicio 2
-Cuenta el número de islas en una cuadrícula (grupos de 1s conectados).
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int contarIslas(vector<vector<int>>& grid) {
-    int n = grid.size(), m = grid[0].size();
-    int islas = 0;
-    int dx[] = {0, 0, 1, -1};
-    int dy[] = {1, -1, 0, 0};
-
-    function<void(int, int)> dfs = [&](int x, int y) {
-        if (x < 0 || x >= n || y < 0 || y >= m || grid[x][y] == 0) return;
-        grid[x][y] = 0;  // Marcar como visitado
-        for (int d = 0; d < 4; d++) {
-            dfs(x + dx[d], y + dy[d]);
-        }
-    };
+    int mat[1001][1001];
+    int maxVal = -1e9;
+    int maxFila = 0, maxCol = 0;
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            if (grid[i][j] == 1) {
-                islas++;
-                dfs(i, j);
+            cin >> mat[i][j];
+            if (mat[i][j] > maxVal) {
+                maxVal = mat[i][j];
+                maxFila = i;
+                maxCol = j;
             }
         }
     }
 
-    return islas;
+    cout << maxVal << " " << maxFila << " " << maxCol << endl;
+
+    return 0;
 }
 ```
 
@@ -432,4 +297,4 @@ int contarIslas(vector<vector<int>>& grid) {
 
 ## Siguiente paso
 
-Aprende sobre [Algoritmos de Ordenamiento](/blog/algoritmos/ordenamiento-sort-stl) para organizar datos eficientemente.
+Aprende sobre **Structs** para crear tus propios tipos de datos combinados.

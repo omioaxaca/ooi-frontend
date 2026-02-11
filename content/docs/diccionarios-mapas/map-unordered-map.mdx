@@ -1,285 +1,110 @@
 ---
-title: "Map y Unordered_map"
-description: "Aprende a usar diccionarios en C++ con map y unordered_map"
+title: "Map y Unordered Map"
+description: "Almacena pares clave-valor para búsquedas ultrarrápidas"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["map", "unordered_map", "diccionario", "hash", "STL"]
-syllabusId: 78
-order: 1
+tags: ["c++", "map", "unordered_map", "diccionarios", "hash"]
+syllabusId: 36
 ---
 
-## ¿Qué es un diccionario?
+## La analogía: un diccionario real
 
-Un **diccionario** (o mapa) es una estructura que asocia **claves** con **valores**. Permite:
+Piensa en un diccionario de español. Tienes una **palabra** (clave) y su **definición** (valor). No buscas la definición recorriendo todas las páginas; vas directo a la letra correspondiente. Un `map` en C++ funciona igual: asocias una **clave** con un **valor** y puedes buscar por clave de forma eficiente.
 
-- Buscar un valor por su clave
-- Insertar pares clave-valor
-- Eliminar por clave
+## map: ordenado y confiable
 
-## map vs unordered_map
-
-| Característica | `map` | `unordered_map` |
-|----------------|-------|-----------------|
-| Estructura interna | Árbol rojo-negro | Tabla hash |
-| Orden | Ordenado por clave | Sin orden |
-| Búsqueda | O(log n) | O(1) promedio |
-| Inserción | O(log n) | O(1) promedio |
-| Peor caso | O(log n) | O(n) |
-
-**Recomendación:** Usa `map` por defecto. Usa `unordered_map` cuando necesites máximo rendimiento.
-
-## Uso básico de map
+`map` usa un árbol balanceado internamente. Mantiene las claves **ordenadas** y cada operación toma $O(\log n)$.
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <map>
 using namespace std;
 
 int main() {
-    map<string, int> edad;
+    map<string, int> edades;
 
     // Insertar
-    edad["Juan"] = 15;
-    edad["María"] = 16;
-    edad.insert({"Pedro", 14});
+    edades["Ana"] = 15;
+    edades["Carlos"] = 17;
+    edades["Beatriz"] = 16;
 
     // Acceder
-    cout << edad["Juan"] << endl;  // 15
-
-    // Modificar
-    edad["Juan"] = 16;
+    cout << "Ana tiene " << edades["Ana"] << " años" << endl;
 
     // Verificar si existe
-    if (edad.count("Ana") == 0) {
-        cout << "Ana no existe\n";
+    if (edades.count("Carlos")) {
+        cout << "Carlos está en el mapa" << endl;
     }
 
-    // También con find
-    if (edad.find("María") != edad.end()) {
-        cout << "María existe\n";
+    // Recorrer (las claves salen en orden alfabético)
+    for (auto &[nombre, edad] : edades) {
+        cout << nombre << ": " << edad << endl;
     }
+    // Beatriz: 16, Ana: 15, Carlos: 17
+    // ¡No! Sale: Ana: 15, Beatriz: 16, Carlos: 17 (ordenado)
 
-    // Eliminar
-    edad.erase("Pedro");
+    // Borrar
+    edades.erase("Carlos");
 
     // Tamaño
-    cout << "Tamaño: " << edad.size() << endl;
+    cout << "Personas: " << edades.size() << endl;
 
     return 0;
 }
 ```
 
-## Recorrer un map
+<Callout type="warning">
+  **Cuidado con `[]`**: si accedes a una clave que no existe con `edades["Daniel"]`, C++ **la crea automáticamente** con valor 0. Usa `.count()` o `.find()` para verificar primero.
+</Callout>
 
-Los elementos se recorren en **orden de clave**:
+## unordered_map: más rápido pero desordenado
 
-```cpp
-map<string, int> m;
-m["c"] = 3;
-m["a"] = 1;
-m["b"] = 2;
-
-// Forma 1: range-based for
-for (auto& [clave, valor] : m) {
-    cout << clave << ": " << valor << "\n";
-}
-// Salida: a: 1, b: 2, c: 3 (ordenado)
-
-// Forma 2: iteradores
-for (auto it = m.begin(); it != m.end(); it++) {
-    cout << it->first << ": " << it->second << "\n";
-}
-```
-
-## Uso de unordered_map
+`unordered_map` usa una **tabla hash**. Las operaciones son $O(1)$ en promedio (¡constante!), pero las claves no tienen orden.
 
 ```cpp
-#include <bits/stdc++.h>
+#include <unordered_map>
 using namespace std;
 
 int main() {
-    unordered_map<string, int> freq;
+    unordered_map<string, int> frecuencia;
 
-    // Contar frecuencias
-    vector<string> palabras = {"hola", "mundo", "hola", "cpp"};
+    // La interfaz es idéntica a map
+    frecuencia["hola"] = 3;
+    frecuencia["mundo"] = 1;
+    frecuencia["hola"]++;  // Ahora es 4
 
-    for (const string& p : palabras) {
-        freq[p]++;  // Si no existe, se inicializa en 0
+    // Recorrer (sin orden particular)
+    for (auto &[palabra, freq] : frecuencia) {
+        cout << palabra << ": " << freq << endl;
     }
-
-    // Imprimir frecuencias
-    for (auto& [palabra, cuenta] : freq) {
-        cout << palabra << ": " << cuenta << "\n";
-    }
-
-    return 0;
 }
 ```
 
-## Problema: Contar frecuencias
+## ¿Cuándo usar cuál?
+
+| Característica | `map` | `unordered_map` |
+|---------------|-------|-----------------|
+| Orden | ✅ Ordenado por clave | ❌ Sin orden |
+| Inserción | $O(\log n)$ | $O(1)$ promedio |
+| Búsqueda | $O(\log n)$ | $O(1)$ promedio |
+| Peor caso | $O(\log n)$ | $O(n)$ (colisiones) |
+| Claves soportadas | Cualquiera con `<` | Necesita hash |
+| Recomendación | Cuando necesitas orden | Cuando solo necesitas velocidad |
+
+<Callout type="info">
+  En competencias, `map` es la opción **segura**. `unordered_map` es más rápido en promedio, pero en casos extremos puede ser más lento. Si usas `unordered_map` con claves tipo `int` o `string`, funciona bien. Para claves personalizadas (`pair`, structs), usa `map`.
+</Callout>
+
+## Aplicación estrella: conteo de frecuencias
+
+El uso más común en competencias:
 
 ```cpp
-map<int, int> contarFrecuencias(vector<int>& arr) {
-    map<int, int> freq;
-    for (int x : arr) {
-        freq[x]++;
-    }
-    return freq;
-}
-
-// Encontrar el elemento más frecuente
-int masFrequente(vector<int>& arr) {
-    map<int, int> freq;
-    for (int x : arr) freq[x]++;
-
-    int maxFreq = 0, elemento = arr[0];
-    for (auto& [val, f] : freq) {
-        if (f > maxFreq) {
-            maxFreq = f;
-            elemento = val;
-        }
-    }
-    return elemento;
-}
-```
-
-## Problema: Dos sumas (Two Sum)
-
-Encontrar dos índices cuya suma sea igual a un objetivo:
-
-```cpp
-pair<int, int> twoSum(vector<int>& nums, int target) {
-    unordered_map<int, int> visto;  // valor -> índice
-
-    for (int i = 0; i < nums.size(); i++) {
-        int complemento = target - nums[i];
-
-        if (visto.count(complemento)) {
-            return {visto[complemento], i};
-        }
-
-        visto[nums[i]] = i;
-    }
-
-    return {-1, -1};  // No encontrado
-}
-```
-
-## Problema: Verificar anagrama
-
-```cpp
-bool sonAnagramas(string& a, string& b) {
-    if (a.size() != b.size()) return false;
-
-    map<char, int> freq;
-
-    for (char c : a) freq[c]++;
-    for (char c : b) freq[c]--;
-
-    for (auto& [c, f] : freq) {
-        if (f != 0) return false;
-    }
-
-    return true;
-}
-```
-
-## Map con claves personalizadas
-
-Para usar `map` con structs, debes definir `operator<`:
-
-```cpp
-struct Punto {
-    int x, y;
-
-    bool operator<(const Punto& otro) const {
-        if (x != otro.x) return x < otro.x;
-        return y < otro.y;
-    }
-};
-
-map<Punto, string> nombres;
-nombres[{1, 2}] = "A";
-nombres[{3, 4}] = "B";
-```
-
-Para `unordered_map`, necesitas una función hash:
-
-```cpp
-struct PuntoHash {
-    size_t operator()(const Punto& p) const {
-        return hash<int>()(p.x) ^ (hash<int>()(p.y) << 1);
-    }
-};
-
-struct PuntoEqual {
-    bool operator()(const Punto& a, const Punto& b) const {
-        return a.x == b.x && a.y == b.y;
-    }
-};
-
-unordered_map<Punto, string, PuntoHash, PuntoEqual> nombres;
-```
-
-## Map con pair como clave
-
-```cpp
-map<pair<int, int>, int> grid;
-grid[{1, 2}] = 5;
-grid[{3, 4}] = 10;
-
-if (grid.count({1, 2})) {
-    cout << grid[{1, 2}] << endl;
-}
-```
-
-## Valor por defecto
-
-Al acceder a una clave inexistente con `[]`, se crea con valor por defecto:
-
-```cpp
-map<string, int> m;
-cout << m["nuevo"] << endl;  // Imprime 0 y crea la entrada
-
-// Para evitar crear entradas innecesarias:
-if (m.count("clave")) {
-    cout << m["clave"];
-}
-
-// O usando find:
-auto it = m.find("clave");
-if (it != m.end()) {
-    cout << it->second;
-}
-```
-
-## Métodos útiles
-
-```cpp
-map<int, int> m;
-
-m.empty();       // ¿Está vacío?
-m.size();        // Número de elementos
-m.clear();       // Eliminar todo
-m.count(k);      // 1 si existe k, 0 si no
-m.find(k);       // Iterador a k, o end() si no existe
-m.erase(k);      // Eliminar por clave
-m.erase(it);     // Eliminar por iterador
-
-// Rango
-m.lower_bound(k);  // Primer elemento >= k
-m.upper_bound(k);  // Primer elemento > k
-```
-
-## Template: Frecuencias
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <map>
 using namespace std;
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n;
     cin >> n;
 
@@ -287,32 +112,95 @@ int main() {
     for (int i = 0; i < n; i++) {
         int x;
         cin >> x;
-        freq[x]++;
+        freq[x]++;  // Incrementa el contador de x
     }
 
-    // Elemento más frecuente
-    int maxFreq = 0, elemento = 0;
-    for (auto& [val, f] : freq) {
+    // ¿Cuál es el elemento más frecuente?
+    int maxFreq = 0, moda = 0;
+    for (auto &[valor, f] : freq) {
         if (f > maxFreq) {
             maxFreq = f;
-            elemento = val;
+            moda = valor;
         }
     }
 
-    cout << "Más frecuente: " << elemento;
-    cout << " (" << maxFreq << " veces)\n";
-
-    // Elementos únicos
-    cout << "Elementos únicos: " << freq.size() << "\n";
+    cout << "Moda: " << moda << " (aparece " << maxFreq << " veces)" << endl;
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+## Más operaciones útiles
 
-1. [CSES - Distinct Numbers](https://cses.fi/problemset/task/1621)
-2. [CSES - Sum of Two Values](https://cses.fi/problemset/task/1640)
-3. [LeetCode - Two Sum](https://leetcode.com/problems/two-sum/)
-4. [LeetCode - Valid Anagram](https://leetcode.com/problems/valid-anagram/)
-5. [Codeforces - Registration System](https://codeforces.com/problemset/problem/4/C)
+```cpp
+map<int, string> m;
+m[1] = "uno";
+m[3] = "tres";
+m[5] = "cinco";
+
+// find: buscar una clave
+auto it = m.find(3);
+if (it != m.end()) {
+    cout << it->first << ": " << it->second << endl;  // 3: tres
+}
+
+// lower_bound y upper_bound funcionan en map
+auto lb = m.lower_bound(2);  // Apunta al 3 (primer clave >= 2)
+auto ub = m.upper_bound(3);  // Apunta al 5 (primera clave > 3)
+
+// Primer y último elemento
+cout << m.begin()->first << endl;   // 1 (menor clave)
+cout << m.rbegin()->first << endl;  // 5 (mayor clave)
+```
+
+## Ejercicio de práctica
+
+Dado un texto con N palabras, imprime cada palabra y cuántas veces aparece, en orden alfabético.
+
+**Entrada:**
+```
+7
+hola mundo hola como estas hola mundo
+```
+**Salida:**
+```
+como 1
+estas 1
+hola 3
+mundo 2
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    map<string, int> freq;
+    for (int i = 0; i < n; i++) {
+        string s;
+        cin >> s;
+        freq[s]++;
+    }
+
+    for (auto &[palabra, f] : freq) {
+        cout << palabra << " " << f << endl;
+    }
+
+    return 0;
+}
+```
+
+Usamos `map` porque automáticamente ordena las claves (palabras) en orden alfabético.
+
+</details>
+
+## Siguiente paso
+
+Aprende sobre **Set y Multiset**, las estructuras que almacenan solo claves (sin valores) de forma ordenada.

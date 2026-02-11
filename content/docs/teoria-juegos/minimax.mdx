@@ -1,359 +1,323 @@
 ---
-title: "Algoritmo Minimax"
-description: "Aprende el algoritmo Minimax y su optimización con poda alfa-beta"
+title: "Minimax"
+description: "El algoritmo para juegos de dos jugadores con puntuación: elige el mejor movimiento"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["minimax", "alfa-beta", "juegos", "estrategia", "adversarial"]
-syllabusId: 72
-order: 2
+tags: ["c++", "minimax", "alfa-beta", "juegos", "estrategia óptima"]
+syllabusId: 74
 ---
 
 ## ¿Qué es Minimax?
 
-**Minimax** es un algoritmo para juegos de dos jugadores (suma cero) que encuentra el movimiento óptimo asumiendo que ambos jugadores juegan perfectamente.
+**Analogía:** Imagina que juegas ajedrez contra alguien muy inteligente. Antes de mover, piensas: "Si yo muevo aquí, ¿qué hará mi oponente?". Tu oponente también piensa lo mismo. Tú quieres **maximizar** tu ventaja, y tu oponente quiere **minimizarla**. El algoritmo Minimax simula esta lógica: explora todas las posibilidades y elige el mejor camino asumiendo que ambos juegan perfectamente.
 
-- **Max:** Jugador que maximiza su puntuación
-- **Min:** Oponente que minimiza la puntuación de Max
+## Diferencia con Sprague-Grundy
 
-## Árbol de juego
+| Aspecto | Sprague-Grundy | Minimax |
+|---------|---------------|---------|
+| Resultado | Gana o pierde | Puntuación numérica |
+| Tipo de juego | Último en mover gana | Juegos con puntuación |
+| Ejemplo | Nim, piedras | Tic-tac-toe, ajedrez |
+
+## El algoritmo
 
 ```
-         Max (turno)
-         /    |    \
-       Min   Min   Min
-       /\    /\    /\
-      3  5  2  9  0  7
+minimax(posición, profundidad, esMaximizador):
+    si es terminal o profundidad = 0:
+        retorna evaluación de la posición
 
-Max elige el hijo con mayor valor minimax.
-Min elige el hijo con menor valor minimax.
+    si esMaximizador:
+        mejor = -∞
+        para cada movimiento posible:
+            valor = minimax(siguiente posición, profundidad-1, false)
+            mejor = max(mejor, valor)
+        retorna mejor
 
-Evaluación:
-- Nivel Min: min(3,5)=3, min(2,9)=2, min(0,7)=0
-- Nivel Max: max(3,2,0)=3
+    sino:
+        mejor = +∞
+        para cada movimiento posible:
+            valor = minimax(siguiente posición, profundidad-1, true)
+            mejor = min(mejor, valor)
+        retorna mejor
 ```
 
-## Implementación básica
+## Ejemplo: Juego de suma
+
+Hay un arreglo de números. Dos jugadores se turnan para tomar el primer o último elemento. Gana quien acumule mayor suma. ¿Cuál es la diferencia óptima?
+
+```
+Arreglo: [5, 3, 7, 10]
+
+Jugador 1 toma 10 → [5, 3, 7]
+Jugador 2 toma 7  → [5, 3]
+Jugador 1 toma 5  → [3]
+Jugador 2 toma 3  → []
+
+J1 = 10 + 5 = 15, J2 = 7 + 3 = 10
+Diferencia = 5
+```
+
+### Solución con Minimax + DP
 
 ```cpp
-int minimax(Estado estado, int profundidad, bool esMax) {
-    // Caso base: nodo terminal o profundidad máxima
-    if (profundidad == 0 || estado.esTerminal()) {
-        return estado.evaluar();
-    }
-
-    if (esMax) {
-        int maxEval = INT_MIN;
-        for (Estado& hijo : estado.generarMovimientos()) {
-            int eval = minimax(hijo, profundidad - 1, false);
-            maxEval = max(maxEval, eval);
-        }
-        return maxEval;
-    } else {
-        int minEval = INT_MAX;
-        for (Estado& hijo : estado.generarMovimientos()) {
-            int eval = minimax(hijo, profundidad - 1, true);
-            minEval = min(minEval, eval);
-        }
-        return minEval;
-    }
-}
-```
-
-## Poda Alfa-Beta
-
-Optimización que elimina ramas que no afectarán la decisión final.
-
-- **α (alfa):** Mejor valor que Max puede garantizar
-- **β (beta):** Mejor valor que Min puede garantizar
-
-Podamos cuando α ≥ β.
-
-```cpp
-int alfabeta(Estado estado, int profundidad, int alfa, int beta, bool esMax) {
-    if (profundidad == 0 || estado.esTerminal()) {
-        return estado.evaluar();
-    }
-
-    if (esMax) {
-        int maxEval = INT_MIN;
-        for (Estado& hijo : estado.generarMovimientos()) {
-            int eval = alfabeta(hijo, profundidad - 1, alfa, beta, false);
-            maxEval = max(maxEval, eval);
-            alfa = max(alfa, eval);
-            if (beta <= alfa) break;  // Poda beta
-        }
-        return maxEval;
-    } else {
-        int minEval = INT_MAX;
-        for (Estado& hijo : estado.generarMovimientos()) {
-            int eval = alfabeta(hijo, profundidad - 1, alfa, beta, true);
-            minEval = min(minEval, eval);
-            beta = min(beta, eval);
-            if (beta <= alfa) break;  // Poda alfa
-        }
-        return minEval;
-    }
-}
-
-// Uso:
-int mejorValor = alfabeta(estadoInicial, maxProfundidad, INT_MIN, INT_MAX, true);
-```
-
-## Ejemplo: Tic-Tac-Toe
-
-```cpp
-struct TicTacToe {
-    char tablero[3][3];  // 'X', 'O', ' '
-    char turno;          // 'X' o 'O'
-
-    bool esTerminal() {
-        return hayGanador() || tableroLleno();
-    }
-
-    int evaluar() {
-        if (gana('X')) return 10;
-        if (gana('O')) return -10;
-        return 0;  // Empate
-    }
-
-    bool gana(char jugador) {
-        // Verificar filas, columnas, diagonales
-        for (int i = 0; i < 3; i++) {
-            if (tablero[i][0] == jugador &&
-                tablero[i][1] == jugador &&
-                tablero[i][2] == jugador) return true;
-            if (tablero[0][i] == jugador &&
-                tablero[1][i] == jugador &&
-                tablero[2][i] == jugador) return true;
-        }
-        if (tablero[0][0] == jugador &&
-            tablero[1][1] == jugador &&
-            tablero[2][2] == jugador) return true;
-        if (tablero[0][2] == jugador &&
-            tablero[1][1] == jugador &&
-            tablero[2][0] == jugador) return true;
-        return false;
-    }
-
-    bool tableroLleno() {
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
-                if (tablero[i][j] == ' ') return false;
-        return true;
-    }
-
-    vector<TicTacToe> generarMovimientos() {
-        vector<TicTacToe> movimientos;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (tablero[i][j] == ' ') {
-                    TicTacToe nuevo = *this;
-                    nuevo.tablero[i][j] = turno;
-                    nuevo.turno = (turno == 'X') ? 'O' : 'X';
-                    movimientos.push_back(nuevo);
-                }
-            }
-        }
-        return movimientos;
-    }
-};
-
-pair<int, int> mejorMovimiento(TicTacToe& estado) {
-    int mejorVal = INT_MIN;
-    pair<int, int> mejorMov = {-1, -1};
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (estado.tablero[i][j] == ' ') {
-                TicTacToe nuevo = estado;
-                nuevo.tablero[i][j] = estado.turno;
-                nuevo.turno = (estado.turno == 'X') ? 'O' : 'X';
-
-                int val = alfabeta(nuevo, 9, INT_MIN, INT_MAX, false);
-
-                if (val > mejorVal) {
-                    mejorVal = val;
-                    mejorMov = {i, j};
-                }
-            }
-        }
-    }
-
-    return mejorMov;
-}
-```
-
-## Negamax
-
-Versión simplificada de Minimax usando la propiedad:
-
-$$max(a, b) = -min(-a, -b)$$
-
-```cpp
-int negamax(Estado estado, int profundidad, int alfa, int beta, int color) {
-    if (profundidad == 0 || estado.esTerminal()) {
-        return color * estado.evaluar();
-    }
-
-    int maxEval = INT_MIN;
-    for (Estado& hijo : estado.generarMovimientos()) {
-        int eval = -negamax(hijo, profundidad - 1, -beta, -alfa, -color);
-        maxEval = max(maxEval, eval);
-        alfa = max(alfa, eval);
-        if (alfa >= beta) break;
-    }
-
-    return maxEval;
-}
-
-// Uso: negamax(estado, prof, INT_MIN, INT_MAX, 1)
-```
-
-## Memoización con Tablas de Transposición
-
-Para evitar recalcular estados repetidos:
-
-```cpp
-map<Estado, int> tablaTrans;
-
-int alfabetaConMemo(Estado estado, int profundidad, int alfa, int beta, bool esMax) {
-    if (tablaTrans.count(estado)) {
-        return tablaTrans[estado];
-    }
-
-    if (profundidad == 0 || estado.esTerminal()) {
-        return tablaTrans[estado] = estado.evaluar();
-    }
-
-    // ... resto del algoritmo ...
-
-    return tablaTrans[estado] = resultado;
-}
-```
-
-## Ejemplo: Juego de piedras
-
-Dos jugadores, n piedras. Cada turno puedes tomar 1, 2 o 3. Gana quien toma la última.
-
-```cpp
-int memo[1005];
-
-int minimax(int n, bool esMax) {
-    if (n <= 0) {
-        return esMax ? -1 : 1;  // El anterior tomó la última
-    }
-
-    if (memo[n] != -2) return memo[n];
-
-    if (esMax) {
-        int mejor = -1;
-        for (int tomar = 1; tomar <= min(3, n); tomar++) {
-            mejor = max(mejor, minimax(n - tomar, false));
-        }
-        return memo[n] = mejor;
-    } else {
-        int mejor = 1;
-        for (int tomar = 1; tomar <= min(3, n); tomar++) {
-            mejor = min(mejor, minimax(n - tomar, true));
-        }
-        return memo[n] = mejor;
-    }
-}
-
-int main() {
-    fill(memo, memo + 1005, -2);
-    int n;
-    cin >> n;
-    cout << (minimax(n, true) == 1 ? "First" : "Second") << endl;
-}
-```
-
-## Optimizaciones
-
-### Ordenamiento de movimientos
-
-Evaluar primero los movimientos más prometedores:
-
-```cpp
-vector<Estado> hijos = estado.generarMovimientos();
-sort(hijos.begin(), hijos.end(), [](Estado& a, Estado& b) {
-    return a.heuristica() > b.heuristica();  // Mejor primero
-});
-```
-
-### Profundización iterativa
-
-Buscar con profundidad creciente:
-
-```cpp
-int busquedaIterativa(Estado estado, int maxProf) {
-    int mejorMov = -1;
-    for (int prof = 1; prof <= maxProf; prof++) {
-        mejorMov = alfabeta(estado, prof, INT_MIN, INT_MAX, true);
-        // Guardar mejor movimiento de esta profundidad
-    }
-    return mejorMov;
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
-struct Estado {
-    // Definir estado del juego
+int n;
+int v[105];
+int memo[105][105];
+bool calculado[105][105];
 
-    bool esTerminal() { /* ... */ }
-    int evaluar() { /* ... */ }
-    vector<Estado> generarMovimientos() { /* ... */ }
-};
+// Retorna la máxima diferencia (mi_score - oponente_score)
+// para el subarreglo v[l..r]
+int minimax(int l, int r) {
+    if (l > r) return 0;
 
-int alfabeta(Estado estado, int prof, int alfa, int beta, bool esMax) {
-    if (prof == 0 || estado.esTerminal()) {
-        return estado.evaluar();
-    }
+    if (calculado[l][r]) return memo[l][r];
+    calculado[l][r] = true;
 
-    auto movimientos = estado.generarMovimientos();
+    // Tomar el izquierdo: gano v[l], luego el oponente juega óptimo
+    int tomarIzq = v[l] - minimax(l + 1, r);
 
-    if (esMax) {
-        int maxEval = INT_MIN;
-        for (auto& hijo : movimientos) {
-            int eval = alfabeta(hijo, prof - 1, alfa, beta, false);
-            maxEval = max(maxEval, eval);
-            alfa = max(alfa, eval);
-            if (beta <= alfa) break;
-        }
-        return maxEval;
-    } else {
-        int minEval = INT_MAX;
-        for (auto& hijo : movimientos) {
-            int eval = alfabeta(hijo, prof - 1, alfa, beta, true);
-            minEval = min(minEval, eval);
-            beta = min(beta, eval);
-            if (beta <= alfa) break;
-        }
-        return minEval;
-    }
+    // Tomar el derecho: gano v[r], luego el oponente juega óptimo
+    int tomarDer = v[r] - minimax(l, r - 1);
+
+    memo[l][r] = max(tomarIzq, tomarDer);
+    return memo[l][r];
 }
 
 int main() {
-    Estado inicial;
-    // Inicializar...
+    cin >> n;
+    for (int i = 0; i < n; i++) cin >> v[i];
 
-    int resultado = alfabeta(inicial, 10, INT_MIN, INT_MAX, true);
+    memset(calculado, false, sizeof(calculado));
 
-    cout << (resultado > 0 ? "First wins" : "Second wins") << endl;
+    int diff = minimax(0, n - 1);
+
+    // diff = score_J1 - score_J2
+    // score_J1 + score_J2 = suma_total
+    int sumaTotal = 0;
+    for (int i = 0; i < n; i++) sumaTotal += v[i];
+
+    int scoreJ1 = (sumaTotal + diff) / 2;
+    int scoreJ2 = (sumaTotal - diff) / 2;
+
+    cout << "Jugador 1: " << scoreJ1 << endl;
+    cout << "Jugador 2: " << scoreJ2 << endl;
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+<Callout type="info">
+El truco de restar `minimax(...)` funciona porque cuando yo tomo un elemento, el oponente se convierte en el "maximizador" del subproblema restante. Mi ganancia es `v[i] - (lo mejor del oponente)`.
+</Callout>
 
-1. [LeetCode - Nim Game](https://leetcode.com/problems/nim-game/)
-2. [LeetCode - Predict the Winner](https://leetcode.com/problems/predict-the-winner/)
-3. [LeetCode - Stone Game](https://leetcode.com/problems/stone-game/)
-4. [Codeforces - Game](https://codeforces.com/problemset/problem/461/B)
-5. [HackerRank - Game of Stones](https://www.hackerrank.com/challenges/game-of-stones-1)
+## Tic-Tac-Toe con Minimax
+
+```cpp
+#include <iostream>
+using namespace std;
+
+char tablero[3][3];
+
+// +10: gana X, -10: gana O, 0: empate
+int evaluar() {
+    // Revisar filas y columnas
+    for (int i = 0; i < 3; i++) {
+        if (tablero[i][0] == tablero[i][1] &&
+            tablero[i][1] == tablero[i][2]) {
+            if (tablero[i][0] == 'X') return 10;
+            if (tablero[i][0] == 'O') return -10;
+        }
+        if (tablero[0][i] == tablero[1][i] &&
+            tablero[1][i] == tablero[2][i]) {
+            if (tablero[0][i] == 'X') return 10;
+            if (tablero[0][i] == 'O') return -10;
+        }
+    }
+    // Diagonales
+    if (tablero[0][0] == tablero[1][1] &&
+        tablero[1][1] == tablero[2][2]) {
+        if (tablero[0][0] == 'X') return 10;
+        if (tablero[0][0] == 'O') return -10;
+    }
+    if (tablero[0][2] == tablero[1][1] &&
+        tablero[1][1] == tablero[2][0]) {
+        if (tablero[0][2] == 'X') return 10;
+        if (tablero[0][2] == 'O') return -10;
+    }
+    return 0;
+}
+
+bool hayMovimientos() {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (tablero[i][j] == '.') return true;
+    return false;
+}
+
+int minimax(bool esMax) {
+    int score = evaluar();
+    if (score == 10 || score == -10) return score;
+    if (!hayMovimientos()) return 0;
+
+    if (esMax) {
+        int mejor = -1000;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (tablero[i][j] == '.') {
+                    tablero[i][j] = 'X';
+                    mejor = max(mejor, minimax(false));
+                    tablero[i][j] = '.';  // Deshacer
+                }
+            }
+        }
+        return mejor;
+    } else {
+        int mejor = 1000;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (tablero[i][j] == '.') {
+                    tablero[i][j] = 'O';
+                    mejor = min(mejor, minimax(true));
+                    tablero[i][j] = '.';
+                }
+            }
+        }
+        return mejor;
+    }
+}
+
+// Encontrar el mejor movimiento para X
+pair<int,int> mejorMovimiento() {
+    int mejorVal = -1000;
+    pair<int,int> mejor = {-1, -1};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (tablero[i][j] == '.') {
+                tablero[i][j] = 'X';
+                int val = minimax(false);
+                tablero[i][j] = '.';
+
+                if (val > mejorVal) {
+                    mejorVal = val;
+                    mejor = {i, j};
+                }
+            }
+        }
+    }
+
+    return mejor;
+}
+```
+
+## Poda Alfa-Beta
+
+Minimax puro es lento porque explora **todas** las ramas. La poda alfa-beta elimina ramas que sabemos que no afectarán el resultado.
+
+- **alfa:** El mejor valor que el maximizador puede garantizar.
+- **beta:** El mejor valor que el minimizador puede garantizar.
+- Si alfa ≥ beta, podamos (no exploramos más hijos).
+
+```cpp
+int alphabeta(int profundidad, int alfa, int beta, bool esMax) {
+    if (profundidad == 0 || esTerminal()) {
+        return evaluar();
+    }
+
+    if (esMax) {
+        int valor = -INT_MAX;
+        for (auto &mov : movimientos()) {
+            hacer(mov);
+            valor = max(valor, alphabeta(profundidad-1, alfa, beta, false));
+            deshacer(mov);
+
+            alfa = max(alfa, valor);
+            if (alfa >= beta) break;  // Poda beta
+        }
+        return valor;
+    } else {
+        int valor = INT_MAX;
+        for (auto &mov : movimientos()) {
+            hacer(mov);
+            valor = min(valor, alphabeta(profundidad-1, alfa, beta, true));
+            deshacer(mov);
+
+            beta = min(beta, valor);
+            if (alfa >= beta) break;  // Poda alfa
+        }
+        return valor;
+    }
+}
+
+// Llamada inicial:
+// alphabeta(maxProfundidad, -INF, +INF, true)
+```
+
+En el mejor caso, alfa-beta reduce el número de nodos de $O(b^d)$ a $O(b^{d/2})$, donde $b$ es el factor de ramificación y $d$ la profundidad.
+
+## Resumen
+
+| Concepto | Uso |
+|----------|-----|
+| Minimax básico | Juegos pequeños (tic-tac-toe) |
+| Minimax + DP | Juegos con estados repetidos |
+| Alfa-Beta | Juegos grandes (ajedrez) |
+| Negamax | Simplificación: `max(a, b) = -min(-a, -b)` |
+
+## Ejercicio
+
+Hay N piedras en una pila. Dos jugadores se turnan. Puedes quitar 1 a 3 piedras. Cada piedra vale un punto. Ambos juegan para maximizar su puntaje. ¿Cuántos puntos obtiene cada uno?
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+int memo[1005];
+bool calc[1005];
+int n;
+
+// Retorna lo máximo que puede ganar el jugador actual
+// cuando quedan `quedan` piedras
+int solve(int quedan) {
+    if (quedan <= 0) return 0;
+    if (calc[quedan]) return memo[quedan];
+
+    calc[quedan] = true;
+    int mejor = 0;
+
+    for (int tomo = 1; tomo <= 3 && tomo <= quedan; tomo++) {
+        // Tomo `tomo` puntos, el oponente gana solve(quedan - tomo)
+        // del resto (quedan - tomo) piedras
+        int miGanancia = tomo + (quedan - tomo - solve(quedan - tomo));
+        mejor = max(mejor, miGanancia);
+    }
+
+    memo[quedan] = mejor;
+    return mejor;
+}
+
+int main() {
+    cin >> n;
+    memset(calc, false, sizeof(calc));
+
+    int j1 = solve(n);
+    int j2 = n - j1;
+
+    cout << "Jugador 1: " << j1 << endl;
+    cout << "Jugador 2: " << j2 << endl;
+
+    return 0;
+}
+```
+
+El truco: si quedan K piedras en total y el oponente gana `solve(K-tomo)` del resto, entonces yo gano `tomo + (K - tomo - solve(K-tomo))` = `K - solve(K-tomo)`. Pero escribimos la versión más clara arriba.
+
+</details>

@@ -1,73 +1,24 @@
 ---
-title: "MCD, MCM y Algoritmo de Euclides"
-description: "Domina el cálculo del Máximo Común Divisor y Mínimo Común Múltiplo usando el algoritmo de Euclides"
+title: "GCD y LCM"
+description: "Calcula el máximo común divisor y mínimo común múltiplo con el algoritmo de Euclides"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["matemáticas", "gcd", "mcd", "mcm", "euclides", "teoría-de-números"]
-order: 2
+tags: ["c++", "GCD", "LCM", "Euclides", "matemáticas"]
+syllabusId: 42
 ---
 
-## Máximo Común Divisor (MCD/GCD)
+## ¿Qué son GCD y LCM?
 
-El **Máximo Común Divisor** (MCD o GCD en inglés) de dos números es el número más grande que divide a ambos.
+- **GCD** (Greatest Common Divisor / Máximo Común Divisor): el número más grande que divide a ambos sin dejar residuo.
+  - GCD(12, 8) = 4 porque 4 divide a 12 y a 8.
+- **LCM** (Least Common Multiple / Mínimo Común Múltiplo): el número más pequeño que es múltiplo de ambos.
+  - LCM(4, 6) = 12 porque 12 es el menor número divisible entre 4 y 6.
 
-### Ejemplos
+**Analogía:** Piensa en dos engranajes. El GCD es cuántos dientes tienen en común. El LCM es cuántas vueltas necesitan para volver a la posición inicial al mismo tiempo.
 
-- $\gcd(12, 18) = 6$ porque los divisores de 12 son {1, 2, 3, 4, 6, 12} y los de 18 son {1, 2, 3, 6, 9, 18}. El mayor común es 6.
-- $\gcd(15, 25) = 5$
-- $\gcd(7, 13) = 1$ (son coprimos)
+## Algoritmo de Euclides para GCD
 
-### Método ingenuo
-
-Verificar todos los divisores posibles:
-
-```cpp
-int gcdIngenuo(int a, int b) {
-    int resultado = 1;
-    for (int i = 1; i <= min(a, b); i++) {
-        if (a % i == 0 && b % i == 0) {
-            resultado = i;
-        }
-    }
-    return resultado;
-}
-```
-
-**Complejidad:** $O(\min(a, b))$ - Muy lento para números grandes.
-
-## Algoritmo de Euclides
-
-El **Algoritmo de Euclides** es uno de los algoritmos más antiguos conocidos (¡más de 2300 años!) y es extremadamente eficiente.
-
-### La idea clave
-
-Se basa en esta propiedad fundamental:
-
-$$\gcd(a, b) = \gcd(b, a \mod b)$$
-
-¿Por qué funciona? Si $d$ divide tanto a $a$ como a $b$, entonces $d$ también divide a $a - kb$ para cualquier $k$. En particular, divide a $a \mod b = a - \lfloor a/b \rfloor \cdot b$.
-
-### Ejemplo paso a paso
-
-Calcular $\gcd(48, 18)$:
-
-```
-gcd(48, 18):  48 mod 18 = 12  →  gcd(18, 12)
-gcd(18, 12):  18 mod 12 = 6   →  gcd(12, 6)
-gcd(12, 6):   12 mod 6 = 0    →  gcd(6, 0)
-gcd(6, 0):    resultado = 6
-```
-
-### Implementación recursiva
-
-```cpp
-int gcd(int a, int b) {
-    if (b == 0) return a;
-    return gcd(b, a % b);
-}
-```
-
-### Implementación iterativa
+La idea genial de Euclides (¡hace 2300 años!): $\gcd(a, b) = \gcd(b, a \mod b)$
 
 ```cpp
 int gcd(int a, int b) {
@@ -80,225 +31,83 @@ int gcd(int a, int b) {
 }
 ```
 
-### Usando la STL (C++17+)
+### Ejemplo paso a paso
+
+$\gcd(48, 18)$:
+- $\gcd(48, 18) = \gcd(18, 48 \mod 18) = \gcd(18, 12)$
+- $\gcd(18, 12) = \gcd(12, 18 \mod 12) = \gcd(12, 6)$
+- $\gcd(12, 6) = \gcd(6, 12 \mod 6) = \gcd(6, 0)$
+- $b = 0$ → respuesta: **6** ✅
+
+**Complejidad:** $O(\log(\min(a, b)))$ — ¡extremadamente rápido!
+
+### Versión recursiva
 
 ```cpp
-#include <numeric>  // Para std::gcd
-
-int main() {
-    int a = 48, b = 18;
-    cout << __gcd(a, b) << endl;  // Funciona en todas las versiones
-    cout << gcd(a, b) << endl;     // C++17+
-    return 0;
+int gcd(int a, int b) {
+    if (b == 0) return a;
+    return gcd(b, a % b);
 }
 ```
 
-**Complejidad:** $O(\log(\min(a, b)))$ - ¡Muy rápido!
+### C++ ya lo tiene
 
-<details>
-<summary>💡 ¿Por qué es tan eficiente?</summary>
+```cpp
+#include <algorithm>  // En C++14
+// o
+#include <numeric>    // En C++17
 
-En cada paso, al menos uno de los números se reduce a la mitad. Si $a \geq b$, entonces $a \mod b < a/2$. Esto significa que el algoritmo hace a lo más $2 \log_2(\min(a, b))$ operaciones.
+int g = __gcd(12, 8);    // 4 (funciona en todas las versiones)
+int g2 = gcd(12, 8);     // 4 (C++17)
+```
 
-</details>
+## LCM a partir de GCD
 
-## Mínimo Común Múltiplo (MCM/LCM)
+La relación mágica:
 
-El **Mínimo Común Múltiplo** (MCM o LCM en inglés) de dos números es el número más pequeño que es divisible por ambos.
-
-### Relación con el MCD
-
-Existe una relación fundamental:
-
-$$\text{lcm}(a, b) = \frac{a \cdot b}{\gcd(a, b)}$$
-
-### Implementación
+$$\text{lcm}(a, b) = \frac{a \times b}{\gcd(a, b)}$$
 
 ```cpp
 long long lcm(long long a, long long b) {
-    return a / __gcd(a, b) * b;  // División primero para evitar overflow
+    return a / gcd(a, b) * b;  // Dividir primero para evitar overflow
 }
 ```
 
-> ⚠️ **Importante:** Hacemos `a / gcd(a, b) * b` en lugar de `a * b / gcd(a, b)` para evitar overflow cuando $a \cdot b$ es muy grande.
+<Callout type="warning">
+  Escribe `a / gcd(a, b) * b` y NO `a * b / gcd(a, b)`. El producto `a * b` puede causar overflow incluso con `long long`.
+</Callout>
 
-### Ejemplo
+## GCD de más de dos números
 
-$\text{lcm}(12, 18) = \frac{12 \cdot 18}{6} = \frac{216}{6} = 36$
-
-Verificación: 36 es divisible por 12 y por 18, y no hay número menor con esa propiedad.
-
-## Algoritmo de Euclides Extendido
-
-El algoritmo extendido no solo calcula $\gcd(a, b)$, sino que también encuentra enteros $x$ e $y$ tales que:
-
-$$ax + by = \gcd(a, b)$$
-
-Esto se conoce como la **Identidad de Bézout**.
-
-### Implementación
+$\gcd(a, b, c) = \gcd(\gcd(a, b), c)$
 
 ```cpp
-int gcdExtendido(int a, int b, int &x, int &y) {
-    if (b == 0) {
-        x = 1;
-        y = 0;
-        return a;
-    }
-
-    int x1, y1;
-    int g = gcdExtendido(b, a % b, x1, y1);
-
-    x = y1;
-    y = x1 - (a / b) * y1;
-
-    return g;
-}
-```
-
-### Ejemplo
-
-Para $\gcd(48, 18) = 6$, el algoritmo encuentra $x = -1$ e $y = 3$:
-
-$$48 \cdot (-1) + 18 \cdot 3 = -48 + 54 = 6$$
-
-### Aplicaciones
-
-1. **Encontrar inversos modulares** (lo veremos en aritmética modular)
-2. **Resolver ecuaciones diofánticas lineales**
-3. **Criptografía** (RSA)
-
-## Propiedades importantes
-
-### Propiedades del MCD
-
-1. $\gcd(a, 0) = a$
-2. $\gcd(a, a) = a$
-3. $\gcd(a, b) = \gcd(b, a)$ (conmutativa)
-4. $\gcd(a, b, c) = \gcd(\gcd(a, b), c)$ (asociativa)
-5. $\gcd(ka, kb) = k \cdot \gcd(a, b)$
-6. Si $\gcd(a, b) = 1$, decimos que $a$ y $b$ son **coprimos**
-
-### Propiedades del MCM
-
-1. $\text{lcm}(a, 1) = a$
-2. $\text{lcm}(a, a) = a$
-3. $\text{lcm}(a, b) = \text{lcm}(b, a)$
-4. $\text{lcm}(a, b, c) = \text{lcm}(\text{lcm}(a, b), c)$
-5. $\gcd(a, b) \cdot \text{lcm}(a, b) = a \cdot b$
-
-## GCD/LCM de múltiples números
-
-### MCD de un arreglo
-
-```cpp
-int gcdArreglo(vector<int>& arr) {
-    int resultado = arr[0];
-    for (int i = 1; i < arr.size(); i++) {
-        resultado = __gcd(resultado, arr[i]);
-        if (resultado == 1) break;  // No puede ser menor
+int gcdMultiple(vector<int> &v) {
+    int resultado = v[0];
+    for (int i = 1; i < v.size(); i++) {
+        resultado = __gcd(resultado, v[i]);
     }
     return resultado;
 }
 ```
 
-### MCM de un arreglo
+Lo mismo aplica para LCM:
 
 ```cpp
-long long lcmArreglo(vector<int>& arr) {
-    long long resultado = arr[0];
-    for (int i = 1; i < arr.size(); i++) {
-        resultado = resultado / __gcd(resultado, (long long)arr[i]) * arr[i];
+long long lcmMultiple(vector<int> &v) {
+    long long resultado = v[0];
+    for (int i = 1; i < v.size(); i++) {
+        resultado = lcm(resultado, (long long)v[i]);
     }
     return resultado;
 }
 ```
 
-## Problemas de práctica
+## GCD extendido
 
-### Problema 1: GCD de consultas
-
-Dado un arreglo, responde consultas del GCD de rangos.
+Encuentra $x, y$ tales que $ax + by = \gcd(a, b)$. Útil para inversos modulares.
 
 ```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-int main() {
-    int n, q;
-    cin >> n >> q;
-
-    vector<int> arr(n);
-    for (int i = 0; i < n; i++) {
-        cin >> arr[i];
-    }
-
-    // Tabla dispersa para consultas de GCD
-    int LOG = log2(n) + 1;
-    vector<vector<int>> tabla(LOG, vector<int>(n));
-
-    // Caso base
-    for (int i = 0; i < n; i++) {
-        tabla[0][i] = arr[i];
-    }
-
-    // Llenar tabla
-    for (int j = 1; j < LOG; j++) {
-        for (int i = 0; i + (1 << j) <= n; i++) {
-            tabla[j][i] = __gcd(tabla[j-1][i], tabla[j-1][i + (1 << (j-1))]);
-        }
-    }
-
-    // Responder consultas
-    while (q--) {
-        int l, r;
-        cin >> l >> r;
-        l--; r--;  // 0-indexed
-
-        int k = log2(r - l + 1);
-        int resultado = __gcd(tabla[k][l], tabla[k][r - (1 << k) + 1]);
-        cout << resultado << "\n";
-    }
-
-    return 0;
-}
-```
-
-### Problema 2: Fracciones
-
-Simplifica una fracción $\frac{a}{b}$:
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-int main() {
-    int a, b;
-    cin >> a >> b;
-
-    int g = __gcd(abs(a), abs(b));
-    a /= g;
-    b /= g;
-
-    // Asegurar que el signo esté en el numerador
-    if (b < 0) {
-        a = -a;
-        b = -b;
-    }
-
-    cout << a << "/" << b << endl;
-    return 0;
-}
-```
-
-### Problema 3: Ecuación Diofántica
-
-Encuentra una solución entera a $ax + by = c$ (si existe):
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
 int gcdExtendido(int a, int b, int &x, int &y) {
     if (b == 0) {
         x = 1;
@@ -311,41 +120,65 @@ int gcdExtendido(int a, int b, int &x, int &y) {
     y = x1 - (a / b) * y1;
     return g;
 }
+```
+
+## Propiedades útiles
+
+- $\gcd(a, 0) = a$
+- $\gcd(a, 1) = 1$
+- $\gcd(a, a) = a$
+- Si $\gcd(a, b) = 1$, decimos que $a$ y $b$ son **coprimos**.
+- $\gcd(a, b) \times \text{lcm}(a, b) = a \times b$
+
+## Ejercicio de práctica
+
+Dados N números, encuentra el GCD y LCM de todos ellos.
+
+**Entrada:**
+```
+4
+12 18 24 36
+```
+**Salida:**
+```
+GCD: 6
+LCM: 72
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+long long gcd(long long a, long long b) {
+    return b == 0 ? a : gcd(b, a % b);
+}
+
+long long lcm(long long a, long long b) {
+    return a / gcd(a, b) * b;
+}
 
 int main() {
-    int a, b, c;
-    cin >> a >> b >> c;
+    int n;
+    cin >> n;
+    vector<long long> v(n);
+    for (auto &x : v) cin >> x;
 
-    int x, y;
-    int g = gcdExtendido(abs(a), abs(b), x, y);
-
-    if (c % g != 0) {
-        cout << "No hay solución" << endl;
-    } else {
-        x *= c / g;
-        y *= c / g;
-
-        if (a < 0) x = -x;
-        if (b < 0) y = -y;
-
-        cout << "x = " << x << ", y = " << y << endl;
-        cout << "Verificación: " << a << "*" << x << " + " << b << "*" << y << " = " << a*x + b*y << endl;
+    long long g = v[0], l = v[0];
+    for (int i = 1; i < n; i++) {
+        g = gcd(g, v[i]);
+        l = lcm(l, v[i]);
     }
+
+    cout << "GCD: " << g << endl;
+    cout << "LCM: " << l << endl;
 
     return 0;
 }
 ```
 
-## Resumen
-
-| Operación | Fórmula/Algoritmo | Complejidad |
-|-----------|-------------------|-------------|
-| GCD | Algoritmo de Euclides | $O(\log(\min(a, b)))$ |
-| LCM | $\frac{a \cdot b}{\gcd(a, b)}$ | $O(\log(\min(a, b)))$ |
-| GCD Extendido | Encuentra $x, y$ tal que $ax + by = \gcd(a, b)$ | $O(\log(\min(a, b)))$ |
-
-## Ejercicios recomendados
-
-1. [Codeforces - GCD Problem](https://codeforces.com/problemset/problem/1459/A)
-2. [SPOJ - CEQU](https://www.spoj.com/problems/CEQU/) - Ecuación Diofántica
-3. [AtCoder - LCM Puzzle](https://atcoder.jp/contests/abc148/tasks/abc148_c)
+</details>

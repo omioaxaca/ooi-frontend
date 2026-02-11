@@ -1,227 +1,146 @@
 ---
 title: "Introducción a Programación Dinámica"
-description: "Aprende los fundamentos de la programación dinámica y cómo identificar problemas DP"
+description: "Aprende la técnica más poderosa de competencias: descomponer problemas en subproblemas"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["DP", "programación-dinámica", "optimización", "algoritmos"]
-syllabusId: 69
-order: 1
+tags: ["c++", "programación dinámica", "DP", "memoización", "tabulación"]
+syllabusId: 66
 ---
 
-## ¿Qué es la Programación Dinámica?
+## ¿Qué es programación dinámica?
 
-La **Programación Dinámica (DP)** es una técnica para resolver problemas dividiéndolos en subproblemas más pequeños y almacenando sus soluciones para evitar cálculos repetidos.
+**Analogía:** Imagina que te preguntan: "¿Cuánto es 3+5+2+7+1+4?". Calculas: 22. Luego te preguntan: "¿Y si le sumas 6?". No vuelves a sumar todo — usas el resultado anterior: 22 + 6 = 28. ¡Eso es programación dinámica! **Guardar resultados para no recalcularlos.**
 
-## Características de un problema DP
-
-1. **Subestructura óptima:** La solución óptima contiene soluciones óptimas a subproblemas
-2. **Subproblemas superpuestos:** Los mismos subproblemas se resuelven múltiples veces
+Formalmente, DP se aplica cuando un problema tiene:
+1. **Subestructura óptima:** La solución óptima se construye a partir de soluciones óptimas de subproblemas.
+2. **Subproblemas superpuestos:** Los mismos subproblemas se resuelven múltiples veces.
 
 ## Ejemplo clásico: Fibonacci
 
-### Sin DP (exponencial)
-
+Sin DP ($O(2^n)$, ¡terrible!):
 ```cpp
 int fib(int n) {
     if (n <= 1) return n;
-    return fib(n - 1) + fib(n - 2);  // ¡Recalcula los mismos valores!
+    return fib(n-1) + fib(n-2);  // Recalcula todo
 }
-// Complejidad: O(2^n)
 ```
 
-### Con memoización (top-down)
+### Top-Down (Memoización)
+
+Recursión + guardar resultados:
 
 ```cpp
-int memo[105];
+long long memo[105];
+bool calculado[105];
 
-int fib(int n) {
+long long fib(int n) {
     if (n <= 1) return n;
-    if (memo[n] != -1) return memo[n];  // Ya calculado
+    if (calculado[n]) return memo[n];
 
-    return memo[n] = fib(n - 1) + fib(n - 2);
+    calculado[n] = true;
+    memo[n] = fib(n-1) + fib(n-2);
+    return memo[n];
 }
-
-// Inicializar: memset(memo, -1, sizeof(memo));
-// Complejidad: O(n)
 ```
 
-### Con tabulación (bottom-up)
+### Bottom-Up (Tabulación)
+
+Llenar una tabla iterativamente:
 
 ```cpp
-int fib(int n) {
-    if (n <= 1) return n;
-
-    int dp[n + 1];
+long long fib(int n) {
+    long long dp[105];
     dp[0] = 0;
     dp[1] = 1;
 
     for (int i = 2; i <= n; i++) {
-        dp[i] = dp[i - 1] + dp[i - 2];
-    }
-
-    return dp[n];
-}
-// Complejidad: O(n), Espacio: O(n)
-```
-
-### Optimización de espacio
-
-```cpp
-int fib(int n) {
-    if (n <= 1) return n;
-
-    int prev2 = 0, prev1 = 1;
-
-    for (int i = 2; i <= n; i++) {
-        int curr = prev1 + prev2;
-        prev2 = prev1;
-        prev1 = curr;
-    }
-
-    return prev1;
-}
-// Complejidad: O(n), Espacio: O(1)
-```
-
-## Pasos para resolver problemas DP
-
-1. **Identificar el estado:** ¿Qué variables describen un subproblema?
-2. **Definir la transición:** ¿Cómo se relaciona un estado con estados anteriores?
-3. **Establecer casos base:** ¿Cuáles son los valores iniciales?
-4. **Determinar el orden:** ¿En qué orden calcular los estados?
-5. **Extraer la respuesta:** ¿Dónde está la solución final?
-
-## Problema: Subir escaleras
-
-Hay n escalones. Puedes subir 1 o 2 a la vez. ¿De cuántas formas puedes llegar arriba?
-
-```cpp
-int formasDeSubir(int n) {
-    if (n <= 2) return n;
-
-    int dp[n + 1];
-    dp[1] = 1;  // 1 forma de llegar al escalón 1
-    dp[2] = 2;  // 2 formas: (1+1) o (2)
-
-    for (int i = 3; i <= n; i++) {
-        dp[i] = dp[i - 1] + dp[i - 2];
+        dp[i] = dp[i-1] + dp[i-2];
     }
 
     return dp[n];
 }
 ```
 
-**Estado:** `dp[i]` = formas de llegar al escalón i
-**Transición:** `dp[i] = dp[i-1] + dp[i-2]`
-**Base:** `dp[1] = 1, dp[2] = 2`
+Ambos son $O(n)$.
 
-## Problema: Suma de rango máximo
+## Los 4 pasos para resolver con DP
 
-Dado un array, encuentra la suma máxima de un subarreglo contiguo.
+<Steps>
+<Step>**Definir el estado.** ¿Qué representa `dp[i]`? (o `dp[i][j]`, etc.)</Step>
+<Step>**Encontrar la transición.** ¿Cómo se calcula `dp[i]` a partir de estados anteriores?</Step>
+<Step>**Establecer casos base.** ¿Cuáles son los valores iniciales?</Step>
+<Step>**Determinar la respuesta.** ¿Dónde está la respuesta final?</Step>
+</Steps>
 
-```cpp
-int maxSubarraySum(vector<int>& arr) {
-    int n = arr.size();
-    int maxSuma = arr[0];
-    int sumaActual = arr[0];
+## Problema clásico: Monedas
 
-    for (int i = 1; i < n; i++) {
-        // Decidir: empezar nuevo subarreglo o continuar
-        sumaActual = max(arr[i], sumaActual + arr[i]);
-        maxSuma = max(maxSuma, sumaActual);
-    }
+Dado un conjunto de monedas, ¿cuál es el **mínimo número de monedas** para dar cambio de una cantidad C?
 
-    return maxSuma;
-}
+```
+Monedas: {1, 5, 10, 25}
+Cantidad: 36
+Respuesta: 3 (25 + 10 + 1)
 ```
 
-**Estado:** `sumaActual` = suma máxima terminando en posición actual
-**Transición:** `sumaActual = max(arr[i], sumaActual + arr[i])`
+**Paso 1 — Estado:** `dp[c]` = mínimo de monedas para la cantidad `c`.
 
-## Problema: Mochila 0/1
+**Paso 2 — Transición:** Para cada moneda `m`, si `c >= m`, entonces `dp[c] = min(dp[c], dp[c - m] + 1)`.
 
-Tienes n objetos con pesos y valores. Capacidad máxima W. Maximiza el valor.
+**Paso 3 — Caso base:** `dp[0] = 0` (0 monedas para dar cambio de 0).
+
+**Paso 4 — Respuesta:** `dp[C]`.
 
 ```cpp
-int mochila(vector<int>& peso, vector<int>& valor, int W) {
-    int n = peso.size();
-    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
 
-    for (int i = 1; i <= n; i++) {
-        for (int w = 0; w <= W; w++) {
-            // No tomar objeto i
-            dp[i][w] = dp[i - 1][w];
+int main() {
+    int n, C;
+    cin >> n >> C;
 
-            // Tomar objeto i (si cabe)
-            if (peso[i - 1] <= w) {
-                dp[i][w] = max(dp[i][w],
-                               dp[i - 1][w - peso[i - 1]] + valor[i - 1]);
+    vector<int> monedas(n);
+    for (int &m : monedas) cin >> m;
+
+    vector<int> dp(C + 1, INT_MAX);
+    dp[0] = 0;
+
+    for (int c = 1; c <= C; c++) {
+        for (int m : monedas) {
+            if (c >= m && dp[c - m] != INT_MAX) {
+                dp[c] = min(dp[c], dp[c - m] + 1);
             }
         }
     }
 
-    return dp[n][W];
+    cout << (dp[C] == INT_MAX ? -1 : dp[C]) << endl;
+
+    return 0;
 }
 ```
 
-**Estado:** `dp[i][w]` = máximo valor usando primeros i objetos con capacidad w
-**Transición:** `dp[i][w] = max(no tomar, tomar)`
+## Problema: Subsecuencia creciente más larga (LIS)
 
-### Optimización de espacio
+Dada una secuencia, encuentra la **subsecuencia creciente más larga**.
 
-```cpp
-int mochilaOptimizado(vector<int>& peso, vector<int>& valor, int W) {
-    int n = peso.size();
-    vector<int> dp(W + 1, 0);
-
-    for (int i = 0; i < n; i++) {
-        // Recorrer de derecha a izquierda para no usar valores actualizados
-        for (int w = W; w >= peso[i]; w--) {
-            dp[w] = max(dp[w], dp[w - peso[i]] + valor[i]);
-        }
-    }
-
-    return dp[W];
-}
+```
+Secuencia: [10, 9, 2, 5, 3, 7, 101, 18]
+LIS: [2, 3, 7, 18] → longitud 4
 ```
 
-## Problema: LCS (Longest Common Subsequence)
+**Estado:** `dp[i]` = longitud de la LIS que termina en `i`.
 
-Encuentra la subsecuencia común más larga entre dos strings.
-
-```cpp
-int lcs(string& a, string& b) {
-    int n = a.size(), m = b.size();
-    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
-
-    for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= m; j++) {
-            if (a[i - 1] == b[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-            } else {
-                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
-            }
-        }
-    }
-
-    return dp[n][m];
-}
-```
-
-## Problema: LIS (Longest Increasing Subsequence)
-
-Encuentra la subsecuencia creciente más larga.
-
-### O(n²)
+**Transición:** `dp[i] = max(dp[j] + 1)` para todo `j < i` donde `v[j] < v[i]`.
 
 ```cpp
-int lis(vector<int>& arr) {
-    int n = arr.size();
+int lis(vector<int> &v) {
+    int n = v.size();
     vector<int> dp(n, 1);
 
     for (int i = 1; i < n; i++) {
         for (int j = 0; j < i; j++) {
-            if (arr[j] < arr[i]) {
+            if (v[j] < v[i]) {
                 dp[i] = max(dp[i], dp[j] + 1);
             }
         }
@@ -231,88 +150,58 @@ int lis(vector<int>& arr) {
 }
 ```
 
-### O(n log n)
+$O(n^2)$. Existe una versión $O(n \log n)$ con búsqueda binaria.
+
+## Problema: Mochila 0/1
+
+Tienes N objetos con peso y valor. Tu mochila aguanta un peso máximo W. ¿Cuál es el **valor máximo** que puedes cargar?
 
 ```cpp
-int lisOptimizado(vector<int>& arr) {
-    vector<int> lis;
+int knapsack(vector<int> &peso, vector<int> &valor, int W) {
+    int n = peso.size();
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
 
-    for (int x : arr) {
-        auto it = lower_bound(lis.begin(), lis.end(), x);
-        if (it == lis.end()) {
-            lis.push_back(x);
-        } else {
-            *it = x;
-        }
-    }
-
-    return lis.size();
-}
-```
-
-## Problema: Cambio de monedas
-
-Mínimo número de monedas para formar una cantidad.
-
-```cpp
-int cambioMonedas(vector<int>& monedas, int cantidad) {
-    vector<int> dp(cantidad + 1, INT_MAX);
-    dp[0] = 0;
-
-    for (int c : monedas) {
-        for (int i = c; i <= cantidad; i++) {
-            if (dp[i - c] != INT_MAX) {
-                dp[i] = min(dp[i], dp[i - c] + 1);
+    for (int i = 1; i <= n; i++) {
+        for (int w = 0; w <= W; w++) {
+            dp[i][w] = dp[i-1][w];  // No tomar objeto i
+            if (w >= peso[i-1]) {
+                dp[i][w] = max(dp[i][w], dp[i-1][w - peso[i-1]] + valor[i-1]);
             }
         }
     }
 
-    return dp[cantidad] == INT_MAX ? -1 : dp[cantidad];
+    return dp[n][W];
 }
 ```
 
-## Tipos de DP
+## Ejercicio de práctica
 
-| Tipo | Ejemplo |
-|------|---------|
-| Lineal | Fibonacci, LIS |
-| 2D | LCS, Mochila |
-| Intervalos | MCM, Palíndromos |
-| Árboles | Subárbol máximo |
-| Bitmask | TSP, Asignación |
-| Dígitos | Contar números |
+Sube una escalera de N escalones. En cada paso puedes subir 1 o 2 escalones. ¿De cuántas formas puedes llegar arriba?
 
-## Template genérico
+<details>
+<summary>Ver solución</summary>
 
 ```cpp
-// Memoización (top-down)
-int memo[MAXN][MAXM];
+#include <iostream>
+using namespace std;
 
-int solve(int estado1, int estado2) {
-    // Casos base
-    if (/* condición final */) return /* valor base */;
+int main() {
+    int n;
+    cin >> n;
 
-    // Verificar memo
-    if (memo[estado1][estado2] != -1) {
-        return memo[estado1][estado2];
+    long long dp[105];
+    dp[0] = 1;
+    dp[1] = 1;
+
+    for (int i = 2; i <= n; i++) {
+        dp[i] = dp[i-1] + dp[i-2];
     }
 
-    // Calcular respuesta
-    int respuesta = /* valor inicial */;
-    for (/* transiciones posibles */) {
-        respuesta = max/min(respuesta, /* transición */);
-    }
-
-    return memo[estado1][estado2] = respuesta;
+    cout << dp[n] << endl;
+    return 0;
 }
-
-// Inicializar: memset(memo, -1, sizeof(memo));
 ```
 
-## Ejercicios recomendados
+Es exactamente Fibonacci: `dp[i] = dp[i-1] + dp[i-2]`.
 
-1. [CSES - Dice Combinations](https://cses.fi/problemset/task/1633)
-2. [CSES - Coin Combinations I](https://cses.fi/problemset/task/1635)
-3. [CSES - Grid Paths](https://cses.fi/problemset/task/1638)
-4. [LeetCode - Climbing Stairs](https://leetcode.com/problems/climbing-stairs/)
-5. [LeetCode - House Robber](https://leetcode.com/problems/house-robber/)
+</details>

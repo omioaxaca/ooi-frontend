@@ -9,27 +9,45 @@ syllabusId: 4
 
 ## ¿Qué es un diagrama de flujo?
 
-Un **diagrama de flujo** es una representación gráfica de un algoritmo que utiliza símbolos estandarizados para mostrar el flujo de operaciones. Es una herramienta visual que facilita entender y comunicar la lógica de un programa.
+Un **diagrama de flujo** es un dibujo que representa los pasos de un algoritmo usando figuras geométricas conectadas por flechas. Es como un mapa que te muestra el camino que sigue tu programa desde el inicio hasta el final.
+
+### ¿Por qué usar diagramas de flujo?
+
+Imagina que quieres explicarle a un amigo cómo llegar a tu casa. Podrías darle instrucciones escritas: "camina dos cuadras, gira a la derecha, camina una cuadra más...". Pero sería mucho más fácil dibujarle un **mapa**. El diagrama de flujo es ese mapa, pero para algoritmos.
+
+Los diagramas de flujo son útiles porque:
+- **Hacen visible la lógica** de tu programa antes de escribir código.
+- **Ayudan a encontrar errores** en tu razonamiento.
+- **Facilitan la comunicación** con otras personas.
+- **Son el primer paso** antes de programar cualquier solución.
 
 ## Símbolos básicos
 
-| Símbolo | Nombre | Uso |
-|---------|--------|-----|
-| ⬭ (Óvalo) | Inicio/Fin | Marca el comienzo y final del algoritmo |
-| ▭ (Rectángulo) | Proceso | Operaciones o instrucciones |
-| ◇ (Rombo) | Decisión | Condiciones (if/else) |
-| ▱ (Paralelogramo) | Entrada/Salida | Leer o mostrar datos |
-| → (Flecha) | Flujo | Dirección del algoritmo |
+Cada figura geométrica tiene un significado específico. Es un lenguaje universal:
 
-## Ejemplo: Determinar si un número es par
+| Símbolo | Forma | Uso | Analogía |
+|---------|-------|-----|----------|
+| **Inicio/Fin** | Óvalo (⬭) | Marca el comienzo y el final del algoritmo | La puerta de entrada y salida de un edificio |
+| **Proceso** | Rectángulo (▭) | Una acción u operación | Un trabajador haciendo su tarea |
+| **Decisión** | Rombo (◇) | Una pregunta con respuesta Sí/No | Un cruce de caminos donde debes elegir |
+| **Entrada/Salida** | Paralelogramo (▱) | Leer datos o mostrar resultados | Recibir un paquete o enviar una carta |
+| **Flujo** | Flecha (→) | La dirección que sigue el algoritmo | El camino por donde caminas |
 
-**Algoritmo:**
-1. Leer un número
-2. Si el número es divisible por 2, es par
-3. Si no, es impar
-4. Mostrar resultado
+<Callout type="info">
+  No necesitas memorizar todos los símbolos perfectamente. Lo más importante es entender la **lógica** del diagrama: el flujo de decisiones y acciones.
+</Callout>
 
-**Diagrama conceptual:**
+## Tu primer diagrama: ¿Par o impar?
+
+Vamos a hacer un diagrama para un programa muy simple: leer un número y decir si es par o impar.
+
+### El algoritmo en palabras:
+1. Leer un número.
+2. Si el número es divisible por 2, es par.
+3. Si no, es impar.
+4. Mostrar el resultado.
+
+### El diagrama:
 
 ```
     ┌─────────┐
@@ -41,21 +59,30 @@ Un **diagrama de flujo** es una representación gráfica de un algoritmo que uti
     └────┬────┘
          │
     ┌────▼────┐
-    │ n % 2   │
+    │ ¿n % 2  │
     │  == 0?  │
     └────┬────┘
       Sí │    No
     ┌────▼────┐  ┌────▼────┐
-    │ "Par"   │  │ "Impar" │
+    │Mostrar  │  │Mostrar  │
+    │ "Par"   │  │"Impar"  │
     └────┬────┘  └────┬────┘
          │           │
          └─────┬─────┘
          ┌─────▼─────┐
-         │   FIN     │
+         │    FIN     │
          └───────────┘
 ```
 
-**Código correspondiente:**
+**Leamos el diagrama juntos:**
+1. Empezamos en **INICIO**.
+2. Seguimos la flecha y llegamos a "Leer n" — aquí el programa pide al usuario un número.
+3. Seguimos la flecha y llegamos al rombo de decisión: "¿n % 2 == 0?". Esta es una pregunta con dos respuestas posibles.
+4. Si la respuesta es **Sí** (el número es divisible por 2), seguimos el camino izquierdo y mostramos "Par".
+5. Si la respuesta es **No**, seguimos el camino derecho y mostramos "Impar".
+6. Ambos caminos se unen y terminamos en **FIN**.
+
+### El código correspondiente:
 
 ```cpp
 #include <iostream>
@@ -63,101 +90,111 @@ using namespace std;
 
 int main() {
     int n;
-    cin >> n;
+    cin >> n;           // "Leer n" del diagrama
 
-    if (n % 2 == 0) {
-        cout << "Par" << endl;
+    if (n % 2 == 0) {   // El rombo de decisión
+        cout << "Par" << endl;    // Camino del "Sí"
     } else {
-        cout << "Impar" << endl;
+        cout << "Impar" << endl;  // Camino del "No"
     }
 
+    return 0;           // "FIN" del diagrama
+}
+```
+
+¿Ves cómo el diagrama y el código se corresponden exactamente? Cada figura del diagrama tiene su equivalente en código.
+
+## Las tres estructuras fundamentales
+
+Todo algoritmo, por complejo que sea, se puede construir con solo tres tipos de estructuras:
+
+### 1. Secuencia: "Haz esto, luego esto, luego esto"
+
+Las instrucciones se ejecutan una tras otra, en orden, como leer un libro página por página.
+
+```
+    ┌─────────┐
+    │ Paso 1  │    Ejemplo: Calcular el área de un rectángulo
+    └────┬────┘
+         │         1. Leer base
+    ┌────▼────┐
+    │ Paso 2  │    2. Leer altura
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Paso 3  │    3. area = base × altura
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Paso 4  │    4. Mostrar area
+    └─────────┘
+```
+
+```cpp
+int main() {
+    double base, altura;
+    cin >> base >> altura;          // Pasos 1 y 2
+    double area = base * altura;    // Paso 3
+    cout << area << endl;           // Paso 4
     return 0;
 }
 ```
 
-## Estructuras de control en diagramas
+### 2. Selección (decisión): "Si pasa esto, haz aquello; si no, haz lo otro"
 
-### Secuencia
-
-Las instrucciones se ejecutan una tras otra:
-
-```
-    ┌─────────┐
-    │ Paso 1  │
-    └────┬────┘
-         │
-    ┌────▼────┐
-    │ Paso 2  │
-    └────┬────┘
-         │
-    ┌────▼────┐
-    │ Paso 3  │
-    └─────────┘
-```
-
-### Selección (if-else)
+El programa llega a un punto donde debe elegir entre dos caminos, dependiendo de una condición.
 
 ```
          ┌──────────┐
-         │ Condición│
+         │¿Condición│
+         │   ?      │
          └────┬─────┘
         Sí    │    No
-    ┌─────────┼─────────┐
-    │         │         │
+    ┌─────────┘─────────┐
+    │                   │
 ┌───▼───┐         ┌───▼───┐
-│Acción1│         │Acción2│
+│Camino │         │Camino │
+│  A    │         │  B    │
 └───┬───┘         └───┬───┘
     │                 │
     └────────┬────────┘
              ▼
 ```
 
-### Ciclo mientras (while)
+Es como llegar a una bifurcación en un camino. Un letrero dice: "Si llueve, ve por la izquierda (hay techo). Si no llueve, ve por la derecha (es más corto)."
+
+### 3. Repetición (ciclo): "Repite esto mientras se cumpla una condición"
+
+El programa repite un bloque de instrucciones varias veces.
 
 ```
-         ┌─────────────────┐
-         │                 │
-         │    ┌────────┐   │
-         └────► Condición◄──┘
-              └────┬────┘
-             Sí    │    No
-         ┌─────────┘    │
-         │              │
-    ┌────▼────┐         │
-    │ Cuerpo  │         │
-    │del ciclo│         │
-    └────┬────┘         │
-         │              │
-         └──────────────┘
-                        ▼
+    ┌──────────────────┐
+    │                  │
+    │   ┌──────────┐   │
+    └──►│¿Condición│   │
+        │   ?      │   │
+        └────┬─────┘   │
+        Sí   │    No   │
+        ┌────┘    │    │
+        │         │    │
+   ┌────▼────┐    │    │
+   │ Cuerpo  │    │    │
+   │del ciclo│────┘    │
+   └─────────┘         │
+              │         │
+              └─────────┘
+              No
+              ▼
+          (continúa)
 ```
 
-### Ciclo para (for)
+Es como dar vueltas en una pista de carreras: sigues dando vueltas mientras no hayas completado las vueltas requeridas. Cuando las completas, sales de la pista.
 
-```
-    ┌─────────────┐
-    │ i = inicio  │
-    └──────┬──────┘
-           │
-    ┌──────▼──────┐
-    │ i <= fin ?  │◄────────┐
-    └──────┬──────┘         │
-      Sí   │    No          │
-    ┌──────┘    │           │
-    │           │           │
-┌───▼───┐       │     ┌─────┴─────┐
-│Cuerpo │       │     │  i = i+1  │
-└───┬───┘       │     └─────┬─────┘
-    │           │           │
-    └───────────┼───────────┘
-                ▼
-```
+## Ejemplo completo: Calcular el factorial
 
-## Ejemplo completo: Factorial
+El factorial de n (escrito n!) es multiplicar todos los números del 1 al n. Por ejemplo, 5! = 1 × 2 × 3 × 4 × 5 = 120.
 
-**Problema:** Calcular el factorial de n (n!)
-
-**Diagrama:**
+### Diagrama:
 
 ```
     ┌─────────┐
@@ -169,31 +206,42 @@ Las instrucciones se ejecutan una tras otra:
     └────┬────┘
          │
     ┌────▼────────┐
-    │ fact = 1    │
-    │ i = 1       │
+    │ fact = 1    │  ← Iniciamos el resultado en 1
+    │ i = 1       │  ← Iniciamos el contador en 1
     └────┬────────┘
          │
-    ┌────▼────┐
-    │ i <= n? │◄────────┐
-    └────┬────┘         │
-      Sí │    No        │
-    ┌────┘    │         │
-    │         │         │
-┌───▼────────┐│    ┌────┴────┐
-│fact = fact ││    │ i = i+1 │
-│    * i     ││    └────┬────┘
-└────┬───────┘│         │
-     │        │         │
-     └────────┼─────────┘
+    ┌────▼─────┐
+    │ ¿i <= n? │◄────────┐
+    └────┬─────┘         │
+      Sí │    No         │
+    ┌────┘    │          │
+    │         │          │
+┌───▼────────┐│    ┌─────┴────┐
+│fact = fact  ││    │ i = i + 1│
+│    × i     ││    └─────┬────┘
+└────┬───────┘│          │
+     │        │          │
+     └────────┼──────────┘
               │
     ┌─────────▼─────────┐
     │ Mostrar fact      │
     └─────────┬─────────┘
               │
-    ┌─────────▼─────────┐
-    │      FIN          │
-    └───────────────────┘
+         ┌────▼────┐
+         │   FIN   │
+         └─────────┘
 ```
+
+**Seguimiento del diagrama para n = 4:**
+
+| Paso | i | fact | ¿i <= n? | Acción |
+|------|---|------|----------|--------|
+| Inicio | 1 | 1 | ¿1 <= 4? Sí | fact = 1 × 1 = 1, i = 2 |
+| Vuelta 2 | 2 | 1 | ¿2 <= 4? Sí | fact = 1 × 2 = 2, i = 3 |
+| Vuelta 3 | 3 | 2 | ¿3 <= 4? Sí | fact = 2 × 3 = 6, i = 4 |
+| Vuelta 4 | 4 | 6 | ¿4 <= 4? Sí | fact = 6 × 4 = 24, i = 5 |
+| Vuelta 5 | 5 | 24 | ¿5 <= 4? **No** | Salimos del ciclo |
+| Final | - | 24 | - | Mostramos 24 |
 
 **Código:**
 
@@ -211,12 +259,15 @@ int main() {
     }
 
     cout << fact << endl;
-
     return 0;
 }
 ```
 
-## Ejemplo: Suma de números hasta que el usuario ingrese 0
+## Ejemplo: Sumar números hasta que el usuario ingrese 0
+
+Este ejemplo muestra un ciclo `while` donde no sabemos de antemano cuántas veces repetir.
+
+### Diagrama:
 
 ```
     ┌─────────┐
@@ -231,25 +282,27 @@ int main() {
     │ Leer n  │◄────────┐
     └────┬────┘         │
          │              │
-    ┌────▼────┐         │
-    │ n != 0? │         │
-    └────┬────┘         │
+    ┌────▼─────┐        │
+    │ ¿n != 0? │        │
+    └────┬─────┘        │
       Sí │    No        │
     ┌────┘    │         │
     │         │         │
-┌───▼────────┐│    ┌────┴────┐
-│suma = suma ││    │ Leer n  │
-│    + n     ││    └─────────┘
+┌───▼────────┐│         │
+│suma = suma ││         │
+│    + n     │├─────────┘
 └────┬───────┘│
-     └────────┘
-              │
-    ┌─────────▼─────────┐
-    │ Mostrar suma      │
-    └─────────┬─────────┘
-              │
-         ┌────▼────┐
-         │   FIN   │
-         └─────────┘
+     │   ┌────▼────┐
+     │   │ Leer n  │
+     │   └─────────┘
+     │
+    ┌▼────────────────┐
+    │ Mostrar suma    │
+    └────────┬────────┘
+             │
+        ┌────▼────┐
+        │   FIN   │
+        └─────────┘
 ```
 
 **Código:**
@@ -262,39 +315,49 @@ int main() {
     int suma = 0;
     int n;
 
-    cin >> n;
-    while (n != 0) {
-        suma = suma + n;
-        cin >> n;
+    cin >> n;              // Leemos el primer número
+    while (n != 0) {       // Mientras no sea 0...
+        suma = suma + n;   // ...lo sumamos
+        cin >> n;          // ...y leemos el siguiente
     }
 
-    cout << suma << endl;
-
+    cout << suma << endl;  // Mostramos el resultado
     return 0;
 }
 ```
 
-## Buenas prácticas
+**Ejemplo de ejecución:**
+- El usuario escribe: 5, 3, 7, 0
+- suma va cambiando: 0 → 5 → 8 → 15
+- Al leer 0, el ciclo se detiene y se muestra: 15
 
-1. **Flujo de arriba a abajo:** El diagrama debe leerse de arriba hacia abajo
-2. **Un inicio y un fin:** Debe haber exactamente un punto de inicio y uno de fin
-3. **Claridad:** Cada símbolo debe contener instrucciones claras y concisas
-4. **Evitar cruces:** Las líneas no deben cruzarse si es posible
-5. **Consistencia:** Usar el mismo nivel de detalle en todo el diagrama
+## Buenas prácticas al dibujar diagramas
+
+1. **Flujo de arriba a abajo:** El diagrama siempre se lee de arriba hacia abajo y de izquierda a derecha.
+2. **Un solo inicio y un solo fin:** No puede haber múltiples puntos de inicio.
+3. **Claridad:** Cada figura debe contener instrucciones cortas y claras. "suma = suma + n" está bien; "calcular la suma acumulada del valor ingresado por el usuario hasta el momento" es demasiado largo.
+4. **Evitar cruces:** Las flechas no deben cruzarse entre sí si es posible.
+5. **Nombrar las salidas de las decisiones:** Siempre escribe "Sí" y "No" en las flechas que salen de un rombo.
 
 ## Herramientas para crear diagramas
 
-- **Draw.io** (diagrams.net) - Gratuito y en línea
-- **Lucidchart** - Profesional con versión gratuita
-- **Mermaid** - Diagramas en texto para documentación
-- **Papel y lápiz** - ¡Siempre funciona!
+- **Papel y lápiz** — ¡La forma más rápida! Perfecta para planear antes de programar.
+- **Draw.io** (diagrams.net) — Gratis, funciona en el navegador, muchos símbolos disponibles.
+- **Lucidchart** — Más profesional, tiene una versión gratuita limitada.
+- **Excalidraw** — Estilo "dibujado a mano", muy intuitivo.
+
+<Callout type="success">
+  En competencias no necesitas dibujar diagramas bonitos. Un boceto rápido en papel es suficiente para organizar tus ideas antes de escribir código. Lo importante es la lógica, no la presentación.
+</Callout>
 
 ## Ejercicio de práctica
 
-Dibuja el diagrama de flujo para un algoritmo que determine si un número es primo.
+Dibuja el diagrama de flujo para un programa que lea un número y determine si es primo.
+
+**Recuerda:** Un número primo solo es divisible entre 1 y sí mismo. Para verificarlo, intentamos dividirlo entre todos los números desde 2 hasta su raíz cuadrada.
 
 <details>
-<summary>Ver solución</summary>
+<summary>Ver solución (diagrama + código)</summary>
 
 ```
     ┌─────────┐
@@ -305,55 +368,82 @@ Dibuja el diagrama de flujo para un algoritmo que determine si un número es pri
     │ Leer n  │
     └────┬────┘
          │
-    ┌────▼────┐
-    │ n < 2?  │
-    └────┬────┘
+    ┌────▼─────┐
+    │ ¿n < 2?  │
+    └────┬─────┘
       Sí │    No
     ┌────┘    │
-    │    ┌────▼────┐
-    │    │ i = 2   │
-    │    │esPrimo= │
-    │    │ true    │
-    │    └────┬────┘
+    │    ┌────▼────────┐
+    │    │ i = 2       │
+    │    │ primo = true │
+    │    └────┬────────┘
     │         │
-    │    ┌────▼─────────┐
-    │    │i*i <= n AND  │◄──┐
-    │    │  esPrimo?    │   │
-    │    └────┬─────────┘   │
-    │      Sí │    No       │
-    │    ┌────┘    │        │
-    │    │         │        │
-    │┌───▼───┐     │   ┌────┴────┐
-    ││n%i==0?│     │   │ i = i+1 │
-    │└───┬───┘     │   └─────────┘
-    │  Sí│   No    │
-    │┌───▼────┐    │
-    ││esPrimo │    │
-    ││= false │────┘
-    │└────────┘
+    │    ┌────▼──────────┐
+    │    │¿i*i <= n AND  │◄──┐
+    │    │  primo?       │   │
+    │    └────┬──────────┘   │
+    │      Sí │    No        │
+    │    ┌────┘    │         │
+    │    │         │         │
+    │  ┌─▼──────┐  │    ┌────┴────┐
+    │  │¿n%i==0?│  │    │ i = i+1 │
+    │  └───┬────┘  │    └─────────┘
+    │    Sí│  No   │
+    │  ┌───▼────┐  │
+    │  │primo = │──┘
+    │  │ false  │
+    │  └────────┘
     │         │
-┌───▼───┐     │
-│"No es"│     │
-│"primo"│     ├─────────┐
-└───┬───┘     │    ┌────▼────┐
-    │         │    │esPrimo? │
-    │         │    └────┬────┘
-    │         │      Sí │  No
-    │         │    ┌────┘   │
-    │         │┌───▼───┐┌───▼───┐
-    │         ││"Es    ││"No es"│
-    │         ││primo" ││"primo"│
-    │         │└───┬───┘└───┬───┘
-    │         │    │        │
-    └─────────┴────┴────────┘
-                   │
-              ┌────▼────┐
-              │   FIN   │
-              └─────────┘
+    ├─────────┘
+    │
+┌───▼──────────┐
+│ ¿primo?      │
+└───┬──────────┘
+  Sí│        No
+┌───▼───┐ ┌───▼───────┐
+│"Es    │ │"No es     │
+│primo" │ │primo"     │
+└───┬───┘ └───┬───────┘
+    └─────┬───┘
+     ┌────▼────┐
+     │   FIN   │
+     └─────────┘
+```
+
+**Código:**
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    if (n < 2) {
+        cout << "No es primo" << endl;
+    } else {
+        bool primo = true;
+        for (int i = 2; i * i <= n; i++) {
+            if (n % i == 0) {
+                primo = false;
+                break;
+            }
+        }
+
+        if (primo) {
+            cout << "Es primo" << endl;
+        } else {
+            cout << "No es primo" << endl;
+        }
+    }
+
+    return 0;
+}
 ```
 
 </details>
 
 ## Siguiente paso
 
-Ahora que sabes representar algoritmos, aprende la [Estructura de un Programa en C++](/blog/cpp-basico/estructura-programa).
+Ahora que sabes representar algoritmos visualmente, es hora de aprender a escribir código real. Ve a **Estructura de un Programa en C++** para comenzar con el lenguaje de programación.

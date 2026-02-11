@@ -1,75 +1,63 @@
 ---
 title: "Búsqueda en Profundidad (DFS)"
-description: "Domina el algoritmo DFS para explorar grafos y resolver problemas de conectividad, ciclos y más"
-date: "2026-02-12"
+description: "Explora tan lejos como sea posible antes de retroceder para recorrer grafos y resolver problemas"
+date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "DFS", "búsqueda", "recursión", "backtracking"]
-syllabusId: 48
-order: 4
+tags: ["c++", "DFS", "búsqueda en profundidad", "grafos", "recursión"]
+syllabusId: 35
 ---
 
-## ¿Qué es DFS?
+## La analogía: explorar un laberinto
 
-**DFS** (Depth-First Search o Búsqueda en Profundidad) es un algoritmo para explorar grafos que avanza lo más profundo posible antes de retroceder.
+Imagina que entras a un laberinto sin mapa. Tu estrategia: en cada bifurcación, **siempre tomas el primer camino** y sigues avanzando. Cuando llegas a un callejón sin salida, **retrocedes** a la última bifurcación y pruebas el siguiente camino. Eso es **DFS** (Depth-First Search): ir lo más profundo posible antes de regresar.
 
-Es como explorar un laberinto: sigues un camino hasta que llegas a un callejón sin salida, luego regresas y pruebas otra ruta.
+Otra forma de verlo: leer un libro donde cada capítulo tiene sub-capítulos. Lees el capítulo 1, luego su sub-capítulo 1.1, luego 1.1.1, hasta que no hay más sub-capítulos. Entonces regresas al 1.1, pasas a 1.2, y así sucesivamente.
 
-> 💡 **Característica principal:** DFS usa recursión (o una pila) y es excelente para problemas de conectividad, ciclos y backtracking.
+## BFS vs DFS
 
-## Visualización
-
-```
-Grafo:
-    1 --- 2 --- 5
-    |     |
-    3 --- 4
-
-DFS desde nodo 1:
-1 → 2 → 5 (retrocede) → 4 → 3 (retrocede a 4) (retrocede a 2) (retrocede a 1)
-
-Orden: 1 → 2 → 5 → 4 → 3
-```
+| Característica | BFS | DFS |
+|---------------|-----|-----|
+| Estructura | Cola (FIFO) | Pila / Recursión (LIFO) |
+| Exploración | Nivel por nivel | Lo más profundo primero |
+| Camino más corto | ✅ Sí (sin pesos) | ❌ No garantiza |
+| Detectar ciclos | Sí | ✅ Más natural |
+| Componentes conexas | Sí | ✅ Sí |
+| Memoria | Puede ser mucha | Generalmente menos |
 
 ## Implementación recursiva
 
+La forma más natural de escribir DFS es con recursión:
+
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 using namespace std;
 
-vector<int> adj[100005];
+vector<int> adj[100005]; // Lista de adyacencia
 bool visitado[100005];
 
 void dfs(int nodo) {
     visitado[nodo] = true;
-    cout << nodo << " ";  // Procesar nodo
+    cout << nodo << " ";  // Procesar el nodo
 
     for (int vecino : adj[nodo]) {
         if (!visitado[vecino]) {
-            dfs(vecino);
+            dfs(vecino);  // Llamada recursiva
         }
     }
 }
-
-int main() {
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-
-    dfs(1);
-
-    return 0;
-}
 ```
+
+**Línea por línea:**
+
+1. **`visitado[nodo] = true`** — Marcamos el nodo para no visitarlo otra vez.
+2. **`for (int vecino : adj[nodo])`** — Recorremos todos los vecinos.
+3. **`if (!visitado[vecino])`** — Si no hemos visitado al vecino…
+4. **`dfs(vecino)`** — Nos sumergimos más profundo.
 
 ## Implementación iterativa (con pila)
 
-Útil cuando la recursión puede causar stack overflow:
+Si el grafo es muy profundo, la recursión podría causar stack overflow. Solución: usa una pila explícita.
 
 ```cpp
 void dfsIterativo(int inicio) {
@@ -82,401 +70,42 @@ void dfsIterativo(int inicio) {
 
         if (visitado[nodo]) continue;
         visitado[nodo] = true;
-
         cout << nodo << " ";
 
-        // Agregar vecinos en orden inverso para mantener el orden
-        for (int i = adj[nodo].size() - 1; i >= 0; i--) {
-            if (!visitado[adj[nodo][i]]) {
-                pila.push(adj[nodo][i]);
+        for (int vecino : adj[nodo]) {
+            if (!visitado[vecino]) {
+                pila.push(vecino);
             }
         }
     }
 }
 ```
 
-## Complejidad
+<Callout type="info">
+  La diferencia entre BFS y DFS iterativo es solo la estructura: BFS usa **cola** (queue), DFS usa **pila** (stack). El resto del código es casi idéntico.
+</Callout>
 
-| Aspecto | Complejidad |
-|---------|-------------|
-| Tiempo | $O(V + E)$ |
-| Espacio | $O(V)$ (pila de recursión) |
+## Ejemplo visual
 
-## DFS vs BFS
+Grafo:
+```
+    1
+   / \
+  2   3
+ / \   \
+4   5   6
+```
 
-| Característica | DFS | BFS |
-|----------------|-----|-----|
-| Estructura | Pila/Recursión | Cola |
-| Orden | Profundidad primero | Nivel por nivel |
-| Camino más corto | ❌ No garantizado | ✅ En grafos sin peso |
-| Uso de memoria | Menor (típicamente) | Mayor |
-| Detectar ciclos | ✅ Fácil | Posible |
-| Componentes conexas | ✅ Ideal | ✅ Funciona |
+DFS desde 1: **1 → 2 → 4 → 5 → 3 → 6**
 
-## Aplicaciones de DFS
+Nota cómo va lo más profundo posible (1→2→4), retrocede (a 2), explora otra rama (5), retrocede (a 1), y sigue (3→6).
+
+## Aplicaciones clásicas
 
 ### 1. Contar componentes conexas
 
 ```cpp
-int contarComponentes(int n) {
-    int componentes = 0;
-    fill(visitado, visitado + n + 1, false);
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            dfs(i);
-            componentes++;
-        }
-    }
-
-    return componentes;
-}
-```
-
-### 2. Detectar ciclos en grafo no dirigido
-
-```cpp
-bool tieneCiclo(int nodo, int padre) {
-    visitado[nodo] = true;
-
-    for (int vecino : adj[nodo]) {
-        if (!visitado[vecino]) {
-            if (tieneCiclo(vecino, nodo)) {
-                return true;
-            }
-        } else if (vecino != padre) {
-            // Encontramos un nodo visitado que no es el padre
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool grafoCiclo(int n) {
-    fill(visitado, visitado + n + 1, false);
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            if (tieneCiclo(i, -1)) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-```
-
-### 3. Detectar ciclos en grafo dirigido
-
-Usamos tres colores: blanco (no visitado), gris (en proceso), negro (terminado).
-
-```cpp
-int color[100005];  // 0 = blanco, 1 = gris, 2 = negro
-
-bool tieneCicloDirigido(int nodo) {
-    color[nodo] = 1;  // Gris - en proceso
-
-    for (int vecino : adj[nodo]) {
-        if (color[vecino] == 1) {
-            // Encontramos un nodo en proceso (ciclo)
-            return true;
-        }
-        if (color[vecino] == 0) {
-            if (tieneCicloDirigido(vecino)) {
-                return true;
-            }
-        }
-    }
-
-    color[nodo] = 2;  // Negro - terminado
-    return false;
-}
-```
-
-### 4. Ordenamiento topológico
-
-Ordena los nodos de un DAG (grafo dirigido acíclico) de forma que para cada arista u→v, u aparece antes que v.
-
-```cpp
-vector<int> ordenTopologico;
-
-void dfsTopologico(int nodo) {
-    visitado[nodo] = true;
-
-    for (int vecino : adj[nodo]) {
-        if (!visitado[vecino]) {
-            dfsTopologico(vecino);
-        }
-    }
-
-    ordenTopologico.push_back(nodo);  // Agregar al terminar
-}
-
-vector<int> topSort(int n) {
-    fill(visitado, visitado + n + 1, false);
-    ordenTopologico.clear();
-
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            dfsTopologico(i);
-        }
-    }
-
-    reverse(ordenTopologico.begin(), ordenTopologico.end());
-    return ordenTopologico;
-}
-```
-
-### 5. Encontrar componentes fuertemente conexas (Kosaraju)
-
-En un grafo dirigido, una SCC es un conjunto maximal de nodos donde puedes llegar de cualquier nodo a cualquier otro.
-
-```cpp
-vector<int> adj[100005];      // Grafo original
-vector<int> adjRev[100005];   // Grafo transpuesto
-bool visitado[100005];
-stack<int> orden;
-int componente[100005];
-
-void dfs1(int nodo) {
-    visitado[nodo] = true;
-    for (int vecino : adj[nodo]) {
-        if (!visitado[vecino]) {
-            dfs1(vecino);
-        }
-    }
-    orden.push(nodo);
-}
-
-void dfs2(int nodo, int comp) {
-    componente[nodo] = comp;
-    for (int vecino : adjRev[nodo]) {
-        if (componente[vecino] == 0) {
-            dfs2(vecino, comp);
-        }
-    }
-}
-
-int kosaraju(int n) {
-    // Paso 1: DFS en orden de finalización
-    fill(visitado, visitado + n + 1, false);
-    for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            dfs1(i);
-        }
-    }
-
-    // Paso 2: DFS en grafo transpuesto
-    fill(componente, componente + n + 1, 0);
-    int numSCC = 0;
-
-    while (!orden.empty()) {
-        int nodo = orden.top();
-        orden.pop();
-
-        if (componente[nodo] == 0) {
-            numSCC++;
-            dfs2(nodo, numSCC);
-        }
-    }
-
-    return numSCC;
-}
-```
-
-## DFS en matrices
-
-```cpp
-int n, m;
-char grid[1005][1005];
-bool visitado[1005][1005];
-
-int dx[] = {-1, 1, 0, 0};
-int dy[] = {0, 0, -1, 1};
-
-bool esValido(int x, int y) {
-    return x >= 0 && x < n && y >= 0 && y < m && grid[x][y] != '#';
-}
-
-void dfsMatriz(int x, int y) {
-    visitado[x][y] = true;
-
-    for (int i = 0; i < 4; i++) {
-        int nx = x + dx[i];
-        int ny = y + dy[i];
-
-        if (esValido(nx, ny) && !visitado[nx][ny]) {
-            dfsMatriz(nx, ny);
-        }
-    }
-}
-```
-
-### Ejemplo: Contar islas
-
-```cpp
-int contarIslas() {
-    int islas = 0;
-    memset(visitado, false, sizeof(visitado));
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (grid[i][j] == '.' && !visitado[i][j]) {
-                dfsMatriz(i, j);
-                islas++;
-            }
-        }
-    }
-
-    return islas;
-}
-```
-
-## DFS con tiempos de entrada y salida
-
-Útil para determinar si un nodo es ancestro de otro:
-
-```cpp
-int tiempoEntrada[100005];
-int tiempoSalida[100005];
-int tiempo = 0;
-
-void dfsConTiempos(int nodo, int padre) {
-    tiempoEntrada[nodo] = ++tiempo;
-
-    for (int vecino : adj[nodo]) {
-        if (vecino != padre) {
-            dfsConTiempos(vecino, nodo);
-        }
-    }
-
-    tiempoSalida[nodo] = ++tiempo;
-}
-
-// u es ancestro de v si:
-// tiempoEntrada[u] <= tiempoEntrada[v] && tiempoSalida[u] >= tiempoSalida[v]
-bool esAncestro(int u, int v) {
-    return tiempoEntrada[u] <= tiempoEntrada[v] &&
-           tiempoSalida[u] >= tiempoSalida[v];
-}
-```
-
-## DFS en árboles
-
-### Calcular profundidad y tamaño de subárbol
-
-```cpp
-int profundidad[100005];
-int tamano[100005];
-
-void dfsArbol(int nodo, int padre, int prof) {
-    profundidad[nodo] = prof;
-    tamano[nodo] = 1;
-
-    for (int hijo : adj[nodo]) {
-        if (hijo != padre) {
-            dfsArbol(hijo, nodo, prof + 1);
-            tamano[nodo] += tamano[hijo];
-        }
-    }
-}
-```
-
-### Encontrar diámetro del árbol
-
-El diámetro es el camino más largo entre dos nodos.
-
-```cpp
-int maxDist, nodoMasLejano;
-
-void dfsDiametro(int nodo, int padre, int dist) {
-    if (dist > maxDist) {
-        maxDist = dist;
-        nodoMasLejano = nodo;
-    }
-
-    for (int vecino : adj[nodo]) {
-        if (vecino != padre) {
-            dfsDiametro(vecino, nodo, dist + 1);
-        }
-    }
-}
-
-int diametro(int n) {
-    // Primer DFS desde cualquier nodo
-    maxDist = 0;
-    dfsDiametro(1, -1, 0);
-
-    // Segundo DFS desde el nodo más lejano
-    maxDist = 0;
-    dfsDiametro(nodoMasLejano, -1, 0);
-
-    return maxDist;
-}
-```
-
-## Backtracking con DFS
-
-DFS es la base del backtracking para explorar todas las soluciones:
-
-```cpp
-vector<int> solucion;
-
-void backtrack(int nodo, int objetivo) {
-    if (nodo == objetivo) {
-        // Encontramos una solución
-        for (int x : solucion) cout << x << " ";
-        cout << endl;
-        return;
-    }
-
-    for (int vecino : adj[nodo]) {
-        solucion.push_back(vecino);
-        backtrack(vecino, objetivo);
-        solucion.pop_back();  // Deshacer
-    }
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-bool vis[MAXN];
-int parent[MAXN];
-int depth[MAXN];
-int tin[MAXN], tout[MAXN];
-int timer = 0;
-
-void dfs(int u, int p = -1, int d = 0) {
-    vis[u] = true;
-    parent[u] = p;
-    depth[u] = d;
-    tin[u] = ++timer;
-
-    for (int v : adj[u]) {
-        if (!vis[v]) {
-            dfs(v, u, d + 1);
-        }
-    }
-
-    tout[u] = ++timer;
-}
-
-bool isAncestor(int u, int v) {
-    return tin[u] <= tin[v] && tout[u] >= tout[v];
-}
-
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     int n, m;
     cin >> n >> m;
 
@@ -487,37 +116,196 @@ int main() {
         adj[v].push_back(u);
     }
 
-    // Contar componentes conexas
     int componentes = 0;
     for (int i = 1; i <= n; i++) {
-        if (!vis[i]) {
+        if (!visitado[i]) {
             dfs(i);
             componentes++;
         }
     }
 
-    cout << "Componentes: " << componentes << endl;
+    cout << "Componentes conexas: " << componentes << endl;
+}
+```
+
+Cada vez que encontramos un nodo no visitado, iniciamos un DFS que visita toda su componente conexa.
+
+### 2. Detectar ciclos en grafo no dirigido
+
+```cpp
+bool tieneCiclo = false;
+
+void dfsCiclo(int nodo, int padre) {
+    visitado[nodo] = true;
+
+    for (int vecino : adj[nodo]) {
+        if (!visitado[vecino]) {
+            dfsCiclo(vecino, nodo);
+        } else if (vecino != padre) {
+            tieneCiclo = true;  // ¡Encontramos un ciclo!
+        }
+    }
+}
+```
+
+Si encontramos un vecino ya visitado que **no es el padre** del nodo actual, hay un ciclo.
+
+### 3. DFS en cuadrícula (flood fill)
+
+El clásico "rellenar una región" como en Paint:
+
+```cpp
+int n, m;
+char grid[1005][1005];
+bool vis[1005][1005];
+int dx[] = {-1, 1, 0, 0};
+int dy[] = {0, 0, -1, 1};
+
+int tamano;  // Tamaño de la componente
+
+void dfsGrid(int x, int y, char color) {
+    if (x < 0 || x >= n || y < 0 || y >= m) return;
+    if (vis[x][y] || grid[x][y] != color) return;
+
+    vis[x][y] = true;
+    tamano++;
+
+    for (int d = 0; d < 4; d++) {
+        dfsGrid(x + dx[d], y + dy[d], color);
+    }
+}
+```
+
+**Ejemplo:** Contar cuántas "islas" hay en un mapa donde `#` es tierra y `.` es agua:
+
+```cpp
+int islas = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        if (!vis[i][j] && grid[i][j] == '#') {
+            tamano = 0;
+            dfsGrid(i, j, '#');
+            islas++;
+            // tamano contiene el área de esta isla
+        }
+    }
+}
+```
+
+### 4. Verificar si un grafo es bipartito
+
+Un grafo es **bipartito** si puedes colorear sus nodos con 2 colores de modo que ninguna arista conecte dos nodos del mismo color.
+
+```cpp
+int color[100005];  // -1 = sin color, 0 y 1 son los colores
+
+bool dfsBipartito(int nodo, int c) {
+    color[nodo] = c;
+
+    for (int vecino : adj[nodo]) {
+        if (color[vecino] == -1) {
+            if (!dfsBipartito(vecino, 1 - c)) return false;
+        } else if (color[vecino] == c) {
+            return false;  // Conflicto: mismo color
+        }
+    }
+
+    return true;
+}
+```
+
+## Complejidad
+
+- **Tiempo:** $O(V + E)$ — visitamos cada nodo y arista una vez
+- **Espacio:** $O(V)$ — para el arreglo de visitados y la pila de recursión
+- En cuadrícula: $O(n \times m)$
+
+## Errores comunes
+
+<Callout type="warning">
+  **1. Olvidar marcar como visitado** — Causa ciclos infinitos y stack overflow.
+
+  **2. Stack overflow en recursión profunda** — En competencias con grafos de hasta $10^5$ nodos en una sola cadena, la recursión puede fallar. Usa la versión iterativa.
+
+  **3. No reiniciar el arreglo de visitados** — Si ejecutas DFS múltiples veces, asegúrate de limpiar el arreglo.
+</Callout>
+
+## Ejercicio de práctica
+
+Dada una cuadrícula de N×M con `#` (tierra) y `.` (agua), encuentra:
+1. El número de islas (regiones de `#` conectadas horizontal/verticalmente).
+2. El tamaño de la isla más grande.
+
+**Ejemplo:**
+```
+4 5
+. . # . .
+# # . . .
+. . . # #
+. . . # .
+```
+**Salida:**
+```
+3
+3
+```
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+int n, m;
+char grid[1005][1005];
+bool vis[1005][1005];
+int dx[] = {-1, 1, 0, 0};
+int dy[] = {0, 0, -1, 1};
+int tamano;
+
+void dfs(int x, int y) {
+    if (x < 0 || x >= n || y < 0 || y >= m) return;
+    if (vis[x][y] || grid[x][y] != '#') return;
+
+    vis[x][y] = true;
+    tamano++;
+
+    for (int d = 0; d < 4; d++) {
+        dfs(x + dx[d], y + dy[d]);
+    }
+}
+
+int main() {
+    cin >> n >> m;
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            cin >> grid[i][j];
+
+    int islas = 0, maxTam = 0;
+    memset(vis, false, sizeof(vis));
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (!vis[i][j] && grid[i][j] == '#') {
+                tamano = 0;
+                dfs(i, j);
+                islas++;
+                maxTam = max(maxTam, tamano);
+            }
+        }
+    }
+
+    cout << islas << endl;
+    cout << maxTam << endl;
 
     return 0;
 }
 ```
 
-## Resumen
+</details>
 
-| Aplicación | Usa DFS cuando... |
-|------------|-------------------|
-| Componentes conexas | Contar grupos separados |
-| Detectar ciclos | Verificar si hay ciclos |
-| Ordenamiento topológico | Ordenar tareas con dependencias |
-| Encontrar caminos | No importa si es el más corto |
-| Explorar todas las opciones | Backtracking |
-| Árboles | Calcular propiedades (profundidad, tamaño, etc.) |
+## Siguiente paso
 
-## Ejercicios recomendados
-
-1. [CSES - Counting Rooms](https://cses.fi/problemset/task/1192)
-2. [CSES - Round Trip](https://cses.fi/problemset/task/1669)
-3. [CSES - Course Schedule](https://cses.fi/problemset/task/1679)
-4. [CSES - Tree Diameter](https://cses.fi/problemset/task/1131)
-5. [LeetCode - Number of Islands](https://leetcode.com/problems/number-of-islands/)
-6. [Codeforces - DFS Order](https://codeforces.com/problemset/problem/1006/E)
+Con BFS y DFS dominados, ya puedes explorar temas más avanzados de grafos como **componentes conexas**, **árboles** y **caminos más cortos**.

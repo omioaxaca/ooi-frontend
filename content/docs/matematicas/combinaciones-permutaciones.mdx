@@ -1,366 +1,186 @@
 ---
 title: "Combinaciones y Permutaciones"
-description: "Domina el conteo de combinaciones y permutaciones para resolver problemas de combinatoria"
+description: "Cuenta de cuántas formas puedes elegir y ordenar elementos"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["matemáticas", "combinatoria", "combinaciones", "permutaciones"]
-order: 6
+tags: ["c++", "combinaciones", "permutaciones", "combinatoria"]
+syllabusId: 46
 ---
 
-## Principios básicos de conteo
+## Permutaciones: el orden importa
 
-### Principio de la suma
+**Pregunta:** ¿De cuántas formas puedes ordenar K objetos elegidos de N objetos?
 
-Si hay $a$ formas de hacer algo Y $b$ formas de hacer otra cosa diferente, hay $a + b$ formas de hacer una u otra.
+$$P(n, k) = \frac{n!}{(n-k)!}$$
 
-### Principio del producto
+**Analogía:** Estás entregando medallas de oro, plata y bronce a 10 atletas. ¿Cuántas combinaciones de podio hay? El orden importa (oro ≠ plata).
 
-Si hay $a$ formas de hacer algo Y LUEGO $b$ formas de hacer otra cosa, hay $a \times b$ formas de hacer ambas cosas.
-
-## Permutaciones
-
-Una **permutación** es un arreglo ordenado de elementos. El orden importa.
-
-### Permutaciones de $n$ elementos
-
-$$P_n = n!$$
-
-**Ejemplo:** ¿De cuántas formas podemos ordenar las letras A, B, C?
-
-ABC, ACB, BAC, BCA, CAB, CBA → 6 formas = $3! = 6$
-
-### Permutaciones de $r$ elementos tomados de $n$
-
-$$P(n, r) = \frac{n!}{(n-r)!} = n \times (n-1) \times ... \times (n-r+1)$$
-
-**Ejemplo:** ¿Cuántos números de 3 dígitos distintos se pueden formar con {1, 2, 3, 4, 5}?
-
-$$P(5, 3) = \frac{5!}{2!} = \frac{120}{2} = 60$$
+$P(10, 3) = 10 \times 9 \times 8 = 720$
 
 ```cpp
-const long long MOD = 1e9 + 7;
-
-long long permutaciones(int n, int r, long long* fact, long long* invFact) {
-    if (r > n) return 0;
-    return fact[n] * invFact[n - r] % MOD;
-}
-```
-
-### Permutaciones con repetición
-
-Si tenemos $n$ elementos donde hay $n_1$ elementos del tipo 1, $n_2$ del tipo 2, etc.:
-
-$$P = \frac{n!}{n_1! \times n_2! \times ... \times n_k!}$$
-
-**Ejemplo:** ¿De cuántas formas podemos ordenar las letras de "MISSISSIPPI"?
-
-- M: 1, I: 4, S: 4, P: 2
-- Total: $\frac{11!}{1! \times 4! \times 4! \times 2!} = \frac{39916800}{1 \times 24 \times 24 \times 2} = 34650$
-
-```cpp
-long long permutacionesConRepeticion(vector<int>& frecuencias, long long* fact, long long* invFact) {
-    int n = 0;
-    for (int f : frecuencias) n += f;
-
-    long long resultado = fact[n];
-    for (int f : frecuencias) {
-        resultado = resultado * invFact[f] % MOD;
-    }
-    return resultado;
-}
-```
-
-## Combinaciones
-
-Una **combinación** es una selección de elementos donde el orden NO importa.
-
-### Coeficiente binomial
-
-$$C(n, r) = \binom{n}{r} = \frac{n!}{r!(n-r)!}$$
-
-**Ejemplo:** ¿De cuántas formas podemos elegir 3 personas de un grupo de 5?
-
-$$\binom{5}{3} = \frac{5!}{3! \times 2!} = \frac{120}{6 \times 2} = 10$$
-
-```cpp
-long long combinaciones(int n, int r, long long* fact, long long* invFact) {
-    if (r > n || r < 0) return 0;
-    return fact[n] * invFact[r] % MOD * invFact[n - r] % MOD;
-}
-```
-
-### Propiedades importantes
-
-1. $\binom{n}{0} = \binom{n}{n} = 1$
-2. $\binom{n}{r} = \binom{n}{n-r}$ (simetría)
-3. $\binom{n}{r} = \binom{n-1}{r-1} + \binom{n-1}{r}$ (Pascal)
-4. $\sum_{r=0}^{n} \binom{n}{r} = 2^n$
-5. $\binom{n}{0} - \binom{n}{1} + \binom{n}{2} - ... = 0$ (si $n > 0$)
-
-## Triángulo de Pascal
-
-El triángulo de Pascal visualiza los coeficientes binomiales:
-
-```
-         1
-        1 1
-       1 2 1
-      1 3 3 1
-     1 4 6 4 1
-    1 5 10 10 5 1
-```
-
-Cada número es la suma de los dos números directamente arriba de él.
-
-### Implementación
-
-```cpp
-const int MAXN = 5000;
-long long pascal[MAXN + 1][MAXN + 1];
-
-void construirPascal() {
-    for (int i = 0; i <= MAXN; i++) {
-        pascal[i][0] = 1;
-        for (int j = 1; j <= i; j++) {
-            pascal[i][j] = (pascal[i-1][j-1] + pascal[i-1][j]) % MOD;
-        }
-    }
-}
-```
-
-## Combinaciones con repetición
-
-Elegir $r$ elementos de $n$ tipos, permitiendo repetición:
-
-$$\binom{n + r - 1}{r} = \binom{n + r - 1}{n - 1}$$
-
-**Ejemplo:** ¿De cuántas formas podemos distribuir 5 dulces idénticos entre 3 niños?
-
-$$\binom{3 + 5 - 1}{5} = \binom{7}{5} = 21$$
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const long long MOD = 1e9 + 7;
-const int MAXN = 2e6;
-
-long long fact[MAXN + 1];
-long long invFact[MAXN + 1];
-
-long long potencia(long long base, long long exp) {
+long long permutaciones(int n, int k) {
     long long resultado = 1;
-    base %= MOD;
-    while (exp > 0) {
-        if (exp & 1) resultado = resultado * base % MOD;
-        base = base * base % MOD;
-        exp >>= 1;
+    for (int i = 0; i < k; i++) {
+        resultado *= (n - i);
     }
     return resultado;
+}
+```
+
+## Combinaciones: el orden NO importa
+
+**Pregunta:** ¿De cuántas formas puedes elegir K objetos de N, sin importar el orden?
+
+$$C(n, k) = \binom{n}{k} = \frac{n!}{k!(n-k)!}$$
+
+**Analogía:** De un grupo de 10 amigos, quieres elegir 3 para formar un equipo. No importa quién sea "primero" — solo quiénes están en el equipo.
+
+$C(10, 3) = \frac{10!}{3! \times 7!} = \frac{720}{6} = 120$
+
+### Cálculo con factoriales modulares
+
+```cpp
+const int MOD = 1e9 + 7;
+const int MAXN = 1000005;
+long long fact[MAXN], inv_fact[MAXN];
+
+long long pot(long long b, long long e, long long m) {
+    long long r = 1; b %= m;
+    while (e > 0) {
+        if (e & 1) r = r * b % m;
+        b = b * b % m; e >>= 1;
+    }
+    return r;
 }
 
 void precalcular() {
     fact[0] = 1;
-    for (int i = 1; i <= MAXN; i++) {
-        fact[i] = fact[i-1] * i % MOD;
-    }
-    invFact[MAXN] = potencia(fact[MAXN], MOD - 2);
-    for (int i = MAXN - 1; i >= 0; i--) {
-        invFact[i] = invFact[i + 1] * (i + 1) % MOD;
-    }
+    for (int i = 1; i < MAXN; i++) fact[i] = fact[i-1] * i % MOD;
+    inv_fact[MAXN-1] = pot(fact[MAXN-1], MOD-2, MOD);
+    for (int i = MAXN-2; i >= 0; i--) inv_fact[i] = inv_fact[i+1] * (i+1) % MOD;
 }
 
-// C(n, r) = n! / (r! * (n-r)!)
-long long C(int n, int r) {
-    if (r > n || r < 0) return 0;
-    return fact[n] * invFact[r] % MOD * invFact[n - r] % MOD;
-}
-
-// P(n, r) = n! / (n-r)!
-long long P(int n, int r) {
-    if (r > n) return 0;
-    return fact[n] * invFact[n - r] % MOD;
-}
-
-// Combinaciones con repetición: C(n + r - 1, r)
-long long H(int n, int r) {
-    return C(n + r - 1, r);
-}
-
-int main() {
-    precalcular();
-
-    cout << "C(5, 3) = " << C(5, 3) << endl;  // 10
-    cout << "P(5, 3) = " << P(5, 3) << endl;  // 60
-    cout << "H(3, 5) = " << H(3, 5) << endl;  // 21
-
-    return 0;
+long long C(int n, int k) {
+    if (k < 0 || k > n) return 0;
+    return fact[n] % MOD * inv_fact[k] % MOD * inv_fact[n-k] % MOD;
 }
 ```
 
-## Problemas clásicos
+### Cálculo con el Triángulo de Pascal
 
-### Problema 1: Caminos en una cuadrícula
-
-¿Cuántos caminos hay desde $(0, 0)$ hasta $(n, m)$ moviéndose solo derecha o arriba?
-
-Necesitamos $n$ movimientos a la derecha y $m$ hacia arriba, en total $n + m$ movimientos.
-
-$$\text{Caminos} = \binom{n + m}{n} = \binom{n + m}{m}$$
+Sin módulo, para valores pequeños:
 
 ```cpp
-long long caminosCuadricula(int n, int m) {
+long long C[1005][1005];
+
+void pascal() {
+    for (int i = 0; i <= 1000; i++) {
+        C[i][0] = 1;
+        for (int j = 1; j <= i; j++) {
+            C[i][j] = C[i-1][j-1] + C[i-1][j];
+        }
+    }
+}
+```
+
+Basado en la identidad: $\binom{n}{k} = \binom{n-1}{k-1} + \binom{n-1}{k}$
+
+## Propiedades útiles
+
+- $\binom{n}{0} = \binom{n}{n} = 1$
+- $\binom{n}{k} = \binom{n}{n-k}$ (simetría)
+- $\sum_{k=0}^{n} \binom{n}{k} = 2^n$ (todos los subconjuntos)
+- $\binom{n}{1} = n$
+
+## Aplicaciones en competencias
+
+### 1. Caminos en una cuadrícula
+
+¿De cuántas formas puedes ir de $(0,0)$ a $(n,m)$ moviéndote solo derecha o abajo?
+
+Necesitas hacer $n$ movimientos abajo y $m$ derecha, en cualquier orden:
+
+$$\text{caminos} = \binom{n+m}{n}$$
+
+```cpp
+// De (0,0) a (n,m)
+long long caminos(int n, int m) {
     return C(n + m, n);
 }
 ```
 
-### Problema 2: Caminos con obstáculos
+### 2. Distribución de objetos
 
-Usar programación dinámica con combinaciones:
+¿De cuántas formas puedes repartir N objetos idénticos en K cajas?
+
+$$\binom{N + K - 1}{K - 1}$$
+
+### 3. Subconjuntos de tamaño K
 
 ```cpp
-#include <bits/stdc++.h>
+// Generar todos los subconjuntos de tamaño K
+void generarSubconjuntos(vector<int> &v, int k, int inicio,
+                          vector<int> &actual) {
+    if (actual.size() == k) {
+        for (int x : actual) cout << x << " ";
+        cout << endl;
+        return;
+    }
+
+    for (int i = inicio; i < v.size(); i++) {
+        actual.push_back(v[i]);
+        generarSubconjuntos(v, k, i + 1, actual);
+        actual.pop_back();
+    }
+}
+```
+
+## Ejercicio de práctica
+
+De un grupo de N estudiantes, ¿de cuántas formas puedes elegir un comité de K personas? Imprime la respuesta módulo $10^9+7$.
+
+**Entrada:** `10 3`
+**Salida:** `120`
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+#include <iostream>
 using namespace std;
 
-const long long MOD = 1e9 + 7;
-// ... (precalcular factoriales)
+const int MOD = 1e9 + 7;
+const int MAXN = 1000005;
+long long fact[MAXN], inv_fact[MAXN];
+
+long long pot(long long b, long long e, long long m) {
+    long long r = 1; b %= m;
+    while (e > 0) {
+        if (e & 1) r = r * b % m;
+        b = b * b % m; e >>= 1;
+    }
+    return r;
+}
+
+void precalcular() {
+    fact[0] = 1;
+    for (int i = 1; i < MAXN; i++) fact[i] = fact[i-1] * i % MOD;
+    inv_fact[MAXN-1] = pot(fact[MAXN-1], MOD-2, MOD);
+    for (int i = MAXN-2; i >= 0; i--) inv_fact[i] = inv_fact[i+1] * (i+1) % MOD;
+}
+
+long long C(int n, int k) {
+    if (k < 0 || k > n) return 0;
+    return fact[n] % MOD * inv_fact[k] % MOD * inv_fact[n-k] % MOD;
+}
 
 int main() {
     precalcular();
-
-    int n, m;
-    cin >> n >> m;
-
-    vector<string> grid(n);
-    for (int i = 0; i < n; i++) cin >> grid[i];
-
-    vector<vector<long long>> dp(n, vector<long long>(m, 0));
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (grid[i][j] == '#') continue;
-
-            if (i == 0 && j == 0) {
-                dp[i][j] = 1;
-            } else {
-                if (i > 0) dp[i][j] = (dp[i][j] + dp[i-1][j]) % MOD;
-                if (j > 0) dp[i][j] = (dp[i][j] + dp[i][j-1]) % MOD;
-            }
-        }
-    }
-
-    cout << dp[n-1][m-1] << endl;
+    int n, k;
+    cin >> n >> k;
+    cout << C(n, k) << endl;
     return 0;
 }
 ```
 
-### Problema 3: Subconjuntos de tamaño $k$
-
-¿Cuántos subconjuntos de tamaño exactamente $k$ tiene un conjunto de $n$ elementos?
-
-$$\text{Subconjuntos} = \binom{n}{k}$$
-
-### Problema 4: Distribución de objetos
-
-Distribuir $n$ objetos idénticos en $k$ cajas distinguibles:
-
-- **Sin restricciones:** $\binom{n + k - 1}{k - 1}$ (Stars and Bars)
-- **Al menos 1 por caja:** $\binom{n - 1}{k - 1}$
-
-```cpp
-// n objetos en k cajas
-long long distribuir(int n, int k) {
-    return C(n + k - 1, k - 1);
-}
-
-// n objetos en k cajas, cada caja al menos 1
-long long distribuirMinimo1(int n, int k) {
-    if (n < k) return 0;
-    return C(n - 1, k - 1);
-}
-```
-
-### Problema 5: Secuencias binarias
-
-¿Cuántas secuencias binarias de longitud $n$ tienen exactamente $k$ unos?
-
-$$\text{Secuencias} = \binom{n}{k}$$
-
-### Problema 6: Suma de combinaciones
-
-Calcular $\sum_{i=0}^{k} \binom{n}{i}$:
-
-```cpp
-long long sumaCombinaciones(int n, int k) {
-    long long suma = 0;
-    for (int i = 0; i <= k && i <= n; i++) {
-        suma = (suma + C(n, i)) % MOD;
-    }
-    return suma;
-}
-```
-
-### Problema 7: Derangements (permutaciones sin puntos fijos)
-
-Un **derangement** es una permutación donde ningún elemento está en su posición original.
-
-$$D_n = n! \sum_{i=0}^{n} \frac{(-1)^i}{i!} = (n-1)(D_{n-1} + D_{n-2})$$
-
-```cpp
-long long derangements(int n) {
-    if (n == 0) return 1;
-    if (n == 1) return 0;
-
-    long long dp[n + 1];
-    dp[0] = 1;
-    dp[1] = 0;
-
-    for (int i = 2; i <= n; i++) {
-        dp[i] = (i - 1) * ((dp[i-1] + dp[i-2]) % MOD) % MOD;
-    }
-
-    return dp[n];
-}
-```
-
-## Identidades útiles
-
-### Identidad de Vandermonde
-
-$$\binom{m + n}{r} = \sum_{k=0}^{r} \binom{m}{k} \binom{n}{r-k}$$
-
-### Identidad del bastón de hockey
-
-$$\sum_{i=0}^{r} \binom{n+i}{i} = \binom{n+r+1}{r}$$
-
-### Números de Catalan
-
-$$C_n = \frac{1}{n+1} \binom{2n}{n} = \binom{2n}{n} - \binom{2n}{n+1}$$
-
-Aplicaciones: paréntesis balanceados, árboles binarios, caminos Dyck.
-
-```cpp
-long long catalan(int n) {
-    return C(2 * n, n) * potencia(n + 1, MOD - 2) % MOD;
-}
-```
-
-## Resumen
-
-| Fórmula | Descripción | Expresión |
-|---------|-------------|-----------|
-| $P_n$ | Permutaciones de $n$ | $n!$ |
-| $P(n, r)$ | Permutaciones de $r$ de $n$ | $\frac{n!}{(n-r)!}$ |
-| $C(n, r)$ | Combinaciones | $\frac{n!}{r!(n-r)!}$ |
-| $H(n, r)$ | Combinaciones con repetición | $\binom{n+r-1}{r}$ |
-| Stars & Bars | $n$ objetos en $k$ cajas | $\binom{n+k-1}{k-1}$ |
-
-## Ejercicios recomendados
-
-1. [CSES - Binomial Coefficients](https://cses.fi/problemset/task/1079)
-2. [CSES - Creating Strings II](https://cses.fi/problemset/task/1715)
-3. [CSES - Distributing Apples](https://cses.fi/problemset/task/1716)
-4. [Codeforces - Beautiful Numbers](https://codeforces.com/problemset/problem/300/C)
-5. [AtCoder - Grid Paths](https://atcoder.jp/contests/abc154/tasks/abc154_f)
+</details>

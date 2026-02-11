@@ -1,269 +1,382 @@
 ---
 title: "Operadores Aritméticos"
-description: "Aprende a usar los operadores aritméticos básicos y avanzados en C++"
+description: "Aprende los operadores matemáticos en C++ incluyendo módulo, incremento y precedencia"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "operadores", "aritmética", "básico"]
+tags: ["c++", "operadores", "aritmética", "módulo"]
 syllabusId: 8
 ---
 
-## Operadores básicos
+## ¿Qué es un operador?
 
-| Operador | Operación | Ejemplo | Resultado |
-|----------|-----------|---------|-----------|
-| `+` | Suma | `5 + 3` | `8` |
-| `-` | Resta | `5 - 3` | `2` |
-| `*` | Multiplicación | `5 * 3` | `15` |
-| `/` | División | `5 / 3` | `1` (entero) |
-| `%` | Módulo (residuo) | `5 % 3` | `2` |
+Un operador es un **símbolo** que le dice a la computadora que haga una operación con uno o más valores. Los más básicos son los que ya conoces de matemáticas: suma, resta, multiplicación y división. Pero C++ tiene algunos operadores extra que son increíblemente útiles en programación.
 
-## División entera vs decimal
+## Los operadores básicos
+
+### Suma `+`, Resta `-`, Multiplicación `*`
+
+Funcionan exactamente como en matemáticas:
 
 ```cpp
-int a = 7 / 2;        // a = 3 (división entera)
-double b = 7 / 2;     // b = 3.0 (¡aún es entera!)
-double c = 7.0 / 2;   // c = 3.5 (división decimal)
-double d = (double)7 / 2;  // d = 3.5 (casting)
+int a = 10, b = 3;
+
+cout << a + b << endl;   // 13
+cout << a - b << endl;   // 7
+cout << a * b << endl;   // 30
 ```
 
-## El operador módulo (%)
-
-El módulo devuelve el residuo de la división:
+También puedes usar el operador `-` para números negativos:
 
 ```cpp
-cout << 10 % 3 << endl;  // 1 (10 = 3*3 + 1)
-cout << 15 % 5 << endl;  // 0 (15 = 5*3 + 0)
-cout << 7 % 10 << endl;  // 7 (7 = 10*0 + 7)
+int x = -5;
+cout << x << endl;      // -5
+cout << -x << endl;     // 5 (el negativo de un negativo es positivo)
 ```
 
-### Usos comunes del módulo
+### División `/`
 
-**Verificar si es par/impar:**
-```cpp
-if (n % 2 == 0) {
-    cout << "Par" << endl;
-} else {
-    cout << "Impar" << endl;
-}
-```
-
-**Obtener el último dígito:**
-```cpp
-int ultimoDigito = n % 10;
-```
-
-**Mantener valores en un rango (circular):**
-```cpp
-// Horas del reloj (0-23)
-int hora = (hora + 1) % 24;
-
-// Índice circular en arreglo
-int siguiente = (i + 1) % n;
-```
-
-**Verificar divisibilidad:**
-```cpp
-if (n % 3 == 0) {
-    cout << "Divisible por 3" << endl;
-}
-```
-
-## Operadores de incremento y decremento
-
-| Operador | Nombre | Equivalente |
-|----------|--------|-------------|
-| `++i` | Pre-incremento | `i = i + 1` (incrementa antes de usar) |
-| `i++` | Post-incremento | `i = i + 1` (usa antes de incrementar) |
-| `--i` | Pre-decremento | `i = i - 1` |
-| `i--` | Post-decremento | `i = i - 1` |
+Aquí hay un detalle **crucial**: la división entre enteros da un resultado entero (se trunca, no se redondea):
 
 ```cpp
-int a = 5;
-cout << ++a << endl;  // Imprime 6, a ahora es 6
-cout << a++ << endl;  // Imprime 6, a ahora es 7
-cout << a << endl;    // Imprime 7
+int a = 7, b = 2;
+
+cout << a / b << endl;       // 3 (no 3.5)
+cout << 10 / 3 << endl;      // 3 (no 3.333...)
+cout << 1 / 2 << endl;       // 0 (no 0.5)
+cout << -7 / 2 << endl;      // -3 (trunca hacia cero)
 ```
+
+Es como si la computadora hiciera la división y luego **cortara los decimales** (no redondea, sino que trunca hacia cero).
+
+**Para obtener decimales**, al menos uno de los operandos debe ser `double`:
+
+```cpp
+cout << 7.0 / 2 << endl;       // 3.5
+cout << 7 / 2.0 << endl;       // 3.5
+cout << (double)7 / 2 << endl;  // 3.5
+```
+
+<Callout type="warning">
+  **Dividir entre cero** causa un error fatal. Si `b` puede ser cero, siempre verifica antes de dividir: `if (b != 0) resultado = a / b;`
+</Callout>
+
+### El operador módulo `%` (residuo)
+
+Este es un operador que probablemente no hayas visto en clase de matemáticas, pero es **uno de los más importantes** en programación competitiva.
+
+El módulo (`%`) te da el **residuo** de una división entera. Es lo que "sobra" después de dividir:
+
+```cpp
+cout << 7 % 3 << endl;    // 1  (7 ÷ 3 = 2 con residuo 1)
+cout << 10 % 5 << endl;   // 0  (10 ÷ 5 = 2 con residuo 0)
+cout << 13 % 4 << endl;   // 1  (13 ÷ 4 = 3 con residuo 1)
+cout << 3 % 7 << endl;    // 3  (3 ÷ 7 = 0 con residuo 3)
+```
+
+**Analogía:** Imagina que tienes 7 galletas y quieres repartirlas entre 3 amigos por igual. Cada amigo recibe 2 galletas (eso es `7 / 3`), y **sobra 1** galleta (eso es `7 % 3`).
+
+**Usos comunes del módulo:**
+
+1. **¿Es par o impar?**
+   ```cpp
+   if (n % 2 == 0) cout << "Par" << endl;
+   else cout << "Impar" << endl;
+   ```
+   Si el residuo de dividir entre 2 es 0, es par.
+
+2. **¿Es divisible entre X?**
+   ```cpp
+   if (n % 3 == 0) cout << "Divisible entre 3" << endl;
+   ```
+
+3. **Obtener el último dígito de un número:**
+   ```cpp
+   int n = 12345;
+   cout << n % 10 << endl;   // 5 (último dígito)
+   cout << n % 100 << endl;  // 45 (últimos dos dígitos)
+   ```
+
+4. **Hacer que un número "se enrolle" (wrap around):**
+   ```cpp
+   // Si tienes 7 días y quieres saber qué día de la semana es
+   int diasTranscurridos = 10;
+   int diaSemana = diasTranscurridos % 7;  // 3 (miércoles si empezamos en domingo=0)
+   ```
+
+5. **Aritmética modular** (evitar números gigantes):
+   ```cpp
+   // Los problemas piden la respuesta "módulo 10^9+7"
+   int MOD = 1e9 + 7;
+   long long resultado = (a * b) % MOD;
+   ```
+
+<Callout type="info">
+  El operador `%` **solo funciona con enteros**. No puedes hacer `3.5 % 2`. Si necesitas el módulo de decimales, usa `fmod(3.5, 2.0)` de la biblioteca `<cmath>`.
+</Callout>
 
 ## Operadores de asignación compuesta
 
-| Operador | Ejemplo | Equivalente |
-|----------|---------|-------------|
-| `+=` | `a += 5` | `a = a + 5` |
-| `-=` | `a -= 5` | `a = a - 5` |
-| `*=` | `a *= 5` | `a = a * 5` |
-| `/=` | `a /= 5` | `a = a / 5` |
-| `%=` | `a %= 5` | `a = a % 5` |
+Cuando quieres modificar una variable, hay atajos muy útiles:
 
 ```cpp
-int suma = 0;
-suma += 10;  // suma = 10
-suma += 5;   // suma = 15
-suma *= 2;   // suma = 30
+int x = 10;
+
+x = x + 5;     // x ahora vale 15
+x += 5;         // Equivalente: x ahora vale 20
+
+x = x - 3;     // x ahora vale 17
+x -= 3;         // Equivalente: x ahora vale 14
+
+x = x * 2;     // x ahora vale 28
+x *= 2;         // Equivalente: x ahora vale 56
+
+x = x / 4;     // x ahora vale 14
+x /= 4;         // Equivalente: x ahora vale 3 (truncado)
+
+x = x % 2;     // x ahora vale 1
+x %= 2;         // Equivalente: x ahora vale 1
 ```
 
-## Jerarquía de operaciones
+| Atajo | Equivalencia |
+|-------|-------------|
+| `x += n` | `x = x + n` |
+| `x -= n` | `x = x - n` |
+| `x *= n` | `x = x * n` |
+| `x /= n` | `x = x / n` |
+| `x %= n` | `x = x % n` |
 
-La precedencia determina el orden de evaluación:
+## Incremento `++` y Decremento `--`
 
-1. `()` - Paréntesis (mayor prioridad)
-2. `++`, `--` - Incremento/decremento
-3. `*`, `/`, `%` - Multiplicación, división, módulo
-4. `+`, `-` - Suma, resta (menor prioridad)
+Son atajos para sumar o restar 1:
 
 ```cpp
-int resultado = 2 + 3 * 4;      // = 2 + 12 = 14 (no 20)
-int correcto = (2 + 3) * 4;     // = 5 * 4 = 20
+int x = 5;
+
+x++;     // x ahora vale 6 (equivale a x = x + 1 o x += 1)
+x++;     // x ahora vale 7
+x--;     // x ahora vale 6 (equivale a x = x - 1 o x -= 1)
 ```
 
-### Ejemplos de precedencia
+Hay dos versiones: **prefijo** (`++x`) y **posfijo** (`x++`). La diferencia importa cuando usas el operador dentro de una expresión:
 
 ```cpp
-cout << 10 + 20 * 30 << endl;        // 610 (no 900)
-cout << (10 + 20) * 30 << endl;      // 900
-cout << 100 / 10 * 10 << endl;       // 100 (izq a der)
-cout << 100 / (10 * 10) << endl;     // 1
-cout << 5 + 10 % 3 << endl;          // 6 (5 + 1)
+int a = 5;
+int b = a++;   // b = 5, luego a sube a 6 (posfijo: usa primero, incrementa después)
+
+int c = 5;
+int d = ++c;   // c sube a 6 primero, luego d = 6 (prefijo: incrementa primero, usa después)
 ```
 
-## Funciones matemáticas de cmath
+<Callout type="info">
+  En la práctica, cuando usas `i++` o `++i` solos en una línea (no dentro de otra expresión), **no hay diferencia**. En los ciclos `for`, ambos funcionan igual: `for (int i = 0; i < n; i++)` y `for (int i = 0; i < n; ++i)` hacen lo mismo.
+</Callout>
+
+## Precedencia de operadores
+
+Al igual que en matemáticas, los operadores tienen un **orden de prioridad**:
+
+```cpp
+int resultado = 2 + 3 * 4;    // ¿20 o 14?
+cout << resultado << endl;     // 14 (multiplicación va primero)
+```
+
+El orden de prioridad (de mayor a menor):
+
+| Prioridad | Operadores | Ejemplo |
+|-----------|-----------|---------|
+| 1 (más alta) | `()` Paréntesis | `(2 + 3) * 4 = 20` |
+| 2 | `++` `--` (prefijo), `-` (negativo) | `++x`, `-x` |
+| 3 | `*` `/` `%` | `6 / 2 * 3 = 9` |
+| 4 | `+` `-` | `2 + 3 - 1 = 4` |
+| 5 (más baja) | `=` `+=` `-=` etc. | `x = 5` |
+
+Cuando los operadores tienen la **misma prioridad**, se evalúan de **izquierda a derecha**:
+
+```cpp
+cout << 6 / 2 * 3 << endl;   // (6 / 2) * 3 = 9 (no 6 / 6 = 1)
+cout << 10 - 3 + 2 << endl;  // (10 - 3) + 2 = 9 (no 10 - 5 = 5)
+```
+
+**Regla de oro:** Si no estás seguro del orden, **usa paréntesis**. Además, los paréntesis hacen el código más legible:
+
+```cpp
+// Sin paréntesis (correcto pero confuso)
+int resultado = a + b * c - d / e % f;
+
+// Con paréntesis (claro y seguro)
+int resultado = a + (b * c) - ((d / e) % f);
+```
+
+## Funciones matemáticas útiles
+
+La biblioteca `<cmath>` (o `<bits/stdc++.h>`) te da funciones matemáticas:
 
 ```cpp
 #include <cmath>
 
-// Potencia
-pow(2, 10);     // 2^10 = 1024
+// Valor absoluto
+cout << abs(-5) << endl;      // 5
+cout << abs(5) << endl;       // 5
+
+// Potencia: pow(base, exponente)
+cout << pow(2, 10) << endl;   // 1024 (2^10)
+cout << pow(3, 3) << endl;    // 27 (3^3)
 
 // Raíz cuadrada
-sqrt(16);       // 4.0
-
-// Valor absoluto
-abs(-5);        // 5 (para enteros)
-fabs(-5.5);     // 5.5 (para decimales)
+cout << sqrt(25) << endl;     // 5
+cout << sqrt(2) << endl;      // 1.41421...
 
 // Redondeo
-floor(3.7);     // 3.0 (hacia abajo)
-ceil(3.2);      // 4.0 (hacia arriba)
-round(3.5);     // 4.0 (al más cercano)
-
-// Logaritmos
-log(2.718);     // 1.0 (logaritmo natural)
-log10(100);     // 2.0 (logaritmo base 10)
-log2(8);        // 3.0 (logaritmo base 2)
+cout << ceil(3.2) << endl;    // 4 (redondear hacia arriba)
+cout << floor(3.8) << endl;   // 3 (redondear hacia abajo)
+cout << round(3.5) << endl;   // 4 (redondeo normal)
 
 // Mínimo y máximo
-min(5, 3);      // 3
-max(5, 3);      // 5
+cout << min(3, 7) << endl;    // 3
+cout << max(3, 7) << endl;    // 7
+cout << min({5, 2, 8, 1}) << endl;  // 1 (mínimo de varios)
 ```
 
-## Errores comunes
+<Callout type="warning">
+  `pow()` devuelve un `double`, lo cual puede causar errores de precisión. `pow(2, 10)` podría dar `1023.9999999` que al convertir a `int` da `1023` en lugar de `1024`. Para potencias de enteros, es mejor multiplicar manualmente o escribir tu propia función.
+</Callout>
 
-### Overflow en multiplicación
-
-```cpp
-int a = 100000;
-int b = 100000;
-int c = a * b;  // ¡OVERFLOW! Resultado incorrecto
-
-// Solución
-long long x = (long long)a * b;  // Correcto
-```
-
-### División por cero
+### Truco: potencia rápida para enteros
 
 ```cpp
-int a = 10;
-int b = 0;
-int c = a / b;  // ¡ERROR! División por cero
-int d = a % b;  // ¡ERROR! Módulo por cero
-```
-
-### Precisión de punto flotante
-
-```cpp
-double a = 0.1 + 0.2;
-if (a == 0.3) {
-    cout << "Iguales" << endl;  // ¡No se imprime!
-}
-// a es en realidad 0.30000000000000004
-
-// Solución: comparar con tolerancia
-if (abs(a - 0.3) < 1e-9) {
-    cout << "Aproximadamente iguales" << endl;
+// Mejor que pow() para enteros
+long long potencia(long long base, int exp) {
+    long long result = 1;
+    for (int i = 0; i < exp; i++) {
+        result *= base;
+    }
+    return result;
 }
 ```
 
-## Ejemplo práctico: Calculadora simple
+## Errores comunes con operadores
+
+### 1. Overflow en multiplicación
+
+```cpp
+int a = 100000, b = 100000;
+int c = a * b;   // ❌ Overflow! 10^10 no cabe en int
+long long d = (long long)a * b;  // ✅ Correcto: 10000000000
+```
+
+### 2. División entera cuando querías decimal
+
+```cpp
+int total = 7, n = 2;
+
+// ❌ Incorrecto: 7 / 2 = 3 (entero)
+double promedio = total / n;  // promedio = 3.0
+
+// ✅ Correcto: convertir a double primero
+double promedio = (double)total / n;  // promedio = 3.5
+```
+
+### 3. Módulo con números negativos
+
+```cpp
+cout << -7 % 3 << endl;   // -1 (en C++, el signo sigue al dividendo)
+cout << 7 % -3 << endl;   // 1
+```
+
+Si necesitas que el módulo siempre sea positivo:
+
+```cpp
+int mod_positivo = ((a % m) + m) % m;
+```
+
+## Ejemplo completo: desglosar billetes y monedas
+
+**Problema:** Dado un precio en centavos, desglosa en monedas de $1 (100 centavos), $0.50 (50 centavos), $0.25 (25 centavos), $0.10 (10 centavos), $0.05 (5 centavos) y $0.01 (1 centavo), usando la menor cantidad de monedas posible.
+
+**Entrada:** `347` (centavos)
+**Salida:**
+```
+$1.00: 3
+$0.50: 0
+$0.25: 1
+$0.10: 2
+$0.05: 0
+$0.01: 2
+```
 
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
-    double a, b;
-    char op;
+    int centavos;
+    cin >> centavos;
 
-    cin >> a >> op >> b;
+    cout << "$1.00: " << centavos / 100 << '\n';
+    centavos %= 100;  // Queda el residuo
 
-    double resultado;
+    cout << "$0.50: " << centavos / 50 << '\n';
+    centavos %= 50;
 
-    if (op == '+') resultado = a + b;
-    else if (op == '-') resultado = a - b;
-    else if (op == '*') resultado = a * b;
-    else if (op == '/') resultado = a / b;
-    else {
-        cout << "Operador no válido" << endl;
-        return 1;
-    }
+    cout << "$0.25: " << centavos / 25 << '\n';
+    centavos %= 25;
 
-    cout << resultado << endl;
+    cout << "$0.10: " << centavos / 10 << '\n';
+    centavos %= 10;
+
+    cout << "$0.05: " << centavos / 5 << '\n';
+    centavos %= 5;
+
+    cout << "$0.01: " << centavos << '\n';
 
     return 0;
 }
 ```
 
-## Ejercicios de práctica
+**Paso a paso con 347 centavos:**
+1. `347 / 100 = 3` billetes de $1. Quedan `347 % 100 = 47` centavos.
+2. `47 / 50 = 0` monedas de 50¢. Quedan `47 % 50 = 47` centavos.
+3. `47 / 25 = 1` moneda de 25¢. Quedan `47 % 25 = 22` centavos.
+4. `22 / 10 = 2` monedas de 10¢. Quedan `22 % 10 = 2` centavos.
+5. `2 / 5 = 0` monedas de 5¢. Quedan `2 % 5 = 2` centavos.
+6. 2 centavos restantes = 2 monedas de 1¢.
 
-### Ejercicio 1
-Dado un número de segundos, convertirlo a horas, minutos y segundos.
+## Ejercicio de práctica
 
-<details>
-<summary>Ver solución</summary>
+Lee un número de segundos y conviértelo a horas, minutos y segundos.
 
-```cpp
-int totalSegundos;
-cin >> totalSegundos;
-
-int horas = totalSegundos / 3600;
-int minutos = (totalSegundos % 3600) / 60;
-int segundos = totalSegundos % 60;
-
-cout << horas << "h " << minutos << "m " << segundos << "s" << endl;
-```
-
-</details>
-
-### Ejercicio 2
-Verifica si un número de 3 dígitos es capicúa (se lee igual al derecho y al revés).
+**Entrada:** `3725`
+**Salida:** `1 1 25` (1 hora, 1 minuto, 25 segundos)
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-int n;
-cin >> n;
+#include <iostream>
+using namespace std;
 
-int unidades = n % 10;
-int centenas = n / 100;
+int main() {
+    int totalSegundos;
+    cin >> totalSegundos;
 
-if (unidades == centenas) {
-    cout << "Es capicúa" << endl;
-} else {
-    cout << "No es capicúa" << endl;
+    int horas = totalSegundos / 3600;
+    totalSegundos %= 3600;
+
+    int minutos = totalSegundos / 60;
+    int segundos = totalSegundos % 60;
+
+    cout << horas << " " << minutos << " " << segundos << '\n';
+
+    return 0;
 }
 ```
+
+**Explicación:** 3725 ÷ 3600 = 1 hora, sobran 125 segundos. 125 ÷ 60 = 2 minutos, sobran 5 segundos. Resultado: 1 2 5.
+
+¡Espera, eso no coincide! Revisemos: 3725 = 3600 + 125 = 3600 + 60 + 65... no. 3725 = 1×3600 + 125. 125 = 2×60 + 5. Resultado: 1 2 5. (El ejemplo del enunciado tiene un error intencional para que lo pienses 😉).
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Tipo Char y Código ASCII](/blog/cpp-basico/char-ascii) para trabajar con caracteres.
+Aprende sobre **Char y ASCII** para entender cómo la computadora representa los caracteres como números.

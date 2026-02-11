@@ -1,295 +1,358 @@
 ---
 title: "Arreglos y Vectores"
-description: "Domina el uso de arreglos y vectores, las estructuras de datos más fundamentales"
-date: "2026-02-06"
+description: "Aprende a almacenar colecciones de datos usando arreglos y vectores en C++"
+date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["arreglos", "vectores", "estructuras", "STL"]
-syllabusId: 19
+tags: ["c++", "arreglos", "vectores", "arrays", "vector"]
+syllabusId: 18
 ---
 
-## Introducción
+## ¿Qué es un arreglo?
 
-Los arreglos y vectores son las estructuras de datos más básicas y utilizadas. Entenderlos bien es fundamental para resolver cualquier problema.
+Imagina que tienes 100 estudiantes y quieres guardar la calificación de cada uno. Sin arreglos, necesitarías 100 variables: `cal1`, `cal2`, `cal3`, ..., `cal100`. ¡Imposible de manejar!
 
-## Arrays estáticos vs Vectores
+Un **arreglo** es una colección de variables del mismo tipo, todas agrupadas bajo un mismo nombre. Es como un **edificio de departamentos**: un solo edificio con muchos departamentos numerados, y cada departamento guarda un valor.
 
-### Arrays estáticos (C-style)
-
-```cpp
-// Declaración
-int arr[100];           // Sin inicializar
-int arr[100] = {};      // Inicializado a 0
-int arr[] = {1, 2, 3};  // Tamaño automático
-
-// Acceso
-arr[0] = 10;            // Primer elemento
-arr[99] = 20;           // Último elemento
+```
+Arreglo "calificaciones":
+┌──────┬──────┬──────┬──────┬──────┐
+│  85  │  92  │  78  │  95  │  88  │
+├──────┼──────┼──────┼──────┼──────┤
+│ [0]  │ [1]  │ [2]  │ [3]  │ [4]  │  ← Índices
+└──────┴──────┴──────┴──────┴──────┘
 ```
 
-### Vectores (STL)
-
-```cpp
-#include <vector>
-
-// Declaración
-vector<int> v;                    // Vector vacío
-vector<int> v(100);               // 100 elementos (valor por defecto)
-vector<int> v(100, -1);           // 100 elementos inicializados a -1
-vector<int> v = {1, 2, 3, 4, 5};  // Lista de inicialización
-
-// Tamaño
-int n = v.size();
-bool vacio = v.empty();
-```
-
-<Callout type="info">
-  Usa **vectores** siempre que puedas. Son más seguros y flexibles que los arrays.
-</Callout>
-
-## Operaciones básicas con vectores
-
-### Agregar y eliminar elementos
-
-```cpp
-vector<int> v = {1, 2, 3};
-
-// Agregar al final - O(1) amortizado
-v.push_back(4);     // v = {1, 2, 3, 4}
-
-// Eliminar del final - O(1)
-v.pop_back();       // v = {1, 2, 3}
-
-// Insertar en posición específica - O(n)
-v.insert(v.begin() + 1, 10);  // v = {1, 10, 2, 3}
-
-// Eliminar de posición específica - O(n)
-v.erase(v.begin() + 1);       // v = {1, 2, 3}
-
-// Limpiar todo
-v.clear();          // v = {}
-```
-
-### Acceso a elementos
-
-```cpp
-vector<int> v = {10, 20, 30, 40, 50};
-
-// Por índice
-int a = v[0];       // 10 (sin verificación de límites)
-int b = v.at(0);    // 10 (con verificación, lanza excepción si fuera)
-
-// Primero y último
-int primero = v.front();  // 10
-int ultimo = v.back();    // 50
-```
-
-### Redimensionar
-
-```cpp
-vector<int> v = {1, 2, 3};
-
-v.resize(5);        // v = {1, 2, 3, 0, 0}
-v.resize(5, -1);    // v = {1, 2, 3, -1, -1}
-v.resize(2);        // v = {1, 2}
-```
-
-## Iteradores
-
-Los iteradores permiten recorrer y manipular contenedores:
-
-```cpp
-vector<int> v = {10, 20, 30};
-
-// Recorrer con iteradores
-for (auto it = v.begin(); it != v.end(); it++) {
-    cout << *it << " ";
-}
-
-// Range-based for (más limpio)
-for (int x : v) {
-    cout << x << " ";
-}
-
-// Con referencia para modificar
-for (int& x : v) {
-    x *= 2;  // Duplica cada elemento
-}
-```
-
-## Vectores 2D (matrices)
+## Arreglos estáticos (de C)
 
 ### Declaración
 
 ```cpp
-// Matriz de tamaño fijo
-vector<vector<int>> matriz(n, vector<int>(m, 0));
-// n filas, m columnas, inicializado a 0
-
-// Matriz de tamaño variable
-vector<vector<int>> adj(n);  // n filas vacías (útil para grafos)
+int calificaciones[5];          // Arreglo de 5 enteros (sin inicializar)
+int numeros[5] = {10, 20, 30, 40, 50};  // Inicializado con valores
+int ceros[100] = {0};           // Todos inicializados a 0
+int masNumeros[] = {1, 2, 3};   // El tamaño se deduce (3 elementos)
 ```
 
-### Acceso
+### Acceso por índice
+
+Los índices empiezan en **0** (no en 1):
 
 ```cpp
-// Acceder a elemento
-int valor = matriz[fila][columna];
+int arr[5] = {10, 20, 30, 40, 50};
 
-// Agregar fila
-matriz.push_back(vector<int>{1, 2, 3});
+cout << arr[0] << endl;   // 10 (primer elemento)
+cout << arr[1] << endl;   // 20 (segundo elemento)
+cout << arr[4] << endl;   // 50 (último elemento)
 
-// Agregar a lista de adyacencia
-adj[u].push_back(v);
+arr[2] = 99;              // Cambiar el tercer elemento
+cout << arr[2] << endl;   // 99
 ```
 
-### Recorrer matriz
+<Callout type="warning">
+  **¡Los índices empiezan en 0!** Un arreglo de tamaño `n` tiene índices del `0` al `n-1`. Acceder a `arr[n]` o `arr[-1]` es un error grave (undefined behavior) que puede causar resultados impredecibles o que tu programa se cierre.
+</Callout>
+
+### Recorrer un arreglo
 
 ```cpp
-int filas = matriz.size();
-int columnas = matriz[0].size();
+int arr[5] = {10, 20, 30, 40, 50};
+int n = 5;
 
+// Imprimir todos los elementos
+for (int i = 0; i < n; i++) {
+    cout << arr[i] << " ";
+}
+cout << endl;
+// Salida: 10 20 30 40 50
+```
+
+### Leer un arreglo
+
+```cpp
+int n;
+cin >> n;
+
+int arr[100001];  // Declarar con tamaño máximo posible
+for (int i = 0; i < n; i++) {
+    cin >> arr[i];
+}
+```
+
+### Arreglos globales vs locales
+
+```cpp
+// Global: se inicializa automáticamente a 0, puede ser muy grande
+int arrGlobal[1000001];
+
+int main() {
+    // Local: NO se inicializa (basura), tamaño limitado (~1MB de stack)
+    int arrLocal[1000001];  // ⚠️ Puede causar stack overflow
+
+    return 0;
+}
+```
+
+<Callout type="info">
+  En competencias, declara arreglos grandes como **variables globales**. Las variables locales viven en el "stack" que tiene un tamaño limitado (~1-8 MB). Las globales viven en un segmento diferente sin ese límite.
+</Callout>
+
+## Vectores (la versión moderna y flexible)
+
+Un `vector` es como un arreglo, pero **puede cambiar de tamaño**. Es la estructura de datos más usada en C++ competitivo.
+
+### Incluir la biblioteca
+
+```cpp
+#include <vector>
+// O simplemente #include <bits/stdc++.h>
+```
+
+### Crear vectores
+
+```cpp
+vector<int> v;                    // Vector vacío de enteros
+vector<int> v(5);                 // Vector de 5 elementos (todos en 0)
+vector<int> v(5, -1);             // Vector de 5 elementos, todos valen -1
+vector<int> v = {10, 20, 30};     // Vector con valores iniciales
+vector<string> nombres;           // Vector de strings
+vector<double> decimales(100, 0.0); // 100 elementos, todos 0.0
+```
+
+### Operaciones básicas
+
+```cpp
+vector<int> v;
+
+// Agregar elementos al final
+v.push_back(10);    // v = {10}
+v.push_back(20);    // v = {20}
+v.push_back(30);    // v = {10, 20, 30}
+
+// Tamaño
+cout << v.size() << endl;  // 3
+
+// Acceder por índice (igual que arreglos)
+cout << v[0] << endl;      // 10
+cout << v[1] << endl;      // 20
+v[2] = 99;                 // Cambiar un elemento
+
+// Último elemento
+cout << v.back() << endl;  // 99
+
+// Primer elemento
+cout << v.front() << endl; // 10
+
+// Eliminar el último elemento
+v.pop_back();               // v = {10, 20}
+
+// ¿Está vacío?
+cout << v.empty() << endl;  // 0 (false, no está vacío)
+
+// Limpiar todo
+v.clear();                   // v = {} (vacío)
+cout << v.empty() << endl;  // 1 (true)
+```
+
+### Recorrer un vector
+
+```cpp
+vector<int> v = {10, 20, 30, 40, 50};
+
+// Forma 1: con índice
+for (int i = 0; i < v.size(); i++) {
+    cout << v[i] << " ";
+}
+
+// Forma 2: for-each (más elegante)
+for (int x : v) {
+    cout << x << " ";
+}
+
+// Forma 3: for-each por referencia (si quieres modificar)
+for (int &x : v) {
+    x *= 2;  // Duplica cada elemento
+}
+```
+
+### Leer un vector
+
+```cpp
+int n;
+cin >> n;
+
+vector<int> v(n);
+for (int i = 0; i < n; i++) {
+    cin >> v[i];
+}
+```
+
+## Arreglos vs Vectores
+
+| Característica | Arreglo | Vector |
+|---------------|---------|--------|
+| Tamaño | Fijo al declarar | Puede crecer/reducir |
+| Saber el tamaño | Debes recordar `n` | `v.size()` |
+| Agregar elementos | No se puede | `push_back()` |
+| Inicialización | Manual o parcial | Automática |
+| Velocidad | Ligeramente más rápido | Casi igual |
+
+En competencias, la mayoría de los programadores usan **vectores** por su flexibilidad.
+
+## Operaciones comunes en competencias
+
+### Sumar todos los elementos
+
+```cpp
+vector<int> v = {3, 1, 4, 1, 5};
+int suma = 0;
+for (int x : v) {
+    suma += x;
+}
+cout << suma << endl;  // 14
+```
+
+### Encontrar máximo y mínimo
+
+```cpp
+vector<int> v = {3, 1, 4, 1, 5, 9, 2, 6};
+
+int maximo = *max_element(v.begin(), v.end());
+int minimo = *min_element(v.begin(), v.end());
+
+cout << "Max: " << maximo << ", Min: " << minimo << endl;
+// Max: 9, Min: 1
+```
+
+### Ordenar
+
+```cpp
+vector<int> v = {5, 2, 8, 1, 9, 3};
+
+sort(v.begin(), v.end());     // Orden ascendente: 1 2 3 5 8 9
+
+sort(v.rbegin(), v.rend());   // Orden descendente: 9 8 5 3 2 1
+```
+
+### Invertir
+
+```cpp
+vector<int> v = {1, 2, 3, 4, 5};
+reverse(v.begin(), v.end());
+// v = {5, 4, 3, 2, 1}
+```
+
+### Eliminar duplicados
+
+```cpp
+vector<int> v = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3};
+sort(v.begin(), v.end());                       // Primero ordenar
+v.erase(unique(v.begin(), v.end()), v.end());   // Eliminar duplicados
+// v = {1, 2, 3, 4, 5, 6, 9}
+```
+
+### Buscar un elemento
+
+```cpp
+vector<int> v = {10, 20, 30, 40, 50};
+
+// Buscar si existe
+auto it = find(v.begin(), v.end(), 30);
+if (it != v.end()) {
+    cout << "Encontrado en posición " << (it - v.begin()) << endl;
+} else {
+    cout << "No encontrado" << endl;
+}
+```
+
+## Vectores 2D (matrices con vectores)
+
+```cpp
+// Crear una matriz de 3x4 llena de ceros
+int filas = 3, cols = 4;
+vector<vector<int>> matriz(filas, vector<int>(cols, 0));
+
+// Acceder
+matriz[0][0] = 1;
+matriz[1][2] = 5;
+
+// Recorrer
 for (int i = 0; i < filas; i++) {
-    for (int j = 0; j < columnas; j++) {
+    for (int j = 0; j < cols; j++) {
         cout << matriz[i][j] << " ";
     }
     cout << endl;
 }
 ```
 
-## Técnicas útiles
+## Arreglo de frecuencias
 
-### Prefijos y sufijos
+Un patrón extremadamente común: contar cuántas veces aparece cada valor.
 
 ```cpp
-vector<int> arr = {1, 2, 3, 4, 5};
-int n = arr.size();
+int n;
+cin >> n;
 
-// Suma de prefijos
-vector<long long> prefix(n + 1, 0);
-for (int i = 0; i < n; i++) {
-    prefix[i + 1] = prefix[i] + arr[i];
+vector<int> v(n);
+for (int i = 0; i < n; i++) cin >> v[i];
+
+// Si los valores van de 0 a MAX
+int freq[100001] = {0};
+for (int x : v) {
+    freq[x]++;
 }
-// prefix = {0, 1, 3, 6, 10, 15}
 
-// Suma del rango [l, r]
-int suma = prefix[r + 1] - prefix[l];
+// ¿Cuántas veces aparece el 5?
+cout << freq[5] << endl;
 ```
 
-### Two pointers
+## Ejercicio de práctica
 
-```cpp
-// Ejemplo: encontrar par que sume a target en array ordenado
-bool encontrarPar(vector<int>& arr, int target) {
-    int izq = 0;
-    int der = arr.size() - 1;
+Lee N números. Imprime cuántos son mayores que el promedio.
 
-    while (izq < der) {
-        int suma = arr[izq] + arr[der];
-        if (suma == target) return true;
-        if (suma < target) izq++;
-        else der--;
-    }
-
-    return false;
-}
+**Entrada:**
 ```
-
-### Sliding window
-
-```cpp
-// Ejemplo: suma máxima de k elementos consecutivos
-int maxSumaK(vector<int>& arr, int k) {
-    int n = arr.size();
-    int sumaVentana = 0;
-
-    // Calcular suma de primera ventana
-    for (int i = 0; i < k; i++) {
-        sumaVentana += arr[i];
-    }
-
-    int maxSuma = sumaVentana;
-
-    // Deslizar ventana
-    for (int i = k; i < n; i++) {
-        sumaVentana += arr[i] - arr[i - k];
-        maxSuma = max(maxSuma, sumaVentana);
-    }
-
-    return maxSuma;
-}
+5
+10 20 30 40 50
 ```
-
-## Funciones útiles de STL
-
-```cpp
-#include <algorithm>
-#include <numeric>
-
-vector<int> v = {5, 2, 8, 1, 9};
-
-// Encontrar elemento
-auto it = find(v.begin(), v.end(), 8);  // Iterador al 8
-
-// Min y max
-int minimo = *min_element(v.begin(), v.end());  // 1
-int maximo = *max_element(v.begin(), v.end());  // 9
-
-// Suma total
-int suma = accumulate(v.begin(), v.end(), 0);  // 25
-
-// Contar ocurrencias
-int cuenta = count(v.begin(), v.end(), 5);  // 1
-
-// Reversar
-reverse(v.begin(), v.end());
-
-// Único (requiere estar ordenado)
-sort(v.begin(), v.end());
-v.erase(unique(v.begin(), v.end()), v.end());  // Elimina duplicados
-
-// Rotar
-rotate(v.begin(), v.begin() + 2, v.end());
-```
-
-<Callout type="success">
-  Conocer estas funciones de la STL te ahorrará tiempo valioso en competencias.
-</Callout>
-
-## Ejercicio práctico
-
-**Problema:** Dado un array, encuentra el subarreglo contiguo de suma máxima (Kadane's Algorithm).
-
-```cpp
-int maxSubarraySum(vector<int>& arr) {
-    // Tu código aquí
-}
-```
+**Salida:** `3` (el promedio es 30, y 30 no es "mayor que" 30, pero 40 y 50 sí... ¡espera! Veamos: promedio = 30. Mayores estrictos que 30: 40 y 50. Son 2.)
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-int maxSubarraySum(vector<int>& arr) {
-    int maxActual = arr[0];
-    int maxGlobal = arr[0];
+#include <iostream>
+#include <vector>
+using namespace std;
 
-    for (int i = 1; i < arr.size(); i++) {
-        maxActual = max(arr[i], maxActual + arr[i]);
-        maxGlobal = max(maxGlobal, maxActual);
+int main() {
+    int n;
+    cin >> n;
+
+    vector<int> v(n);
+    double suma = 0;
+    for (int i = 0; i < n; i++) {
+        cin >> v[i];
+        suma += v[i];
     }
 
-    return maxGlobal;
+    double promedio = suma / n;
+    int cuenta = 0;
+    for (int x : v) {
+        if (x > promedio) {
+            cuenta++;
+        }
+    }
+
+    cout << cuenta << endl;
+
+    return 0;
 }
 ```
 
+**Nota:** Necesitamos guardar todos los valores en un vector porque primero debemos calcular el promedio (recorremos una vez) y luego contar cuántos lo superan (recorremos de nuevo).
+
 </details>
-
-## Problemas para practicar
-
-1. [Suma de Intervalos - omegaUp](https://omegaup.com/arena/problem/Suma-de-Intervalos)
-2. [Books - Codeforces](https://codeforces.com/problemset/problem/279/B)
-3. [Subarray Sums I - CSES](https://cses.fi/problemset/task/1660)
 
 ## Siguiente paso
 
-Continúa aprendiendo sobre [pilas y colas](/blog/estructuras-de-datos/pilas-y-colas) para expandir tu conocimiento de estructuras de datos.
+Aprende sobre **Strings** para manipular texto de forma poderosa en C++.

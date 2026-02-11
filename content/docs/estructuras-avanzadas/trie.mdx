@@ -1,418 +1,234 @@
 ---
 title: "Trie (Árbol de Prefijos)"
-description: "Aprende a usar Tries para búsqueda eficiente de strings y prefijos"
+description: "Estructura para buscar strings eficientemente por prefijos"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["trie", "strings", "prefijos", "estructuras-de-datos"]
-syllabusId: 60
-order: 4
+tags: ["c++", "trie", "strings", "prefijos", "diccionario"]
+syllabusId: 71
 ---
 
 ## ¿Qué es un Trie?
 
-Un **Trie** (pronunciado "try") es un árbol de prefijos que permite operaciones eficientes con strings:
+**Analogía:** Imagina un diccionario organizado como un árbol. La raíz es vacía. Desde ahí, hay una rama para cada primera letra. Desde cada letra, hay ramas para la segunda letra, y así sucesivamente. Para buscar "casa", sigues: c → a → s → a. Si el camino existe, la palabra está en el diccionario.
 
-- **Insertar** una palabra en $O(m)$
-- **Buscar** una palabra en $O(m)$
-- **Buscar prefijo** en $O(m)$
-
-Donde $m$ es la longitud del string.
-
-## Visualización
+Un **Trie** (se pronuncia "trai", viene de re**trie**val) almacena un conjunto de strings donde:
+- Cada nodo representa un carácter
+- El camino de la raíz a un nodo forma un prefijo
+- Inserción y búsqueda son $O(L)$ donde L es la longitud del string
 
 ```
-Palabras: ["car", "card", "care", "cat", "dog"]
+Palabras: car, cat, card, care, dog, do
 
-             (raíz)
-            /      \
-          c         d
-         /           \
-        a             o
-       / \             \
-      r   t             g
-     / \                 \
-   (d)  (e)              (✓)
-   (✓)  (✓)
-
-(✓) = fin de palabra
+        (raíz)
+       /      \
+      c         d
+      |         |
+      a         o
+     / \        |
+    r    t      g
+   / \
+  d    e
 ```
 
-## Implementación con nodos
+## Implementación con arreglos
 
 ```cpp
-const int ALPHABET = 26;
+const int MAXN = 100005 * 30;  // Máximo total de caracteres
+const int ALPHA = 26;          // Tamaño del alfabeto
 
-struct TrieNode {
-    TrieNode* hijos[ALPHABET];
-    bool finDePalabra;
-
-    TrieNode() {
-        for (int i = 0; i < ALPHABET; i++) {
-            hijos[i] = nullptr;
-        }
-        finDePalabra = false;
-    }
-};
-
-class Trie {
-private:
-    TrieNode* raiz;
-
-public:
-    Trie() {
-        raiz = new TrieNode();
-    }
-
-    void insertar(string palabra) {
-        TrieNode* nodo = raiz;
-        for (char c : palabra) {
-            int idx = c - 'a';
-            if (nodo->hijos[idx] == nullptr) {
-                nodo->hijos[idx] = new TrieNode();
-            }
-            nodo = nodo->hijos[idx];
-        }
-        nodo->finDePalabra = true;
-    }
-
-    bool buscar(string palabra) {
-        TrieNode* nodo = raiz;
-        for (char c : palabra) {
-            int idx = c - 'a';
-            if (nodo->hijos[idx] == nullptr) {
-                return false;
-            }
-            nodo = nodo->hijos[idx];
-        }
-        return nodo->finDePalabra;
-    }
-
-    bool empiezaCon(string prefijo) {
-        TrieNode* nodo = raiz;
-        for (char c : prefijo) {
-            int idx = c - 'a';
-            if (nodo->hijos[idx] == nullptr) {
-                return false;
-            }
-            nodo = nodo->hijos[idx];
-        }
-        return true;
-    }
-};
-```
-
-### Uso
-
-```cpp
-int main() {
-    Trie trie;
-
-    trie.insertar("car");
-    trie.insertar("card");
-    trie.insertar("care");
-    trie.insertar("cat");
-
-    cout << trie.buscar("car") << endl;      // 1 (true)
-    cout << trie.buscar("ca") << endl;       // 0 (false)
-    cout << trie.empiezaCon("ca") << endl;   // 1 (true)
-    cout << trie.empiezaCon("dog") << endl;  // 0 (false)
-
-    return 0;
-}
-```
-
-## Implementación con arrays (más rápida)
-
-Para competencias, es más eficiente usar arrays:
-
-```cpp
-const int MAXN = 1000005;  // Total de nodos posibles
-const int ALPHABET = 26;
-
-int trie[MAXN][ALPHABET];
-bool finPalabra[MAXN];
-int contador = 0;
+int trie[MAXN][ALPHA];   // trie[nodo][letra] = siguiente nodo
+bool fin[MAXN];           // ¿Este nodo marca el fin de una palabra?
+int cnt;                  // Contador de nodos
 
 void init() {
-    contador = 0;
+    cnt = 0;
     memset(trie[0], -1, sizeof(trie[0]));
-    finPalabra[0] = false;
+    fin[0] = false;
 }
 
-int nuevoNodo() {
-    contador++;
-    memset(trie[contador], -1, sizeof(trie[contador]));
-    finPalabra[contador] = false;
-    return contador;
-}
-
-void insertar(string& s) {
+void insertar(const string &s) {
     int nodo = 0;
+
     for (char c : s) {
         int idx = c - 'a';
+
         if (trie[nodo][idx] == -1) {
-            trie[nodo][idx] = nuevoNodo();
+            // Crear nuevo nodo
+            cnt++;
+            memset(trie[cnt], -1, sizeof(trie[cnt]));
+            fin[cnt] = false;
+            trie[nodo][idx] = cnt;
         }
+
         nodo = trie[nodo][idx];
     }
-    finPalabra[nodo] = true;
+
+    fin[nodo] = true;  // Marcar fin de palabra
 }
 
-bool buscar(string& s) {
+bool buscar(const string &s) {
     int nodo = 0;
-    for (char c : s) {
-        int idx = c - 'a';
-        if (trie[nodo][idx] == -1) {
-            return false;
-        }
-        nodo = trie[nodo][idx];
-    }
-    return finPalabra[nodo];
-}
-```
 
-## Contar palabras con prefijo
-
-```cpp
-int conteo[MAXN];  // Palabras que pasan por este nodo
-
-void insertar(string& s) {
-    int nodo = 0;
-    for (char c : s) {
-        int idx = c - 'a';
-        if (trie[nodo][idx] == -1) {
-            trie[nodo][idx] = nuevoNodo();
-        }
-        nodo = trie[nodo][idx];
-        conteo[nodo]++;
-    }
-    finPalabra[nodo] = true;
-}
-
-int contarConPrefijo(string& prefijo) {
-    int nodo = 0;
-    for (char c : prefijo) {
-        int idx = c - 'a';
-        if (trie[nodo][idx] == -1) {
-            return 0;
-        }
-        nodo = trie[nodo][idx];
-    }
-    return conteo[nodo];
-}
-```
-
-## Trie de bits (XOR máximo)
-
-Un trie de bits es muy útil para encontrar el XOR máximo:
-
-```cpp
-const int LOG = 30;  // Bits para enteros
-
-int trie[MAXN * LOG][2];
-int contador = 0;
-
-void init() {
-    contador = 0;
-    trie[0][0] = trie[0][1] = -1;
-}
-
-int nuevoNodo() {
-    contador++;
-    trie[contador][0] = trie[contador][1] = -1;
-    return contador;
-}
-
-void insertar(int num) {
-    int nodo = 0;
-    for (int i = LOG - 1; i >= 0; i--) {
-        int bit = (num >> i) & 1;
-        if (trie[nodo][bit] == -1) {
-            trie[nodo][bit] = nuevoNodo();
-        }
-        nodo = trie[nodo][bit];
-    }
-}
-
-int maxXOR(int num) {
-    int nodo = 0;
-    int resultado = 0;
-    for (int i = LOG - 1; i >= 0; i--) {
-        int bit = (num >> i) & 1;
-        int opuesto = 1 - bit;
-
-        if (trie[nodo][opuesto] != -1) {
-            resultado |= (1 << i);
-            nodo = trie[nodo][opuesto];
-        } else {
-            nodo = trie[nodo][bit];
-        }
-    }
-    return resultado;
-}
-```
-
-### Uso: XOR máximo en array
-
-```cpp
-int maxXORPar(vector<int>& arr) {
-    init();
-    int maxVal = 0;
-
-    insertar(arr[0]);
-    for (int i = 1; i < arr.size(); i++) {
-        maxVal = max(maxVal, maxXOR(arr[i]));
-        insertar(arr[i]);
-    }
-
-    return maxVal;
-}
-```
-
-## Aplicaciones
-
-### 1. Autocompletado
-
-```cpp
-void autocompletar(TrieNode* nodo, string prefijo, vector<string>& sugerencias) {
-    if (nodo->finDePalabra) {
-        sugerencias.push_back(prefijo);
-    }
-
-    for (int i = 0; i < 26; i++) {
-        if (nodo->hijos[i] != nullptr) {
-            autocompletar(nodo->hijos[i], prefijo + char('a' + i), sugerencias);
-        }
-    }
-}
-
-vector<string> obtenerSugerencias(Trie& trie, string prefijo) {
-    TrieNode* nodo = trie.raiz;
-    for (char c : prefijo) {
-        int idx = c - 'a';
-        if (nodo->hijos[idx] == nullptr) {
-            return {};
-        }
-        nodo = nodo->hijos[idx];
-    }
-
-    vector<string> sugerencias;
-    autocompletar(nodo, prefijo, sugerencias);
-    return sugerencias;
-}
-```
-
-### 2. Longest Common Prefix
-
-```cpp
-string longestCommonPrefix(vector<string>& palabras) {
-    if (palabras.empty()) return "";
-
-    Trie trie;
-    for (string& s : palabras) {
-        trie.insertar(s);
-    }
-
-    string lcp = "";
-    TrieNode* nodo = trie.raiz;
-
-    while (true) {
-        int count = 0, idx = -1;
-        for (int i = 0; i < 26; i++) {
-            if (nodo->hijos[i] != nullptr) {
-                count++;
-                idx = i;
-            }
-        }
-
-        if (count != 1 || nodo->finDePalabra) break;
-
-        lcp += char('a' + idx);
-        nodo = nodo->hijos[idx];
-    }
-
-    return lcp;
-}
-```
-
-### 3. Número de strings distintos
-
-```cpp
-int contarDistintos() {
-    int total = 0;
-    for (int i = 0; i <= contador; i++) {
-        if (finPalabra[i]) total++;
-    }
-    return total;
-}
-```
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 1000005;
-const int ALPHABET = 26;
-
-int trie[MAXN][ALPHABET];
-bool finPalabra[MAXN];
-int cnt[MAXN];  // Contador de palabras con este prefijo
-int contador;
-
-void init() {
-    contador = 0;
-    memset(trie[0], -1, sizeof(trie[0]));
-    finPalabra[0] = false;
-    cnt[0] = 0;
-}
-
-int nuevoNodo() {
-    contador++;
-    memset(trie[contador], -1, sizeof(trie[contador]));
-    finPalabra[contador] = false;
-    cnt[contador] = 0;
-    return contador;
-}
-
-void insertar(const string& s) {
-    int nodo = 0;
-    for (char c : s) {
-        int idx = c - 'a';
-        if (trie[nodo][idx] == -1) {
-            trie[nodo][idx] = nuevoNodo();
-        }
-        nodo = trie[nodo][idx];
-        cnt[nodo]++;
-    }
-    finPalabra[nodo] = true;
-}
-
-bool buscar(const string& s) {
-    int nodo = 0;
     for (char c : s) {
         int idx = c - 'a';
         if (trie[nodo][idx] == -1) return false;
         nodo = trie[nodo][idx];
     }
-    return finPalabra[nodo];
+
+    return fin[nodo];  // Debe ser fin de palabra, no solo un prefijo
 }
 
-int contarPrefijo(const string& s) {
+bool existePrefijo(const string &s) {
     int nodo = 0;
+
     for (char c : s) {
+        int idx = c - 'a';
+        if (trie[nodo][idx] == -1) return false;
+        nodo = trie[nodo][idx];
+    }
+
+    return true;  // El prefijo existe
+}
+```
+
+## Contando palabras con un prefijo
+
+Agrega un contador en cada nodo para saber cuántas palabras pasan por ahí:
+
+```cpp
+int pasos[MAXN];  // Cuántas palabras pasan por este nodo
+
+void insertar(const string &s) {
+    int nodo = 0;
+
+    for (char c : s) {
+        int idx = c - 'a';
+        if (trie[nodo][idx] == -1) {
+            cnt++;
+            memset(trie[cnt], -1, sizeof(trie[cnt]));
+            fin[cnt] = false;
+            pasos[cnt] = 0;
+            trie[nodo][idx] = cnt;
+        }
+        nodo = trie[nodo][idx];
+        pasos[nodo]++;
+    }
+
+    fin[nodo] = true;
+}
+
+int contarConPrefijo(const string &pref) {
+    int nodo = 0;
+    for (char c : pref) {
         int idx = c - 'a';
         if (trie[nodo][idx] == -1) return 0;
         nodo = trie[nodo][idx];
     }
-    return cnt[nodo];
+    return pasos[nodo];
+}
+```
+
+```
+Insertar: "car", "cat", "care", "card"
+contarConPrefijo("ca") → 4  (todas empiezan con "ca")
+contarConPrefijo("car") → 3  ("car", "care", "card")
+contarConPrefijo("dog") → 0
+```
+
+## Trie de bits (XOR máximo)
+
+Un uso poderoso: encontrar el **XOR máximo** de un número con cualquier elemento de un conjunto.
+
+**Idea:** Inserta los números bit a bit (del más significativo al menos) en un Trie. Para maximizar XOR, en cada bit intenta ir por el camino opuesto.
+
+```cpp
+int bitTrie[MAXN * 32][2];
+int bitCnt;
+
+void initBit() {
+    bitCnt = 0;
+    bitTrie[0][0] = bitTrie[0][1] = -1;
+}
+
+void insertarNum(int num) {
+    int nodo = 0;
+    for (int i = 29; i >= 0; i--) {
+        int b = (num >> i) & 1;
+        if (bitTrie[nodo][b] == -1) {
+            bitCnt++;
+            bitTrie[bitCnt][0] = bitTrie[bitCnt][1] = -1;
+            bitTrie[nodo][b] = bitCnt;
+        }
+        nodo = bitTrie[nodo][b];
+    }
+}
+
+int maxXor(int num) {
+    int nodo = 0;
+    int resultado = 0;
+
+    for (int i = 29; i >= 0; i--) {
+        int b = (num >> i) & 1;
+        int opuesto = 1 - b;
+
+        if (bitTrie[nodo][opuesto] != -1) {
+            resultado |= (1 << i);  // Este bit contribuye al XOR
+            nodo = bitTrie[nodo][opuesto];
+        } else {
+            nodo = bitTrie[nodo][b];
+        }
+    }
+
+    return resultado;
+}
+```
+
+## Aplicaciones del Trie
+
+1. **Autocompletado:** Dado un prefijo, encontrar todas las palabras que empiezan con él.
+2. **Corrector ortográfico:** Buscar palabras similares.
+3. **XOR máximo:** Encontrar el par con mayor XOR en un arreglo.
+4. **Conteo de prefijos:** ¿Cuántas palabras comparten un prefijo?
+5. **Longest common prefix:** Prefijo común más largo entre strings.
+
+## Ejemplo completo
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+const int MAXN = 100005 * 30;
+int trie[MAXN][26];
+bool fin[MAXN];
+int pasos[MAXN];
+int cnt;
+
+void init() {
+    cnt = 0;
+    memset(trie[0], -1, sizeof(trie[0]));
+    fin[0] = false;
+    pasos[0] = 0;
+}
+
+void insertar(const string &s) {
+    int nodo = 0;
+    for (char c : s) {
+        int idx = c - 'a';
+        if (trie[nodo][idx] == -1) {
+            cnt++;
+            memset(trie[cnt], -1, sizeof(trie[cnt]));
+            fin[cnt] = false;
+            pasos[cnt] = 0;
+            trie[nodo][idx] = cnt;
+        }
+        nodo = trie[nodo][idx];
+        pasos[nodo]++;
+    }
+    fin[nodo] = true;
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     init();
 
     int n, q;
@@ -425,29 +241,93 @@ int main() {
     }
 
     while (q--) {
-        string s;
-        cin >> s;
-        cout << contarPrefijo(s) << "\n";
+        string pref;
+        cin >> pref;
+
+        int nodo = 0;
+        bool existe = true;
+        for (char c : pref) {
+            int idx = c - 'a';
+            if (trie[nodo][idx] == -1) { existe = false; break; }
+            nodo = trie[nodo][idx];
+        }
+
+        cout << (existe ? pasos[nodo] : 0) << "\n";
     }
 
     return 0;
 }
 ```
 
-## Complejidades
+## Ejercicio
 
-| Operación | Tiempo | Espacio |
-|-----------|--------|---------|
-| Insertar | $O(m)$ | $O(m \cdot \Sigma)$ |
-| Buscar | $O(m)$ | - |
-| Prefijo | $O(m)$ | - |
+Dado un arreglo de N enteros, encuentra el **máximo XOR** entre cualquier par de elementos.
 
-Donde $m$ = longitud del string, $\Sigma$ = tamaño del alfabeto.
+<details>
+<summary>Ver solución</summary>
 
-## Ejercicios recomendados
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
 
-1. [LeetCode - Implement Trie](https://leetcode.com/problems/implement-trie-prefix-tree/)
-2. [CSES - String Matching](https://cses.fi/problemset/task/1753)
-3. [Codeforces - Vasiliy's Multiset](https://codeforces.com/problemset/problem/706/D)
-4. [SPOJ - SUBXOR](https://www.spoj.com/problems/SUBXOR/)
-5. [AtCoder - XOR Matching](https://atcoder.jp/contests/abc191/tasks/abc191_f)
+const int MAXN = 100005 * 32;
+int trie[MAXN][2];
+int cnt;
+
+void init() {
+    cnt = 0;
+    trie[0][0] = trie[0][1] = -1;
+}
+
+void insertar(int num) {
+    int nodo = 0;
+    for (int i = 29; i >= 0; i--) {
+        int b = (num >> i) & 1;
+        if (trie[nodo][b] == -1) {
+            cnt++;
+            trie[cnt][0] = trie[cnt][1] = -1;
+            trie[nodo][b] = cnt;
+        }
+        nodo = trie[nodo][b];
+    }
+}
+
+int maxXor(int num) {
+    int nodo = 0, res = 0;
+    for (int i = 29; i >= 0; i--) {
+        int b = (num >> i) & 1;
+        int op = 1 - b;
+        if (trie[nodo][op] != -1) {
+            res |= (1 << i);
+            nodo = trie[nodo][op];
+        } else {
+            nodo = trie[nodo][b];
+        }
+    }
+    return res;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> v(n);
+    for (int &x : v) cin >> x;
+
+    init();
+    int mejor = 0;
+    insertar(v[0]);
+
+    for (int i = 1; i < n; i++) {
+        mejor = max(mejor, maxXor(v[i]));
+        insertar(v[i]);
+    }
+
+    cout << mejor << endl;
+    return 0;
+}
+```
+
+$O(n \cdot 30)$ — muy eficiente.
+
+</details>

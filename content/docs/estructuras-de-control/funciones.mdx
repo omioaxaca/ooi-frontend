@@ -1,174 +1,341 @@
 ---
-title: "Funciones en C++"
+title: "Funciones"
 description: "Aprende a crear y usar funciones para organizar y reutilizar tu código"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "funciones", "modularización", "estructuras-de-control"]
+tags: ["c++", "funciones", "parámetros", "return", "modularidad"]
 syllabusId: 17
 ---
 
 ## ¿Qué es una función?
 
-Una función es un bloque de código que realiza una tarea específica. Las funciones permiten:
-- **Reutilizar** código
-- **Organizar** el programa en partes más pequeñas
-- **Abstraer** detalles de implementación
+Imagina que tienes una **receta** para hacer un pastel. Cada vez que quieres un pastel, no necesitas reinventar cómo hacerlo: simplemente sigues la receta. Una **función** es exactamente eso: una receta de código que puedes usar una y otra vez.
 
-## Sintaxis básica
+Una función es un bloque de código con un **nombre** que realiza una tarea específica. La defines una vez y la puedes **llamar** (usar) las veces que quieras.
+
+**Sin funciones** (código repetido):
+```cpp
+// Calcular si 7 es primo
+bool esPrimo7 = true;
+for (int j = 2; j * j <= 7; j++)
+    if (7 % j == 0) esPrimo7 = false;
+
+// Calcular si 13 es primo (¡el mismo código otra vez!)
+bool esPrimo13 = true;
+for (int j = 2; j * j <= 13; j++)
+    if (13 % j == 0) esPrimo13 = false;
+```
+
+**Con funciones** (código limpio):
+```cpp
+bool esPrimo(int n) {
+    for (int j = 2; j * j <= n; j++)
+        if (n % j == 0) return false;
+    return n > 1;
+}
+
+// Usar la función es una sola línea
+bool resultado1 = esPrimo(7);   // true
+bool resultado2 = esPrimo(13);  // true
+bool resultado3 = esPrimo(15);  // false
+```
+
+## Anatomía de una función
 
 ```cpp
-tipo_retorno nombre_funcion(parámetros) {
+tipo_de_retorno nombre(tipo param1, tipo param2, ...) {
     // Cuerpo de la función
     return valor;
 }
 ```
 
-### Ejemplo simple
+Veamos cada parte:
 
 ```cpp
+int sumar(int a, int b) {
+    int resultado = a + b;
+    return resultado;
+}
+```
+
+- **`int`** (tipo de retorno): El tipo de dato que la función devuelve. Esta función devuelve un entero.
+- **`sumar`** (nombre): El nombre que le damos para poder llamarla.
+- **`int a, int b`** (parámetros): Los datos que la función necesita para trabajar. Son como los "ingredientes" de la receta.
+- **`return resultado`**: Devuelve el resultado al lugar donde se llamó la función.
+
+### Llamar una función
+
+```cpp
+int main() {
+    int x = sumar(3, 5);      // x = 8
+    cout << sumar(10, 20);     // Imprime 30
+    cout << sumar(sumar(1, 2), 3);  // sumar(3, 3) = 6
+    return 0;
+}
+```
+
+## Funciones que no devuelven nada: `void`
+
+A veces una función solo hace algo (imprimir, modificar) sin devolver un valor. Para eso usamos `void`:
+
+```cpp
+void saludar(string nombre) {
+    cout << "¡Hola, " << nombre << "!" << endl;
+    // No necesita return (o puedes poner "return;" sin valor)
+}
+
+int main() {
+    saludar("Carlos");   // Imprime: ¡Hola, Carlos!
+    saludar("María");    // Imprime: ¡Hola, María!
+    return 0;
+}
+```
+
+## Funciones que no reciben nada
+
+```cpp
+void imprimirLinea() {
+    cout << "========================" << endl;
+}
+
+int main() {
+    imprimirLinea();
+    cout << "Mi Programa" << endl;
+    imprimirLinea();
+    return 0;
+}
+```
+
+**Salida:**
+```
+========================
+Mi Programa
+========================
+```
+
+## El orden importa
+
+En C++, una función debe estar **definida antes** de ser usada. Si `main` llama a `sumar`, `sumar` debe estar arriba de `main`:
+
+```cpp
+// ✅ Correcto: la función está definida ANTES de main
 int sumar(int a, int b) {
     return a + b;
 }
 
 int main() {
-    int resultado = sumar(5, 3);
-    cout << resultado << endl;  // 8
+    cout << sumar(3, 5) << endl;
     return 0;
 }
 ```
-
-## Funciones sin retorno (void)
 
 ```cpp
-void saludar(string nombre) {
-    cout << "¡Hola, " << nombre << "!" << endl;
+// ❌ Error: main usa sumar, pero sumar está después
+int main() {
+    cout << sumar(3, 5) << endl;  // Error: ¿qué es "sumar"?
+    return 0;
 }
 
-int main() {
-    saludar("Juan");  // ¡Hola, Juan!
-    return 0;
+int sumar(int a, int b) {
+    return a + b;
 }
 ```
 
-## Parámetros
+### Prototipos de función
 
-### Por valor
+Alternativamente, puedes declarar un **prototipo** (la firma de la función sin el cuerpo) al inicio:
 
-El parámetro es una copia del valor original:
+```cpp
+// Prototipo (declaración)
+int sumar(int a, int b);
+
+int main() {
+    cout << sumar(3, 5) << endl;  // Funciona porque el prototipo está arriba
+    return 0;
+}
+
+// Definición completa
+int sumar(int a, int b) {
+    return a + b;
+}
+```
+
+En competencias, normalmente ponemos todas las funciones arriba de `main`, así que no necesitamos prototipos.
+
+## Parámetros: paso por valor vs paso por referencia
+
+### Paso por valor (copia)
+
+Por defecto, cuando pasas una variable a una función, se pasa una **copia**. La función trabaja con su propia copia y la variable original no cambia:
 
 ```cpp
 void duplicar(int x) {
     x = x * 2;
-    cout << "Dentro: " << x << endl;  // 20
+    cout << "Dentro de la función: " << x << endl;  // 10
 }
 
 int main() {
-    int n = 10;
-    duplicar(n);
-    cout << "Fuera: " << n << endl;   // 10 (no cambió)
+    int num = 5;
+    duplicar(num);
+    cout << "En main: " << num << endl;  // 5 (¡no cambió!)
     return 0;
 }
 ```
 
-### Por referencia
+**Analogía:** Le das una fotocopia de tu documento a alguien. Si escribe sobre la fotocopia, tu documento original no se afecta.
 
-El parámetro apunta al valor original:
+### Paso por referencia (`&`)
+
+Si quieres que la función **modifique** la variable original, usa `&`:
 
 ```cpp
-void duplicar(int& x) {  // Nota el &
+void duplicar(int &x) {    // Note el & antes de x
     x = x * 2;
+    cout << "Dentro de la función: " << x << endl;  // 10
 }
 
 int main() {
-    int n = 10;
-    duplicar(n);
-    cout << n << endl;  // 20 (sí cambió)
+    int num = 5;
+    duplicar(num);
+    cout << "En main: " << num << endl;  // 10 (¡SÍ cambió!)
     return 0;
 }
 ```
 
-### Cuándo usar cada uno
+**Analogía:** Le das tu documento original a alguien. Si escribe sobre él, tus cambios se reflejan.
 
-| Por valor | Por referencia |
-|-----------|----------------|
-| Tipos pequeños (int, char) | Arreglos y estructuras grandes |
-| Cuando no quieres modificar | Cuando necesitas modificar |
-| Es más seguro | Es más eficiente |
+### ¿Cuándo usar referencia?
 
-### Referencia constante
+1. **Cuando necesitas modificar la variable original:**
+   ```cpp
+   void intercambiar(int &a, int &b) {
+       int temp = a;
+       a = b;
+       b = temp;
+   }
+   ```
 
-Para eficiencia sin permitir modificación:
+2. **Cuando pasas algo grande** (como un vector) y no quieres copiarlo (es más eficiente):
+   ```cpp
+   // ❌ Lento: copia TODO el vector cada vez que llamas la función
+   int sumaVector(vector<int> v) { ... }
+
+   // ✅ Rápido: pasa una referencia (no copia nada)
+   int sumaVector(vector<int> &v) { ... }
+
+   // ✅ Aún mejor: const reference (rápido Y no lo modifica)
+   int sumaVector(const vector<int> &v) { ... }
+   ```
+
+<Callout type="warning">
+  En competencias, **siempre** pasa vectores y strings por referencia (`&`). Pasarlos por valor (sin `&`) crea una copia cada vez, lo cual puede hacer tu programa mucho más lento.
+</Callout>
+
+## Variables locales y globales
+
+### Variables locales
+
+Una variable declarada dentro de una función **solo existe** dentro de esa función:
 
 ```cpp
-void imprimir(const vector<int>& v) {
-    for (int x : v) {
-        cout << x << " ";
+void miFuncion() {
+    int x = 10;  // x solo existe aquí
+    cout << x << endl;
+}
+
+int main() {
+    miFuncion();
+    // cout << x;  // ❌ Error: x no existe aquí
+    return 0;
+}
+```
+
+### Variables globales
+
+Una variable declarada fuera de todas las funciones es **global** y accesible desde cualquier función:
+
+```cpp
+int contador = 0;  // Variable global
+
+void incrementar() {
+    contador++;  // Puede acceder a la variable global
+}
+
+int main() {
+    incrementar();
+    incrementar();
+    incrementar();
+    cout << contador << endl;  // 3
+    return 0;
+}
+```
+
+<Callout type="info">
+  En competencias, es común usar variables globales para arreglos grandes (como `int arr[100001]`), porque las variables globales se inicializan a cero automáticamente y no tienen el límite de tamaño de las variables locales (el stack tiene límite, el segmento de datos estáticos no).
+</Callout>
+
+## `return` termina la función
+
+`return` no solo devuelve un valor; **también termina la ejecución de la función inmediatamente**:
+
+```cpp
+int buscar(int arr[], int n, int objetivo) {
+    for (int i = 0; i < n; i++) {
+        if (arr[i] == objetivo) {
+            return i;  // Encontrado: retorna la posición y TERMINA
+        }
     }
-    cout << endl;
-    // v.push_back(5);  // Error: no se puede modificar
+    return -1;  // No encontrado
 }
 ```
 
-## Valores por defecto
+En funciones `void`, puedes usar `return;` (sin valor) para salir temprano:
 
 ```cpp
-void saludar(string nombre = "Usuario") {
-    cout << "Hola, " << nombre << endl;
-}
-
-int main() {
-    saludar();         // Hola, Usuario
-    saludar("María");  // Hola, María
-    return 0;
+void procesar(int x) {
+    if (x < 0) {
+        cout << "Número negativo, no procesar" << endl;
+        return;  // Sale de la función
+    }
+    cout << "Procesando: " << x << endl;
 }
 ```
 
-## Sobrecarga de funciones
-
-Múltiples funciones con el mismo nombre pero diferentes parámetros:
-
-```cpp
-int maximo(int a, int b) {
-    return (a > b) ? a : b;
-}
-
-int maximo(int a, int b, int c) {
-    return maximo(maximo(a, b), c);
-}
-
-double maximo(double a, double b) {
-    return (a > b) ? a : b;
-}
-
-int main() {
-    cout << maximo(5, 3) << endl;       // 5
-    cout << maximo(5, 3, 7) << endl;    // 7
-    cout << maximo(3.14, 2.71) << endl; // 3.14
-    return 0;
-}
-```
-
-## Funciones comunes en competencias
+## Funciones útiles en competencias
 
 ### Verificar si es primo
 
 ```cpp
 bool esPrimo(int n) {
     if (n < 2) return false;
-    if (n == 2) return true;
-    if (n % 2 == 0) return false;
-
-    for (int i = 3; i * i <= n; i += 2) {
+    for (int i = 2; i * i <= n; i++) {
         if (n % i == 0) return false;
     }
     return true;
 }
 ```
 
-### Máximo común divisor
+### Potencia modular
 
 ```cpp
-int mcd(int a, int b) {
+long long potMod(long long base, long long exp, long long mod) {
+    long long result = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result = result * base % mod;
+        }
+        exp /= 2;
+        base = base * base % mod;
+    }
+    return result;
+}
+```
+
+### Máximo Común Divisor (GCD)
+
+```cpp
+int gcd(int a, int b) {
     while (b != 0) {
         int temp = b;
         b = a % b;
@@ -177,68 +344,27 @@ int mcd(int a, int b) {
     return a;
 }
 
-// Versión recursiva
-int mcdRecursivo(int a, int b) {
-    return (b == 0) ? a : mcdRecursivo(b, a % b);
-}
+// O simplemente usa __gcd(a, b) que ya viene en C++
 ```
 
-### Mínimo común múltiplo
+### Mínimo Común Múltiplo (LCM)
 
 ```cpp
-long long mcm(long long a, long long b) {
-    return (a / mcd(a, b)) * b;  // Evita overflow
+int lcm(int a, int b) {
+    return a / gcd(a, b) * b;  // Dividimos primero para evitar overflow
 }
 ```
 
-### Potencia rápida
+## El template de competencia usa funciones
 
-```cpp
-long long potencia(long long base, long long exp, long long mod) {
-    long long resultado = 1;
-    base %= mod;
-
-    while (exp > 0) {
-        if (exp % 2 == 1) {
-            resultado = (resultado * base) % mod;
-        }
-        exp /= 2;
-        base = (base * base) % mod;
-    }
-
-    return resultado;
-}
-```
-
-## Template para competencias con funciones
+¿Recuerdas el template?
 
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
 
-#define int long long
-
-int mcd(int a, int b) {
-    return b ? mcd(b, a % b) : a;
-}
-
-bool esPrimo(int n) {
-    if (n < 2) return false;
-    for (int i = 2; i * i <= n; i++) {
-        if (n % i == 0) return false;
-    }
-    return true;
-}
-
 void solve() {
-    int n;
-    cin >> n;
-
-    if (esPrimo(n)) {
-        cout << "Primo" << endl;
-    } else {
-        cout << "No primo" << endl;
-    }
+    // Tu solución va aquí
 }
 
 signed main() {
@@ -250,99 +376,49 @@ signed main() {
     while (t--) {
         solve();
     }
-
     return 0;
 }
 ```
 
-## Funciones recursivas
+La función `solve()` contiene tu solución. Esto es útil porque:
+1. Si hay múltiples casos, solo descomentas `cin >> t`.
+2. Puedes usar `return` dentro de `solve()` para terminar un caso temprano sin terminar todo el programa.
+3. Las variables locales de `solve()` se reinician automáticamente en cada caso.
 
-Una función que se llama a sí misma:
+## Ejercicio de práctica
 
-```cpp
-int factorial(int n) {
-    if (n <= 1) return 1;        // Caso base
-    return n * factorial(n - 1); // Llamada recursiva
-}
-```
+Escribe una función `int factorial(int n)` que calcule el factorial de n. Luego lee un número y muestra su factorial.
 
-### Partes de una función recursiva
-
-1. **Caso base:** Condición que detiene la recursión
-2. **Caso recursivo:** Llamada a sí misma con un problema más pequeño
-
-```cpp
-// Fibonacci recursivo
-int fib(int n) {
-    if (n <= 1) return n;  // Casos base
-    return fib(n - 1) + fib(n - 2);  // Caso recursivo
-}
-```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Escribe una función que determine si un número es palíndromo.
+**Entrada:** `5`
+**Salida:** `120` (porque 5! = 5×4×3×2×1 = 120)
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-bool esPalindromo(int n) {
-    int original = n;
-    int invertido = 0;
+#include <iostream>
+using namespace std;
 
-    while (n > 0) {
-        invertido = invertido * 10 + n % 10;
-        n /= 10;
+long long factorial(int n) {
+    long long resultado = 1;
+    for (int i = 2; i <= n; i++) {
+        resultado *= i;
     }
+    return resultado;
+}
 
-    return original == invertido;
+int main() {
+    int n;
+    cin >> n;
+    cout << factorial(n) << endl;
+    return 0;
 }
 ```
 
-</details>
-
-### Ejercicio 2
-Escribe una función que cuente los divisores de un número.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int contarDivisores(int n) {
-    int cuenta = 0;
-    for (int i = 1; i * i <= n; i++) {
-        if (n % i == 0) {
-            cuenta++;
-            if (i != n / i) cuenta++;
-        }
-    }
-    return cuenta;
-}
-```
-
-</details>
-
-### Ejercicio 3
-Escribe una función que intercambie dos variables.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-void intercambiar(int& a, int& b) {
-    int temp = a;
-    a = b;
-    b = temp;
-}
-
-// Con swap de la STL
-// swap(a, b);
-```
+**Nota:** Usamos `long long` porque los factoriales crecen muy rápido. 20! ya es más de $2.4 \times 10^{18}$, que apenas cabe en un `long long`. ¡21! ya no cabe!
 
 </details>
 
 ## Siguiente paso
 
-Profundiza en [Recursión](/blog/recursion/funciones-recursivas) para resolver problemas de manera elegante.
+Con funciones dominadas, estás listo para aprender las **Estructuras de Datos** fundamentales: arreglos, vectores, strings y más.

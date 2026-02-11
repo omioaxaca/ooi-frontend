@@ -1,238 +1,157 @@
 ---
 title: "Algoritmos de Ordenamiento"
-description: "Comprende los principales algoritmos de ordenamiento y cuándo usar cada uno"
-date: "2026-02-05"
+description: "Entiende qué es ordenar datos y por qué es fundamental en programación"
+date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["ordenamiento", "algoritmos", "sorting"]
+tags: ["c++", "ordenamiento", "sort", "algoritmos"]
 syllabusId: 22
 ---
 
-## Introducción
+## ¿Por qué ordenar?
 
-Ordenar datos es una de las operaciones más fundamentales en programación. Conocer diferentes algoritmos de ordenamiento te ayudará a entender cuándo usar cada uno.
+Imagina que tienes una biblioteca con 10,000 libros tirados en el suelo sin orden. Si alguien te pide un libro, ¿cuánto tardarías en encontrarlo? Podrías tardar horas revisando uno por uno. Pero si los libros están **ordenados alfabéticamente** en estantes, lo encuentras en segundos.
 
-## Comparación de algoritmos
+**Ordenar datos** es una de las operaciones más fundamentales en ciencias de la computación. Muchísimos problemas se simplifican enormemente si primero ordenas los datos.
 
-| Algoritmo | Mejor caso | Promedio | Peor caso | Espacio | Estable |
-|-----------|------------|----------|-----------|---------|---------|
-| Bubble Sort | O(n) | O(n²) | O(n²) | O(1) | Sí |
-| Selection Sort | O(n²) | O(n²) | O(n²) | O(1) | No |
-| Insertion Sort | O(n) | O(n²) | O(n²) | O(1) | Sí |
-| Merge Sort | O(n log n) | O(n log n) | O(n log n) | O(n) | Sí |
-| Quick Sort | O(n log n) | O(n log n) | O(n²) | O(log n) | No |
-| Counting Sort | O(n + k) | O(n + k) | O(n + k) | O(k) | Sí |
+## Ordenar en C++ con `sort()`
 
-<Callout type="info">
-  Un algoritmo es **estable** si mantiene el orden relativo de elementos con el mismo valor.
-</Callout>
-
-## Ordenamiento en C++
-
-### Usando sort()
-
-La función `sort()` de la STL usa Introsort (híbrido de Quick Sort, Heap Sort e Insertion Sort):
+La buena noticia: en competencias, casi nunca necesitas programar un algoritmo de ordenamiento desde cero. C++ tiene una función `sort()` **increíblemente eficiente** (usa IntroSort, una combinación de QuickSort, HeapSort y InsertionSort):
 
 ```cpp
-#include <algorithm>
+#include <algorithm>  // O #include <bits/stdc++.h>
 #include <vector>
 
-vector<int> arr = {5, 2, 8, 1, 9};
+vector<int> v = {5, 2, 8, 1, 9, 3};
 
-// Ordenar ascendente
-sort(arr.begin(), arr.end());
-// arr = {1, 2, 5, 8, 9}
-
-// Ordenar descendente
-sort(arr.begin(), arr.end(), greater<int>());
-// arr = {9, 8, 5, 2, 1}
+sort(v.begin(), v.end());
+// v = {1, 2, 3, 5, 8, 9}
 ```
 
-### Ordenamiento con comparador personalizado
+### Ordenar arreglos
 
 ```cpp
-struct Persona {
-    string nombre;
-    int edad;
-};
+int arr[] = {5, 2, 8, 1, 9, 3};
+int n = 6;
 
-// Ordenar por edad
-sort(personas.begin(), personas.end(), [](const Persona& a, const Persona& b) {
-    return a.edad < b.edad;
+sort(arr, arr + n);
+// arr = {1, 2, 3, 5, 8, 9}
+```
+
+### Orden descendente
+
+```cpp
+// Forma 1: reverse iterators
+sort(v.rbegin(), v.rend());
+
+// Forma 2: función de comparación
+sort(v.begin(), v.end(), greater<int>());
+
+// Forma 3: lambda
+sort(v.begin(), v.end(), [](int a, int b) { return a > b; });
+```
+
+### Ordenar con criterio personalizado
+
+```cpp
+// Ordenar strings por longitud
+vector<string> palabras = {"hola", "a", "mundo", "si"};
+sort(palabras.begin(), palabras.end(), [](string &a, string &b) {
+    return a.size() < b.size();
 });
-
-// Ordenar por nombre, si igual, por edad
-sort(personas.begin(), personas.end(), [](const Persona& a, const Persona& b) {
-    if (a.nombre != b.nombre) return a.nombre < b.nombre;
-    return a.edad < b.edad;
-});
+// {"a", "si", "hola", "mundo"}
 ```
 
-### Ordenamiento estable
+## ¿Por qué aprender algoritmos de ordenamiento?
 
-Cuando necesitas mantener el orden relativo de elementos iguales:
+Si `sort()` ya existe, ¿para qué aprender cómo funcionan los algoritmos? Varias razones:
 
-```cpp
-stable_sort(arr.begin(), arr.end());
-```
+1. **Aparecen en exámenes** de olimpiada y entrevistas técnicas.
+2. **Entiendes la complejidad** y puedes elegir la herramienta correcta.
+3. **Aprendes técnicas** (dividir y conquistar, etc.) que aplican a otros problemas.
+4. **Algunos problemas** requieren variaciones que `sort()` no hace directamente.
 
-## Implementaciones manuales
+## Complejidad de los algoritmos de ordenamiento
 
-### Merge Sort
+| Algoritmo | Mejor caso | Caso promedio | Peor caso | ¿Estable? |
+|-----------|-----------|--------------|-----------|-----------|
+| Burbuja | $O(n)$ | $O(n^2)$ | $O(n^2)$ | Sí |
+| Selección | $O(n^2)$ | $O(n^2)$ | $O(n^2)$ | No |
+| Inserción | $O(n)$ | $O(n^2)$ | $O(n^2)$ | Sí |
+| Merge Sort | $O(n \log n)$ | $O(n \log n)$ | $O(n \log n)$ | Sí |
+| Quick Sort | $O(n \log n)$ | $O(n \log n)$ | $O(n^2)$ | No |
+| `sort()` de C++ | $O(n \log n)$ | $O(n \log n)$ | $O(n \log n)$ | No |
+| `stable_sort()` | $O(n \log n)$ | $O(n \log n)$ | $O(n \log^2 n)$ | Sí |
+| Cubeta (Counting) | $O(n + k)$ | $O(n + k)$ | $O(n + k)$ | Sí |
 
-```cpp
-void merge(vector<int>& arr, int izq, int mid, int der) {
-    vector<int> temp(der - izq + 1);
-    int i = izq, j = mid + 1, k = 0;
+**¿Qué significa "estable"?** Un ordenamiento es estable si los elementos iguales mantienen su orden relativo original. Ejemplo: si María y Pedro tienen la misma calificación y María estaba antes, un sort estable garantiza que María siga antes.
 
-    while (i <= mid && j <= der) {
-        if (arr[i] <= arr[j]) {
-            temp[k++] = arr[i++];
-        } else {
-            temp[k++] = arr[j++];
-        }
-    }
+## Aplicaciones de ordenar en competencias
 
-    while (i <= mid) temp[k++] = arr[i++];
-    while (j <= der) temp[k++] = arr[j++];
-
-    for (i = izq, k = 0; i <= der; i++, k++) {
-        arr[i] = temp[k];
-    }
-}
-
-void mergeSort(vector<int>& arr, int izq, int der) {
-    if (izq >= der) return;
-
-    int mid = izq + (der - izq) / 2;
-    mergeSort(arr, izq, mid);
-    mergeSort(arr, mid + 1, der);
-    merge(arr, izq, mid, der);
-}
-```
-
-### Quick Sort
+### 1. Encontrar duplicados
 
 ```cpp
-int partition(vector<int>& arr, int izq, int der) {
-    int pivot = arr[der];
-    int i = izq - 1;
-
-    for (int j = izq; j < der; j++) {
-        if (arr[j] < pivot) {
-            i++;
-            swap(arr[i], arr[j]);
-        }
-    }
-
-    swap(arr[i + 1], arr[der]);
-    return i + 1;
-}
-
-void quickSort(vector<int>& arr, int izq, int der) {
-    if (izq >= der) return;
-
-    int pi = partition(arr, izq, der);
-    quickSort(arr, izq, pi - 1);
-    quickSort(arr, pi + 1, der);
-}
-```
-
-<Callout type="warning">
-  Quick Sort tiene peor caso O(n²) cuando el array ya está ordenado. En competencias, usa `sort()` de la STL que está optimizada.
-</Callout>
-
-### Counting Sort
-
-Ideal cuando el rango de valores es pequeño:
-
-```cpp
-void countingSort(vector<int>& arr, int maxVal) {
-    vector<int> count(maxVal + 1, 0);
-
-    // Contar ocurrencias
-    for (int x : arr) {
-        count[x]++;
-    }
-
-    // Reconstruir array ordenado
-    int idx = 0;
-    for (int i = 0; i <= maxVal; i++) {
-        while (count[i] > 0) {
-            arr[idx++] = i;
-            count[i]--;
-        }
+sort(v.begin(), v.end());
+for (int i = 1; i < n; i++) {
+    if (v[i] == v[i-1]) {
+        cout << "Duplicado: " << v[i] << endl;
     }
 }
 ```
 
-## Ordenamiento parcial
-
-A veces no necesitas ordenar todo el array:
+### 2. Encontrar la mediana
 
 ```cpp
-vector<int> arr = {5, 2, 8, 1, 9, 3, 7};
-
-// Encontrar los 3 elementos más pequeños (sin ordenar entre sí)
-nth_element(arr.begin(), arr.begin() + 3, arr.end());
-// Los primeros 3 elementos son los menores
-
-// Ordenar solo los primeros k elementos
-partial_sort(arr.begin(), arr.begin() + 3, arr.end());
-// arr[0..2] están ordenados y son los 3 menores
+sort(v.begin(), v.end());
+cout << v[n / 2] << endl;  // Mediana (para n impar)
 ```
 
-## Ordenando índices
-
-A veces necesitas saber las posiciones originales después de ordenar:
+### 3. Búsqueda binaria (requiere datos ordenados)
 
 ```cpp
-vector<int> arr = {30, 10, 20, 50, 40};
-int n = arr.size();
-
-// Crear array de índices
-vector<int> indices(n);
-iota(indices.begin(), indices.end(), 0);  // {0, 1, 2, 3, 4}
-
-// Ordenar índices basándose en arr
-sort(indices.begin(), indices.end(), [&](int a, int b) {
-    return arr[a] < arr[b];
-});
-
-// indices = {1, 2, 0, 4, 3}
-// El elemento más pequeño estaba en posición 1
+sort(v.begin(), v.end());
+bool encontrado = binary_search(v.begin(), v.end(), objetivo);
 ```
 
-## Ejercicio práctico
+### 4. Problemas de scheduling (greedy)
 
-**Problema:** Dada una lista de eventos con inicio y fin, ordénalos por tiempo de fin. Si hay empate, ordena por tiempo de inicio.
+Ordenar actividades por tiempo de fin y seleccionar la mayor cantidad posible sin solapamiento.
 
-```cpp
-struct Evento {
-    int inicio, fin;
-};
+## Ejercicio de práctica
 
-vector<Evento> eventos;
-// Tu código para ordenar aquí
+Lee N números. Ordénalos y muestra la diferencia entre el mayor y el menor (el rango).
+
+**Entrada:**
 ```
+5
+3 1 4 1 5
+```
+**Salida:** `4` (máximo 5 - mínimo 1 = 4)
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-sort(eventos.begin(), eventos.end(), [](const Evento& a, const Evento& b) {
-    if (a.fin != b.fin) return a.fin < b.fin;
-    return a.inicio < b.inicio;
-});
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    vector<int> v(n);
+    for (int i = 0; i < n; i++) cin >> v[i];
+
+    sort(v.begin(), v.end());
+    cout << v[n-1] - v[0] << endl;
+
+    return 0;
+}
 ```
 
 </details>
 
-## Problemas para practicar
-
-1. [Ordenando - omegaUp](https://omegaup.com/arena/problem/Ordenando)
-2. [Sort the Array - Codeforces](https://codeforces.com/problemset/problem/451/B)
-3. [Towers - CSES](https://cses.fi/problemset/task/1073)
-
 ## Siguiente paso
 
-Ahora que dominas el ordenamiento, aprende sobre [estructuras de datos básicas](/blog/estructuras-de-datos/arreglos-y-vectores).
+Aprende el **Ordenamiento Burbuja**, el algoritmo más simple de entender.

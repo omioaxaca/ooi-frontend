@@ -1,181 +1,160 @@
 ---
-title: "Tipo Char y Código ASCII"
-description: "Aprende a trabajar con caracteres y el código ASCII en C++"
+title: "Char y ASCII"
+description: "Entiende la relación entre caracteres y números usando la tabla ASCII en C++"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "char", "ascii", "caracteres"]
+tags: ["c++", "char", "ASCII", "caracteres"]
 syllabusId: 10
 ---
 
-## El tipo char
+## ¿Cómo la computadora entiende las letras?
 
-El tipo `char` almacena un único carácter:
+La computadora solo entiende **números**. No sabe qué es una "A", un "5" o un "$". Entonces, ¿cómo maneja texto? Mediante un acuerdo universal: a cada carácter le asignaron un número. Ese acuerdo se llama **ASCII** (American Standard Code for Information Interchange).
+
+Es como un **diccionario secreto**: la letra 'A' es el número 65, la 'B' es 66, la 'a' (minúscula) es 97, el dígito '0' es 48, el espacio es 32, etc.
+
+## La tabla ASCII
+
+Estos son los caracteres más importantes y sus números:
+
+| Rango | Caracteres | Números ASCII |
+|-------|-----------|---------------|
+| Dígitos | `'0'` a `'9'` | 48 a 57 |
+| Mayúsculas | `'A'` a `'Z'` | 65 a 90 |
+| Minúsculas | `'a'` a `'z'` | 97 a 122 |
+| Espacio | `' '` | 32 |
+| Salto de línea | `'\n'` | 10 |
+
+**Dato clave:** No necesitas memorizar toda la tabla. Solo recuerda estos patrones:
+- Los dígitos van del 48 al 57 (consecutivos).
+- Las mayúsculas van del 65 al 90 (consecutivas y en orden alfabético).
+- Las minúsculas van del 97 al 122 (consecutivas y en orden alfabético).
+- La diferencia entre una mayúscula y su minúscula es **32** (por ejemplo, `'A'` = 65 y `'a'` = 97, diferencia = 32).
+
+## `char` es un número disfrazado de letra
+
+En C++, un `char` es técnicamente un número entero pequeño (de -128 a 127 o de 0 a 255). Cuando lo imprimes, se muestra como carácter. Cuando haces operaciones matemáticas con él, se comporta como número.
 
 ```cpp
 char letra = 'A';
-char digito = '5';
-char simbolo = '@';
-char espacio = ' ';
+
+cout << letra << endl;        // A (se muestra como carácter)
+cout << (int)letra << endl;   // 65 (su valor numérico ASCII)
 ```
 
-**Nota:** Los caracteres van entre comillas simples `' '`, las cadenas entre comillas dobles `" "`.
+### Operaciones con caracteres
 
-## Código ASCII
-
-Cada carácter tiene un valor numérico asociado según la tabla ASCII (American Standard Code for Information Interchange).
-
-### Valores importantes
-
-| Rango | Caracteres |
-|-------|------------|
-| 48-57 | '0' - '9' |
-| 65-90 | 'A' - 'Z' |
-| 97-122 | 'a' - 'z' |
-
-### Caracteres especiales
-
-| Código | Carácter |
-|--------|----------|
-| 0 | Nulo (fin de cadena) |
-| 10 | Salto de línea (\n) |
-| 32 | Espacio |
-| 48 | '0' |
-| 65 | 'A' |
-| 97 | 'a' |
-
-## Conversión entre char e int
+Como los `char` son números, puedes hacer aritmética con ellos:
 
 ```cpp
-char c = 'A';
-int codigo = c;        // codigo = 65
-cout << codigo << endl;  // Imprime: 65
+char a = 'A';
 
-int num = 66;
-char letra = num;      // letra = 'B'
-cout << letra << endl;   // Imprime: B
+cout << (char)(a + 1) << endl;   // B (65 + 1 = 66 = 'B')
+cout << (char)(a + 2) << endl;   // C (65 + 2 = 67 = 'C')
+cout << (char)(a + 25) << endl;  // Z (65 + 25 = 90 = 'Z')
 ```
 
-### Ver el código ASCII de un carácter
+**Analogía:** Imagina que las letras están en casilleros numerados. 'A' está en el casillero 65, 'B' en el 66, etc. Si te piden "avanza 3 casilleros desde la A", llegas a la D (65 + 3 = 68 = 'D').
+
+## Trucos útiles con ASCII
+
+### 1. Convertir un carácter dígito a su valor numérico
+
+Si lees el carácter `'7'`, su valor ASCII es 55, no 7. Para obtener el número real:
+
+```cpp
+char c = '7';
+int numero = c - '0';     // 55 - 48 = 7
+cout << numero << endl;    // 7
+```
+
+**¿Por qué funciona?** Porque los dígitos son consecutivos en ASCII: `'0'`=48, `'1'`=49, `'2'`=50, ..., `'9'`=57. Al restar `'0'` (48), obtienes el valor real del dígito.
+
+```cpp
+'5' - '0' = 53 - 48 = 5
+'0' - '0' = 48 - 48 = 0
+'9' - '0' = 57 - 48 = 9
+```
+
+### 2. Convertir entre mayúsculas y minúsculas
+
+La diferencia entre una mayúscula y su minúscula siempre es 32:
+
+```cpp
+char mayuscula = 'A';  // 65
+char minuscula = mayuscula + 32;  // 65 + 32 = 97 = 'a'
+
+char otra = 'z';   // 122
+char otraMay = otra - 32;  // 122 - 32 = 90 = 'Z'
+```
+
+También puedes usar las funciones `toupper()` y `tolower()`:
+
+```cpp
+cout << (char)toupper('a') << endl;  // A
+cout << (char)tolower('Z') << endl;  // z
+```
+
+### 3. Verificar qué tipo de carácter es
 
 ```cpp
 char c;
 cin >> c;
-cout << "El código ASCII de '" << c << "' es: " << (int)c << endl;
+
+// Usando funciones de <cctype>
+if (isalpha(c))  cout << "Es una letra" << endl;
+if (isdigit(c))  cout << "Es un dígito" << endl;
+if (isupper(c))  cout << "Es mayúscula" << endl;
+if (islower(c))  cout << "Es minúscula" << endl;
+if (isspace(c))  cout << "Es un espacio" << endl;
 ```
 
-### Convertir código a carácter
+También puedes hacerlo **manualmente** con comparaciones:
 
 ```cpp
-int codigo;
-cin >> codigo;
-cout << "El carácter con código " << codigo << " es: " << (char)codigo << endl;
+if (c >= 'A' && c <= 'Z')  cout << "Mayúscula" << endl;
+if (c >= 'a' && c <= 'z')  cout << "Minúscula" << endl;
+if (c >= '0' && c <= '9')  cout << "Dígito" << endl;
 ```
 
-## Operaciones con caracteres
+Esto funciona porque los caracteres de cada grupo son **consecutivos** en ASCII.
 
-### Aritmética de caracteres
-
-Como los caracteres son números, podemos hacer operaciones:
+### 4. Posición de una letra en el alfabeto
 
 ```cpp
-char c = 'A';
-c = c + 1;      // c = 'B'
-c++;            // c = 'C'
+char c = 'D';
+int posicion = c - 'A' + 1;   // 68 - 65 + 1 = 4
+cout << posicion << endl;       // 4 (D es la 4ta letra)
 
-char siguiente = 'M' + 1;  // siguiente = 'N'
+char c2 = 'f';
+int pos2 = c2 - 'a' + 1;     // 102 - 97 + 1 = 6
+cout << pos2 << endl;          // 6 (f es la 6ta letra)
 ```
 
-### Diferencia entre caracteres
+### 5. Obtener la letra en cierta posición
 
 ```cpp
-int diferencia = 'Z' - 'A';  // diferencia = 25
+int posicion = 4;  // Queremos la 4ta letra
+char letra = 'A' + posicion - 1;  // 65 + 4 - 1 = 68 = 'D'
+cout << letra << endl;  // D
 ```
 
-### Recorrer el alfabeto
+## Cifrado César: una aplicación clásica
 
-```cpp
-for (char c = 'A'; c <= 'Z'; c++) {
-    cout << c << " ";
-}
-// Salida: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
-```
+El cifrado César es una técnica de encriptación antigua donde cada letra se reemplaza por otra que está un número fijo de posiciones adelante en el alfabeto.
 
-## Conversiones útiles
-
-### Mayúscula a minúscula
-
-```cpp
-char mayuscula = 'A';
-char minuscula = mayuscula + 32;  // 'a'
-
-// O usando la diferencia conocida
-char minuscula2 = mayuscula + ('a' - 'A');
-```
-
-### Minúscula a mayúscula
-
-```cpp
-char minuscula = 'a';
-char mayuscula = minuscula - 32;  // 'A'
-
-// O usando la diferencia
-char mayuscula2 = minuscula - ('a' - 'A');
-```
-
-### Funciones de cctype
-
-```cpp
-#include <cctype>
-
-char c = 'A';
-
-// Verificar tipo
-isupper(c);   // true si es mayúscula
-islower(c);   // true si es minúscula
-isalpha(c);   // true si es letra
-isdigit(c);   // true si es dígito
-isalnum(c);   // true si es letra o dígito
-isspace(c);   // true si es espacio/tab/newline
-
-// Convertir
-toupper(c);   // Convierte a mayúscula
-tolower(c);   // Convierte a minúscula
-```
-
-### Dígito a número
-
-```cpp
-char digito = '7';
-int numero = digito - '0';  // numero = 7
-
-// Verificar: '7' tiene código 55, '0' tiene código 48
-// 55 - 48 = 7
-```
-
-### Número a dígito
-
-```cpp
-int numero = 7;
-char digito = numero + '0';  // digito = '7'
-```
-
-## Ejemplo: Cifrado César
-
-El cifrado César desplaza cada letra un número fijo de posiciones:
+Por ejemplo, con un desplazamiento de 3:
+- A → D
+- B → E
+- C → F
+- ...
+- X → A (se "enrolla")
+- Y → B
+- Z → C
 
 ```cpp
 #include <iostream>
 using namespace std;
-
-char cifrar(char c, int desplazamiento) {
-    if (c >= 'A' && c <= 'Z') {
-        return 'A' + (c - 'A' + desplazamiento) % 26;
-    }
-    if (c >= 'a' && c <= 'z') {
-        return 'a' + (c - 'a' + desplazamiento) % 26;
-    }
-    return c;  // No es letra, no cambiar
-}
 
 int main() {
     string mensaje;
@@ -184,8 +163,19 @@ int main() {
     getline(cin, mensaje);
     cin >> desplazamiento;
 
-    for (char c : mensaje) {
-        cout << cifrar(c, desplazamiento);
+    for (int i = 0; i < mensaje.size(); i++) {
+        char c = mensaje[i];
+
+        if (c >= 'A' && c <= 'Z') {
+            // Cifrar mayúscula
+            c = 'A' + (c - 'A' + desplazamiento) % 26;
+        } else if (c >= 'a' && c <= 'z') {
+            // Cifrar minúscula
+            c = 'a' + (c - 'a' + desplazamiento) % 26;
+        }
+        // Si no es letra, se queda igual
+
+        cout << c;
     }
     cout << endl;
 
@@ -193,122 +183,165 @@ int main() {
 }
 ```
 
-**Entrada:**
-```
-HOLA MUNDO
-3
+**¿Cómo funciona `(c - 'A' + desplazamiento) % 26`?**
+
+1. `c - 'A'` → Posición de la letra (0-25). Ejemplo: 'D' - 'A' = 3.
+2. `+ desplazamiento` → Avanzamos. 3 + 3 = 6.
+3. `% 26` → Si nos pasamos de Z, volvemos al inicio. 6 % 26 = 6.
+4. `+ 'A'` → Convertimos de vuelta a carácter. 65 + 6 = 71 = 'G'.
+
+El `% 26` es la clave: hace que después de Z vuelva a A.
+
+## Recorrer el alfabeto
+
+```cpp
+// Imprimir todas las letras mayúsculas
+for (char c = 'A'; c <= 'Z'; c++) {
+    cout << c << " ";
+}
+// A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+cout << endl;
+
+// Imprimir todas las minúsculas con su valor ASCII
+for (char c = 'a'; c <= 'z'; c++) {
+    cout << c << "=" << (int)c << " ";
+}
+// a=97 b=98 c=99 ... z=122
 ```
 
-**Salida:**
-```
-KROD PXQGR
-```
+## Arreglos indexados por carácter
 
-## Ejemplo: Contar vocales
+Un truco muy poderoso: puedes usar un carácter como índice de un arreglo.
+
+**Ejemplo:** Contar la frecuencia de cada letra en un texto.
 
 ```cpp
 #include <iostream>
-#include <cctype>
 using namespace std;
 
 int main() {
     string texto;
     getline(cin, texto);
 
-    int vocales = 0;
+    int frecuencia[256] = {0};  // Un espacio para cada posible carácter ASCII
 
-    for (char c : texto) {
-        c = tolower(c);
-        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
-            vocales++;
-        }
+    for (int i = 0; i < texto.size(); i++) {
+        frecuencia[(int)texto[i]]++;
     }
 
-    cout << "Vocales: " << vocales << endl;
+    // Mostrar frecuencias de letras que aparecen
+    for (char c = 'a'; c <= 'z'; c++) {
+        if (frecuencia[c] > 0) {
+            cout << c << ": " << frecuencia[c] << '\n';
+        }
+    }
 
     return 0;
 }
 ```
 
-## Caracteres especiales (escape sequences)
-
-| Secuencia | Significado |
-|-----------|-------------|
-| `\n` | Nueva línea |
-| `\t` | Tabulación |
-| `\\` | Barra invertida |
-| `\'` | Comilla simple |
-| `\"` | Comilla doble |
-| `\0` | Carácter nulo |
-
-```cpp
-cout << "Línea 1\nLínea 2" << endl;
-cout << "Columna1\tColumna2" << endl;
-cout << "Dijo: \"Hola\"" << endl;
+**Entrada:** `hola mundo`
+**Salida:**
+```
+d: 1
+h: 1
+l: 1
+m: 1
+n: 1
+o: 2
+u: 1
 ```
 
-## Ejercicios de práctica
+**¿Cómo funciona?**
+- Creamos un arreglo de 256 posiciones (todos los posibles valores ASCII).
+- Para cada carácter del texto, incrementamos `frecuencia[valor_ascii]`.
+- `'o'` tiene valor ASCII 111, así que `frecuencia[111]` se incrementa cada vez que encontramos una 'o'.
 
-### Ejercicio 1
-Determina si un carácter es letra, dígito o símbolo.
+Este patrón es **extremadamente útil** en competencias para contar ocurrencias de caracteres.
 
-<details>
-<summary>Ver solución</summary>
+## Problema de ejemplo: ¿Es palíndromo?
 
-```cpp
-char c;
-cin >> c;
-
-if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-    cout << "Letra" << endl;
-} else if (c >= '0' && c <= '9') {
-    cout << "Dígito" << endl;
-} else {
-    cout << "Símbolo" << endl;
-}
-```
-
-</details>
-
-### Ejercicio 2
-Convierte una cadena a mayúsculas sin usar funciones de biblioteca.
-
-<details>
-<summary>Ver solución</summary>
+Un palíndromo se lee igual al derecho y al revés, ignorando mayúsculas/minúsculas.
 
 ```cpp
-string texto;
-getline(cin, texto);
+#include <iostream>
+using namespace std;
 
-for (int i = 0; i < texto.length(); i++) {
-    if (texto[i] >= 'a' && texto[i] <= 'z') {
-        texto[i] = texto[i] - 32;
+int main() {
+    string s;
+    cin >> s;
+
+    // Convertir todo a minúsculas
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i] >= 'A' && s[i] <= 'Z') {
+            s[i] = s[i] + 32;  // Convertir a minúscula
+        }
     }
-}
 
-cout << texto << endl;
+    // Verificar palíndromo
+    bool esPalindromo = true;
+    int n = s.size();
+    for (int i = 0; i < n / 2; i++) {
+        if (s[i] != s[n - 1 - i]) {
+            esPalindromo = false;
+            break;
+        }
+    }
+
+    if (esPalindromo) cout << "Si" << endl;
+    else cout << "No" << endl;
+
+    return 0;
+}
 ```
 
-</details>
+## Ejercicio de práctica
 
-### Ejercicio 3
-Dado un dígito como carácter, imprímelo en palabras.
+Lee una cadena de texto y cuenta cuántas vocales y cuántas consonantes tiene (solo considera letras, ignora otros caracteres). Trata mayúsculas y minúsculas por igual.
+
+**Entrada:** `Hola Mundo 123`
+**Salida:**
+```
+Vocales: 4
+Consonantes: 5
+```
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-char c;
-cin >> c;
+#include <iostream>
+using namespace std;
 
-string palabras[] = {"cero", "uno", "dos", "tres", "cuatro",
-                     "cinco", "seis", "siete", "ocho", "nueve"};
+int main() {
+    string texto;
+    getline(cin, texto);
 
-if (c >= '0' && c <= '9') {
-    int num = c - '0';
-    cout << palabras[num] << endl;
-} else {
-    cout << "No es un dígito" << endl;
+    int vocales = 0, consonantes = 0;
+
+    for (int i = 0; i < texto.size(); i++) {
+        char c = texto[i];
+
+        // Convertir a minúscula si es mayúscula
+        if (c >= 'A' && c <= 'Z') {
+            c = c + 32;
+        }
+
+        // Solo procesar si es letra
+        if (c >= 'a' && c <= 'z') {
+            if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+                vocales++;
+            } else {
+                consonantes++;
+            }
+        }
+    }
+
+    cout << "Vocales: " << vocales << '\n';
+    cout << "Consonantes: " << consonantes << '\n';
+
+    return 0;
 }
 ```
 
@@ -316,4 +349,4 @@ if (c >= '0' && c <= '9') {
 
 ## Siguiente paso
 
-Aprende sobre [Operadores de Comparación y Lógicos](/blog/estructuras-de-control/operadores-logicos) para tomar decisiones en tus programas.
+Con char y ASCII dominados, estás listo para avanzar a las **Estructuras de Control** donde aprenderás a tomar decisiones y repetir acciones en tu programa.

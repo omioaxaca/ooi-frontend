@@ -1,331 +1,42 @@
 ---
-title: "Algoritmos de Camino Más Corto"
-description: "Domina Dijkstra, Bellman-Ford y Floyd-Warshall para encontrar caminos más cortos en grafos"
+title: "Caminos más Cortos"
+description: "Algoritmos de Dijkstra, Bellman-Ford y Floyd-Warshall para encontrar rutas óptimas"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "camino-corto"]
-syllabusId: 64
-order: 4
+tags: ["c++", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "caminos cortos"]
+syllabusId: 61
 ---
 
-## Resumen de algoritmos
+## Dijkstra: caminos desde un origen
 
-| Algoritmo | Uso | Complejidad | Pesos negativos |
-|-----------|-----|-------------|-----------------|
-| **BFS** | Sin pesos / peso 1 | $O(V + E)$ | N/A |
-| **Dijkstra** | Una fuente, pesos ≥ 0 | $O((V+E) \log V)$ | ❌ |
-| **Bellman-Ford** | Una fuente, cualquier peso | $O(VE)$ | ✅ |
-| **Floyd-Warshall** | Todas las parejas | $O(V^3)$ | ✅ |
+Para grafos con **pesos no negativos**. Encuentra el camino más corto desde un nodo a todos los demás.
 
-## Dijkstra
-
-El algoritmo más usado para caminos más cortos desde una fuente.
-
-### Implementación con priority_queue
+**Analogía:** Eres un explorador con un mapa. Siempre expandes la ciudad más cercana que aún no hayas visitado, como una mancha de aceite que se expande por el camino más barato.
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <queue>
 using namespace std;
 
-const int MAXN = 100005;
+typedef pair<long long, int> pli;  // {distancia, nodo}
 const long long INF = 1e18;
+const int MAXN = 100005;
 
-vector<pair<int, long long>> adj[MAXN];  // {vecino, peso}
+vector<pair<int,int>> adj[MAXN];  // {vecino, peso}
 long long dist[MAXN];
 
-void dijkstra(int inicio, int n) {
+void dijkstra(int origen, int n) {
     fill(dist, dist + n + 1, INF);
+    priority_queue<pli, vector<pli>, greater<pli>> pq;  // min-heap
 
-    priority_queue<pair<long long, int>,
-                   vector<pair<long long, int>>,
-                   greater<pair<long long, int>>> pq;
-
-    dist[inicio] = 0;
-    pq.push({0, inicio});
+    dist[origen] = 0;
+    pq.push({0, origen});
 
     while (!pq.empty()) {
-        auto [d, u] = pq.top();
-        pq.pop();
+        auto [d, u] = pq.top(); pq.pop();
 
         if (d > dist[u]) continue;  // Ya encontramos algo mejor
-
-        for (auto [v, peso] : adj[u]) {
-            if (dist[u] + peso < dist[v]) {
-                dist[v] = dist[u] + peso;
-                pq.push({dist[v], v});
-            }
-        }
-    }
-}
-```
-
-### Reconstruir el camino
-
-```cpp
-int padre[MAXN];
-
-void dijkstraConCamino(int inicio, int n) {
-    fill(dist, dist + n + 1, INF);
-    fill(padre, padre + n + 1, -1);
-
-    priority_queue<pair<long long, int>,
-                   vector<pair<long long, int>>,
-                   greater<pair<long long, int>>> pq;
-
-    dist[inicio] = 0;
-    pq.push({0, inicio});
-
-    while (!pq.empty()) {
-        auto [d, u] = pq.top();
-        pq.pop();
-
-        if (d > dist[u]) continue;
-
-        for (auto [v, peso] : adj[u]) {
-            if (dist[u] + peso < dist[v]) {
-                dist[v] = dist[u] + peso;
-                padre[v] = u;
-                pq.push({dist[v], v});
-            }
-        }
-    }
-}
-
-vector<int> obtenerCamino(int destino) {
-    if (dist[destino] == INF) return {};
-
-    vector<int> camino;
-    for (int v = destino; v != -1; v = padre[v]) {
-        camino.push_back(v);
-    }
-    reverse(camino.begin(), camino.end());
-    return camino;
-}
-```
-
-## Bellman-Ford
-
-Funciona con pesos negativos y detecta ciclos negativos.
-
-```cpp
-struct Arista {
-    int u, v;
-    long long peso;
-};
-
-const long long INF = 1e18;
-long long dist[MAXN];
-
-bool bellmanFord(int inicio, int n, vector<Arista>& aristas) {
-    fill(dist, dist + n + 1, INF);
-    dist[inicio] = 0;
-
-    // Relajar n-1 veces
-    for (int i = 0; i < n - 1; i++) {
-        for (auto& e : aristas) {
-            if (dist[e.u] < INF && dist[e.u] + e.peso < dist[e.v]) {
-                dist[e.v] = dist[e.u] + e.peso;
-            }
-        }
-    }
-
-    // Verificar ciclo negativo (una iteración más)
-    for (auto& e : aristas) {
-        if (dist[e.u] < INF && dist[e.u] + e.peso < dist[e.v]) {
-            return false;  // Hay ciclo negativo
-        }
-    }
-
-    return true;  // Sin ciclo negativo
-}
-```
-
-### Encontrar nodos en ciclo negativo
-
-```cpp
-int padre[MAXN];
-
-int encontrarCicloNegativo(int n, vector<Arista>& aristas) {
-    fill(dist, dist + n + 1, 0);  // Empezar todos en 0
-    fill(padre, padre + n + 1, -1);
-
-    int nodoEnCiclo = -1;
-
-    for (int i = 0; i < n; i++) {
-        nodoEnCiclo = -1;
-        for (auto& e : aristas) {
-            if (dist[e.u] + e.peso < dist[e.v]) {
-                dist[e.v] = dist[e.u] + e.peso;
-                padre[e.v] = e.u;
-                nodoEnCiclo = e.v;
-            }
-        }
-    }
-
-    if (nodoEnCiclo == -1) return -1;  // Sin ciclo
-
-    // Retroceder n veces para asegurar estar en el ciclo
-    for (int i = 0; i < n; i++) {
-        nodoEnCiclo = padre[nodoEnCiclo];
-    }
-
-    return nodoEnCiclo;
-}
-```
-
-## Floyd-Warshall
-
-Encuentra distancias entre todos los pares de nodos.
-
-```cpp
-const long long INF = 1e18;
-long long dist[505][505];
-
-void floydWarshall(int n) {
-    // dist[i][j] ya inicializado con pesos (INF si no hay arista)
-    // dist[i][i] = 0
-
-    for (int k = 1; k <= n; k++) {
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (dist[i][k] < INF && dist[k][j] < INF) {
-                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
-                }
-            }
-        }
-    }
-}
-```
-
-### Reconstruir camino
-
-```cpp
-int siguiente[505][505];
-
-void floydWarshallConCamino(int n) {
-    // Inicializar
-    for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= n; j++) {
-            if (i != j && dist[i][j] < INF) {
-                siguiente[i][j] = j;
-            } else {
-                siguiente[i][j] = -1;
-            }
-        }
-    }
-
-    for (int k = 1; k <= n; k++) {
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (dist[i][k] < INF && dist[k][j] < INF &&
-                    dist[i][k] + dist[k][j] < dist[i][j]) {
-                    dist[i][j] = dist[i][k] + dist[k][j];
-                    siguiente[i][j] = siguiente[i][k];
-                }
-            }
-        }
-    }
-}
-
-vector<int> obtenerCamino(int u, int v) {
-    if (siguiente[u][v] == -1) return {};
-
-    vector<int> camino = {u};
-    while (u != v) {
-        u = siguiente[u][v];
-        camino.push_back(u);
-    }
-    return camino;
-}
-```
-
-### Detectar ciclo negativo con Floyd
-
-```cpp
-bool tieneCicloNegativo(int n) {
-    for (int i = 1; i <= n; i++) {
-        if (dist[i][i] < 0) return true;
-    }
-    return false;
-}
-```
-
-## 0-1 BFS
-
-Para grafos con pesos 0 o 1, más eficiente que Dijkstra:
-
-```cpp
-void bfs01(int inicio, int n) {
-    fill(dist, dist + n + 1, INF);
-
-    deque<int> dq;
-    dist[inicio] = 0;
-    dq.push_front(inicio);
-
-    while (!dq.empty()) {
-        int u = dq.front();
-        dq.pop_front();
-
-        for (auto [v, peso] : adj[u]) {
-            if (dist[u] + peso < dist[v]) {
-                dist[v] = dist[u] + peso;
-                if (peso == 0) {
-                    dq.push_front(v);  // Peso 0 al frente
-                } else {
-                    dq.push_back(v);   // Peso 1 al final
-                }
-            }
-        }
-    }
-}
-```
-
-## Comparación práctica
-
-```cpp
-// Cuándo usar cada algoritmo:
-
-// BFS: Sin pesos o todos peso 1
-// Ejemplo: Laberinto, casillas de ajedrez
-if (sinPesos) usarBFS();
-
-// Dijkstra: Pesos no negativos, una fuente
-// Ejemplo: Mapa de carreteras, redes
-if (pesosPositivos && unaFuente) usarDijkstra();
-
-// Bellman-Ford: Puede haber pesos negativos
-// Ejemplo: Intercambio de divisas, arbitraje
-if (pesosNegativos && unaFuente) usarBellmanFord();
-
-// Floyd-Warshall: Todas las parejas
-// Ejemplo: n ≤ 500, múltiples consultas
-if (todasParejas && n <= 500) usarFloyd();
-```
-
-## Template: Dijkstra
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-const long long INF = 1e18;
-
-vector<pair<int, long long>> adj[MAXN];
-long long dist[MAXN];
-
-void dijkstra(int s, int n) {
-    fill(dist, dist + n + 1, INF);
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-
-    dist[s] = 0;
-    pq.push({0, s});
-
-    while (!pq.empty()) {
-        auto [d, u] = pq.top();
-        pq.pop();
-
-        if (d > dist[u]) continue;
 
         for (auto [v, w] : adj[u]) {
             if (dist[u] + w < dist[v]) {
@@ -337,35 +48,152 @@ void dijkstra(int s, int n) {
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int n, m;
-    cin >> n >> m;
+    int n, m, s;
+    cin >> n >> m >> s;
 
     for (int i = 0; i < m; i++) {
-        int a, b;
-        long long c;
-        cin >> a >> b >> c;
-        adj[a].push_back({b, c});
-        // adj[b].push_back({a, c});  // Si es no dirigido
+        int u, v, w;
+        cin >> u >> v >> w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
     }
 
-    dijkstra(1, n);
+    dijkstra(s, n);
 
     for (int i = 1; i <= n; i++) {
-        cout << (dist[i] == INF ? -1 : dist[i]) << " ";
+        cout << "dist[" << i << "] = " << (dist[i] == INF ? -1 : dist[i]) << endl;
     }
-    cout << "\n";
+}
+```
 
+**Complejidad:** $O((V + E) \log V)$
+
+<Callout type="warning">
+  Dijkstra **NO funciona** con pesos negativos.
+</Callout>
+
+## Bellman-Ford: pesos negativos permitidos
+
+Funciona con pesos negativos y detecta ciclos negativos.
+
+```cpp
+struct Arista {
+    int u, v;
+    long long w;
+};
+
+long long dist[MAXN];
+
+bool bellmanFord(int origen, int n, vector<Arista> &aristas) {
+    fill(dist, dist + n + 1, INF);
+    dist[origen] = 0;
+
+    // Relajar n-1 veces
+    for (int i = 0; i < n - 1; i++) {
+        for (auto &[u, v, w] : aristas) {
+            if (dist[u] != INF && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+
+    // Detectar ciclo negativo
+    for (auto &[u, v, w] : aristas) {
+        if (dist[u] != INF && dist[u] + w < dist[v]) {
+            return true;  // Hay ciclo negativo
+        }
+    }
+
+    return false;
+}
+```
+
+**Complejidad:** $O(V \times E)$
+
+## Floyd-Warshall: todos contra todos
+
+Encuentra la distancia más corta entre **todos** los pares de nodos. Ideal para grafos pequeños ($n \leq 500$).
+
+```cpp
+long long dist[505][505];
+
+void floydWarshall(int n) {
+    // Inicializar: dist[i][j] = peso de arista o INF
+    for (int i = 1; i <= n; i++) dist[i][i] = 0;
+
+    for (int k = 1; k <= n; k++) {
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (dist[i][k] != INF && dist[k][j] != INF) {
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+    }
+}
+```
+
+**Complejidad:** $O(n^3)$
+
+**Idea:** Para cada nodo intermedio $k$, verifica si pasar por $k$ mejora el camino de $i$ a $j$.
+
+## ¿Cuál usar?
+
+| Algoritmo | Pesos negativos | Complejidad | Uso |
+|-----------|----------------|-------------|-----|
+| **BFS** | No (sin pesos) | $O(V+E)$ | Grafos sin pesos |
+| **Dijkstra** | No | $O((V+E)\log V)$ | Un origen, pesos ≥ 0 |
+| **Bellman-Ford** | Sí | $O(VE)$ | Pesos negativos |
+| **Floyd-Warshall** | Sí | $O(n^3)$ | Todos contra todos, $n$ pequeño |
+
+## Ejercicio de práctica
+
+Dado un grafo ponderado no dirigido, encuentra la distancia más corta del nodo 1 al nodo N.
+
+<details>
+<summary>Ver solución</summary>
+
+Usa Dijkstra desde el nodo 1 y consulta `dist[n]`.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+typedef pair<long long, int> pli;
+const long long INF = 1e18;
+vector<pair<int,int>> adj[100005];
+long long dist_arr[100005];
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+    for (int i = 0; i < m; i++) {
+        int u, v, w; cin >> u >> v >> w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    fill(dist_arr, dist_arr + n + 1, INF);
+    priority_queue<pli, vector<pli>, greater<pli>> pq;
+    dist_arr[1] = 0;
+    pq.push({0, 1});
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (d > dist_arr[u]) continue;
+        for (auto [v, w] : adj[u]) {
+            if (dist_arr[u] + w < dist_arr[v]) {
+                dist_arr[v] = dist_arr[u] + w;
+                pq.push({dist_arr[v], v});
+            }
+        }
+    }
+
+    cout << (dist_arr[n] == INF ? -1 : dist_arr[n]) << endl;
     return 0;
 }
 ```
 
-## Ejercicios recomendados
-
-1. [CSES - Shortest Routes I](https://cses.fi/problemset/task/1671) (Dijkstra)
-2. [CSES - Shortest Routes II](https://cses.fi/problemset/task/1672) (Floyd)
-3. [CSES - High Score](https://cses.fi/problemset/task/1673) (Bellman-Ford)
-4. [CSES - Cycle Finding](https://cses.fi/problemset/task/1197) (Ciclo negativo)
-5. [Codeforces - Dijkstra?](https://codeforces.com/problemset/problem/20/C)
+</details>

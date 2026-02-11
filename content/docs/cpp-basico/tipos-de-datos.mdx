@@ -1,179 +1,297 @@
 ---
 title: "Tipos de Datos y Variables"
-description: "Conoce los tipos de datos fundamentales en C++ y cómo declarar variables"
+description: "Aprende los tipos de datos fundamentales en C++ y cómo usar variables"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "variables", "tipos-de-datos", "básico"]
+tags: ["c++", "tipos de datos", "variables", "básico"]
 syllabusId: 6
 ---
 
 ## ¿Qué es una variable?
 
-Una **variable** es un espacio en memoria que almacena un valor. Tiene:
-- Un **nombre** (identificador)
-- Un **tipo** (qué clase de dato almacena)
-- Un **valor** (el dato en sí)
+Imagina que tienes una **caja** con una **etiqueta**. Dentro de la caja puedes guardar algo: un número, una letra, una palabra. La etiqueta es el **nombre** que le pones a la caja para poder encontrarla después. Eso es exactamente una variable en programación.
 
-```cpp
-int edad = 15;  // nombre: edad, tipo: int, valor: 15
+Una variable es un **espacio en la memoria** de la computadora donde guardas un dato, y le pones un nombre para poder usarlo después.
+
+```
+╔═══════════════╗
+║  edad = 15    ║  ← "edad" es el nombre (etiqueta)
+╚═══════════════╝     15 es el valor (contenido)
 ```
 
-## Tipos de datos básicos
+## Declarar y asignar variables
 
-### Enteros
+**Declarar** una variable es crear la caja. **Asignar** es poner algo dentro.
+
+```cpp
+// Declarar: crear la caja
+int edad;
+
+// Asignar: meter un valor en la caja
+edad = 15;
+
+// Declarar y asignar al mismo tiempo
+int estatura = 170;
+```
+
+### El operador `=` no es "igual"
+
+En matemáticas, `=` significa "es igual a". En C++, `=` significa **"guarda este valor en esta variable"**. Es una **asignación**, no una comparación.
+
+```cpp
+int x = 5;     // "Guarda 5 en x"
+x = x + 1;     // "Toma el valor de x (5), súmale 1 (6), y guárdalo de nuevo en x"
+// Ahora x vale 6
+```
+
+En matemáticas, `x = x + 1` no tiene sentido. En programación, es perfectamente normal.
+
+## Los tipos de datos fundamentales
+
+Así como hay cajas de diferentes tamaños (una caja pequeña para joyas, una mediana para zapatos, una grande para ropa), en C++ hay diferentes **tipos** de variables según lo que necesites guardar.
+
+### Números enteros: `int` y `long long`
+
+Un número entero es un número **sin decimales**: ..., -3, -2, -1, 0, 1, 2, 3, ...
+
+```cpp
+int puntos = 100;
+int temperatura = -5;
+int estudiantes = 0;
+```
+
+**Pero `int` tiene un límite.** Solo puede guardar números entre aproximadamente **-2,147 millones** y **2,147 millones** (más exactamente, de $-2^{31}$ a $2^{31}-1$, que es $\pm 2,147,483,647$).
+
+¿Qué pasa si necesitas números más grandes? Usa `long long`:
+
+```cpp
+long long distancia = 9999999999LL;  // 9 mil millones (no cabe en int)
+long long poblacion = 7800000000LL;  // 7.8 mil millones de personas
+```
 
 | Tipo | Tamaño | Rango aproximado |
-|------|--------|------------------|
-| `int` | 4 bytes | -2×10⁹ a 2×10⁹ |
-| `long long` | 8 bytes | -9×10¹⁸ a 9×10¹⁸ |
-| `unsigned int` | 4 bytes | 0 a 4×10⁹ |
+|------|--------|-----------------|
+| `int` | 4 bytes | $\pm 2.1 \times 10^9$ (2 mil millones) |
+| `long long` | 8 bytes | $\pm 9.2 \times 10^{18}$ (9 trillones) |
+
+<Callout type="warning">
+  **¡Cuidado con el desbordamiento (overflow)!** Si un `int` supera los 2 mil millones, se "da la vuelta" y se convierte en un número negativo. Este es uno de los errores más comunes en competencias. Si los datos pueden ser grandes, usa `long long`.
+</Callout>
+
+**Ejemplo de overflow:**
 
 ```cpp
-int a = 100;
-long long b = 9000000000000000000LL;  // Nota la LL al final
-unsigned int c = 4000000000u;
+int x = 2000000000;   // 2 mil millones (cabe en int)
+int y = x + x;        // 4 mil millones (NO cabe en int)
+cout << y << endl;     // Imprime un número negativo sin sentido: -294967296
 ```
 
-### Decimales
+### Números decimales: `float` y `double`
 
-| Tipo | Tamaño | Precisión |
-|------|--------|-----------|
-| `float` | 4 bytes | ~7 dígitos |
-| `double` | 8 bytes | ~15 dígitos |
+Para números con punto decimal como 3.14, 0.5, -2.718:
 
 ```cpp
-float pi_aprox = 3.14159f;
-double pi = 3.141592653589793;
+double pi = 3.14159265358979;
+double precio = 29.99;
+double promedio = 8.5;
 ```
 
-### Caracteres
+| Tipo | Precisión | Uso |
+|------|----------|-----|
+| `float` | ~7 dígitos | Casi nunca se usa en competencias |
+| `double` | ~15 dígitos | El estándar para decimales |
+
+<Callout type="info">
+  En competencias, siempre usa `double` en lugar de `float`. `float` tiene muy poca precisión y puede causarte respuestas incorrectas. Si necesitas aún más precisión, usa `long double` (~18 dígitos).
+</Callout>
+
+**Cuidado con la precisión decimal:**
+
+```cpp
+double a = 0.1 + 0.2;
+cout << (a == 0.3) << endl;  // ¡Imprime 0 (falso)!
+```
+
+Los números decimales en la computadora no son exactos. `0.1 + 0.2` no es exactamente `0.3`, sino algo como `0.30000000000000004`. Por eso, cuando compares decimales, usa una tolerancia:
+
+```cpp
+double a = 0.1 + 0.2;
+if (abs(a - 0.3) < 1e-9) {
+    cout << "Son iguales (con tolerancia)" << endl;
+}
+```
+
+### Caracteres: `char`
+
+Un `char` guarda **un solo carácter** (una letra, un dígito, un símbolo). Se escribe entre comillas simples:
 
 ```cpp
 char letra = 'A';
-char numero = '5';  // Es el carácter '5', no el número 5
+char digito = '5';
+char signo = '+';
+char espacio = ' ';
+char nuevaLinea = '\n';
 ```
 
-### Booleanos
+Internamente, cada `char` es un número (su código ASCII). Por ejemplo, `'A'` es 65, `'a'` es 97, `'0'` es 48. Esto lo exploraremos a fondo en la lección de char y ASCII.
+
+### Cadenas de texto: `string`
+
+Un `string` es una secuencia de caracteres (una palabra, una frase, un texto):
+
+```cpp
+string nombre = "María";
+string saludo = "¡Hola, mundo!";
+string vacio = "";  // Un string vacío también es válido
+```
+
+<Callout type="info">
+  Nota la diferencia: los `char` usan comillas **simples** (`'A'`), mientras que los `string` usan comillas **dobles** (`"Hola"`). Confundirlos es un error común.
+</Callout>
+
+### Valores lógicos: `bool`
+
+Un `bool` (de "booleano", en honor al matemático George Boole) solo puede tener dos valores: `true` (verdadero) o `false` (falso).
 
 ```cpp
 bool esMayor = true;
-bool esVacio = false;
+bool esPar = false;
+bool llueve = true;
 ```
 
-## Declaración de variables
+Internamente, `true` es 1 y `false` es 0. Son fundamentales para las decisiones del programa (lo veremos en las estructuras de control).
 
-### Sintaxis básica
+## Tabla resumen de tipos de datos
 
-```cpp
-tipo nombre;           // Declaración
-tipo nombre = valor;   // Declaración con inicialización
-```
+| Tipo | ¿Qué guarda? | Ejemplo | Tamaño |
+|------|--------------|---------|--------|
+| `int` | Enteros | `42` | 4 bytes |
+| `long long` | Enteros grandes | `9999999999LL` | 8 bytes |
+| `double` | Decimales | `3.14159` | 8 bytes |
+| `char` | Un carácter | `'A'` | 1 byte |
+| `string` | Texto | `"Hola"` | Variable |
+| `bool` | Verdadero/Falso | `true` | 1 byte |
 
-### Ejemplos
+## Reglas para nombrar variables
 
-```cpp
-int edad;              // Declarada, valor indefinido
-int puntos = 0;        // Inicializada a 0
-double promedio = 8.5;
-char grado = 'A';
-bool aprobado = true;
-```
+No puedes ponerle cualquier nombre a una variable. Hay reglas:
 
-### Múltiples variables
-
-```cpp
-int a, b, c;           // Tres enteros
-int x = 1, y = 2, z = 3;
-```
-
-## Reglas para nombres de variables
-
-✅ **Válidos:**
-- Empezar con letra o guion bajo
-- Contener letras, números y guiones bajos
-- Distinguen mayúsculas/minúsculas
+1. **Puede contener** letras, números y guión bajo (`_`).
+2. **Debe empezar** con una letra o guión bajo (no con número).
+3. **No puede ser** una palabra reservada de C++ (`int`, `return`, `if`, `while`, etc.).
+4. **Distingue mayúsculas y minúsculas** (`edad`, `Edad` y `EDAD` son tres variables diferentes).
 
 ```cpp
+// ✅ Nombres válidos
 int edad;
+int numeroDeCasos;
+int total_puntos;
 int _contador;
-int miVariable2;
-int MAXIMO;
+int x1;
+
+// ❌ Nombres inválidos
+int 1erLugar;     // No puede empezar con número
+int mi edad;      // No puede tener espacios
+int int;          // "int" es palabra reservada
 ```
 
-❌ **Inválidos:**
-- Empezar con número
-- Contener espacios o caracteres especiales
-- Usar palabras reservadas
+### Buenas prácticas para nombrar
 
 ```cpp
-int 2variable;    // ❌ Empieza con número
-int mi variable;  // ❌ Tiene espacio
-int int;          // ❌ Palabra reservada
+// ❌ Nombres confusos
+int a, b, c, d;    // ¿Qué representan?
+
+// ✅ Nombres descriptivos
+int velocidad;
+int distancia;
+int numEstudiantes;
+int maxPuntaje;
 ```
+
+En competencias, es aceptable usar nombres cortos como `n`, `m`, `i`, `j` porque son convenciones estándar:
+
+- `n` → tamaño del arreglo / número de elementos
+- `m` → número de consultas o de aristas
+- `i`, `j` → contadores de ciclos
+- `x`, `y` → coordenadas
 
 ## Constantes
 
-Variables cuyo valor no cambia:
+Una constante es una variable cuyo valor **nunca cambia**. Se declara con `const`:
 
 ```cpp
-const int DIAS_SEMANA = 7;
 const double PI = 3.14159265358979;
-const int MOD = 1e9 + 7;  // Común en competencias
+const int MAX_N = 100000;
+const int MOD = 1e9 + 7;  // 1,000,000,007 (muy común en competencias)
 ```
 
-## Conversión de tipos (casting)
-
-### Implícita
-
-C++ convierte automáticamente en algunos casos:
+Si intentas cambiar una constante, el compilador te dará un error:
 
 ```cpp
-int a = 5;
-double b = a;  // b = 5.0 (int a double)
-
-double x = 3.7;
-int y = x;     // y = 3 (se trunca, no redondea)
+const int x = 5;
+x = 10;  // ❌ Error: no puedes modificar una constante
 ```
 
-### Explícita
+## Conversiones de tipo (casting)
 
-Puedes forzar la conversión:
+A veces necesitas convertir un tipo a otro. Esto se llama **casting**:
 
 ```cpp
-double resultado = (double) 5 / 2;  // resultado = 2.5
-int entero = (int) 3.99;            // entero = 3
+// Conversión implícita (automática)
+int entero = 7;
+double decimal = entero;  // decimal vale 7.0 (int → double)
 
-// Estilo moderno C++
-double r = static_cast<double>(5) / 2;
+// Conversión que pierde información
+double pi = 3.14;
+int truncado = pi;  // truncado vale 3 (se pierde el .14)
+
+// Conversión explícita
+int a = 7, b = 2;
+double resultado = (double)a / b;  // resultado vale 3.5
+// Sin el cast: a / b = 3 (división entera)
 ```
 
-## Límites de los tipos
+<Callout type="warning">
+  La **división entre enteros** siempre da un entero (trunca el decimal). `7 / 2` da `3`, no `3.5`. Si necesitas el decimal, convierte al menos uno de los operandos a `double`.
+</Callout>
+
+## Entrada y salida con variables
 
 ```cpp
-#include <climits>
-#include <cfloat>
+#include <iostream>
+using namespace std;
 
-cout << "Máximo int: " << INT_MAX << endl;      // 2147483647
-cout << "Mínimo int: " << INT_MIN << endl;      // -2147483648
-cout << "Máximo long long: " << LLONG_MAX << endl;
+int main() {
+    int edad;
+    string nombre;
+
+    cout << "¿Cómo te llamas? ";
+    cin >> nombre;
+
+    cout << "¿Cuántos años tienes? ";
+    cin >> edad;
+
+    cout << "Hola, " << nombre << ". Tienes " << edad << " años." << endl;
+
+    return 0;
+}
 ```
 
-## Overflow
-
-Cuando un valor excede el límite del tipo:
-
-```cpp
-int a = 2000000000;
-int b = 2000000000;
-int c = a + b;  // ¡OVERFLOW! El resultado no cabe en int
-
-// Solución: usar long long
-long long x = 2000000000;
-long long y = 2000000000;
-long long z = x + y;  // Correcto: 4000000000
+**Ejecución ejemplo:**
+```
+¿Cómo te llamas? Carlos
+¿Cuántos años tienes? 16
+Hola, Carlos. Tienes 16 años.
 ```
 
-## Ejemplo práctico: Área de un círculo
+## Ejercicio de práctica
+
+Lee el radio de un círculo y calcula su área y perímetro. Recuerda que:
+- Área = $\pi \times r^2$
+- Perímetro = $2 \times \pi \times r$
+
+<details>
+<summary>Ver solución</summary>
 
 ```cpp
 #include <iostream>
@@ -181,78 +299,29 @@ long long z = x + y;  // Correcto: 4000000000
 using namespace std;
 
 int main() {
-    const double PI = 3.14159265358979;
-
     double radio;
-    cout << "Ingresa el radio: ";
     cin >> radio;
 
-    double area = PI * radio * radio;
-    // O usando pow: double area = PI * pow(radio, 2);
+    const double PI = 3.14159265358979;
 
-    cout << "El área es: " << area << endl;
+    double area = PI * radio * radio;
+    double perimetro = 2 * PI * radio;
+
+    cout << "Área: " << area << endl;
+    cout << "Perímetro: " << perimetro << endl;
 
     return 0;
 }
 ```
 
-## Ejercicios de práctica
-
-### Ejercicio 1
-Declara variables para almacenar: tu edad, tu estatura en metros, la inicial de tu nombre, y si eres estudiante.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int edad = 16;
-double estatura = 1.70;
-char inicial = 'J';
-bool esEstudiante = true;
+**Ejemplo:** si ingresas `5`, la salida es:
 ```
-
-</details>
-
-### Ejercicio 2
-¿Cuál es el resultado de este código?
-
-```cpp
-int a = 7 / 2;
-double b = 7 / 2;
-double c = 7.0 / 2;
-```
-
-<details>
-<summary>Ver solución</summary>
-
-```
-a = 3     (división entera)
-b = 3.0   (7/2 se calcula como enteros primero)
-c = 3.5   (uno es double, se hace división decimal)
-```
-
-</details>
-
-### Ejercicio 3
-¿Por qué este código da un resultado incorrecto?
-
-```cpp
-int segundos_en_anio = 365 * 24 * 60 * 60;
-```
-
-<details>
-<summary>Ver solución</summary>
-
-El resultado (31,536,000) sí cabe en un `int`, así que está correcto.
-Pero si multiplicáramos más: `365 * 24 * 60 * 60 * 100` causaría overflow.
-
-Solución segura:
-```cpp
-long long segundos = 365LL * 24 * 60 * 60;
+Área: 78.5398
+Perímetro: 31.4159
 ```
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Entrada y Salida de Datos](/blog/cpp-basico/entrada-salida) para interactuar con el usuario.
+Aprende sobre **Entrada y Salida** para dominar la lectura de datos y mostrar resultados, algo fundamental en toda competencia.

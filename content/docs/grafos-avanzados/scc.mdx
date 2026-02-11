@@ -1,281 +1,120 @@
 ---
 title: "Componentes Fuertemente Conexas (SCC)"
-description: "Aprende a encontrar SCCs con los algoritmos de Kosaraju y Tarjan"
+description: "Encuentra grupos de nodos mutuamente alcanzables en grafos dirigidos"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "SCC", "Kosaraju", "Tarjan", "componentes"]
-syllabusId: 67
-order: 7
+tags: ["c++", "SCC", "Kosaraju", "Tarjan", "grafos dirigidos"]
+syllabusId: 64
 ---
 
 ## ¿Qué es una SCC?
 
-Una **Componente Fuertemente Conexa** (Strongly Connected Component) es un conjunto maximal de nodos donde puedes llegar de cualquier nodo a cualquier otro siguiendo las aristas dirigidas.
+En un grafo **dirigido**, una **Componente Fuertemente Conexa** (Strongly Connected Component) es un grupo máximo de nodos donde puedes llegar de cualquiera a cualquier otro **siguiendo la dirección** de las aristas.
 
-```
-    1 → 2 → 5
-    ↑   ↓   ↓
-    4 ← 3   6 ↔ 7
-
-SCCs: {1, 2, 3, 4}, {5}, {6, 7}
-```
+**Analogía:** En una ciudad con calles de un solo sentido, una SCC es una zona donde puedes ir de cualquier esquina a cualquier otra (quizás dando vueltas).
 
 ## Algoritmo de Kosaraju
 
-**Idea:** Usar dos DFS - uno para ordenar por tiempos de finalización, otro en el grafo transpuesto.
+Dos pasadas de DFS:
 
 ```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+using namespace std;
+
 const int MAXN = 100005;
-vector<int> adj[MAXN];     // Grafo original
-vector<int> adjRev[MAXN];  // Grafo transpuesto
-bool visitado[MAXN];
+vector<int> adj[MAXN], radj[MAXN];  // Grafo y grafo transpuesto
+bool vis[MAXN];
+int comp[MAXN];
 stack<int> orden;
-int componente[MAXN];
 
 void dfs1(int u) {
-    visitado[u] = true;
+    vis[u] = true;
     for (int v : adj[u]) {
-        if (!visitado[v]) {
-            dfs1(v);
-        }
+        if (!vis[v]) dfs1(v);
     }
-    orden.push(u);  // Agregar al terminar
+    orden.push(u);  // Postorden
 }
 
-void dfs2(int u, int comp) {
-    componente[u] = comp;
-    for (int v : adjRev[u]) {
-        if (componente[v] == 0) {
-            dfs2(v, comp);
-        }
+void dfs2(int u, int id) {
+    vis[u] = true;
+    comp[u] = id;
+    for (int v : radj[u]) {
+        if (!vis[v]) dfs2(v, id);
     }
 }
 
-int kosaraju(int n) {
-    // Paso 1: DFS en grafo original
-    fill(visitado, visitado + n + 1, false);
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        radj[v].push_back(u);  // Grafo transpuesto
+    }
+
+    // Paso 1: DFS en el grafo original
+    fill(vis, vis + n + 1, false);
     for (int i = 1; i <= n; i++) {
-        if (!visitado[i]) {
-            dfs1(i);
-        }
+        if (!vis[i]) dfs1(i);
     }
 
-    // Paso 2: DFS en grafo transpuesto
-    fill(componente, componente + n + 1, 0);
+    // Paso 2: DFS en el grafo transpuesto, en orden inverso de finalización
+    fill(vis, vis + n + 1, false);
     int numSCC = 0;
-
     while (!orden.empty()) {
-        int u = orden.top();
-        orden.pop();
-
-        if (componente[u] == 0) {
+        int u = orden.top(); orden.pop();
+        if (!vis[u]) {
             numSCC++;
             dfs2(u, numSCC);
         }
     }
 
-    return numSCC;
-}
-```
-
-## Algoritmo de Tarjan
-
-**Idea:** Un solo DFS usando tiempos de descubrimiento y low-link values.
-
-```cpp
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-int disc[MAXN], low[MAXN], comp[MAXN];
-bool enStack[MAXN];
-stack<int> st;
-int timer = 0, numSCC = 0;
-
-void tarjan(int u) {
-    disc[u] = low[u] = ++timer;
-    st.push(u);
-    enStack[u] = true;
-
-    for (int v : adj[u]) {
-        if (disc[v] == 0) {
-            tarjan(v);
-            low[u] = min(low[u], low[v]);
-        } else if (enStack[v]) {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-
-    // Si u es raíz de una SCC
-    if (low[u] == disc[u]) {
-        numSCC++;
-        while (true) {
-            int v = st.top();
-            st.pop();
-            enStack[v] = false;
-            comp[v] = numSCC;
-            if (v == u) break;
-        }
-    }
-}
-
-int encontrarSCCs(int n) {
-    fill(disc, disc + n + 1, 0);
-    fill(low, low + n + 1, 0);
-    fill(comp, comp + n + 1, 0);
-    fill(enStack, enStack + n + 1, false);
-    timer = numSCC = 0;
-
+    cout << "SCCs: " << numSCC << endl;
     for (int i = 1; i <= n; i++) {
-        if (disc[i] == 0) {
-            tarjan(i);
-        }
+        cout << "Nodo " << i << " → SCC " << comp[i] << endl;
     }
-
-    return numSCC;
-}
-```
-
-## Condensar el grafo
-
-Crear un nuevo grafo donde cada SCC es un nodo:
-
-```cpp
-vector<int> adjCondensado[MAXN];
-
-void condensar(int n) {
-    set<pair<int, int>> aristas;
-
-    for (int u = 1; u <= n; u++) {
-        for (int v : adj[u]) {
-            if (comp[u] != comp[v]) {
-                aristas.insert({comp[u], comp[v]});
-            }
-        }
-    }
-
-    for (auto [u, v] : aristas) {
-        adjCondensado[u].push_back(v);
-    }
-}
-```
-
-## Aplicaciones
-
-### 2-SAT
-
-Determinar si una fórmula booleana en forma 2-CNF es satisfacible:
-
-```cpp
-// Para variable x: nodo x representa x, nodo x+n representa ¬x
-// Implicación a → b se representa como arista a → b
-
-const int MAXN = 200005;
-vector<int> adj[MAXN];
-int comp[MAXN];
-
-void agregarClausula(int a, bool negA, int b, bool negB, int n) {
-    // (a ∨ b) equivale a (¬a → b) ∧ (¬b → a)
-    int nodeA = negA ? a : a + n;
-    int nodeNotA = negA ? a + n : a;
-    int nodeB = negB ? b : b + n;
-    int nodeNotB = negB ? b + n : b;
-
-    adj[nodeNotA].push_back(nodeB);    // ¬a → b
-    adj[nodeNotB].push_back(nodeA);    // ¬b → a
-}
-
-bool esSatisfacible(int n) {
-    encontrarSCCs(2 * n);
-
-    for (int i = 1; i <= n; i++) {
-        if (comp[i] == comp[i + n]) {
-            return false;  // x y ¬x en la misma SCC
-        }
-    }
-    return true;
-}
-
-vector<bool> obtenerSolucion(int n) {
-    vector<bool> solucion(n + 1);
-
-    for (int i = 1; i <= n; i++) {
-        // Si comp[i] > comp[i+n], entonces x = true
-        solucion[i] = comp[i] > comp[i + n];
-    }
-
-    return solucion;
-}
-```
-
-## Template completo (Tarjan)
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-vector<int> adj[MAXN];
-int disc[MAXN], low[MAXN], comp[MAXN];
-bool onStack[MAXN];
-stack<int> st;
-int timer, numSCC;
-
-void tarjan(int u) {
-    disc[u] = low[u] = ++timer;
-    st.push(u);
-    onStack[u] = true;
-
-    for (int v : adj[u]) {
-        if (!disc[v]) {
-            tarjan(v);
-            low[u] = min(low[u], low[v]);
-        } else if (onStack[v]) {
-            low[u] = min(low[u], disc[v]);
-        }
-    }
-
-    if (low[u] == disc[u]) {
-        numSCC++;
-        while (true) {
-            int v = st.top();
-            st.pop();
-            onStack[v] = false;
-            comp[v] = numSCC;
-            if (v == u) break;
-        }
-    }
-}
-
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int n, m;
-    cin >> n >> m;
-
-    for (int i = 0; i < m; i++) {
-        int a, b;
-        cin >> a >> b;
-        adj[a].push_back(b);
-    }
-
-    timer = numSCC = 0;
-    for (int i = 1; i <= n; i++) {
-        if (!disc[i]) tarjan(i);
-    }
-
-    cout << numSCC << "\n";
-    for (int i = 1; i <= n; i++) {
-        cout << comp[i] << " ";
-    }
-    cout << "\n";
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+**Complejidad:** $O(V + E)$
 
-1. [CSES - Planets and Kingdoms](https://cses.fi/problemset/task/1683)
-2. [CSES - Giant Pizza](https://cses.fi/problemset/task/1684) (2-SAT)
-3. [Codeforces - Scheme](https://codeforces.com/problemset/problem/22/E)
-4. [SPOJ - CAPCITY](https://www.spoj.com/problems/CAPCITY/)
+### ¿Por qué funciona?
+
+1. El primer DFS ordena los nodos por tiempo de finalización.
+2. Procesar en orden inverso en el grafo transpuesto asegura que cada DFS solo alcanza nodos de la misma SCC.
+
+## Grafo de condensación (DAG de SCCs)
+
+Después de encontrar las SCCs, puedes "contraer" cada SCC en un solo nodo, creando un DAG:
+
+```cpp
+// Después de Kosaraju
+set<pair<int,int>> aristasDAG;
+
+for (int u = 1; u <= n; u++) {
+    for (int v : adj[u]) {
+        if (comp[u] != comp[v]) {
+            aristasDAG.insert({comp[u], comp[v]});
+        }
+    }
+}
+```
+
+Este DAG es útil para aplicar ordenamiento topológico, DP en grafos, etc.
+
+## Ejercicio de práctica
+
+Dado un grafo dirigido, encuentra el número de SCCs.
+
+<details>
+<summary>Ver solución</summary>
+
+Usa el algoritmo de Kosaraju mostrado arriba. La respuesta es `numSCC`.
+
+</details>

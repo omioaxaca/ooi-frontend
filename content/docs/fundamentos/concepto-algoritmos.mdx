@@ -9,94 +9,179 @@ syllabusId: 3
 
 ## ¿Qué es un algoritmo?
 
-Un **algoritmo** es una secuencia finita de instrucciones bien definidas que resuelven un problema específico. Es como una receta de cocina: tiene ingredientes (entrada), pasos a seguir (proceso) y un resultado final (salida).
+Un **algoritmo** es una serie de pasos ordenados y precisos que resuelven un problema específico. Siempre tiene un inicio, un final, y cada paso está claramente definido para que no haya ambigüedad.
+
+### Analogía: la receta de cocina
+
+La mejor analogía para entender un algoritmo es una **receta de cocina**:
+
+- **Ingredientes (entrada):** Los datos que recibe el algoritmo. En una receta, son los ingredientes: harina, huevos, leche.
+- **Pasos (proceso):** Las instrucciones que seguimos en un orden específico. "Primero mezcla la harina con los huevos, luego agrega la leche..."
+- **Platillo final (salida):** El resultado que produce el algoritmo. En una receta, es el pastel terminado.
+
+Si alguien te da una receta con pasos claros, cualquier persona puede seguirla y obtener el mismo resultado (más o menos). Lo mismo pasa con un algoritmo: si los pasos son claros, cualquier computadora los ejecutará de la misma forma.
+
+### Otra analogía: las instrucciones de LEGO
+
+¿Has armado un set de LEGO? Las instrucciones te dicen exactamente qué pieza poner, dónde ponerla y en qué orden. No dejan nada a la imaginación. Un algoritmo es igual: instrucciones tan precisas que no hay duda de qué hacer en cada momento.
 
 ## Características de un algoritmo
 
 Todo algoritmo debe cumplir con estas propiedades:
 
-| Característica | Descripción |
-|----------------|-------------|
-| **Finito** | Debe terminar después de un número finito de pasos |
-| **Definido** | Cada paso debe estar claramente especificado |
-| **Entrada** | Tiene cero o más valores de entrada |
-| **Salida** | Produce al menos un valor de salida |
-| **Efectivo** | Cada operación debe ser suficientemente básica |
+| Característica | Descripción | Ejemplo (receta) |
+|----------------|-------------|-------------------|
+| **Finito** | Debe terminar después de un número finito de pasos | Una receta tiene un final: "hornear 30 minutos" |
+| **Definido** | Cada paso debe estar claramente especificado, sin ambigüedad | "Agregar 200g de harina" (no "agregar un poco de harina") |
+| **Entrada** | Tiene cero o más valores de entrada | Los ingredientes |
+| **Salida** | Produce al menos un valor de salida | El platillo terminado |
+| **Efectivo** | Cada paso debe ser realizable | "Mezclar" es algo que podemos hacer; "convertir plomo en oro" no |
 
-## Ejemplo: Algoritmo para encontrar el máximo
+<Callout type="warning">
+  Si un conjunto de instrucciones no termina nunca (por ejemplo, "cuenta todos los números naturales"), **no es un algoritmo**. Los algoritmos SIEMPRE deben terminar.
+</Callout>
+
+## Tu primer algoritmo: encontrar el número más grande
+
+Imagina que tienes una fila de cajas, cada una con un número adentro, y necesitas encontrar el número más grande. No puedes ver todos los números al mismo tiempo; solo puedes abrir una caja a la vez.
 
 **Problema:** Dado un conjunto de números, encontrar el mayor.
 
-**Algoritmo en lenguaje natural:**
-1. Tomar el primer número como el máximo actual
-2. Para cada número restante:
-   - Si el número es mayor que el máximo actual, actualizarlo
-3. El máximo actual es la respuesta
+### Paso 1: Pensarlo en lenguaje natural
 
-**Implementación en C++:**
+Antes de escribir código, pensemos cómo lo haríamos en la vida real:
+
+1. Abrimos la primera caja y recordamos ese número como "el más grande hasta ahora".
+2. Abrimos la siguiente caja. Si el número es mayor que "el más grande hasta ahora", actualizamos nuestro recuerdo.
+3. Repetimos el paso 2 para cada caja restante.
+4. Al terminar, "el más grande hasta ahora" es la respuesta.
+
+¿Ves? Ni siquiera hemos tocado una computadora y ya tenemos un algoritmo claro.
+
+### Paso 2: Escribirlo en pseudocódigo
+
+El **pseudocódigo** es una mezcla entre lenguaje natural y lenguaje de programación. No es código real, pero se parece. Nos ayuda a organizar nuestras ideas antes de programar.
+
+```
+ALGORITMO: Encontrar el máximo
+ENTRADA: Un conjunto de n números: num[0], num[1], ..., num[n-1]
+SALIDA: El número más grande
+
+1. maximo ← num[0]            // Empezamos con el primer número
+2. PARA i DESDE 1 HASTA n-1:  // Recorremos los demás
+   a. SI num[i] > maximo ENTONCES
+      b. maximo ← num[i]      // Actualizamos si encontramos uno mayor
+3. RETORNAR maximo
+```
+
+### Paso 3: Implementarlo en C++
+
+Ahora sí, traducimos nuestro pseudocódigo a C++:
 
 ```cpp
 int encontrarMaximo(vector<int>& numeros) {
+    // Paso 1: Empezar con el primer número como "el más grande"
     int maximo = numeros[0];
 
+    // Paso 2: Revisar cada número restante
     for (int i = 1; i < numeros.size(); i++) {
+        // Si encontramos uno mayor, actualizamos
         if (numeros[i] > maximo) {
             maximo = numeros[i];
         }
     }
 
+    // Paso 3: Regresar el resultado
     return maximo;
 }
 ```
 
-## Diseño de algoritmos
+**Explicación línea por línea:**
 
-### Paso 1: Entender el problema
+- `int maximo = numeros[0];` — Tomamos el primer número como referencia. Es como abrir la primera caja y recordar ese número.
+- `for (int i = 1; i < numeros.size(); i++)` — Recorremos desde el segundo elemento hasta el último. El primero ya lo vimos.
+- `if (numeros[i] > maximo)` — ¿Este número es más grande que el que tenemos guardado?
+- `maximo = numeros[i];` — ¡Sí! Actualizamos nuestro "más grande hasta ahora".
+- `return maximo;` — Regresamos la respuesta.
 
-Antes de escribir código, asegúrate de entender:
-- ¿Cuáles son las entradas?
-- ¿Cuál es la salida esperada?
-- ¿Hay restricciones o casos especiales?
+### Paso 4: Verificar con ejemplos
 
-### Paso 2: Diseñar la solución
+Siempre debemos probar nuestro algoritmo con ejemplos para asegurarnos de que funciona:
 
-Escribe los pasos en lenguaje natural o pseudocódigo:
+- **Ejemplo 1:** [3, 7, 2, 9, 4] → maximo empieza en 3, luego se actualiza a 7, luego a 9. Resultado: **9** ✓
+- **Ejemplo 2:** [5] → Solo hay un número. Resultado: **5** ✓
+- **Ejemplo 3:** [1, 1, 1] → Todos iguales. Resultado: **1** ✓
+- **Ejemplo 4:** [-3, -1, -7] → Con negativos. maximo = -3, luego -1. Resultado: **-1** ✓
+
+<Callout type="info">
+  Probar con **casos extremos** (un solo elemento, todos iguales, números negativos) es fundamental. Muchos errores se esconden en estos casos.
+</Callout>
+
+## Diseñando algoritmos: metodología paso a paso
+
+Cada vez que te enfrentes a un problema nuevo, sigue estos pasos:
+
+### 1. Entender el problema
+
+Antes de escribir una sola línea de código, asegúrate de entender completamente:
+
+- **¿Cuáles son las entradas?** ¿Qué datos te dan? ¿Un número? ¿Un arreglo? ¿Una cadena de texto?
+- **¿Cuál es la salida esperada?** ¿Qué te piden calcular o encontrar?
+- **¿Hay restricciones?** ¿Qué tan grande puede ser la entrada? ¿Hay casos especiales?
+
+**Ejemplo de problema:**
+> "Dado un número N, calcula la suma de todos los números del 1 al N."
+
+- **Entrada:** Un número entero N (por ejemplo, N = 5)
+- **Salida:** La suma 1 + 2 + 3 + ... + N (para N = 5, la respuesta es 15)
+- **Restricción:** N puede ser hasta 1,000,000
+
+### 2. Diseñar la solución en pseudocódigo
 
 ```
-ALGORITMO: Suma de números del 1 al N
+ALGORITMO: Suma de 1 a N
 ENTRADA: Un número N
 SALIDA: La suma 1 + 2 + ... + N
 
-1. Inicializar suma = 0
-2. Para i desde 1 hasta N:
-   a. suma = suma + i
-3. Retornar suma
+1. suma ← 0
+2. PARA i DESDE 1 HASTA N:
+   a. suma ← suma + i
+3. RETORNAR suma
 ```
 
-### Paso 3: Implementar
+### 3. Implementar en C++
 
 ```cpp
+// Método 1: Con ciclo (intuitivo)
 int sumaHastaN(int n) {
-    int suma = 0;
-    for (int i = 1; i <= n; i++) {
-        suma += i;
+    int suma = 0;            // Empezamos con 0
+    for (int i = 1; i <= n; i++) {  // Para cada número del 1 al n
+        suma += i;            // Lo sumamos al total
     }
     return suma;
 }
+
+// Método 2: Con fórmula matemática (más eficiente)
+int sumaHastaN_formula(int n) {
+    return n * (n + 1) / 2;  // Fórmula de Gauss
+}
 ```
 
-### Paso 4: Verificar
+**¿Por qué hay dos métodos?** El primero es O(n) — necesita n operaciones. El segundo es O(1) — solo una multiplicación y una división. Para n = 1,000,000, el segundo es un millón de veces más rápido.
 
-Probar con casos de ejemplo:
-- n = 1 → suma = 1 ✓
-- n = 5 → suma = 15 (1+2+3+4+5) ✓
-- n = 10 → suma = 55 ✓
+La fórmula $\frac{n(n+1)}{2}$ fue descubierta por el matemático Gauss cuando tenía 10 años. Su maestro le pidió sumar los números del 1 al 100, esperando mantenerlo ocupado un rato. Gauss se dio cuenta de que podía emparejar los números: 1+100=101, 2+99=101, 3+98=101... Hay 50 pares, así que la suma es 50 × 101 = 5,050.
 
-## Pseudocódigo
+### 4. Verificar con ejemplos
 
-El pseudocódigo es una forma de escribir algoritmos que combina lenguaje natural con estructuras de programación.
+- N = 1 → suma = 1. Fórmula: 1×2/2 = 1 ✓
+- N = 5 → suma = 15. Fórmula: 5×6/2 = 15 ✓
+- N = 10 → suma = 55. Fórmula: 10×11/2 = 55 ✓
 
-### Estructuras comunes
+## Pseudocódigo: tu borrador antes del código
+
+El pseudocódigo es tu aliado para organizar ideas. No tiene una sintaxis rígida; lo importante es que sea claro. Aquí están las estructuras más comunes:
+
+### Condicionales
 
 ```
 SI condición ENTONCES
@@ -104,7 +189,11 @@ SI condición ENTONCES
 SINO
     otras instrucciones
 FIN SI
+```
 
+### Ciclos
+
+```
 MIENTRAS condición HACER
     instrucciones
 FIN MIENTRAS
@@ -112,153 +201,213 @@ FIN MIENTRAS
 PARA i DESDE inicio HASTA fin HACER
     instrucciones
 FIN PARA
+```
 
+### Funciones
+
+```
 FUNCIÓN nombre(parámetros)
     instrucciones
     RETORNAR valor
 FIN FUNCIÓN
 ```
 
-### Ejemplo completo
+### Ejemplo completo: verificar si un número es primo
+
+Un número primo es aquel que solo es divisible entre 1 y sí mismo. Por ejemplo, 7 es primo (solo se divide entre 1 y 7), pero 6 no es primo (se divide entre 1, 2, 3 y 6).
+
+**Pseudocódigo:**
 
 ```
-ALGORITMO: Verificar si un número es primo
-ENTRADA: Un número n
-SALIDA: VERDADERO si n es primo, FALSO si no
+ALGORITMO: Verificar si N es primo
+ENTRADA: Un número N
+SALIDA: VERDADERO si N es primo, FALSO si no
 
-SI n < 2 ENTONCES
-    RETORNAR FALSO
+SI N < 2 ENTONCES
+    RETORNAR FALSO    // 0 y 1 no son primos
 FIN SI
 
-PARA i DESDE 2 HASTA raíz_cuadrada(n) HACER
-    SI n MOD i == 0 ENTONCES
-        RETORNAR FALSO
+PARA i DESDE 2 HASTA raíz_cuadrada(N) HACER
+    SI N es divisible por i ENTONCES
+        RETORNAR FALSO  // Encontramos un divisor, no es primo
     FIN SI
 FIN PARA
 
-RETORNAR VERDADERO
+RETORNAR VERDADERO  // No encontramos divisores, es primo
 ```
 
-**Implementación:**
+**¿Por qué solo revisamos hasta la raíz cuadrada?** Porque si N tiene un divisor mayor que $\sqrt{N}$, entonces necesariamente tiene otro divisor menor que $\sqrt{N}$. Por ejemplo, para N = 36, $\sqrt{36} = 6$. Los divisores son: 1×36, 2×18, 3×12, 4×9, 6×6. Después de 6, los divisores se "repiten" al revés. Así que solo necesitamos revisar hasta 6.
+
+**Implementación en C++:**
 
 ```cpp
 bool esPrimo(int n) {
-    if (n < 2) return false;
+    if (n < 2) return false;  // 0 y 1 no son primos
 
-    for (int i = 2; i * i <= n; i++) {
-        if (n % i == 0) return false;
+    for (int i = 2; i * i <= n; i++) {  // i * i <= n es lo mismo que i <= sqrt(n)
+        if (n % i == 0) return false;    // n % i == 0 significa "n es divisible por i"
     }
 
-    return true;
+    return true;  // Si llegamos aquí, es primo
 }
 ```
 
-## Patrones algorítmicos básicos
+## Patrones algorítmicos que usarás siempre
 
-### Acumuladores
+### El acumulador: "Ir sumando poco a poco"
 
-Usados para sumar, contar o combinar valores:
+Usado para sumar, contar o combinar valores. Piensa en una alcancía: vas echando monedas (sumando) una por una.
 
 ```cpp
 // Suma de elementos
-int suma = 0;
+int suma = 0;                    // La alcancía empieza vacía
 for (int x : arr) {
-    suma += x;
+    suma += x;                   // Echamos cada moneda
 }
+// Al final, suma tiene el total
 
 // Producto de elementos
-int producto = 1;
+int producto = 1;                // Para multiplicar, empezamos en 1 (no en 0)
 for (int x : arr) {
     producto *= x;
 }
 
-// Contador
-int cuenta = 0;
+// Contador: contar cuántos cumplen una condición
+int positivos = 0;
 for (int x : arr) {
-    if (x > 0) cuenta++;
+    if (x > 0) positivos++;      // Si es positivo, contamos uno más
 }
 ```
 
-### Búsqueda
+### La búsqueda: "Encontrar la aguja en el pajar"
 
-Encontrar un elemento específico:
+Recorrer los datos hasta encontrar lo que buscamos.
 
 ```cpp
-// Búsqueda lineal
+// Búsqueda lineal: revisar uno por uno
 int buscar(vector<int>& arr, int objetivo) {
     for (int i = 0; i < arr.size(); i++) {
-        if (arr[i] == objetivo) return i;
+        if (arr[i] == objetivo) {
+            return i;     // Retornamos la POSICIÓN donde lo encontramos
+        }
     }
-    return -1; // No encontrado
+    return -1;  // Retornamos -1 si no lo encontramos (convención)
 }
 ```
 
-### Filtrado
+### El filtro: "Separar lo que sirve de lo que no"
 
-Seleccionar elementos que cumplan una condición:
+Seleccionar solo los elementos que cumplen cierta condición.
 
 ```cpp
+// Filtrar solo los números positivos
 vector<int> filtrarPositivos(vector<int>& arr) {
-    vector<int> resultado;
+    vector<int> resultado;        // Un nuevo arreglo para los que pasen el filtro
     for (int x : arr) {
-        if (x > 0) resultado.push_back(x);
+        if (x > 0) {
+            resultado.push_back(x);  // Solo agregamos los positivos
+        }
     }
     return resultado;
 }
 ```
 
-### Transformación
+### La transformación: "Convertir cada dato"
 
-Aplicar una operación a cada elemento:
+Aplicar una operación a cada elemento.
 
 ```cpp
+// Duplicar cada elemento
 vector<int> duplicar(vector<int>& arr) {
     vector<int> resultado;
     for (int x : arr) {
-        resultado.push_back(x * 2);
+        resultado.push_back(x * 2);  // Cada número se multiplica por 2
     }
     return resultado;
 }
+// [1, 2, 3] → [2, 4, 6]
 ```
 
 ## Ejercicios de práctica
 
-### Ejercicio 1
-Escribe un algoritmo que determine si un año es bisiesto.
+### Ejercicio 1: Año bisiesto
+
+Un año es bisiesto si:
+- Es divisible por 4, **PERO**
+- Si es divisible por 100, **NO** es bisiesto, **A MENOS QUE**
+- Sea divisible por 400, en cuyo caso **SÍ** es bisiesto.
+
+Ejemplos: 2000 es bisiesto (divisible por 400). 1900 no es bisiesto (divisible por 100 pero no por 400). 2024 es bisiesto (divisible por 4, no por 100).
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
 bool esBisiesto(int anio) {
-    // Divisible por 4, excepto centenarios no divisibles por 400
-    if (anio % 400 == 0) return true;
-    if (anio % 100 == 0) return false;
-    if (anio % 4 == 0) return true;
-    return false;
+    if (anio % 400 == 0) return true;   // Divisible por 400: SÍ
+    if (anio % 100 == 0) return false;  // Divisible por 100 (pero no 400): NO
+    if (anio % 4 == 0) return true;     // Divisible por 4 (pero no 100): SÍ
+    return false;                        // No divisible por 4: NO
 }
 ```
 
+**Nota:** El orden de las condiciones importa. Revisamos primero las más específicas (400) y luego las más generales (4).
+
 </details>
 
-### Ejercicio 2
-Escribe un algoritmo que calcule el factorial de un número.
+### Ejercicio 2: Factorial
+
+El factorial de n (escrito n!) es el producto de todos los números del 1 al n. Por ejemplo: 5! = 1 × 2 × 3 × 4 × 5 = 120.
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
 long long factorial(int n) {
-    long long resultado = 1;
-    for (int i = 2; i <= n; i++) {
+    long long resultado = 1;         // Empezamos en 1 (para multiplicar)
+    for (int i = 2; i <= n; i++) {   // Multiplicamos por 2, 3, 4, ..., n
         resultado *= i;
     }
     return resultado;
 }
+// factorial(5) = 120
+// factorial(10) = 3628800
+```
+
+**¿Por qué `long long`?** Porque los factoriales crecen muy rápido. 20! = 2,432,902,008,176,640,000, que no cabe en un `int` normal (máximo ~2 mil millones). `long long` puede almacenar números hasta ~9 trillones.
+
+</details>
+
+### Ejercicio 3: Fibonacci
+
+La secuencia de Fibonacci empieza con 0, 1 y cada número siguiente es la suma de los dos anteriores: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34...
+
+Escribe un algoritmo que calcule el n-ésimo número de Fibonacci.
+
+<details>
+<summary>Ver solución</summary>
+
+```cpp
+long long fibonacci(int n) {
+    if (n <= 0) return 0;
+    if (n == 1) return 1;
+
+    long long anterior = 0;   // fib(0)
+    long long actual = 1;     // fib(1)
+
+    for (int i = 2; i <= n; i++) {
+        long long siguiente = anterior + actual;  // La suma de los dos anteriores
+        anterior = actual;     // El "actual" pasa a ser el "anterior"
+        actual = siguiente;    // El "siguiente" pasa a ser el "actual"
+    }
+
+    return actual;
+}
+// fibonacci(6) = 8 (la secuencia es: 0, 1, 1, 2, 3, 5, 8)
 ```
 
 </details>
 
 ## Siguiente paso
 
-Aprende a representar algoritmos visualmente con [Diagramas de Flujo](/blog/fundamentos/diagramas-de-flujo).
+Aprende a representar algoritmos visualmente con **Diagramas de Flujo**, que te ayudarán a pensar más claramente antes de programar.

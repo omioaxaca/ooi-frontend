@@ -1,244 +1,168 @@
 ---
 title: "Ordenamiento Burbuja (Bubble Sort)"
-description: "Comprende el algoritmo de ordenamiento burbuja y su implementación"
+description: "Entiende el algoritmo de ordenamiento más intuitivo paso a paso"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "ordenamiento", "algoritmos", "bubble-sort"]
+tags: ["c++", "bubble sort", "ordenamiento", "burbuja"]
 syllabusId: 23
 ---
 
-## ¿Qué es Bubble Sort?
+## La idea detrás del Bubble Sort
 
-El ordenamiento burbuja es un algoritmo simple que compara elementos adyacentes y los intercambia si están en el orden incorrecto. Los elementos más grandes "burbujean" hacia el final.
+Imagina que tienes una fila de personas ordenadas por estatura de forma aleatoria, y quieres ordenarlas de menor a mayor. Una forma simple: recorres la fila comparando cada persona con la que tiene al lado. Si están en el orden incorrecto, las intercambias. Repites esto hasta que toda la fila esté ordenada.
 
-## Idea básica
+Los elementos más grandes "flotan" hacia el final, como **burbujas** que suben a la superficie del agua. De ahí el nombre.
 
-1. Recorrer el arreglo comparando pares adyacentes
-2. Si están desordenados, intercambiarlos
-3. Repetir hasta que no haya intercambios
+## El algoritmo paso a paso
 
-## Visualización
+Con el arreglo `[5, 3, 8, 1, 2]`:
 
+**Primera pasada** (la burbuja más grande, 8, llega al final):
 ```
-Arreglo inicial: [5, 3, 8, 4, 2]
-
-Primera pasada:
-[5, 3, 8, 4, 2] → [3, 5, 8, 4, 2]  (5 > 3, intercambiar)
-[3, 5, 8, 4, 2] → [3, 5, 8, 4, 2]  (5 < 8, no cambiar)
-[3, 5, 8, 4, 2] → [3, 5, 4, 8, 2]  (8 > 4, intercambiar)
-[3, 5, 4, 8, 2] → [3, 5, 4, 2, 8]  (8 > 2, intercambiar)
-                                    ↑ 8 llegó al final
-
-Segunda pasada:
-[3, 5, 4, 2, 8] → [3, 5, 4, 2, 8]  (3 < 5, no cambiar)
-[3, 5, 4, 2, 8] → [3, 4, 5, 2, 8]  (5 > 4, intercambiar)
-[3, 4, 5, 2, 8] → [3, 4, 2, 5, 8]  (5 > 2, intercambiar)
-                                    ↑ 5 llegó a su lugar
-
-Y así sucesivamente...
+[5, 3, 8, 1, 2]  → Compara 5 y 3 → intercambia → [3, 5, 8, 1, 2]
+[3, 5, 8, 1, 2]  → Compara 5 y 8 → OK          → [3, 5, 8, 1, 2]
+[3, 5, 8, 1, 2]  → Compara 8 y 1 → intercambia → [3, 5, 1, 8, 2]
+[3, 5, 1, 8, 2]  → Compara 8 y 2 → intercambia → [3, 5, 1, 2, 8] ✓
 ```
 
-## Implementación básica
+**Segunda pasada** (5 llega a su lugar):
+```
+[3, 5, 1, 2, 8]  → 3 y 5 → OK
+[3, 5, 1, 2, 8]  → 5 y 1 → intercambia → [3, 1, 5, 2, 8]
+[3, 1, 5, 2, 8]  → 5 y 2 → intercambia → [3, 1, 2, 5, 8] ✓
+```
+
+**Tercera pasada** (3 llega a su lugar):
+```
+[3, 1, 2, 5, 8]  → 3 y 1 → intercambia → [1, 3, 2, 5, 8]
+[1, 3, 2, 5, 8]  → 3 y 2 → intercambia → [1, 2, 3, 5, 8] ✓
+```
+
+**Cuarta pasada**: No hay intercambios → ¡Ya está ordenado!
+
+## Implementación
 
 ```cpp
-void bubbleSort(vector<int>& arr) {
-    int n = arr.size();
+void bubbleSort(vector<int> &v) {
+    int n = v.size();
 
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
-            if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
+            if (v[j] > v[j + 1]) {
+                swap(v[j], v[j + 1]);
             }
         }
     }
 }
 ```
 
-## Implementación optimizada
+**Línea por línea:**
+- `for i = 0..n-2` → Necesitamos hasta n-1 pasadas.
+- `for j = 0..n-2-i` → En cada pasada, no necesitamos revisar los últimos `i` elementos (ya están en su lugar).
+- `if (v[j] > v[j+1])` → Si el actual es mayor que el siguiente, están en desorden.
+- `swap(v[j], v[j+1])` → Intercambiar (la función `swap` viene con C++).
 
-Termina temprano si no hay intercambios:
+### Optimización: detección temprana
+
+Si en una pasada no se hizo ningún intercambio, el arreglo ya está ordenado:
 
 ```cpp
-void bubbleSortOptimizado(vector<int>& arr) {
-    int n = arr.size();
+void bubbleSortOptimizado(vector<int> &v) {
+    int n = v.size();
 
     for (int i = 0; i < n - 1; i++) {
         bool huboIntercambio = false;
 
         for (int j = 0; j < n - 1 - i; j++) {
-            if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
+            if (v[j] > v[j + 1]) {
+                swap(v[j], v[j + 1]);
                 huboIntercambio = true;
             }
         }
 
-        // Si no hubo intercambios, el arreglo ya está ordenado
-        if (!huboIntercambio) break;
+        if (!huboIntercambio) break;  // Ya está ordenado
     }
 }
 ```
 
-## Análisis de complejidad
+## Complejidad
 
-| Caso | Complejidad |
-|------|-------------|
-| Mejor | $O(n)$ (ya ordenado, versión optimizada) |
-| Promedio | $O(n^2)$ |
-| Peor | $O(n^2)$ (ordenado inversamente) |
+- **Peor caso** (arreglo al revés): $O(n^2)$ comparaciones e intercambios.
+- **Mejor caso** (ya ordenado, con optimización): $O(n)$ comparaciones, 0 intercambios.
+- **Caso promedio**: $O(n^2)$.
 
-**Espacio:** $O(1)$ - ordenamiento in-place.
+Para $n = 10,000$, hace hasta 100 millones de operaciones. Para $n = 100,000$, serían 10 mil millones: ¡demasiado lento!
 
-## ¿Por qué O(n²)?
+<Callout type="warning">
+  Bubble Sort es **educativo** pero **demasiado lento** para competencias con datos grandes. Siempre usa `sort()` de C++ en competencias reales. Bubble Sort solo es útil para entender el concepto de ordenamiento.
+</Callout>
 
-```
-n-1 comparaciones en pasada 1
-n-2 comparaciones en pasada 2
-...
-1 comparación en pasada n-1
+## Contar inversiones
 
-Total = (n-1) + (n-2) + ... + 1 = n(n-1)/2 = O(n²)
-```
-
-## Conteo de intercambios
-
-El número de intercambios en Bubble Sort es igual al número de inversiones en el arreglo:
+Una **inversión** es un par (i, j) donde i < j pero arr[i] > arr[j]. Bubble Sort hace exactamente un swap por cada inversión, así que el número de swaps de Bubble Sort = número de inversiones.
 
 ```cpp
-int contarIntercambios(vector<int> arr) {
-    int n = arr.size();
-    int intercambios = 0;
-
+long long contarInversiones(vector<int> v) {
+    long long inversiones = 0;
+    int n = v.size();
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
-            if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
-                intercambios++;
+            if (v[j] > v[j + 1]) {
+                swap(v[j], v[j + 1]);
+                inversiones++;
             }
         }
     }
-
-    return intercambios;
+    return inversiones;
 }
 ```
 
-## Ventajas
+## Ejercicio de práctica
 
-- ✅ Muy simple de entender e implementar
-- ✅ Estable (mantiene orden relativo de iguales)
-- ✅ In-place (no necesita memoria extra)
-- ✅ Detecta si el arreglo ya está ordenado (versión optimizada)
+Implementa Bubble Sort y muestra el estado del arreglo después de cada pasada completa.
 
-## Desventajas
-
-- ❌ Muy lento para arreglos grandes
-- ❌ $O(n^2)$ es prohibitivo para n > 10,000
-
-## Cuándo usar Bubble Sort
-
-- Fines educativos
-- Arreglos muy pequeños (< 20 elementos)
-- Cuando necesitas contar inversiones
-- **En competencias:** Casi nunca, usa `sort()` de la STL
-
-## Variantes
-
-### Ordenar de mayor a menor
-
-```cpp
-void bubbleSortDescendente(vector<int>& arr) {
-    int n = arr.size();
-
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - 1 - i; j++) {
-            if (arr[j] < arr[j + 1]) {  // Cambio de signo
-                swap(arr[j], arr[j + 1]);
-            }
-        }
-    }
-}
+**Entrada:**
 ```
-
-### Cocktail Sort (Bubble Sort bidireccional)
-
-Alterna pasadas hacia adelante y hacia atrás:
-
-```cpp
-void cocktailSort(vector<int>& arr) {
-    int n = arr.size();
-    bool intercambio = true;
-    int inicio = 0, fin = n - 1;
-
-    while (intercambio) {
-        intercambio = false;
-
-        // Izquierda a derecha
-        for (int i = inicio; i < fin; i++) {
-            if (arr[i] > arr[i + 1]) {
-                swap(arr[i], arr[i + 1]);
-                intercambio = true;
-            }
-        }
-        fin--;
-
-        if (!intercambio) break;
-        intercambio = false;
-
-        // Derecha a izquierda
-        for (int i = fin; i > inicio; i--) {
-            if (arr[i] < arr[i - 1]) {
-                swap(arr[i], arr[i - 1]);
-                intercambio = true;
-            }
-        }
-        inicio++;
-    }
-}
+5
+4 2 5 1 3
 ```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Modifica Bubble Sort para que ordene strings alfabéticamente.
+**Salida:**
+```
+2 4 1 3 5
+2 1 3 4 5
+1 2 3 4 5
+1 2 3 4 5
+```
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-void bubbleSortStrings(vector<string>& arr) {
-    int n = arr.size();
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> v(n);
+    for (int i = 0; i < n; i++) cin >> v[i];
 
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - 1 - i; j++) {
-            if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
+            if (v[j] > v[j + 1]) {
+                swap(v[j], v[j + 1]);
             }
         }
-    }
-}
-```
-
-</details>
-
-### Ejercicio 2
-Encuentra el k-ésimo elemento más pequeño usando una variante de Bubble Sort (hacer solo k pasadas).
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-int kEsimoMenor(vector<int> arr, int k) {
-    int n = arr.size();
-
-    // Solo k pasadas desde el final hacia atrás
-    for (int i = 0; i < k; i++) {
-        for (int j = n - 1; j > i; j--) {
-            if (arr[j] < arr[j - 1]) {
-                swap(arr[j], arr[j - 1]);
-            }
+        // Imprimir estado después de la pasada
+        for (int k = 0; k < n; k++) {
+            if (k > 0) cout << " ";
+            cout << v[k];
         }
+        cout << endl;
     }
 
-    return arr[k - 1];
+    return 0;
 }
 ```
 
@@ -246,4 +170,4 @@ int kEsimoMenor(vector<int> arr, int k) {
 
 ## Siguiente paso
 
-Aprende sobre [Ordenamiento por Cubeta](/blog/algoritmos/ordenamiento-cubeta) para casos especiales donde puedes ordenar en O(n).
+Aprende el **Ordenamiento por Cubeta (Counting Sort)**, un algoritmo que puede ordenar en tiempo lineal.

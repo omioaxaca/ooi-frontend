@@ -1,228 +1,129 @@
 ---
-title: "Pilas (Stack) - Concepto y Uso"
-description: "Aprende el concepto de pila y cómo implementarla usando std::stack en C++"
+title: "Pilas (Stacks)"
+description: "Entiende la estructura de datos pila y sus aplicaciones en competencias"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "estructuras-de-datos", "pilas", "stack", "LIFO"]
-syllabusId: 36
+tags: ["c++", "pilas", "stack", "LIFO", "estructura de datos"]
+syllabusId: 29
 ---
 
 ## ¿Qué es una pila?
 
-Una **pila** (stack) es una estructura de datos lineal que sigue el principio **LIFO** (Last In, First Out): el último elemento en entrar es el primero en salir.
+Imagina una **pila de platos**. Solo puedes:
+- **Poner** un plato **encima** de la pila.
+- **Quitar** el plato que está **encima** (el último que pusiste).
 
-### Analogía
-
-Piensa en una pila de platos:
-- Solo puedes agregar platos arriba
-- Solo puedes quitar el plato de arriba
-- No puedes acceder a platos del medio
+No puedes tomar un plato del medio sin quitar los de arriba primero. Esto se llama **LIFO**: Last In, First Out (el último en entrar es el primero en salir).
 
 ```
-    ┌───────┐
-    │   4   │  ← top (último en entrar, primero en salir)
-    ├───────┤
-    │   3   │
-    ├───────┤
-    │   2   │
-    ├───────┤
-    │   1   │  ← fondo (primero en entrar, último en salir)
-    └───────┘
+Pila:
+┌─────┐
+│  C  │  ← Tope (top): último en entrar, primero en salir
+├─────┤
+│  B  │
+├─────┤
+│  A  │  ← Fondo: primero en entrar, último en salir
+└─────┘
 ```
 
-## Operaciones básicas
-
-| Operación | Descripción | Complejidad |
-|-----------|-------------|-------------|
-| `push(x)` | Insertar elemento en el tope | O(1) |
-| `pop()` | Eliminar elemento del tope | O(1) |
-| `top()` | Ver el elemento del tope | O(1) |
-| `empty()` | Verificar si está vacía | O(1) |
-| `size()` | Número de elementos | O(1) |
-
-## std::stack en C++
+## Pila en C++ con `stack`
 
 ```cpp
 #include <stack>
-using namespace std;
 
-int main() {
-    stack<int> pila;
-
-    // Insertar elementos
-    pila.push(10);
-    pila.push(20);
-    pila.push(30);
-
-    // Ver el tope
-    cout << pila.top() << endl;  // 30
-
-    // Eliminar el tope
-    pila.pop();
-    cout << pila.top() << endl;  // 20
-
-    // Tamaño
-    cout << pila.size() << endl;  // 2
-
-    // Verificar si está vacía
-    cout << pila.empty() << endl;  // 0 (false)
-
-    return 0;
-}
-```
-
-## Recorrer una pila
-
-Como la pila solo permite acceso al tope, hay que ir sacando elementos:
-
-```cpp
 stack<int> pila;
-pila.push(1);
-pila.push(2);
-pila.push(3);
 
-while (!pila.empty()) {
-    cout << pila.top() << " ";  // 3 2 1
-    pila.pop();
-}
+pila.push(10);    // Poner 10 encima
+pila.push(20);    // Poner 20 encima
+pila.push(30);    // Poner 30 encima
+
+cout << pila.top() << endl;  // 30 (ver el de arriba)
+pila.pop();                   // Quitar 30
+
+cout << pila.top() << endl;  // 20
+cout << pila.size() << endl; // 2
+cout << pila.empty() << endl; // 0 (false)
 ```
 
-**Nota:** Esto destruye la pila. Si necesitas conservarla, haz una copia primero.
+| Operación | Método | Complejidad |
+|-----------|--------|-------------|
+| Poner encima | `push(x)` | $O(1)$ |
+| Ver el tope | `top()` | $O(1)$ |
+| Quitar el tope | `pop()` | $O(1)$ |
+| ¿Está vacía? | `empty()` | $O(1)$ |
+| Tamaño | `size()` | $O(1)$ |
 
-## Implementación manual con arreglo
+<Callout type="warning">
+  **Nunca** hagas `top()` o `pop()` si la pila está vacía. Causa un error. Siempre verifica con `empty()` primero.
+</Callout>
 
-```cpp
-class MiPila {
-private:
-    int arr[10000];
-    int tope = -1;
+## Aplicaciones de pilas
 
-public:
-    void push(int x) {
-        arr[++tope] = x;
-    }
+### 1. Verificar paréntesis balanceados
 
-    void pop() {
-        if (!empty()) tope--;
-    }
-
-    int top() {
-        return arr[tope];
-    }
-
-    bool empty() {
-        return tope == -1;
-    }
-
-    int size() {
-        return tope + 1;
-    }
-};
-```
-
-## Aplicación: Paréntesis balanceados
-
-Verificar si los paréntesis están correctamente balanceados:
+Dado un string con `(`, `)`, `[`, `]`, `{`, `}`, verificar si están bien cerrados.
 
 ```cpp
-bool estaBalanceado(string s) {
+bool esBalanceado(string s) {
     stack<char> pila;
 
     for (char c : s) {
         if (c == '(' || c == '[' || c == '{') {
             pila.push(c);
-        } else if (c == ')' || c == ']' || c == '}') {
+        } else {
             if (pila.empty()) return false;
 
-            char tope = pila.top();
+            char top = pila.top();
             pila.pop();
 
-            if ((c == ')' && tope != '(') ||
-                (c == ']' && tope != '[') ||
-                (c == '}' && tope != '{')) {
-                return false;
-            }
+            if (c == ')' && top != '(') return false;
+            if (c == ']' && top != '[') return false;
+            if (c == '}' && top != '{') return false;
         }
     }
 
     return pila.empty();
 }
-
-// Ejemplos:
-// "(())" -> true
-// "([{}])" -> true
-// "([)]" -> false
-// "(((" -> false
 ```
 
-## Aplicación: Invertir una cadena
+### 2. Invertir un string/arreglo
 
 ```cpp
 string invertir(string s) {
     stack<char> pila;
-
-    for (char c : s) {
-        pila.push(c);
-    }
+    for (char c : s) pila.push(c);
 
     string resultado = "";
     while (!pila.empty()) {
         resultado += pila.top();
         pila.pop();
     }
-
     return resultado;
 }
 ```
 
-## Aplicación: Historial (undo/redo)
+### 3. Historial (Deshacer/Rehacer)
+
+Las pilas son perfectas para funcionalidades de "undo": cada acción se apila, y deshacer es simplemente quitar la última acción.
+
+### 4. Evaluación de expresiones postfijas
+
+Expresión postfija (notación polaca inversa): `3 4 + 2 *` = `(3 + 4) * 2 = 14`
 
 ```cpp
-stack<string> historial;
-stack<string> redos;
-
-void escribir(string texto) {
-    historial.push(texto);
-    // Limpiar redos al hacer nueva acción
-    while (!redos.empty()) redos.pop();
-}
-
-string undo() {
-    if (historial.empty()) return "";
-    string ultimo = historial.top();
-    historial.pop();
-    redos.push(ultimo);
-    return historial.empty() ? "" : historial.top();
-}
-
-string redo() {
-    if (redos.empty()) return historial.top();
-    string texto = redos.top();
-    redos.pop();
-    historial.push(texto);
-    return texto;
-}
-```
-
-## Aplicación: Evaluación de expresiones postfijas
-
-En notación postfija (polaca inversa), los operadores van después de los operandos: `3 4 + 5 *` = (3+4)*5 = 35
-
-```cpp
-int evaluarPostfija(string expresion) {
+int evaluarPostfija(string expr) {
     stack<int> pila;
-    stringstream ss(expresion);
+    stringstream ss(expr);
     string token;
 
     while (ss >> token) {
         if (token == "+" || token == "-" || token == "*" || token == "/") {
             int b = pila.top(); pila.pop();
             int a = pila.top(); pila.pop();
-
             if (token == "+") pila.push(a + b);
-            else if (token == "-") pila.push(a - b);
-            else if (token == "*") pila.push(a * b);
-            else if (token == "/") pila.push(a / b);
+            if (token == "-") pila.push(a - b);
+            if (token == "*") pila.push(a * b);
+            if (token == "/") pila.push(a / b);
         } else {
             pila.push(stoi(token));
         }
@@ -230,117 +131,45 @@ int evaluarPostfija(string expresion) {
 
     return pila.top();
 }
-
-// "3 4 + 5 *" -> 35
-// "2 3 4 * +" -> 14
 ```
 
-## Problema clásico: Stock Span
+### 5. La pila y la recursión
 
-Para cada día, encontrar cuántos días consecutivos anteriores tienen precio menor o igual:
+La recursión internamente usa una pila (la pila de llamadas del sistema). Por eso, cualquier algoritmo recursivo puede convertirse en iterativo usando una pila explícita.
 
-```cpp
-vector<int> stockSpan(vector<int>& precios) {
-    int n = precios.size();
-    vector<int> span(n);
-    stack<int> pila;  // Índices
+## Ejercicio de práctica
 
-    for (int i = 0; i < n; i++) {
-        // Sacar elementos menores
-        while (!pila.empty() && precios[pila.top()] <= precios[i]) {
-            pila.pop();
-        }
-
-        if (pila.empty()) {
-            span[i] = i + 1;
-        } else {
-            span[i] = i - pila.top();
-        }
-
-        pila.push(i);
-    }
-
-    return span;
-}
-```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Implementa una función que convierta una expresión infija a postfija.
+Dado un string con paréntesis, encuentra el par más profundo. Por ejemplo, en `((()))` la profundidad máxima es 3. En `(()())` es 2.
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-int prioridad(char op) {
-    if (op == '+' || op == '-') return 1;
-    if (op == '*' || op == '/') return 2;
+#include <iostream>
+using namespace std;
+
+int main() {
+    string s;
+    cin >> s;
+
+    int profundidad = 0, maxProf = 0;
+    for (char c : s) {
+        if (c == '(') {
+            profundidad++;
+            maxProf = max(maxProf, profundidad);
+        } else if (c == ')') {
+            profundidad--;
+        }
+    }
+
+    cout << maxProf << endl;
+
     return 0;
 }
-
-string infijaAPostfija(string infija) {
-    string postfija = "";
-    stack<char> pila;
-
-    for (char c : infija) {
-        if (isalnum(c)) {
-            postfija += c;
-        } else if (c == '(') {
-            pila.push(c);
-        } else if (c == ')') {
-            while (!pila.empty() && pila.top() != '(') {
-                postfija += pila.top();
-                pila.pop();
-            }
-            pila.pop();  // Quitar '('
-        } else {  // Operador
-            while (!pila.empty() && prioridad(pila.top()) >= prioridad(c)) {
-                postfija += pila.top();
-                pila.pop();
-            }
-            pila.push(c);
-        }
-    }
-
-    while (!pila.empty()) {
-        postfija += pila.top();
-        pila.pop();
-    }
-
-    return postfija;
-}
-```
-
-</details>
-
-### Ejercicio 2
-Dado un arreglo, para cada elemento encuentra el siguiente elemento mayor.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-vector<int> siguienteMayor(vector<int>& arr) {
-    int n = arr.size();
-    vector<int> resultado(n, -1);
-    stack<int> pila;  // Índices
-
-    for (int i = 0; i < n; i++) {
-        while (!pila.empty() && arr[pila.top()] < arr[i]) {
-            resultado[pila.top()] = arr[i];
-            pila.pop();
-        }
-        pila.push(i);
-    }
-
-    return resultado;
-}
-// [4, 5, 2, 10, 8] -> [5, 10, 10, -1, -1]
 ```
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Colas](/blog/pilas-y-colas/colas-concepto) y cuándo usar cada estructura.
+Aprende sobre **Colas (Queues)**, la estructura de datos donde el primero en entrar es el primero en salir.

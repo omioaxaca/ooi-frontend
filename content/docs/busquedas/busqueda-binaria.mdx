@@ -1,39 +1,46 @@
 ---
 title: "Búsqueda Binaria"
-description: "Domina la técnica de búsqueda binaria y sus variantes para resolver problemas eficientemente"
+description: "Domina la técnica de dividir el espacio de búsqueda a la mitad en cada paso"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["búsqueda", "binaria", "algoritmos", "divide-y-vencerás"]
-syllabusId: 42
-order: 1
+tags: ["c++", "búsqueda binaria", "binary search", "logarítmico"]
+syllabusId: 32
 ---
 
-## ¿Qué es la búsqueda binaria?
+## La idea: dividir a la mitad
 
-La búsqueda binaria es un algoritmo eficiente para encontrar un elemento en una colección **ordenada**. En cada paso, divide el espacio de búsqueda a la mitad, logrando una complejidad de **O(log n)**.
+Imagina que juegas "adivina el número". Tu amigo piensa un número del 1 al 100 y tú solo puedes preguntar "¿es mayor o menor?". La estrategia más inteligente: siempre preguntar por **la mitad**.
 
-> 📝 **Nota:** La búsqueda binaria requiere que los datos estén ordenados. Si no lo están, primero debes ordenarlos con un costo de O(n log n).
+- "¿Es 50?" → "Mayor"
+- "¿Es 75?" → "Menor"
+- "¿Es 62?" → "Mayor"
+- "¿Es 68?" → "¡Sí!"
+
+En solo 7 preguntas puedes encontrar cualquier número entre 1 y 100. Con búsqueda lineal (probar uno por uno), podrías necesitar hasta 100.
+
+**Búsqueda binaria** funciona igual: en un arreglo **ordenado**, compara con el elemento del medio. Si es menor, busca en la mitad izquierda. Si es mayor, en la derecha. En cada paso, **eliminamos la mitad** del espacio de búsqueda.
+
+## Requisito fundamental
+
+<Callout type="warning">
+  La búsqueda binaria **solo funciona en datos ordenados**. Si tus datos no están ordenados, ordénalos primero o usa búsqueda lineal.
+</Callout>
 
 ## Implementación básica
 
-### Encontrar un elemento
-
 ```cpp
-int busquedaBinaria(vector<int>& arr, int objetivo) {
-    int izq = 0;
-    int der = arr.size() - 1;
+int busquedaBinaria(vector<int> &v, int objetivo) {
+    int lo = 0, hi = v.size() - 1;
 
-    while (izq <= der) {
-        int mid = izq + (der - izq) / 2;  // Evita overflow
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;  // Punto medio
 
-        if (arr[mid] == objetivo) {
-            return mid;  // Encontrado
-        }
-
-        if (arr[mid] < objetivo) {
-            izq = mid + 1;  // Buscar en la mitad derecha
+        if (v[mid] == objetivo) {
+            return mid;      // ¡Encontrado!
+        } else if (v[mid] < objetivo) {
+            lo = mid + 1;    // Buscar en la mitad derecha
         } else {
-            der = mid - 1;  // Buscar en la mitad izquierda
+            hi = mid - 1;    // Buscar en la mitad izquierda
         }
     }
 
@@ -41,289 +48,134 @@ int busquedaBinaria(vector<int>& arr, int objetivo) {
 }
 ```
 
-### Implementación recursiva
+**¿Por qué `lo + (hi - lo) / 2` en lugar de `(lo + hi) / 2`?** Para evitar overflow. Si `lo` y `hi` son muy grandes, su suma podría superar el rango de `int`.
+
+### Paso a paso
+
+Buscar `7` en `[1, 3, 5, 7, 9, 11, 13]`:
+
+| Paso | lo | hi | mid | v[mid] | Acción |
+|------|----|----|-----|--------|--------|
+| 1 | 0 | 6 | 3 | 7 | ¡Encontrado! |
+
+Buscar `6`:
+
+| Paso | lo | hi | mid | v[mid] | Acción |
+|------|----|----|-----|--------|--------|
+| 1 | 0 | 6 | 3 | 7 | 6 < 7, hi = 2 |
+| 2 | 0 | 2 | 1 | 3 | 6 > 3, lo = 2 |
+| 3 | 2 | 2 | 2 | 5 | 6 > 5, lo = 3 |
+| 4 | 3 | 2 | - | - | lo > hi → No encontrado |
+
+## Complejidad
+
+- **Tiempo:** $O(\log n)$
+- **Espacio:** $O(1)$
+
+| $n$ | Pasos máximos |
+|-----|--------------|
+| 100 | 7 |
+| 1,000 | 10 |
+| 1,000,000 | 20 |
+| 1,000,000,000 | 30 |
+
+¡Con solo 30 comparaciones puedes buscar entre MIL MILLONES de elementos!
+
+## Funciones de búsqueda binaria en C++
+
+C++ ya tiene búsqueda binaria incorporada:
 
 ```cpp
-int busquedaBinariaRecursiva(vector<int>& arr, int objetivo, int izq, int der) {
-    if (izq > der) return -1;
+vector<int> v = {1, 3, 5, 7, 9, 11};
 
-    int mid = izq + (der - izq) / 2;
+// ¿Existe el elemento?
+bool existe = binary_search(v.begin(), v.end(), 7);  // true
 
-    if (arr[mid] == objetivo) return mid;
+// Posición del primer elemento >= x
+auto it = lower_bound(v.begin(), v.end(), 6);  // Apunta a 7 (índice 3)
+int pos = it - v.begin();  // 3
 
-    if (arr[mid] < objetivo) {
-        return busquedaBinariaRecursiva(arr, objetivo, mid + 1, der);
-    } else {
-        return busquedaBinariaRecursiva(arr, objetivo, izq, mid - 1);
+// Posición del primer elemento > x
+auto it2 = upper_bound(v.begin(), v.end(), 7);  // Apunta a 9 (índice 4)
+```
+
+## Búsqueda binaria en la respuesta
+
+Esta es una técnica **poderosísima** en competencias. En lugar de buscar un elemento en un arreglo, buscas **la respuesta óptima a un problema**.
+
+**Patrón:** Si puedes formular la pregunta "¿es posible lograr una respuesta de X?", y la respuesta cambia de "No" a "Sí" (o viceversa) en algún punto, puedes hacer búsqueda binaria.
+
+### Ejemplo: cortar troncos
+
+**Problema:** Tienes N troncos de diferentes longitudes. Necesitas obtener K troncos de longitud L cortándolos. ¿Cuál es la L máxima posible?
+
+```cpp
+bool esPosible(vector<int> &troncos, int longitud, int k) {
+    int total = 0;
+    for (int t : troncos) {
+        total += t / longitud;
     }
-}
-```
-
-## Variantes importantes
-
-### Lower Bound
-
-Encuentra la primera posición donde se puede insertar un elemento manteniendo el orden (primer elemento ≥ objetivo).
-
-```cpp
-int lowerBound(vector<int>& arr, int objetivo) {
-    int izq = 0, der = arr.size();
-
-    while (izq < der) {
-        int mid = izq + (der - izq) / 2;
-
-        if (arr[mid] < objetivo) {
-            izq = mid + 1;
-        } else {
-            der = mid;
-        }
-    }
-
-    return izq;
-}
-```
-
-### Upper Bound
-
-Encuentra la primera posición con un elemento mayor que el objetivo.
-
-```cpp
-int upperBound(vector<int>& arr, int objetivo) {
-    int izq = 0, der = arr.size();
-
-    while (izq < der) {
-        int mid = izq + (der - izq) / 2;
-
-        if (arr[mid] <= objetivo) {
-            izq = mid + 1;
-        } else {
-            der = mid;
-        }
-    }
-
-    return izq;
-}
-```
-
-## Usando la STL de C++
-
-La biblioteca estándar ya incluye estas funciones:
-
-```cpp
-#include <algorithm>
-
-vector<int> arr = {1, 2, 4, 4, 4, 5, 6};
-
-// Buscar si existe el elemento 4
-bool existe = binary_search(arr.begin(), arr.end(), 4);  // true
-
-// Lower bound: primer elemento >= 4
-auto it1 = lower_bound(arr.begin(), arr.end(), 4);
-int pos1 = it1 - arr.begin();  // pos1 = 2
-
-// Upper bound: primer elemento > 4
-auto it2 = upper_bound(arr.begin(), arr.end(), 4);
-int pos2 = it2 - arr.begin();  // pos2 = 5
-
-// Contar ocurrencias de 4
-int cuenta = upper_bound(arr.begin(), arr.end(), 4) -
-             lower_bound(arr.begin(), arr.end(), 4);  // cuenta = 3
-```
-
-## Búsqueda binaria sobre la respuesta
-
-Una técnica poderosa es aplicar búsqueda binaria no sobre un array, sino sobre el rango de posibles respuestas.
-
-### Ejemplo: Tiempo mínimo para completar tareas
-
-**Problema:** Tienes n trabajadores que pueden completar una tarea en tiempos `t[i]`. ¿Cuál es el tiempo mínimo para completar m tareas?
-
-```cpp
-bool esPosible(vector<int>& tiempos, int m, long long tiempo) {
-    long long tareas = 0;
-    for (int t : tiempos) {
-        tareas += tiempo / t;
-        if (tareas >= m) return true;
-    }
-    return false;
+    return total >= k;
 }
 
-long long tiempoMinimo(vector<int>& tiempos, int m) {
-    long long izq = 1;
-    long long der = 1e18;  // Límite superior seguro
+int maxLongitud(vector<int> &troncos, int k) {
+    int lo = 1, hi = *max_element(troncos.begin(), troncos.end());
+    int respuesta = 0;
 
-    while (izq < der) {
-        long long mid = izq + (der - izq) / 2;
-
-        if (esPosible(tiempos, m, mid)) {
-            der = mid;
-        } else {
-            izq = mid + 1;
-        }
-    }
-
-    return izq;
-}
-```
-
-> ✅ Esta técnica se conoce como "Binary Search on Answer" y es extremadamente útil en competencias.
-
-## Búsqueda binaria en números reales
-
-Para búsqueda en números reales, usamos un número fijo de iteraciones o una tolerancia:
-
-```cpp
-double raizCuadrada(double n) {
-    double izq = 0, der = n;
-
-    // 100 iteraciones garantizan suficiente precisión
-    for (int i = 0; i < 100; i++) {
-        double mid = (izq + der) / 2;
-
-        if (mid * mid <= n) {
-            izq = mid;
-        } else {
-            der = mid;
-        }
-    }
-
-    return izq;
-}
-```
-
-## Errores comunes
-
-> ⚠️ **Cuidado:** Evita estos errores frecuentes en búsqueda binaria.
-
-### 1. Overflow en el cálculo de mid
-
-```cpp
-// ❌ Mal: puede causar overflow
-int mid = (izq + der) / 2;
-
-// ✅ Bien: evita overflow
-int mid = izq + (der - izq) / 2;
-```
-
-### 2. Loop infinito
-
-```cpp
-// ❌ Mal: si izq = der - 1, mid = izq siempre
-while (izq < der) {
-    int mid = (izq + der) / 2;
-    if (condicion) izq = mid;  // ¡Nunca avanza!
-    else der = mid;
-}
-
-// ✅ Bien: usar mid + 1
-while (izq < der) {
-    int mid = izq + (der - izq) / 2;
-    if (condicion) izq = mid + 1;
-    else der = mid;
-}
-```
-
-### 3. Límites incorrectos
-
-Siempre verifica que tu rango de búsqueda incluya todas las posibles respuestas.
-
-## Template completo
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-// Búsqueda binaria estándar
-int buscar(vector<int>& arr, int x) {
-    int izq = 0, der = arr.size() - 1;
-    while (izq <= der) {
-        int mid = izq + (der - izq) / 2;
-        if (arr[mid] == x) return mid;
-        if (arr[mid] < x) izq = mid + 1;
-        else der = mid - 1;
-    }
-    return -1;
-}
-
-// Búsqueda binaria sobre respuesta
-// Encuentra mínimo x tal que f(x) es true
-template<typename F>
-long long buscarMinimo(long long lo, long long hi, F condicion) {
-    while (lo < hi) {
-        long long mid = lo + (hi - lo) / 2;
-        if (condicion(mid)) {
-            hi = mid;
-        } else {
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (esPosible(troncos, mid, k)) {
+            respuesta = mid;
             lo = mid + 1;
-        }
-    }
-    return lo;
-}
-
-// Encuentra máximo x tal que f(x) es true
-template<typename F>
-long long buscarMaximo(long long lo, long long hi, F condicion) {
-    while (lo < hi) {
-        long long mid = lo + (hi - lo + 1) / 2;  // Nota el +1
-        if (condicion(mid)) {
-            lo = mid;
         } else {
             hi = mid - 1;
         }
     }
-    return lo;
-}
 
-int main() {
-    vector<int> arr = {1, 3, 5, 7, 9, 11};
-
-    cout << buscar(arr, 7) << endl;  // 3
-
-    // Encontrar mínimo x tal que x*x >= 50
-    auto resultado = buscarMinimo(1LL, 100LL, [](long long x) {
-        return x * x >= 50;
-    });
-    cout << resultado << endl;  // 8
-
-    return 0;
+    return respuesta;
 }
 ```
 
-## Ejercicio práctico
+## Ejercicio de práctica
 
-**Problema:** Dado un array ordenado, encuentra el número de elementos en el rango [a, b].
+Dado un arreglo ordenado con posibles duplicados, encuentra cuántas veces aparece un número X.
 
-```cpp
-int contarEnRango(vector<int>& arr, int a, int b) {
-    // Tu código aquí
-}
+**Entrada:**
 ```
+8 3
+1 2 3 3 3 4 5 6
+```
+**Salida:** `3`
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-int contarEnRango(vector<int>& arr, int a, int b) {
-    auto inicio = lower_bound(arr.begin(), arr.end(), a);
-    auto fin = upper_bound(arr.begin(), arr.end(), b);
-    return fin - inicio;
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n, x;
+    cin >> n >> x;
+
+    vector<int> v(n);
+    for (int i = 0; i < n; i++) cin >> v[i];
+
+    auto lo = lower_bound(v.begin(), v.end(), x);
+    auto hi = upper_bound(v.begin(), v.end(), x);
+
+    cout << (hi - lo) << endl;
+
+    return 0;
 }
 ```
 
+`lower_bound` apunta al primer X, `upper_bound` apunta al primer elemento después del último X. La diferencia es la cantidad de X's.
+
 </details>
 
-## Resumen
+## Siguiente paso
 
-| Variante | Descripción | Complejidad |
-|----------|-------------|-------------|
-| Búsqueda estándar | Encontrar elemento exacto | $O(\log n)$ |
-| Lower bound | Primer elemento ≥ x | $O(\log n)$ |
-| Upper bound | Primer elemento > x | $O(\log n)$ |
-| Binary search on answer | Buscar valor óptimo | $O(\log R \cdot f(n))$ |
-
-## Ejercicios recomendados
-
-1. [CSES - Factory Machines](https://cses.fi/problemset/task/1620)
-2. [SPOJ - Aggressive Cows](https://www.spoj.com/problems/AGGRCOW/)
-3. [Codeforces - Hamburgers](https://codeforces.com/problemset/problem/371/C)
-4. [AtCoder - Snuke's Coloring](https://atcoder.jp/contests/abc155/tasks/abc155_d)
+Aprende sobre **Lower y Upper Bound** para dominar las variantes de búsqueda binaria.

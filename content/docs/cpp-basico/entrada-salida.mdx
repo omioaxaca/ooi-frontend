@@ -1,217 +1,372 @@
 ---
-title: "Entrada y Salida de Datos"
-description: "Aprende a leer datos de entrada y mostrar resultados usando cin y cout en C++"
+title: "Entrada y Salida"
+description: "Domina cin y cout para leer datos y mostrar resultados en C++"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "entrada-salida", "cin", "cout", "básico"]
+tags: ["c++", "cin", "cout", "entrada", "salida", "I/O"]
 syllabusId: 7
 ---
 
-## Entrada estándar (stdin) y Salida estándar (stdout)
+## ¿Por qué es tan importante la entrada y salida?
 
-En programación competitiva, los programas:
-- **Leen** datos de la entrada estándar (stdin)
-- **Escriben** resultados a la salida estándar (stdout)
+En programación competitiva, tu programa es como un **empleado en una ventanilla**: le dan un papel con datos (entrada), procesa esos datos, y devuelve un resultado (salida). Si no lees correctamente los datos o no imprimes el resultado en el formato exacto, el juez automático te marcará como incorrecto, **aunque tu lógica sea perfecta**.
 
-## Salida con cout
+Imagina que te piden sumar dos números. Tu programa da la respuesta correcta, pero agrega un espacio extra al final o un mensaje como "El resultado es: 8". El juez espera solo "8". Respuesta incorrecta. Por eso, dominar la entrada y salida es **fundamental**.
 
-`cout` (character output) muestra datos en pantalla:
+## Salida con `cout`
+
+`cout` (character output) envía datos a la pantalla:
 
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
-    cout << "Hola, mundo!" << endl;
+    cout << "Hola, mundo" << endl;
     return 0;
 }
 ```
 
-### Imprimir diferentes tipos
+### Mostrar diferentes tipos de datos
 
 ```cpp
-int edad = 15;
-double altura = 1.75;
-char grado = 'A';
-string nombre = "Juan";
+// Texto (strings)
+cout << "Esto es texto" << endl;
 
-cout << "Nombre: " << nombre << endl;
-cout << "Edad: " << edad << endl;
-cout << "Altura: " << altura << endl;
-cout << "Grado: " << grado << endl;
+// Números enteros
+cout << 42 << endl;
+
+// Números decimales
+cout << 3.14159 << endl;
+
+// Variables
+int x = 10;
+cout << x << endl;
+
+// Caracteres
+char c = 'A';
+cout << c << endl;
+
+// Valores booleanos (se muestran como 0 o 1)
+bool v = true;
+cout << v << endl;  // Imprime: 1
 ```
 
-### Concatenar salidas
+### Encadenar con `<<`
+
+Puedes enviar múltiples cosas en una sola línea:
 
 ```cpp
 int a = 5, b = 3;
-cout << a << " + " << b << " = " << (a + b) << endl;
+cout << a << " + " << b << " = " << a + b << endl;
 // Salida: 5 + 3 = 8
 ```
 
-### Salto de línea
+Cada `<<` es un "envío". Piensa en una banda transportadora: pones cosas una tras otra, y todas llegan a la pantalla en orden.
+
+### Saltos de línea: `endl` vs `'\n'`
+
+Hay dos formas de hacer un salto de línea:
 
 ```cpp
-cout << "Línea 1" << endl;    // endl hace flush del buffer
-cout << "Línea 2" << '\n';    // \n es más rápido
-cout << "Línea 3\n";          // Dentro del string
+cout << "Línea 1" << endl;   // Salto + vaciar buffer
+cout << "Línea 2" << '\n';   // Solo salto (más rápido)
+cout << "Línea 3\n";         // Equivalente al anterior
 ```
 
-## Entrada con cin
+<Callout type="warning">
+  En competencias, usa `'\n'` en lugar de `endl`. La diferencia de velocidad puede ser significativa cuando imprimes miles de líneas. Si usas el template de competencia con `#define endl '\n'`, entonces puedes escribir `endl` y automáticamente será rápido.
+</Callout>
 
-`cin` (character input) lee datos del teclado:
+### Formato de decimales
+
+Por defecto, `cout` muestra los decimales de forma "inteligente" (quita ceros innecesarios). Si necesitas un formato específico:
 
 ```cpp
 #include <iostream>
+#include <iomanip>  // Para fixed y setprecision
 using namespace std;
 
 int main() {
-    int numero;
-    cout << "Ingresa un número: ";
-    cin >> numero;
-    cout << "Ingresaste: " << numero << endl;
+    double pi = 3.14159265358979;
+
+    cout << pi << endl;                    // 3.14159 (por defecto)
+    cout << fixed << setprecision(2) << pi << endl;  // 3.14
+    cout << fixed << setprecision(6) << pi << endl;  // 3.141593
+    cout << fixed << setprecision(10) << pi << endl; // 3.1415926536
+
     return 0;
 }
 ```
 
-### Leer múltiples valores
+- `fixed` → "usa formato de punto fijo" (no notación científica).
+- `setprecision(n)` → "muestra exactamente n decimales".
+
+Esto es muy útil cuando un problema dice "muestra la respuesta con 6 decimales de precisión".
+
+## Entrada con `cin`
+
+`cin` (character input) lee datos del teclado (o del juez automático):
 
 ```cpp
-int a, b, c;
-
-// En líneas separadas o en la misma línea
-cin >> a >> b >> c;
-
-// Equivalente a:
-// cin >> a;
-// cin >> b;
-// cin >> c;
+int n;
+cin >> n;  // Lee un número entero y lo guarda en n
 ```
 
-**Entrada:**
-```
-10 20 30
-```
-o
-```
-10
-20
-30
-```
+El operador `>>` es el "operador de extracción". Si `cout <<` envía datos a la pantalla, `cin >>` extrae datos del teclado.
 
 ### Leer diferentes tipos
 
 ```cpp
-int edad;
-double peso;
-string nombre;
+int entero;
+double decimal;
+char caracter;
+string texto;
 
-cin >> nombre >> edad >> peso;
+cin >> entero;     // Lee un entero
+cin >> decimal;    // Lee un decimal
+cin >> caracter;   // Lee un carácter
+cin >> texto;      // Lee una palabra (hasta el primer espacio)
 ```
 
-**Entrada:**
-```
-Juan 15 65.5
-```
+### Leer múltiples valores
 
-### Leer líneas completas
-
-`cin >>` se detiene en espacios. Para leer líneas completas:
+Los valores se pueden separar por espacios o saltos de línea:
 
 ```cpp
-string linea;
-getline(cin, linea);
-cout << "Leíste: " << linea << endl;
+int a, b, c;
+cin >> a >> b >> c;  // Lee tres números
 ```
 
-**Entrada:**
+Esto funciona tanto si el usuario escribe `5 3 7` (en una línea) como si escribe:
 ```
-Hola mundo cruel
+5
+3
+7
+```
+(en tres líneas). `cin` ignora automáticamente los espacios y saltos de línea entre valores.
+
+### Leer una línea completa con `getline`
+
+`cin >>` lee hasta el primer espacio. Si quieres leer una línea entera (incluyendo espacios), usa `getline`:
+
+```cpp
+string frase;
+getline(cin, frase);  // Lee toda la línea, incluyendo espacios
 ```
 
-**Salida:**
-```
-Leíste: Hola mundo cruel
+**Ejemplo:**
+
+```cpp
+string nombre;
+getline(cin, nombre);
+cout << "Hola, " << nombre << endl;
 ```
 
-## Formato de entrada en competencias
+**Entrada:** `María García López`
+**Salida:** `Hola, María García López`
 
-### Caso único
+Con `cin >> nombre`, solo leería `María` (hasta el espacio).
+
+### El problema del `getline` después de `cin`
+
+Este es un error **muy común**. Cuando mezclas `cin >>` con `getline`, ocurre algo inesperado:
+
+```cpp
+int edad;
+string nombre;
+
+cin >> edad;            // Lee 15, pero deja el '\n' en el buffer
+getline(cin, nombre);   // Lee el '\n' restante ¡y termina inmediatamente!
+```
+
+Si el usuario escribe:
+```
+15
+María
+```
+
+`edad` será 15, pero `nombre` será una cadena vacía, porque `getline` leyó el salto de línea que quedó después del 15.
+
+**Solución:** Agrega `cin.ignore()` después de `cin >>` y antes de `getline`:
+
+```cpp
+int edad;
+string nombre;
+
+cin >> edad;
+cin.ignore();           // Ignora el '\n' que quedó en el buffer
+getline(cin, nombre);   // Ahora sí lee "María"
+```
+
+<Callout type="info">
+  **Regla de oro:** Cada vez que uses `getline` después de `cin >>`, pon un `cin.ignore()` entre ellos.
+</Callout>
+
+## Patrones comunes de entrada en competencias
+
+### Patrón 1: Un número seguido de N datos
+
+```
+5
+3 1 4 1 5
+```
 
 ```cpp
 int n;
 cin >> n;
-// procesar n
+for (int i = 0; i < n; i++) {
+    int x;
+    cin >> x;
+    // Procesar x
+}
 ```
 
-### Múltiples casos con cantidad conocida
+### Patrón 2: Pares de datos
+
+```
+3
+1 2
+3 4
+5 6
+```
+
+```cpp
+int n;
+cin >> n;
+for (int i = 0; i < n; i++) {
+    int a, b;
+    cin >> a >> b;
+    // Procesar a y b
+}
+```
+
+### Patrón 3: Matriz (cuadrícula)
+
+```
+3 4
+1 2 3 4
+5 6 7 8
+9 10 11 12
+```
+
+```cpp
+int filas, columnas;
+cin >> filas >> columnas;
+for (int i = 0; i < filas; i++) {
+    for (int j = 0; j < columnas; j++) {
+        int valor;
+        cin >> valor;
+        // Procesar valor
+    }
+}
+```
+
+### Patrón 4: Leer hasta fin de archivo (EOF)
+
+A veces no te dicen cuántos datos hay. Debes leer hasta que no haya más:
+
+```cpp
+int x;
+while (cin >> x) {
+    // Procesar x
+    // El ciclo termina cuando no hay más datos
+}
+```
+
+`cin >> x` devuelve `true` si logró leer un valor, y `false` si ya no hay más datos (End Of File).
+
+### Patrón 5: Múltiples casos de prueba
+
+```
+3
+5 3
+10 7
+1 1
+```
 
 ```cpp
 int t;
 cin >> t;
 while (t--) {
-    int n;
-    cin >> n;
-    // procesar n
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << '\n';
 }
 ```
 
-### Leer hasta fin de archivo (EOF)
+## Aceleración de I/O: la línea mágica
+
+En competencias, la velocidad de entrada/salida puede ser la diferencia entre "Aceptado" y "Tiempo Límite Excedido". Por eso usamos:
 
 ```cpp
-int n;
-while (cin >> n) {
-    // procesar n
-}
+ios_base::sync_with_stdio(false);
+cin.tie(NULL);
 ```
 
-### Leer arreglos
+### ¿Qué hace `ios_base::sync_with_stdio(false)`?
+
+Por defecto, C++ sincroniza `cin`/`cout` con `scanf`/`printf` (funciones de C). Esto es seguro pero lento. Si no vas a mezclar estilos de I/O, puedes desactivar la sincronización para que sea mucho más rápido.
+
+### ¿Qué hace `cin.tie(NULL)`?
+
+Por defecto, cada vez que usas `cin`, primero se vacía `cout` (por si había algo pendiente de mostrar). En competencias, esto es innecesario y consume tiempo. `cin.tie(NULL)` desactiva este comportamiento.
+
+<Callout type="warning">
+  Después de usar `ios_base::sync_with_stdio(false)`, **NO uses** `scanf`/`printf` (funciones de C) mezcladas con `cin`/`cout`. Elige uno u otro.
+</Callout>
+
+### ¿Cuánta diferencia hace?
+
+Para leer 1 millón de números:
+- Sin optimización: ~1.5 segundos
+- Con optimización: ~0.15 segundos
+
+¡Es **10 veces más rápido**! Esto puede ser la diferencia entre pasar o no los casos de prueba grandes.
+
+## Printf y Scanf: la alternativa de C
+
+Aunque `cin`/`cout` son lo estándar en C++, algunos competidores prefieren `scanf`/`printf` de C por su velocidad y formato más cómodo para decimales:
 
 ```cpp
-int n;
-cin >> n;
+#include <cstdio>  // Para scanf y printf
 
-vector<int> arr(n);
-for (int i = 0; i < n; i++) {
-    cin >> arr[i];
-}
-
-// O más elegante:
-for (int& x : arr) {
-    cin >> x;
-}
-```
-
-## Optimización de I/O
-
-Para programas con mucha entrada/salida:
-
-```cpp
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    // Tu código aquí
-
+    int a, b;
+    scanf("%d %d", &a, &b);        // Lee dos enteros
+    printf("%d\n", a + b);          // Imprime un entero
+    printf("%.6f\n", 3.14159);      // Imprime con 6 decimales
     return 0;
 }
 ```
 
-**¡Importante!** Después de esto, no mezcles `cin/cout` con `scanf/printf`.
+| Especificador | Tipo |
+|---------------|------|
+| `%d` | `int` |
+| `%lld` | `long long` |
+| `%f` | `float` |
+| `%lf` | `double` |
+| `%c` | `char` |
+| `%s` | cadena de C (char[]) |
 
-## Precisión de decimales
+<Callout type="info">
+  No necesitas memorizar `scanf`/`printf` si usas `cin`/`cout` con las optimizaciones. Son igualmente rápidos. Pero si los encuentras en soluciones de otros, ahora sabes qué significan.
+</Callout>
 
-```cpp
-#include <iomanip>
+## Ejemplo completo: promedio de calificaciones
 
-double pi = 3.14159265358979;
+**Problema:** Lee un número N, seguido de N calificaciones. Imprime el promedio con 2 decimales.
 
-cout << pi << endl;                    // 3.14159
-cout << fixed << setprecision(2) << pi << endl;  // 3.14
-cout << fixed << setprecision(10) << pi << endl; // 3.1415926536
+**Entrada:**
+```
+4
+85 92 78 95
 ```
 
-## Ejemplo completo: Promedio de calificaciones
+**Salida:**
+```
+87.50
+```
 
 ```cpp
 #include <iostream>
@@ -227,124 +382,96 @@ int main() {
 
     double suma = 0;
     for (int i = 0; i < n; i++) {
-        double calif;
-        cin >> calif;
-        suma += calif;
+        int calificacion;
+        cin >> calificacion;
+        suma += calificacion;  // suma = suma + calificacion
     }
 
     double promedio = suma / n;
-    cout << fixed << setprecision(2) << promedio << endl;
+    cout << fixed << setprecision(2) << promedio << '\n';
 
     return 0;
 }
 ```
 
-**Entrada:**
-```
-5
-90 85 78 92 88
-```
-
-**Salida:**
-```
-86.60
-```
+**Paso a paso:**
+1. Leemos `n = 4`.
+2. Leemos calificaciones una por una: 85, 92, 78, 95.
+3. Las sumamos: `suma = 85 + 92 + 78 + 95 = 350`.
+4. Calculamos el promedio: `350 / 4 = 87.5`.
+5. Imprimimos con 2 decimales: `87.50`.
 
 ## Errores comunes
 
-### 1. No leer todos los datos
+### 1. Formato de salida incorrecto
 
 ```cpp
-// Si la entrada es "5 10"
-int a;
-cin >> a;
-// ¡Olvidaste leer el segundo número!
+// ❌ El juez no acepta mensajes extra
+cout << "La respuesta es: " << resultado << endl;
+
+// ✅ Solo imprime el resultado
+cout << resultado << endl;
 ```
 
-### 2. Mezclar getline con cin
+### 2. Espacio extra al final
 
 ```cpp
-int n;
-string linea;
+// ❌ Imprime "1 2 3 " (con espacio extra al final)
+for (int i = 1; i <= 3; i++) {
+    cout << i << " ";
+}
 
-cin >> n;
-getline(cin, linea);  // ¡Lee una línea vacía!
-
-// Solución: limpiar el buffer
-cin >> n;
-cin.ignore();  // Ignora el salto de línea
-getline(cin, linea);
+// ✅ Sin espacio extra al final
+for (int i = 1; i <= 3; i++) {
+    if (i > 1) cout << " ";
+    cout << i;
+}
+cout << endl;
+// Imprime: "1 2 3"
 ```
 
-### 3. Tipos incorrectos
+### 3. Olvidar leer todos los datos
 
-```cpp
-int x;
-cin >> x;
-// Si el usuario ingresa "abc", x queda en estado inválido
+Si el problema te da más datos de los que lees, tu programa puede comportarse de forma impredecible.
+
+## Ejercicio de práctica
+
+Lee dos números enteros y muestra su suma, resta, multiplicación y división (con 2 decimales).
+
+**Entrada:** `15 4`
+**Salida:**
 ```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Lee dos números y muestra su suma, resta, multiplicación y división.
+19
+11
+60
+3.75
+```
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 int main() {
     int a, b;
     cin >> a >> b;
 
-    cout << a << " + " << b << " = " << (a + b) << endl;
-    cout << a << " - " << b << " = " << (a - b) << endl;
-    cout << a << " * " << b << " = " << (a * b) << endl;
-    cout << a << " / " << b << " = " << (a / b) << endl;
+    cout << a + b << '\n';
+    cout << a - b << '\n';
+    cout << a * b << '\n';
+    cout << fixed << setprecision(2) << (double)a / b << '\n';
 
     return 0;
 }
 ```
 
-</details>
-
-### Ejercicio 2
-Lee n números y muestra el mayor y el menor.
-
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-#include <iostream>
-#include <climits>
-using namespace std;
-
-int main() {
-    int n;
-    cin >> n;
-
-    int mayor = INT_MIN;
-    int menor = INT_MAX;
-
-    for (int i = 0; i < n; i++) {
-        int x;
-        cin >> x;
-        if (x > mayor) mayor = x;
-        if (x < menor) menor = x;
-    }
-
-    cout << "Mayor: " << mayor << endl;
-    cout << "Menor: " << menor << endl;
-
-    return 0;
-}
-```
+Nota el `(double)a / b` en la última línea: convertimos `a` a `double` para obtener una división decimal en lugar de una división entera.
 
 </details>
 
 ## Siguiente paso
 
-Aprende sobre [Operadores Aritméticos](/blog/cpp-basico/operadores-aritmeticos) para realizar cálculos matemáticos.
+Aprende sobre los **Operadores Aritméticos** para dominar las operaciones matemáticas fundamentales en C++.

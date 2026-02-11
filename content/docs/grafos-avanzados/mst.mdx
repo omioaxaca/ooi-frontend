@@ -1,317 +1,142 @@
 ---
 title: "Árbol de Expansión Mínima (MST)"
-description: "Aprende los algoritmos de Prim y Kruskal para encontrar el MST de un grafo"
+description: "Conecta todos los nodos con el menor costo total usando Kruskal o Prim"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["grafos", "MST", "Prim", "Kruskal", "árbol-expansión"]
-syllabusId: 65
-order: 5
+tags: ["c++", "MST", "Kruskal", "Prim", "árbol de expansión"]
+syllabusId: 62
 ---
 
 ## ¿Qué es un MST?
 
-El **Árbol de Expansión Mínima** (Minimum Spanning Tree) es un subgrafo que:
-- Conecta todos los vértices
-- Es un árbol (sin ciclos)
-- Tiene la suma de pesos mínima posible
+**Analogía:** Necesitas conectar varias ciudades con carreteras gastando lo menos posible. No necesitas todas las carreteras posibles — solo las suficientes para que todas las ciudades estén conectadas. El **Árbol de Expansión Mínima** (Minimum Spanning Tree) es exactamente eso: un subconjunto de aristas que conecta todos los nodos con el **menor peso total**.
 
-```
-Grafo original:          MST (peso = 7):
-    1 --4-- 2               1 ------ 2
-    |\ 3   /|               |        |
-   2| \   / |3             2|        |3
-    |  \ /  |               |        |
-    3 --1-- 4               3 --1-- 4
-```
+**Propiedades:**
+- Tiene exactamente $n - 1$ aristas (es un árbol).
+- Conecta todos los $n$ nodos.
+- El peso total es el mínimo posible.
 
-## Comparación de algoritmos
+## Kruskal: ordenar y unir
 
-| Algoritmo | Complejidad | Mejor para |
-|-----------|-------------|------------|
-| **Kruskal** | $O(E \log E)$ | Grafos dispersos |
-| **Prim** | $O(E \log V)$ | Grafos densos |
-
-## Kruskal
-
-**Idea:** Ordenar aristas por peso y agregar las que no creen ciclo.
+1. Ordena todas las aristas por peso (de menor a mayor).
+2. Para cada arista, si conecta dos componentes diferentes, agrégala.
+3. Usa **Union-Find** para verificar componentes.
 
 ```cpp
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 struct Arista {
-    int u, v;
-    long long peso;
-    bool operator<(const Arista& o) const {
-        return peso < o.peso;
-    }
+    int u, v, w;
+    bool operator<(const Arista &o) const { return w < o.w; }
 };
 
-const int MAXN = 100005;
-int padre[MAXN];
+int padre[100005], rk[100005];
 
-int find(int x) {
-    if (padre[x] != x) padre[x] = find(padre[x]);
+int encontrar(int x) {
+    if (padre[x] != x) padre[x] = encontrar(padre[x]);
     return padre[x];
 }
 
-bool unite(int x, int y) {
-    int px = find(x), py = find(y);
-    if (px == py) return false;
-    padre[px] = py;
+bool unir(int a, int b) {
+    a = encontrar(a); b = encontrar(b);
+    if (a == b) return false;
+    if (rk[a] < rk[b]) swap(a, b);
+    padre[b] = a;
+    if (rk[a] == rk[b]) rk[a]++;
     return true;
 }
 
-long long kruskal(int n, vector<Arista>& aristas) {
-    for (int i = 0; i <= n; i++) padre[i] = i;
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    vector<Arista> aristas(m);
+    for (auto &[u, v, w] : aristas) cin >> u >> v >> w;
 
     sort(aristas.begin(), aristas.end());
+
+    for (int i = 1; i <= n; i++) { padre[i] = i; rk[i] = 0; }
 
     long long costoTotal = 0;
     int aristasUsadas = 0;
 
-    for (auto& e : aristas) {
-        if (unite(e.u, e.v)) {
-            costoTotal += e.peso;
+    for (auto &[u, v, w] : aristas) {
+        if (unir(u, v)) {
+            costoTotal += w;
             aristasUsadas++;
             if (aristasUsadas == n - 1) break;
         }
     }
 
-    // Verificar si el grafo es conexo
-    return aristasUsadas == n - 1 ? costoTotal : -1;
-}
-```
-
-## Prim
-
-**Idea:** Empezar de un nodo y siempre agregar la arista más barata que conecta al MST con un nodo nuevo.
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 100005;
-const long long INF = 1e18;
-
-vector<pair<int, long long>> adj[MAXN];
-bool enMST[MAXN];
-
-long long prim(int n) {
-    fill(enMST, enMST + n + 1, false);
-
-    priority_queue<pair<long long, int>,
-                   vector<pair<long long, int>>,
-                   greater<pair<long long, int>>> pq;
-
-    pq.push({0, 1});  // Empezar desde nodo 1
-    long long costoTotal = 0;
-    int nodosEnMST = 0;
-
-    while (!pq.empty() && nodosEnMST < n) {
-        auto [peso, u] = pq.top();
-        pq.pop();
-
-        if (enMST[u]) continue;
-
-        enMST[u] = true;
-        costoTotal += peso;
-        nodosEnMST++;
-
-        for (auto [v, w] : adj[u]) {
-            if (!enMST[v]) {
-                pq.push({w, v});
-            }
-        }
-    }
-
-    return nodosEnMST == n ? costoTotal : -1;
-}
-```
-
-## Aristas del MST
-
-### Con Kruskal
-
-```cpp
-vector<Arista> obtenerMST(int n, vector<Arista>& aristas) {
-    for (int i = 0; i <= n; i++) padre[i] = i;
-    sort(aristas.begin(), aristas.end());
-
-    vector<Arista> mst;
-    for (auto& e : aristas) {
-        if (unite(e.u, e.v)) {
-            mst.push_back(e);
-            if (mst.size() == n - 1) break;
-        }
-    }
-
-    return mst;
-}
-```
-
-### Con Prim
-
-```cpp
-vector<pair<int, int>> obtenerMSTPrim(int n) {
-    fill(enMST, enMST + n + 1, false);
-
-    // {peso, nodo actual, nodo padre}
-    priority_queue<tuple<long long, int, int>,
-                   vector<tuple<long long, int, int>>,
-                   greater<tuple<long long, int, int>>> pq;
-
-    pq.push({0, 1, -1});
-    vector<pair<int, int>> aristaMST;
-
-    while (!pq.empty()) {
-        auto [peso, u, padre] = pq.top();
-        pq.pop();
-
-        if (enMST[u]) continue;
-        enMST[u] = true;
-
-        if (padre != -1) {
-            aristaMST.push_back({padre, u});
-        }
-
-        for (auto [v, w] : adj[u]) {
-            if (!enMST[v]) {
-                pq.push({w, v, u});
-            }
-        }
-    }
-
-    return aristaMST;
-}
-```
-
-## Segundo MST
-
-El segundo árbol de expansión mínima (segundo mejor):
-
-```cpp
-long long segundoMST(int n, vector<Arista>& aristas) {
-    // Obtener primer MST
-    vector<Arista> mst = obtenerMST(n, aristas);
-    if (mst.size() != n - 1) return -1;
-
-    long long costoMST = 0;
-    for (auto& e : mst) costoMST += e.peso;
-
-    long long segundoCosto = LLONG_MAX;
-
-    // Probar quitar cada arista del MST
-    for (int i = 0; i < mst.size(); i++) {
-        // Reconstruir MST sin esta arista
-        for (int j = 0; j <= n; j++) padre[j] = j;
-
-        long long costo = 0;
-        int aristasUsadas = 0;
-
-        for (auto& e : aristas) {
-            // Saltar la arista que quitamos
-            if (e.u == mst[i].u && e.v == mst[i].v && e.peso == mst[i].peso) continue;
-
-            if (unite(e.u, e.v)) {
-                costo += e.peso;
-                aristasUsadas++;
-                if (aristasUsadas == n - 1) break;
-            }
-        }
-
-        if (aristasUsadas == n - 1) {
-            segundoCosto = min(segundoCosto, costo);
-        }
-    }
-
-    return segundoCosto == LLONG_MAX ? -1 : segundoCosto;
-}
-```
-
-## MST en grafo dirigido (Arborescencia)
-
-Para grafos dirigidos, usamos el algoritmo de Edmonds (más complejo):
-
-```cpp
-// Versión simplificada para competencias
-// Ver implementación completa en recursos especializados
-```
-
-## Template: Kruskal
-
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-const int MAXN = 200005;
-
-struct Edge {
-    int u, v;
-    long long w;
-    bool operator<(const Edge& o) const { return w < o.w; }
-};
-
-int parent[MAXN], rank_[MAXN];
-
-int find(int x) {
-    if (parent[x] != x) parent[x] = find(parent[x]);
-    return parent[x];
-}
-
-bool unite(int x, int y) {
-    int px = find(x), py = find(y);
-    if (px == py) return false;
-    if (rank_[px] < rank_[py]) swap(px, py);
-    parent[py] = px;
-    if (rank_[px] == rank_[py]) rank_[px]++;
-    return true;
-}
-
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int n, m;
-    cin >> n >> m;
-
-    vector<Edge> edges(m);
-    for (int i = 0; i < m; i++) {
-        cin >> edges[i].u >> edges[i].v >> edges[i].w;
-    }
-
-    for (int i = 1; i <= n; i++) {
-        parent[i] = i;
-        rank_[i] = 0;
-    }
-
-    sort(edges.begin(), edges.end());
-
-    long long mstCost = 0;
-    int edgesUsed = 0;
-
-    for (auto& e : edges) {
-        if (unite(e.u, e.v)) {
-            mstCost += e.w;
-            edgesUsed++;
-            if (edgesUsed == n - 1) break;
-        }
-    }
-
-    if (edgesUsed == n - 1) {
-        cout << mstCost << "\n";
+    if (aristasUsadas == n - 1) {
+        cout << "Costo MST: " << costoTotal << endl;
     } else {
-        cout << "IMPOSSIBLE\n";
+        cout << "No es posible conectar todos los nodos" << endl;
     }
 
     return 0;
 }
 ```
 
-## Ejercicios recomendados
+**Complejidad:** $O(E \log E)$ por el ordenamiento.
 
-1. [CSES - Road Reparation](https://cses.fi/problemset/task/1675)
-2. [CSES - Building Roads](https://cses.fi/problemset/task/1666)
-3. [Codeforces - Catowice City](https://codeforces.com/problemset/problem/1179/C)
-4. [SPOJ - BLINNET](https://www.spoj.com/problems/BLINNET/)
-5. [UVa - Dark Roads](https://onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=2678)
+## Prim: expandir desde un nodo
+
+Similar a Dijkstra: empieza desde un nodo y siempre agrega la arista más barata que conecte un nodo nuevo.
+
+```cpp
+#include <queue>
+
+typedef pair<int,int> pii;
+vector<pii> adj[100005];
+bool enMST[100005];
+
+long long prim(int n) {
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    pq.push({0, 1});
+    long long costo = 0;
+    int nodos = 0;
+
+    while (!pq.empty() && nodos < n) {
+        auto [w, u] = pq.top(); pq.pop();
+        if (enMST[u]) continue;
+
+        enMST[u] = true;
+        costo += w;
+        nodos++;
+
+        for (auto [v, peso] : adj[u]) {
+            if (!enMST[v]) {
+                pq.push({peso, v});
+            }
+        }
+    }
+
+    return (nodos == n) ? costo : -1;
+}
+```
+
+**Complejidad:** $O((V + E) \log V)$
+
+## ¿Kruskal o Prim?
+
+| Criterio | Kruskal | Prim |
+|----------|---------|------|
+| Grafo disperso ($E \approx V$) | ✅ | ✅ |
+| Grafo denso ($E \approx V^2$) | Más lento | ✅ |
+| Implementación | Más simple | Más compleja |
+| Necesita Union-Find | Sí | No |
+
+## Ejercicio de práctica
+
+Conecta N ciudades con carreteras de costo mínimo. Imprime el costo total.
+
+<details>
+<summary>Ver solución</summary>
+
+Usa Kruskal (el código completo está arriba). Lee las aristas, ordena, y aplica Union-Find.
+
+</details>

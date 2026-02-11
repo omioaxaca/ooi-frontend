@@ -1,369 +1,339 @@
 ---
-title: "Strings en C++"
-description: "Aprende a manipular cadenas de texto en C++ para resolver problemas de competencias"
+title: "Strings (Cadenas de Texto)"
+description: "Domina la manipulación de strings en C++ para resolver problemas con texto"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "strings", "cadenas", "texto", "STL"]
-syllabusId: 20
+tags: ["c++", "strings", "cadenas", "texto"]
+syllabusId: 19
 ---
 
-## Strings en C++
+## ¿Qué es un string?
 
-En C++ puedes usar `string` de la STL, que es más cómodo que arreglos de `char`.
+Un **string** es una secuencia de caracteres: letras, números, espacios, símbolos. Piensa en él como un **collar de cuentas** donde cada cuenta es un carácter.
+
+```
+String "Hola":
+┌─────┬─────┬─────┬─────┐
+│ 'H' │ 'o' │ 'l' │ 'a' │
+├─────┼─────┼─────┼─────┤
+│ [0] │ [1] │ [2] │ [3] │  ← Índices
+└─────┴─────┴─────┴─────┘
+```
+
+Un string es básicamente un **vector de caracteres** con funciones especiales para texto.
+
+## Crear y usar strings
 
 ```cpp
 #include <string>
 using namespace std;
 
-int main() {
-    string s = "Hola Mundo";
-    cout << s << endl;
-    return 0;
-}
+string saludo = "Hola mundo";
+string vacio = "";
+string letra = "A";      // String de un carácter (diferente de char 'A')
+string repetido(5, 'x');  // "xxxxx" (5 veces el carácter 'x')
 ```
 
-## Operaciones básicas
-
-### Declaración e inicialización
-
-```cpp
-string s1;                    // String vacío ""
-string s2 = "Hola";           // "Hola"
-string s3("Mundo");           // "Mundo"
-string s4(5, 'a');            // "aaaaa"
-string s5 = s2 + " " + s3;    // "Hola Mundo"
-```
-
-### Acceso a caracteres
+### Operaciones básicas
 
 ```cpp
 string s = "Hola";
 
-cout << s[0] << endl;      // 'H'
-cout << s[1] << endl;      // 'o'
-cout << s.at(2) << endl;   // 'l' (con verificación de límites)
-cout << s.front() << endl; // 'H' (primer carácter)
-cout << s.back() << endl;  // 'a' (último carácter)
+// Longitud
+cout << s.size() << endl;     // 4
+cout << s.length() << endl;   // 4 (equivalente a size())
+
+// Acceder por índice
+cout << s[0] << endl;  // 'H'
+cout << s[3] << endl;  // 'a'
+
+// Modificar un carácter
+s[0] = 'h';
+cout << s << endl;  // "hola"
+
+// ¿Está vacío?
+cout << s.empty() << endl;  // 0 (false)
+
+// Último carácter
+cout << s.back() << endl;   // 'a'
 ```
 
-### Longitud
+### Concatenar (unir)
 
 ```cpp
-string s = "Hola";
+string a = "Hola";
+string b = " mundo";
 
-cout << s.length() << endl;  // 4
-cout << s.size() << endl;    // 4 (equivalente)
-cout << s.empty() << endl;   // 0 (false, no está vacío)
+string c = a + b;           // "Hola mundo"
+cout << c << endl;
+
+a += "!!!";                  // a = "Hola!!!"
+a += ' ';                    // También puedes agregar un char
 ```
 
-## Modificación
+### Comparar strings
 
-### Concatenación
-
-```cpp
-string s = "Hola";
-
-s += " Mundo";           // "Hola Mundo"
-s.append("!");           // "Hola Mundo!"
-s.push_back('?');        // "Hola Mundo!?"
-```
-
-### Inserción y eliminación
-
-```cpp
-string s = "Hola Mundo";
-
-s.insert(5, "Cruel ");   // "Hola Cruel Mundo"
-s.erase(5, 6);           // "Hola Mundo" (desde pos 5, eliminar 6 chars)
-s.clear();               // "" (vacía el string)
-```
-
-### Reemplazo
-
-```cpp
-string s = "Hola Mundo";
-
-s.replace(0, 4, "Adios");  // "Adios Mundo"
-```
-
-## Substrings
-
-```cpp
-string s = "Hola Mundo";
-
-string sub1 = s.substr(0, 4);   // "Hola" (desde 0, 4 caracteres)
-string sub2 = s.substr(5);      // "Mundo" (desde 5 hasta el final)
-```
-
-## Búsqueda
-
-```cpp
-string s = "Hola Mundo Hola";
-
-size_t pos1 = s.find("Hola");       // 0 (primera ocurrencia)
-size_t pos2 = s.rfind("Hola");      // 11 (última ocurrencia)
-size_t pos3 = s.find("xyz");        // string::npos (no encontrado)
-
-if (s.find("Mundo") != string::npos) {
-    cout << "Encontrado!" << endl;
-}
-
-// Buscar desde una posición
-size_t pos4 = s.find("Hola", 1);    // 11 (desde posición 1)
-```
-
-## Comparación
+Los strings se comparan lexicográficamente (orden de diccionario):
 
 ```cpp
 string a = "abc", b = "abd";
+cout << (a < b) << endl;   // 1 (true)
+cout << (a == b) << endl;  // 0 (false)
+cout << (a != b) << endl;  // 1 (true)
 
-// Comparación lexicográfica
-if (a < b) cout << "a va antes" << endl;
-if (a == b) cout << "Son iguales" << endl;
-
-// Método compare
-int cmp = a.compare(b);
-// cmp < 0: a < b
-// cmp == 0: a == b
-// cmp > 0: a > b
+// "abc" < "abd" porque 'c' < 'd'
+// "abc" < "abcd" porque "abc" es prefijo y es más corto
 ```
 
-## Conversiones
-
-### String a número
-
-```cpp
-string s = "12345";
-
-int n = stoi(s);           // 12345 (string to int)
-long l = stol(s);          // string to long
-double d = stod("3.14");   // 3.14 (string to double)
-```
-
-### Número a string
-
-```cpp
-int n = 12345;
-double d = 3.14159;
-
-string s1 = to_string(n);  // "12345"
-string s2 = to_string(d);  // "3.141590"
-```
-
-## Entrada de strings
-
-```cpp
-string palabra, linea;
-
-cin >> palabra;           // Lee una palabra (hasta espacio)
-getline(cin, linea);      // Lee toda la línea
-
-// Cuidado: después de cin >> x, hay un '\n' residual
-int n;
-cin >> n;
-cin.ignore();             // Ignorar el '\n'
-getline(cin, linea);
-```
-
-## Algoritmos útiles
-
-### Invertir
+## Recorrer un string
 
 ```cpp
 string s = "Hola";
-reverse(s.begin(), s.end());  // "aloH"
-```
 
-### Ordenar
-
-```cpp
-string s = "dcba";
-sort(s.begin(), s.end());  // "abcd"
-```
-
-### Mayúsculas/Minúsculas
-
-```cpp
-string s = "HoLa MuNdO";
-
-// A minúsculas
-for (char& c : s) {
-    c = tolower(c);
+// Forma 1: con índice
+for (int i = 0; i < s.size(); i++) {
+    cout << s[i] << " ";
 }
-// "hola mundo"
+// H o l a
 
-// A mayúsculas
-for (char& c : s) {
+// Forma 2: for-each
+for (char c : s) {
+    cout << c << " ";
+}
+// H o l a
+
+// Forma 3: for-each por referencia (para modificar)
+for (char &c : s) {
     c = toupper(c);
 }
-// "HOLA MUNDO"
+cout << s << endl;  // HOLA
 ```
 
-### Verificar tipo de carácter
+## Leer strings
 
 ```cpp
-char c = 'A';
+string palabra;
+cin >> palabra;       // Lee UNA palabra (hasta el espacio)
 
-isalpha(c);   // true si es letra
-isdigit(c);   // true si es dígito
-isalnum(c);   // true si es letra o dígito
-isspace(c);   // true si es espacio/tab/newline
-isupper(c);   // true si es mayúscula
-islower(c);   // true si es minúscula
+string linea;
+getline(cin, linea);  // Lee una LÍNEA completa (incluyendo espacios)
 ```
 
-## Patrones comunes
+**Recuerda:** Si usas `cin >>` antes de `getline`, agrega `cin.ignore()`:
+
+```cpp
+int n;
+cin >> n;
+cin.ignore();        // Limpia el '\n' del buffer
+
+string linea;
+getline(cin, linea);  // Ahora funciona correctamente
+```
+
+## Funciones útiles de string
+
+### Substrings (subcadenas)
+
+```cpp
+string s = "Hola mundo";
+
+string sub = s.substr(5);       // "mundo" (desde posición 5 hasta el final)
+string sub2 = s.substr(0, 4);   // "Hola" (desde posición 0, longitud 4)
+string sub3 = s.substr(5, 3);   // "mun" (desde posición 5, longitud 3)
+```
+
+### Buscar dentro del string
+
+```cpp
+string s = "Hola mundo cruel";
+
+size_t pos = s.find("mundo");     // 5 (posición donde empieza "mundo")
+size_t pos2 = s.find("xyz");      // string::npos (no encontrado)
+
+if (s.find("mundo") != string::npos) {
+    cout << "Encontrado" << endl;
+}
+
+// Buscar un carácter
+size_t pos3 = s.find('o');        // 1 (primera 'o')
+size_t pos4 = s.rfind('o');       // 12 (última 'o')
+```
+
+### Insertar y borrar
+
+```cpp
+string s = "Hola mundo";
+
+s.insert(5, "bello ");      // "Hola bello mundo"
+s.erase(5, 6);               // "Hola mundo" (borrar 6 chars desde posición 5)
+```
+
+### Reemplazar
+
+```cpp
+string s = "Hola mundo";
+s.replace(5, 5, "amigo");   // "Hola amigo" (reemplazar 5 chars desde pos 5)
+```
+
+### Convertir entre tipos
+
+```cpp
+// Número → String
+int n = 42;
+string s = to_string(n);    // "42"
+
+double d = 3.14;
+string s2 = to_string(d);   // "3.140000"
+
+// String → Número
+string numStr = "12345";
+int num = stoi(numStr);      // 12345 (string to int)
+long long big = stoll(numStr); // 12345 (string to long long)
+double dec = stod("3.14");   // 3.14 (string to double)
+```
+
+## Patrones comunes con strings en competencias
+
+### Invertir un string
+
+```cpp
+string s = "abcde";
+reverse(s.begin(), s.end());
+cout << s << endl;  // "edcba"
+```
 
 ### Verificar palíndromo
 
 ```cpp
 bool esPalindromo(string s) {
-    int i = 0, j = s.length() - 1;
-    while (i < j) {
-        if (s[i] != s[j]) return false;
-        i++;
-        j--;
+    int n = s.size();
+    for (int i = 0; i < n / 2; i++) {
+        if (s[i] != s[n - 1 - i]) return false;
     }
     return true;
 }
-```
 
-### Contar caracteres
-
-```cpp
-int contarCaracter(string s, char c) {
-    int cuenta = 0;
-    for (char x : s) {
-        if (x == c) cuenta++;
-    }
-    return cuenta;
+// O más corto:
+bool esPalindromo2(string s) {
+    string rev = s;
+    reverse(rev.begin(), rev.end());
+    return s == rev;
 }
-
-// O usando count
-int cuenta = count(s.begin(), s.end(), 'a');
 ```
 
-### Separar por delimitador
+### Contar frecuencia de caracteres
 
 ```cpp
-vector<string> separar(string s, char delim) {
-    vector<string> resultado;
-    stringstream ss(s);
-    string token;
+string s;
+cin >> s;
 
-    while (getline(ss, token, delim)) {
-        resultado.push_back(token);
-    }
-
-    return resultado;
-}
-// separar("a,b,c", ',') -> ["a", "b", "c"]
-```
-
-### Frecuencia de caracteres
-
-```cpp
-int freq[256] = {0};  // Para todos los caracteres ASCII
-
+int freq[256] = {0};
 for (char c : s) {
     freq[c]++;
 }
+
+// Mostrar frecuencias
+for (char c = 'a'; c <= 'z'; c++) {
+    if (freq[c] > 0) {
+        cout << c << ": " << freq[c] << endl;
+    }
+}
 ```
 
-## Ejemplo: Anagramas
+### Verificar si dos strings son anagramas
 
-Dos palabras son anagramas si tienen las mismas letras:
+Dos strings son anagramas si tienen las mismas letras en diferente orden (ej: "amor" y "roma"):
 
 ```cpp
 bool sonAnagramas(string a, string b) {
-    if (a.length() != b.length()) return false;
-
     sort(a.begin(), a.end());
     sort(b.begin(), b.end());
-
     return a == b;
 }
 ```
 
-## Ejemplo: Comprimir string
+### Separar palabras de una línea
 
 ```cpp
-string comprimir(string s) {
-    if (s.empty()) return s;
+string linea;
+getline(cin, linea);
 
-    string resultado = "";
-    char actual = s[0];
-    int cuenta = 1;
+// Método con stringstream
+stringstream ss(linea);
+string palabra;
+vector<string> palabras;
 
-    for (int i = 1; i <= s.length(); i++) {
-        if (i < s.length() && s[i] == actual) {
-            cuenta++;
-        } else {
-            resultado += actual;
-            if (cuenta > 1) {
-                resultado += to_string(cuenta);
-            }
-            if (i < s.length()) {
-                actual = s[i];
-                cuenta = 1;
-            }
-        }
-    }
-
-    return resultado;
+while (ss >> palabra) {
+    palabras.push_back(palabra);
 }
-// "aaabbc" -> "a3b2c"
 ```
 
-## Ejercicios de práctica
+### Convertir todo a minúsculas/mayúsculas
 
-### Ejercicio 1
-Verifica si dos strings son rotaciones una de otra.
+```cpp
+string s = "Hola Mundo";
+
+// A minúsculas
+for (char &c : s) {
+    c = tolower(c);
+}
+cout << s << endl;  // "hola mundo"
+
+// A mayúsculas
+for (char &c : s) {
+    c = toupper(c);
+}
+cout << s << endl;  // "HOLA MUNDO"
+```
+
+## String como arreglo de chars
+
+Recuerda que un `string` es internamente un arreglo de `char`. Todo lo que aprendiste sobre `char` y ASCII aplica aquí:
+
+```cpp
+string s = "abc123";
+
+for (char c : s) {
+    if (c >= '0' && c <= '9') {
+        int digito = c - '0';
+        cout << "Dígito: " << digito << endl;
+    } else if (c >= 'a' && c <= 'z') {
+        int posicion = c - 'a' + 1;
+        cout << "Letra en posición: " << posicion << endl;
+    }
+}
+```
+
+## Ejercicio de práctica
+
+Lee una cadena y cuenta cuántas palabras tiene (las palabras están separadas por espacios).
+
+**Entrada:** `Hola mundo cruel`
+**Salida:** `3`
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-bool sonRotaciones(string a, string b) {
-    if (a.length() != b.length()) return false;
-    string concatenado = a + a;
-    return concatenado.find(b) != string::npos;
-}
-// "abcd", "cdab" -> true
-```
+#include <iostream>
+#include <sstream>
+using namespace std;
 
-</details>
+int main() {
+    string linea;
+    getline(cin, linea);
 
-### Ejercicio 2
-Encuentra el substring palíndromo más largo.
+    stringstream ss(linea);
+    string palabra;
+    int cuenta = 0;
 
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-string palindromoMasLargo(string s) {
-    int n = s.length();
-    if (n == 0) return "";
-
-    int inicio = 0, maxLen = 1;
-
-    auto expandir = [&](int i, int j) {
-        while (i >= 0 && j < n && s[i] == s[j]) {
-            if (j - i + 1 > maxLen) {
-                inicio = i;
-                maxLen = j - i + 1;
-            }
-            i--;
-            j++;
-        }
-    };
-
-    for (int i = 0; i < n; i++) {
-        expandir(i, i);     // Palindromos de longitud impar
-        expandir(i, i + 1); // Palindromos de longitud par
+    while (ss >> palabra) {
+        cuenta++;
     }
 
-    return s.substr(inicio, maxLen);
+    cout << cuenta << endl;
+
+    return 0;
 }
 ```
 
@@ -371,4 +341,4 @@ string palindromoMasLargo(string s) {
 
 ## Siguiente paso
 
-Aprende sobre [Matrices](/blog/estructuras-de-datos/matrices) para trabajar con datos bidimensionales.
+Aprende sobre **Matrices** para trabajar con datos en dos dimensiones.

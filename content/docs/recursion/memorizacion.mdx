@@ -1,344 +1,230 @@
 ---
 title: "Memorización (Memoization)"
-description: "Optimiza funciones recursivas almacenando resultados previos para evitar cálculos repetidos"
+description: "Optimiza funciones recursivas guardando resultados ya calculados"
 date: "2026-02-09"
 author: "OOI Oaxaca"
-tags: ["c++", "recursión", "memorización", "optimización", "programación-dinámica"]
-syllabusId: 30
+tags: ["c++", "memorización", "memoization", "optimización", "recursión"]
+syllabusId: 27
 ---
 
-## ¿Qué es la memorización?
+## El problema de la recursión ingenua
 
-La memorización (memoization) es una técnica de optimización que almacena los resultados de llamadas costosas a funciones para evitar recalcularlos.
-
-## El problema: Fibonacci ingenuo
+Recordemos la función de Fibonacci recursiva:
 
 ```cpp
 int fib(int n) {
     if (n <= 1) return n;
-    return fib(n - 1) + fib(n - 2);
+    return fib(n-1) + fib(n-2);
 }
 ```
 
-### Árbol de llamadas para fib(5)
+Para calcular `fib(5)`, la función hace estas llamadas:
 
 ```
-                    fib(5)
-                   /      \
-              fib(4)      fib(3)
-             /     \      /     \
-         fib(3)  fib(2) fib(2) fib(1)
-         /    \   / \    / \
-     fib(2) fib(1) ... ... ...
+fib(5)
+├── fib(4)
+│   ├── fib(3)
+│   │   ├── fib(2)
+│   │   │   ├── fib(1) = 1
+│   │   │   └── fib(0) = 0
+│   │   └── fib(1) = 1
+│   └── fib(2)          ← ¡Ya lo calculamos!
+│       ├── fib(1) = 1
+│       └── fib(0) = 0
+└── fib(3)               ← ¡Ya lo calculamos!
+    ├── fib(2)           ← ¡Ya lo calculamos!
+    │   ├── fib(1) = 1
+    │   └── fib(0) = 0
+    └── fib(1) = 1
 ```
 
-**Problema:** `fib(3)` se calcula 2 veces, `fib(2)` se calcula 3 veces, etc.
+¡`fib(2)` se calcula **3 veces** y `fib(3)` se calcula **2 veces**! Para `fib(50)`, hay miles de millones de llamadas repetidas. El tiempo es $O(2^n)$: ¡imposible!
 
-**Complejidad:** $O(2^n)$ - ¡exponencial!
+**Analogía:** Es como si cada vez que necesitas saber cuánto es $7 \times 8$, hicieras toda la multiplicación desde cero, en lugar de simplemente recordar que es 56.
 
-## La solución: Memorización
+## La solución: memorizar
 
-Guardamos los resultados ya calculados:
+La idea es simple: **antes de calcular algo, verifica si ya lo calculaste. Si sí, usa el resultado guardado. Si no, calcúlalo y guárdalo para el futuro.**
 
 ```cpp
-int memo[100];  // Arreglo para guardar resultados
-bool calculado[100];  // Marca si ya se calculó
+long long memo[101];  // Arreglo para guardar resultados
+bool calculado[101];  // Para saber si ya se calculó
 
-int fib(int n) {
+long long fib(int n) {
     if (n <= 1) return n;
+    if (calculado[n]) return memo[n];  // Si ya lo calculamos, retornarlo
 
-    // Si ya se calculó, retornar el valor guardado
-    if (calculado[n]) {
-        return memo[n];
-    }
-
-    // Calcular y guardar
-    memo[n] = fib(n - 1) + fib(n - 2);
-    calculado[n] = true;
-
+    memo[n] = fib(n-1) + fib(n-2);    // Calcular
+    calculado[n] = true;               // Marcar como calculado
     return memo[n];
 }
 ```
 
-**Complejidad:** $O(n)$ - ¡lineal!
-
-## Implementación con -1 como marcador
-
-Cuando los resultados válidos son no negativos:
+### Versión más limpia con -1 como "no calculado"
 
 ```cpp
-int memo[100];
+long long memo[101];
 
-int fib(int n) {
-    if (n <= 1) return n;
-
-    if (memo[n] != -1) {
-        return memo[n];
-    }
-
-    return memo[n] = fib(n - 1) + fib(n - 2);
+void init() {
+    memset(memo, -1, sizeof(memo));  // Llenar todo con -1
 }
-
-int main() {
-    memset(memo, -1, sizeof(memo));
-    cout << fib(40) << endl;
-    return 0;
-}
-```
-
-## Implementación con map
-
-Para índices dispersos o muy grandes:
-
-```cpp
-map<int, long long> memo;
 
 long long fib(int n) {
     if (n <= 1) return n;
+    if (memo[n] != -1) return memo[n];  // Ya calculado
 
-    if (memo.count(n)) {
-        return memo[n];
-    }
-
-    return memo[n] = fib(n - 1) + fib(n - 2);
+    return memo[n] = fib(n-1) + fib(n-2);  // Calcular y guardar
 }
 ```
 
-## Ejemplo: Coeficiente binomial
+### ¿Qué cambió?
 
-$C(n, k) = C(n-1, k-1) + C(n-1, k)$
+Ahora el árbol de llamadas se "poda":
 
-### Sin memorización
-
-```cpp
-int C(int n, int k) {
-    if (k == 0 || k == n) return 1;
-    return C(n - 1, k - 1) + C(n - 1, k);
-}
+```
+fib(5)
+├── fib(4)
+│   ├── fib(3)
+│   │   ├── fib(2)
+│   │   │   ├── fib(1) = 1
+│   │   │   └── fib(0) = 0
+│   │   └── fib(1) = 1
+│   └── fib(2) = 1  ← ¡Ya guardado! O(1)
+└── fib(3) = 2      ← ¡Ya guardado! O(1)
 ```
 
-### Con memorización
+De $O(2^n)$ pasamos a $O(n)$: cada valor se calcula **exactamente una vez**.
 
-```cpp
-int memo[1001][1001];
+## Cuándo usar memorización
 
-int C(int n, int k) {
-    if (k == 0 || k == n) return 1;
+La memorización funciona cuando se cumplen dos condiciones:
 
-    if (memo[n][k] != -1) {
-        return memo[n][k];
-    }
+1. **Subproblemas repetidos**: El mismo subproblema se resuelve múltiples veces.
+2. **Estructura óptima**: La solución del problema se construye a partir de soluciones de subproblemas.
 
-    return memo[n][k] = C(n - 1, k - 1) + C(n - 1, k);
-}
+Esto es la base de la **Programación Dinámica** (que veremos más adelante).
 
-int main() {
-    memset(memo, -1, sizeof(memo));
-    cout << C(20, 10) << endl;  // 184756
-    return 0;
-}
+## Ejemplo: subir escaleras
+
+**Problema:** Puedes subir una escalera de 1 o 2 escalones a la vez. ¿De cuántas formas puedes subir N escalones?
+
+```
+n=1: 1 forma (1)
+n=2: 2 formas (1+1, 2)
+n=3: 3 formas (1+1+1, 1+2, 2+1)
+n=4: 5 formas
 ```
 
-## Ejemplo: Subida de escaleras
-
-Puedes subir 1 o 2 escalones a la vez. ¿De cuántas formas puedes subir n escalones?
-
-### Sin memorización
-
+**Sin memorización** (lento):
 ```cpp
 int formas(int n) {
     if (n <= 1) return 1;
-    return formas(n - 1) + formas(n - 2);
+    return formas(n-1) + formas(n-2);
 }
 ```
 
-### Con memorización
-
+**Con memorización** (rápido):
 ```cpp
-int memo[1001];
+int memo[100001];
 
 int formas(int n) {
     if (n <= 1) return 1;
-
     if (memo[n] != -1) return memo[n];
-
-    return memo[n] = formas(n - 1) + formas(n - 2);
+    return memo[n] = formas(n-1) + formas(n-2);
 }
 ```
 
-## Ejemplo: Suma máxima de camino
+## Ejemplo: caminos en una cuadrícula
 
-Dado un triángulo numérico, encuentra la suma máxima desde la cima hasta la base:
-
-```
-    2
-   3 4
-  6 5 7
- 4 1 8 3
-```
+**Problema:** En una cuadrícula de $m \times n$, ¿cuántos caminos hay desde la esquina superior izquierda hasta la inferior derecha, si solo puedes moverte hacia abajo o hacia la derecha?
 
 ```cpp
-int triangulo[100][100];
-int memo[100][100];
-int n;
+int memo[101][101];
 
-int maxSuma(int fila, int col) {
-    // Caso base: última fila
-    if (fila == n - 1) {
-        return triangulo[fila][col];
-    }
-
-    if (memo[fila][col] != -1) {
-        return memo[fila][col];
-    }
-
-    // Elegir el mejor de los dos caminos
-    int izq = maxSuma(fila + 1, col);
-    int der = maxSuma(fila + 1, col + 1);
-
-    return memo[fila][col] = triangulo[fila][col] + max(izq, der);
+int caminos(int m, int n) {
+    if (m == 1 || n == 1) return 1;
+    if (memo[m][n] != -1) return memo[m][n];
+    return memo[m][n] = caminos(m-1, n) + caminos(m, n-1);
 }
 
 int main() {
     memset(memo, -1, sizeof(memo));
-    // ... leer el triángulo
-    cout << maxSuma(0, 0) << endl;  // Empezar desde la cima
+    cout << caminos(3, 3) << endl;  // 6
     return 0;
 }
 ```
 
-## Memorización vs Programación dinámica
+## Memorización con `map` (para estados más complejos)
 
-La memorización es una técnica **top-down** (de arriba hacia abajo):
-- Empezamos con el problema grande
-- Recursivamente resolvemos subproblemas
-- Guardamos resultados para no repetir
-
-La programación dinámica **bottom-up** (de abajo hacia arriba):
-- Empezamos con los problemas pequeños
-- Construimos soluciones cada vez más grandes
-- Usamos tablas/arreglos
-
-### Fibonacci bottom-up
+Cuando los estados no son simples índices enteros, puedes usar un `map`:
 
 ```cpp
-int fib(int n) {
-    if (n <= 1) return n;
+map<pair<int,int>, long long> memo;
 
-    int dp[n + 1];
+long long resolver(int a, int b) {
+    if (/* caso base */) return /* valor */;
+
+    auto key = make_pair(a, b);
+    if (memo.count(key)) return memo[key];
+
+    return memo[key] = /* cálculo recursivo */;
+}
+```
+
+## De recursión con memo a iteración (bottom-up)
+
+La memorización es **top-down** (empiezas del problema grande y descompones). Puedes convertirla a **bottom-up** (empiezas de los problemas pequeños y construyes):
+
+```cpp
+// Fibonacci top-down (recursivo con memo)
+long long fib(int n) {
+    if (n <= 1) return n;
+    if (memo[n] != -1) return memo[n];
+    return memo[n] = fib(n-1) + fib(n-2);
+}
+
+// Fibonacci bottom-up (iterativo)
+long long fibIterativo(int n) {
+    vector<long long> dp(n + 1);
     dp[0] = 0;
     dp[1] = 1;
-
     for (int i = 2; i <= n; i++) {
         dp[i] = dp[i-1] + dp[i-2];
     }
-
     return dp[n];
 }
 ```
 
-### Fibonacci optimizado (espacio O(1))
+Ambos son $O(n)$, pero el iterativo evita el overhead de la recursión y el riesgo de stack overflow.
 
-```cpp
-int fib(int n) {
-    if (n <= 1) return n;
+## Ejercicio de práctica
 
-    int prev2 = 0, prev1 = 1;
-
-    for (int i = 2; i <= n; i++) {
-        int actual = prev1 + prev2;
-        prev2 = prev1;
-        prev1 = actual;
-    }
-
-    return prev1;
-}
-```
-
-## Cuándo usar memorización
-
-- Función recursiva con subproblemas superpuestos
-- Los mismos argumentos producen el mismo resultado
-- El número de estados únicos es manejable
-
-**Señales de que necesitas memorización:**
-- Recursión que timeout
-- Árbol de recursión con ramas repetidas
-- Problema que se puede expresar como $f(n)$ en términos de $f(n-1)$, $f(n-2)$, etc.
-
-## Template general
-
-```cpp
-// Para 1 parámetro
-tipo memo[MAX];
-bool vis[MAX];
-
-tipo f(int n) {
-    if (caso_base) return valor_base;
-    if (vis[n]) return memo[n];
-    vis[n] = true;
-    return memo[n] = /* calcular recursivamente */;
-}
-
-// Para 2 parámetros
-tipo memo[MAX1][MAX2];
-
-tipo f(int a, int b) {
-    if (caso_base) return valor_base;
-    if (memo[a][b] != -1) return memo[a][b];
-    return memo[a][b] = /* calcular recursivamente */;
-}
-```
-
-## Ejercicios de práctica
-
-### Ejercicio 1
-Calcula el número de formas de dar cambio para una cantidad c usando monedas de denominaciones dadas.
+Usa memorización para calcular el coeficiente binomial $C(n, k) = \binom{n}{k}$ usando la relación: $C(n, k) = C(n-1, k-1) + C(n-1, k)$, con $C(n, 0) = C(n, n) = 1$.
 
 <details>
 <summary>Ver solución</summary>
 
 ```cpp
-vector<int> monedas = {1, 5, 10, 25};
-int memo[10001];
+#include <iostream>
+#include <cstring>
+using namespace std;
 
-int formasCambio(int cantidad) {
-    if (cantidad == 0) return 1;
-    if (cantidad < 0) return 0;
+long long memo[101][101];
 
-    if (memo[cantidad] != -1) return memo[cantidad];
-
-    int total = 0;
-    for (int m : monedas) {
-        total += formasCambio(cantidad - m);
-    }
-
-    return memo[cantidad] = total;
+long long C(int n, int k) {
+    if (k == 0 || k == n) return 1;
+    if (memo[n][k] != -1) return memo[n][k];
+    return memo[n][k] = C(n-1, k-1) + C(n-1, k);
 }
-```
 
-</details>
+int main() {
+    memset(memo, -1, sizeof(memo));
 
-### Ejercicio 2
-Encuentra la longitud de la subsecuencia común más larga (LCS) de dos strings.
+    int n, k;
+    cin >> n >> k;
+    cout << C(n, k) << endl;
 
-<details>
-<summary>Ver solución</summary>
-
-```cpp
-string a, b;
-int memo[1001][1001];
-
-int lcs(int i, int j) {
-    if (i == a.length() || j == b.length()) return 0;
-
-    if (memo[i][j] != -1) return memo[i][j];
-
-    if (a[i] == b[j]) {
-        return memo[i][j] = 1 + lcs(i + 1, j + 1);
-    }
-
-    return memo[i][j] = max(lcs(i + 1, j), lcs(i, j + 1));
+    return 0;
 }
 ```
 
@@ -346,4 +232,4 @@ int lcs(int i, int j) {
 
 ## Siguiente paso
 
-Aprende sobre [Complejidad de Algoritmos Recursivos](/blog/recursion/complejidad-recursiva) para analizar la eficiencia.
+Aprende sobre la **Complejidad de la Recursión** para analizar cuánto tiempo y memoria usa tu función recursiva.
