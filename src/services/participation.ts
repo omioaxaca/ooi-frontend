@@ -1,4 +1,6 @@
 import qs from "qs";
+import { jwtDecode } from "jwt-decode";
+import * as localStorageUtils from "@/utils/localStorage";
 import type {
   Participation,
   CreateParticipationData,
@@ -6,12 +8,35 @@ import type {
 } from "@/types/dashboard/participation";
 import axiosInstance from "./authService";
 
+interface DecodedToken {
+  id: number;
+}
+
+/**
+ * Gets the current authenticated user's ID from the JWT token
+ */
+const getCurrentUserId = (): number | null => {
+  const token = localStorageUtils.getItem<string>("token");
+  if (!token) return null;
+  try {
+    const decoded = jwtDecode<DecodedToken>(token);
+    return decoded.id;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Fetches all participations for the current user
  * @returns Array of user's participations across all contest cycles
  */
 export const fetchUserParticipations = async (): Promise<ParticipationListItem[]> => {
   try {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("No authenticated user found");
+    }
+
     const query = qs.stringify(
       {
         fields: "*",
@@ -22,6 +47,13 @@ export const fetchUserParticipations = async (): Promise<ParticipationListItem[]
               posterImage: {
                 fields: "*",
               },
+            },
+          },
+        },
+        filters: {
+          user: {
+            id: {
+              $eq: userId,
             },
           },
         },
@@ -89,6 +121,11 @@ export const getUserParticipationForCycle = async (
   contestCycleId: number
 ): Promise<ParticipationListItem | null> => {
   try {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("No authenticated user found");
+    }
+
     const query = qs.stringify(
       {
         fields: "*",
@@ -98,6 +135,11 @@ export const getUserParticipationForCycle = async (
           },
         },
         filters: {
+          user: {
+            id: {
+              $eq: userId,
+            },
+          },
           contestCycle: {
             id: {
               $eq: contestCycleId,
