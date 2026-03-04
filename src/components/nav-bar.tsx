@@ -41,7 +41,7 @@ export default function Navbar() {
       // If already on homepage, just scroll to the section
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: "smooth" });
       }
     } else {
       // If on another page, navigate to homepage with the section hash
@@ -64,8 +64,8 @@ export default function Navbar() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Handle hash navigation when arriving from another page
@@ -73,9 +73,11 @@ export default function Navbar() {
     if (isHomePage && window.location.hash) {
       // Wait for page to fully load
       setTimeout(() => {
-        const element = document.getElementById(window.location.hash.substring(1));
+        const element = document.getElementById(
+          window.location.hash.substring(1),
+        );
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ behavior: "smooth" });
         }
       }, 500);
     }
@@ -84,9 +86,7 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 backdrop-blur-sm shadow-md"
-          : "bg-transparent"
+        isScrolled ? "bg-white/95 backdrop-blur-sm shadow-md" : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4">
@@ -108,35 +108,35 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/#home"
-              onClick={handleNavigation('home')}
+              onClick={handleNavigation("home")}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Inicio
             </Link>
             <Link
               href="/#what-is"
-              onClick={handleNavigation('what-is')}
+              onClick={handleNavigation("what-is")}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               ¿Qué es?
             </Link>
             <Link
               href="/#benefits"
-              onClick={handleNavigation('benefits')}
+              onClick={handleNavigation("benefits")}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Beneficios
             </Link>
             <Link
               href="/#convocatoria"
-              onClick={handleNavigation('convocatoria')}
+              onClick={handleNavigation("convocatoria")}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               Convocatoria
             </Link>
             <Link
               href="/#faq"
-              onClick={handleNavigation('faq')}
+              onClick={handleNavigation("faq")}
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
               FAQ
@@ -145,7 +145,7 @@ export default function Navbar() {
               href="/blog"
               className="font-medium text-ooi-text-dark hover:text-ooi-second-blue transition-colors"
             >
-              Documentación
+              Guía De Estudio
             </Link>
           </div>
 
@@ -171,7 +171,10 @@ export default function Navbar() {
                     <DropdownMenuItem className="cursor-pointer">
                       Settings
                     </DropdownMenuItem> */}
-                    <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={logout}
+                    >
                       Cerrar Sesión
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -180,10 +183,17 @@ export default function Navbar() {
             ) : (
               <div className="flex space-x-2">
                 <Link href="/login">
-                  <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">Iniciar Sesión</Button>
+                  <Button
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    Iniciar Sesión
+                  </Button>
                 </Link>
                 <Link href="/registro">
-                  <Button className="bg-primary hover:bg-primary-dark text-white">Registrarse</Button>
+                  <Button className="bg-primary hover:bg-primary-dark text-white">
+                    Registrarse
+                  </Button>
                 </Link>
               </div>
             )}
@@ -208,35 +218,35 @@ export default function Navbar() {
           <div className="py-4 px-6 flex flex-col space-y-4">
             <Link
               href="/#home"
-              onClick={handleNavigation('home')}
+              onClick={handleNavigation("home")}
               className="hover:text-blue-600 py-2"
             >
               Inicio
             </Link>
             <Link
               href="/#what-is"
-              onClick={handleNavigation('what-is')}
+              onClick={handleNavigation("what-is")}
               className="hover:text-blue-600 py-2"
             >
               ¿Qué es?
             </Link>
             <Link
               href="/#benefits"
-              onClick={handleNavigation('benefits')}
+              onClick={handleNavigation("benefits")}
               className="hover:text-blue-600 py-2"
             >
               Beneficios
             </Link>
             <Link
               href="/#convocatoria"
-              onClick={handleNavigation('convocatoria')}
+              onClick={handleNavigation("convocatoria")}
               className="hover:text-blue-600 py-2"
             >
               Convocatoria
             </Link>
             <Link
               href="/#faq"
-              onClick={handleNavigation('faq')}
+              onClick={handleNavigation("faq")}
               className="hover:text-blue-600 py-2"
             >
               FAQ
@@ -246,22 +256,30 @@ export default function Navbar() {
               onClick={closeMenu}
               className="hover:text-blue-600 py-2"
             >
-              Documentación
+              Guía De Estudio
             </Link>
             <div className="pt-4 border-t">
               {user ? (
                 <div className="flex flex-col space-y-3">
                   <Link href="/dashboard" onClick={closeMenu}>
-                    <Button variant="outline" className="w-full">Dashboard</Button>
+                    <Button variant="outline" className="w-full">
+                      Dashboard
+                    </Button>
                   </Link>
-                  <Button variant="ghost" className="w-full text-left justify-start" onClick={logout}>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-left justify-start"
+                    onClick={logout}
+                  >
                     Cerrar Sesión
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-col space-y-3">
                   <Link href="/login" onClick={closeMenu} className="w-full">
-                    <Button variant="outline" className="w-full">Iniciar Sesión</Button>
+                    <Button variant="outline" className="w-full">
+                      Iniciar Sesión
+                    </Button>
                   </Link>
                   <Link href="/registro" onClick={closeMenu} className="w-full">
                     <Button className="w-full">Registrarse</Button>

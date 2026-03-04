@@ -4,7 +4,10 @@ import * as localStorageUtils from "@/utils/localStorage";
 import type { User, NewUser, LoggedUser, UpdateUser } from "@/types/user";
 import axiosInstance from "./authService";
 import { fetchCurrentContestCycle } from "./contestCycle";
-import { createParticipation, getUserParticipationForCycle } from "./participation";
+import {
+  createParticipation,
+  getUserParticipationForCycle,
+} from "./participation";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -18,7 +21,7 @@ const getAuthHeaders = () => {
   const token = getToken();
   return {
     headers: {
-      Authorization: token ? `Bearer ${token}` : ""
+      Authorization: token ? `Bearer ${token}` : "",
     },
   };
 };
@@ -30,27 +33,25 @@ export const getUserFullData = async (): Promise<User> => {
         fields: "*",
         populate: {
           avatar: {
-            fields: "*"
-          }
-        }
+            fields: "*",
+          },
+        },
       },
       {
         encodeValuesOnly: true,
-      }
+      },
     );
 
-    const userResponse = await axiosInstance.get(
-      `/api/users/me?${query}`
-    );
+    const userResponse = await axiosInstance.get(`/api/users/me?${query}`);
 
     if (userResponse.status !== 200) {
-      const data = userResponse.data
-      const errorMessage = data.error.message
-      throw new Error(errorMessage)
+      const data = userResponse.data;
+      const errorMessage = data.error.message;
+      throw new Error(errorMessage);
     }
 
-    const userData = userResponse.data
-    return userData
+    const userData = userResponse.data;
+    return userData;
   } catch (error) {
     console.error("Error fetching user data:", error);
     throw error;
@@ -58,12 +59,15 @@ export const getUserFullData = async (): Promise<User> => {
 };
 
 // Fetch all notifications for the current user
-export const login = async (email: string, password: string): Promise<LoggedUser> => {
+export const login = async (
+  email: string,
+  password: string,
+): Promise<LoggedUser> => {
   try {
     const response = await axios.post(`${API_URL}/api/auth/local`, {
       identifier: email,
       password: password,
-      refreshToken: true
+      refreshToken: true,
     });
 
     if (!response.data) {
@@ -83,7 +87,7 @@ export const login = async (email: string, password: string): Promise<LoggedUser
     return {
       jwt: token,
       refreshToken: refreshToken,
-      user: userData
+      user: userData,
     };
   } catch (error) {
     console.error("Login failed:", error);
@@ -94,7 +98,10 @@ export const login = async (email: string, password: string): Promise<LoggedUser
 export const signup = async (newUser: NewUser): Promise<LoggedUser> => {
   try {
     // First, try normal registration
-    const response = await axiosInstance.post(`${API_URL}/api/auth/local/register`, newUser);
+    const response = await axiosInstance.post(
+      `${API_URL}/api/auth/local/register`,
+      newUser,
+    );
 
     if (!response.data) {
       throw new Error("Signup failed");
@@ -144,9 +151,12 @@ const isEmailAlreadyTakenError = (error: unknown): boolean => {
     // Strapi typically returns this error message for duplicate emails
     const errorMessage = responseData?.error?.message?.toLowerCase() || "";
     return (
-      errorMessage.includes("email") &&
-      (errorMessage.includes("already") || errorMessage.includes("taken") || errorMessage.includes("registered"))
-    ) || errorMessage.includes("email or username are already taken");
+      (errorMessage.includes("email") &&
+        (errorMessage.includes("already") ||
+          errorMessage.includes("taken") ||
+          errorMessage.includes("registered"))) ||
+      errorMessage.includes("email or username are already taken")
+    );
   }
   return false;
 };
@@ -155,7 +165,9 @@ const isEmailAlreadyTakenError = (error: unknown): boolean => {
  * Handles the signup flow for users who already have an account.
  * Logs them in, updates their information, and registers them in the current cycle.
  */
-const handleExistingUserSignup = async (newUser: NewUser): Promise<LoggedUser> => {
+const handleExistingUserSignup = async (
+  newUser: NewUser,
+): Promise<LoggedUser> => {
   try {
     // Login with the provided credentials
     const loginResult = await login(newUser.email, newUser.password);
@@ -175,7 +187,10 @@ const handleExistingUserSignup = async (newUser: NewUser): Promise<LoggedUser> =
     };
 
     // Update user information with the new data
-    const updatedUser = await updateUser(loginResult.user.documentId, updateData);
+    const updatedUser = await updateUser(
+      loginResult.user.documentId,
+      updateData,
+    );
 
     // Register user in current contest cycle (if not already registered)
     await registerUserInCurrentCycle(updatedUser.id);
@@ -189,7 +204,7 @@ const handleExistingUserSignup = async (newUser: NewUser): Promise<LoggedUser> =
     // If login fails (wrong password), throw a more specific error
     console.error("Existing user signup failed:", loginError);
     throw new Error(
-      "Ya existe una cuenta con este correo electrónico. Por favor usa la contraseña correcta o inicia sesión directamente."
+      "Ya existe una cuenta con este correo electrónico. Por favor usa la contraseña correcta o inicia sesión directamente.",
     );
   }
 };
@@ -203,12 +218,16 @@ const registerUserInCurrentCycle = async (userId: number): Promise<void> => {
     const currentCycle = await fetchCurrentContestCycle();
 
     if (!currentCycle) {
-      console.warn("No current contest cycle found. User not registered in any cohort.");
+      console.warn(
+        "No current contest cycle found. User not registered in any cohort.",
+      );
       return;
     }
 
     // Check if user is already registered in current cycle
-    const existingParticipation = await getUserParticipationForCycle(currentCycle.id);
+    const existingParticipation = await getUserParticipationForCycle(
+      currentCycle.id,
+    );
 
     if (existingParticipation) {
       // User is already registered in current cycle, nothing to do
@@ -225,13 +244,22 @@ const registerUserInCurrentCycle = async (userId: number): Promise<void> => {
   } catch (participationError) {
     // Log the error but don't fail the signup
     // The user can be manually registered in the cohort later
-    console.error("Error registering user in current cycle:", participationError);
+    console.error(
+      "Error registering user in current cycle:",
+      participationError,
+    );
   }
 };
 
-export const updateUser = async (userId: string, newUserData: UpdateUser): Promise<User> => {
+export const updateUser = async (
+  userId: string,
+  newUserData: UpdateUser,
+): Promise<User> => {
   try {
-    const response = await axiosInstance.put(`/api/users/${userId}`, newUserData);
+    const response = await axiosInstance.put(
+      `/api/users/${userId}`,
+      newUserData,
+    );
 
     if (!response.data) {
       throw new Error("Failed to update user");
@@ -245,7 +273,66 @@ export const updateUser = async (userId: string, newUserData: UpdateUser): Promi
   }
 };
 
-export const updateAvatar = async (userId: string, avatar: File): Promise<User> => {
+/**
+ * Checks whether the user profile is missing key fields (discordUserId, omegaupUserId).
+ * Returns an object indicating which fields are missing.
+ */
+export const getIncompleteProfileFields = (
+  user: User,
+): { isIncomplete: boolean; missingFields: string[] } => {
+  const missingFields: string[] = [];
+
+  if (!user.omegaupUserId || user.omegaupUserId.trim() === "") {
+    missingFields.push("omegaupUserId");
+  }
+  if (!user.discordUserId || user.discordUserId.trim() === "") {
+    missingFields.push("discordUserId");
+  }
+
+  return {
+    isIncomplete: missingFields.length > 0,
+    missingFields,
+  };
+};
+
+const PROFILE_REMINDER_DISMISSED_KEY = "profile_reminder_dismissed_at";
+
+/**
+ * Returns true if the profile completion reminder should be shown.
+ * The reminder is suppressed for 7 days after the user dismisses it.
+ */
+export const shouldShowProfileReminder = (user: User): boolean => {
+  const { isIncomplete } = getIncompleteProfileFields(user);
+  if (!isIncomplete) return false;
+
+  if (typeof window === "undefined") return false;
+
+  const dismissedAt = localStorage.getItem(PROFILE_REMINDER_DISMISSED_KEY);
+  if (!dismissedAt) return true;
+
+  const dismissedDate = new Date(dismissedAt);
+  const now = new Date();
+  const diffDays =
+    (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+
+  return diffDays >= 7;
+};
+
+/**
+ * Records that the user dismissed the profile completion reminder.
+ */
+export const dismissProfileReminder = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(
+    PROFILE_REMINDER_DISMISSED_KEY,
+    new Date().toISOString(),
+  );
+};
+
+export const updateAvatar = async (
+  userId: string,
+  avatar: File,
+): Promise<User> => {
   try {
     const formData = new FormData();
     formData.append("files", avatar);
@@ -256,7 +343,7 @@ export const updateAvatar = async (userId: string, avatar: File): Promise<User> 
     // First upload the file
     const uploadResponse = await axiosInstance.post(`/api/upload`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
 
@@ -268,7 +355,7 @@ export const updateAvatar = async (userId: string, avatar: File): Promise<User> 
 
     // Then update the user with the uploaded file ID
     const updateResponse = await axiosInstance.put(`/api/users/${userId}`, {
-      avatar: uploadResult[0].id
+      avatar: uploadResult[0].id,
     });
 
     if (!updateResponse.data) {

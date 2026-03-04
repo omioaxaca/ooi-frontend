@@ -67,7 +67,8 @@ export default async function PostPage({ params }: PostPageProps) {
   // Find prev/next posts within the same category
   const currentCategoryPosts = currentCategory?.posts || [];
   const currentIndex = currentCategoryPosts.findIndex((p) => p.slug === slug);
-  const prevPost = currentIndex > 0 ? currentCategoryPosts[currentIndex - 1] : null;
+  const prevPost =
+    currentIndex > 0 ? currentCategoryPosts[currentIndex - 1] : null;
   const nextPost =
     currentIndex < currentCategoryPosts.length - 1
       ? currentCategoryPosts[currentIndex + 1]
@@ -90,7 +91,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <Breadcrumb className="mb-6">
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/blog">Documentación</BreadcrumbLink>
+                  <BreadcrumbLink href="/blog">Guía De Estudio</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
@@ -110,7 +111,9 @@ export default async function PostPage({ params }: PostPageProps) {
               {/* Header */}
               <header className="mb-8">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="outline">{currentCategory?.name || category}</Badge>
+                  <Badge variant="outline">
+                    {currentCategory?.name || category}
+                  </Badge>
                   {post.meta.tags.map((tag) => (
                     <Badge key={tag} variant="secondary">
                       {tag}
@@ -153,8 +156,14 @@ export default async function PostPage({ params }: PostPageProps) {
               <nav className="mt-12 pt-6 border-t">
                 <div className="flex justify-between gap-4">
                   {prevPost ? (
-                    <Link href={`/blog/${category}/${prevPost.slug}`} className="flex-1">
-                      <Button variant="outline" className="w-full h-auto py-4 flex-col items-start">
+                    <Link
+                      href={`/blog/${category}/${prevPost.slug}`}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto py-4 flex-col items-start"
+                      >
                         <span className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                           <ChevronLeft className="h-3 w-3" />
                           Anterior
@@ -169,8 +178,14 @@ export default async function PostPage({ params }: PostPageProps) {
                   )}
 
                   {nextPost ? (
-                    <Link href={`/blog/${category}/${nextPost.slug}`} className="flex-1">
-                      <Button variant="outline" className="w-full h-auto py-4 flex-col items-end">
+                    <Link
+                      href={`/blog/${category}/${nextPost.slug}`}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto py-4 flex-col items-end"
+                      >
                         <span className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                           Siguiente
                           <ChevronRight className="h-3 w-3" />

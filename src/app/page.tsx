@@ -5,10 +5,28 @@ import Image from "next/image";
 import Navbar from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { motion, useInView, useAnimation, Variants } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Autoplay from "embla-carousel-autoplay";
@@ -31,7 +49,7 @@ const formatDateSpanish = (dateString: string | null): string => {
   return date.toLocaleDateString("es-MX", {
     day: "numeric",
     month: "long",
-    year: "numeric"
+    year: "numeric",
   });
 };
 
@@ -46,7 +64,7 @@ const getCycleYear = (cycle: ContestCycle | null): string => {
     return new Date(cycle.startClassesDate).getFullYear().toString();
   }
   return new Date().getFullYear().toString();
-}
+};
 
 export default function Home() {
   // Animation variants
@@ -55,9 +73,9 @@ export default function Home() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants: Variants = {
@@ -65,8 +83,8 @@ export default function Home() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5 }
-    }
+      transition: { duration: 0.5 },
+    },
   };
 
   // Counter animation
@@ -74,12 +92,12 @@ export default function Home() {
     from = 0,
     to,
     duration = 2,
-    className = ""
+    className = "",
   }: {
     from?: number;
     to: number;
     duration?: number;
-    className?: string
+    className?: string;
   }) => {
     const [count, setCount] = useState(from);
     const nodeRef = useRef(null);
@@ -98,13 +116,17 @@ export default function Home() {
           } else {
             setCount(Math.floor(start));
           }
-        }, 1000/60);
+        }, 1000 / 60);
 
         return () => clearInterval(timer);
       }
     }, [isInView, from, to, duration]);
 
-    return <span ref={nodeRef} className={className}>{count}+</span>;
+    return (
+      <span ref={nodeRef} className={className}>
+        {count}+
+      </span>
+    );
   };
 
   // Add this state to track which convocatoria is currently being viewed
@@ -168,20 +190,45 @@ export default function Home() {
                   ¡Vuélvete el/la mejor programador(a) del estado de Oaxaca!
                 </p>
                 <p className="text-lg mb-10 font-semibold bg-white/10 inline-block px-4 py-2 rounded-lg">
-                  Inicio de clases: <span className="text-ooi-yellow">{startClassesDate}</span>
+                  Inicio de clases:{" "}
+                  <span className="text-ooi-yellow">{startClassesDate}</span>
                 </p>
                 <div className="flex flex-wrap gap-4 mt-8">
                   <Link href="/registro">
-                    <Button size="lg" className="bg-ooi-yellow text-ooi-text-dark hover:bg-ooi-light-blue/90 border-2 hover:scale-105 transition-all duration-300 font-bold">
+                    <Button
+                      size="lg"
+                      className="bg-ooi-yellow text-ooi-text-dark hover:bg-ooi-light-blue/90 border-2 hover:scale-105 transition-all duration-300 font-bold"
+                    >
                       Registrarme Ahora
                     </Button>
-                </Link>
-                  <Link href="https://discord.gg/VjHmAqKfwh" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="lg" className="bg-ooi-purple flex items-center gap-2 border-2 border-white text-ooi-text-white hover:bg-ooi-light-blue/90 hover:scale-105 transition-all duration-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                  </Link>
+                  <Link
+                    href="https://discord.gg/VjHmAqKfwh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="bg-ooi-purple flex items-center gap-2 border-2 border-white text-ooi-text-white hover:bg-ooi-light-blue/90 hover:scale-105 transition-all duration-300"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-message-circle"
+                      >
+                        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                      </svg>
                       Unirse a Discord
-                  </Button>
-                </Link>
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
@@ -202,8 +249,16 @@ export default function Home() {
 
           {/* Diagonal divider - more inclined and inverted */}
           <div className="absolute bottom-0 left-0 right-0">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-24">
-              <polygon points="0,60 1200,0 1200,60 0,60" fill="#ffffff"></polygon>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 1200 60"
+              preserveAspectRatio="none"
+              className="w-full h-24"
+            >
+              <polygon
+                points="0,60 1200,0 1200,60 0,60"
+                fill="#ffffff"
+              ></polygon>
             </svg>
           </div>
         </section>
@@ -233,7 +288,9 @@ export default function Home() {
               >
                 <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 border-t-ooi-second-blue">
                   <CardHeader className="bg-gradient-to-r from-ooi-light-blue/20 to-transparent">
-                    <CardTitle className="text-xl text-ooi-second-blue">¿Qué es la OOI?</CardTitle>
+                    <CardTitle className="text-xl text-ooi-second-blue">
+                      ¿Qué es la OOI?
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow pt-6">
                     <div className="mb-4 rounded-lg overflow-hidden h-60 relative">
@@ -251,7 +308,13 @@ export default function Home() {
                       </motion.div>
                     </div>
                     <p className="text-ooi-text-dark">
-                    La OOI es una competencia diseñada para jóvenes apasionados por la resolución de problemas mediante la programación y la lógica computacional. A través de entrenamientos y desafíos progresivos, buscamos descubrir y formar a los mejores talentos de Oaxaca, quienes representarán al estado en la Olimpiada Mexicana de Informática {cycleYear}.
+                      La OOI es una competencia diseñada para jóvenes
+                      apasionados por la resolución de problemas mediante la
+                      programación y la lógica computacional. A través de
+                      entrenamientos y desafíos progresivos, buscamos descubrir
+                      y formar a los mejores talentos de Oaxaca, quienes
+                      representarán al estado en la Olimpiada Mexicana de
+                      Informática {cycleYear}.
                     </p>
                   </CardContent>
                 </Card>
@@ -268,7 +331,9 @@ export default function Home() {
               >
                 <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 border-t-ooi-purple">
                   <CardHeader className="bg-gradient-to-r from-ooi-purple/10 to-transparent">
-                    <CardTitle className="text-xl text-ooi-purple">¿Cuáles son las etapas?</CardTitle>
+                    <CardTitle className="text-xl text-ooi-purple">
+                      ¿Cuáles son las etapas?
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow pt-6">
                     <div className="mb-4 rounded-lg overflow-hidden h-60 relative">
@@ -292,18 +357,19 @@ export default function Home() {
                       viewport={{ once: true }}
                       variants={{
                         visible: { transition: { staggerChildren: 0.1 } },
-                        hidden: {}
+                        hidden: {},
                       }}
                     >
-                      {["Inscripción: Regístrate llenando el formulario y asegúrate de cumplir los requisitos.",
-                      "Entrenamiento: Durante un periodo aproximadamente de 5 meses se te impartirán clases de programación, algoritmos y lógica para resolución de problemas. Las clases son de hora y media de forma virtual.",
-                      "Selección: Presentarás exámenes para demostrar tus habilidades y formar parte del equipo que representará a Oaxaca a nivel nacional."
+                      {[
+                        "Inscripción: Regístrate llenando el formulario y asegúrate de cumplir los requisitos.",
+                        "Entrenamiento: Durante un periodo aproximadamente de 5 meses se te impartirán clases de programación, algoritmos y lógica para resolución de problemas. Las clases son de hora y media de forma virtual.",
+                        "Selección: Presentarás exámenes para demostrar tus habilidades y formar parte del equipo que representará a Oaxaca a nivel nacional.",
                       ].map((item, index) => (
                         <motion.li
                           key={index}
                           variants={{
                             visible: { opacity: 1, x: 0 },
-                            hidden: { opacity: 0, x: -20 }
+                            hidden: { opacity: 0, x: -20 },
                           }}
                           transition={{ duration: 0.3 }}
                         >
@@ -326,7 +392,9 @@ export default function Home() {
               >
                 <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-t-4 border-t-ooi-yellow">
                   <CardHeader className="bg-gradient-to-r from-ooi-yellow/10 to-transparent">
-                    <CardTitle className="text-xl text-ooi-text-dark">¿Cuáles son los requisitos?</CardTitle>
+                    <CardTitle className="text-xl text-ooi-text-dark">
+                      ¿Cuáles son los requisitos?
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow pt-6">
                     <div className="mb-4 rounded-lg overflow-hidden h-60 relative">
@@ -350,21 +418,21 @@ export default function Home() {
                       viewport={{ once: true }}
                       variants={{
                         visible: { transition: { staggerChildren: 0.1 } },
-                        hidden: {}
+                        hidden: {},
                       }}
                     >
                       {[
-                      "Haber nacido en el estado de Oaxaca.",
-                      "Tener entre 10 y 18 años.",
-                      "Estar inscrito(a) en una escuela del estado.",
-                      "Cursar primaria, secundaria o hasta el 4to semestre de preparatoria.",
-                      "Tener ganas de aprender (no es necesario saber programar antes de empezar)."
+                        "Haber nacido en el estado de Oaxaca.",
+                        "Tener entre 10 y 18 años.",
+                        "Estar inscrito(a) en una escuela del estado.",
+                        "Cursar primaria, secundaria o hasta el 4to semestre de preparatoria.",
+                        "Tener ganas de aprender (no es necesario saber programar antes de empezar).",
                       ].map((item, index) => (
                         <motion.li
                           key={index}
                           variants={{
                             visible: { opacity: 1, x: 0 },
-                            hidden: { opacity: 0, x: -20 }
+                            hidden: { opacity: 0, x: -20 },
                           }}
                           transition={{ duration: 0.3 }}
                         >
@@ -380,8 +448,10 @@ export default function Home() {
         </section>
 
         {/* Benefits Section - Updated Background Only */}
-        <section id="benefits" className="py-16 bg-gradient-to-tr from-ooi-light-blue/20 via-ooi-yellow/10 to-ooi-purple/15">
-
+        <section
+          id="benefits"
+          className="py-16 bg-gradient-to-tr from-ooi-light-blue/20 via-ooi-yellow/10 to-ooi-purple/15"
+        >
           <div className="container mx-auto px-4 relative">
             <motion.h2
               className="text-3xl font-bold mb-16 text-center text-ooi-dark-blue"
@@ -430,9 +500,17 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                      <h3 className="text-2xl font-semibold mb-4 text-ooi-second-blue">Conocimiento</h3>
+                      <h3 className="text-2xl font-semibold mb-4 text-ooi-second-blue">
+                        Conocimiento
+                      </h3>
                       <p className="text-ooi-text-dark text-lg mb-4">
-                      El súper poder más valioso que vas a obtener es el conocimiento adquirido para resolver y programar diferentes problemas que te ayudarán en tu carrera profesional para tu futuro, dominando este conocimiento puedes llegar a trabajar en las empresas de tecnología más importantes del mundo: ej. Google, Facebook, Microsoft, Tiktok.
+                        El súper poder más valioso que vas a obtener es el
+                        conocimiento adquirido para resolver y programar
+                        diferentes problemas que te ayudarán en tu carrera
+                        profesional para tu futuro, dominando este conocimiento
+                        puedes llegar a trabajar en las empresas de tecnología
+                        más importantes del mundo: ej. Google, Facebook,
+                        Microsoft, Tiktok.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
                         <motion.li
@@ -442,7 +520,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.4 }}
                         >
-                          <span className="mr-2 text-ooi-second-blue">✓</span> Aprende lenguajes como C++.
+                          <span className="mr-2 text-ooi-second-blue">✓</span>{" "}
+                          Aprende lenguajes como C++.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -451,7 +530,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.5 }}
                         >
-                          <span className="mr-2 text-ooi-second-blue">✓</span> Domina estructuras de datos y algoritmos.
+                          <span className="mr-2 text-ooi-second-blue">✓</span>{" "}
+                          Domina estructuras de datos y algoritmos.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -460,7 +540,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.6 }}
                         >
-                          <span className="mr-2 text-ooi-second-blue">✓</span> Desarrolla pensamiento lógico matemático.
+                          <span className="mr-2 text-ooi-second-blue">✓</span>{" "}
+                          Desarrolla pensamiento lógico matemático.
                         </motion.li>
                       </ul>
                     </motion.div>
@@ -504,9 +585,14 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                      <h3 className="text-2xl font-semibold mb-4 text-ooi-purple">Reconocimiento</h3>
+                      <h3 className="text-2xl font-semibold mb-4 text-ooi-purple">
+                        Reconocimiento
+                      </h3>
                       <p className="text-ooi-text-dark text-lg mb-4">
-                      La posibilidad de poder representar a todo el estado de Oaxaca en la etapa nacional compitiendo contra otros estados. La posibilidad de ganar un lugar en la etapa internacional.
+                        La posibilidad de poder representar a todo el estado de
+                        Oaxaca en la etapa nacional compitiendo contra otros
+                        estados. La posibilidad de ganar un lugar en la etapa
+                        internacional.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
                         <motion.li
@@ -516,7 +602,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.4 }}
                         >
-                          <span className="mr-2 text-ooi-purple">✓</span> Compite a nivel estatal, nacional e internacional.
+                          <span className="mr-2 text-ooi-purple">✓</span>{" "}
+                          Compite a nivel estatal, nacional e internacional.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -525,7 +612,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.5 }}
                         >
-                          <span className="mr-2 text-ooi-purple">✓</span> Obtén experiencia, diplomas y medallas.
+                          <span className="mr-2 text-ooi-purple">✓</span> Obtén
+                          experiencia, diplomas y medallas.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -534,7 +622,9 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.6 }}
                         >
-                          <span className="mr-2 text-ooi-purple">✓</span> Medallas y becas en universidades para los mejores competidores.
+                          <span className="mr-2 text-ooi-purple">✓</span>{" "}
+                          Medallas y becas en universidades para los mejores
+                          competidores.
                         </motion.li>
                       </ul>
                     </motion.div>
@@ -578,10 +668,16 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                      <h3 className="text-2xl font-semibold mb-4 text-ooi-dark-blue">Experiencia</h3>
+                      <h3 className="text-2xl font-semibold mb-4 text-ooi-dark-blue">
+                        Experiencia
+                      </h3>
                       <p className="text-ooi-text-dark text-lg mb-4">
-                        Desarrollarás habilidades de resolución de problemas, mejora continua que te darán ventaja en tu futuro profesional.
-                        Si eres seleccionado(a) para representar a Oaxaca competirás en la etapa nacional, donde conocerás a más programadores(as) como tú, que vienen de todos los estados.
+                        Desarrollarás habilidades de resolución de problemas,
+                        mejora continua que te darán ventaja en tu futuro
+                        profesional. Si eres seleccionado(a) para representar a
+                        Oaxaca competirás en la etapa nacional, donde conocerás
+                        a más programadores(as) como tú, que vienen de todos los
+                        estados.
                       </p>
                       <ul className="space-y-2 text-ooi-text-dark">
                         <motion.li
@@ -591,7 +687,9 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.4 }}
                         >
-                          <span className="mr-2 text-ooi-dark-blue">✓</span> Posibilidad de representar a México en la etapa internacional.
+                          <span className="mr-2 text-ooi-dark-blue">✓</span>{" "}
+                          Posibilidad de representar a México en la etapa
+                          internacional.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -600,7 +698,8 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.5 }}
                         >
-                          <span className="mr-2 text-ooi-dark-blue">✓</span> Resuelve problemas complejos.
+                          <span className="mr-2 text-ooi-dark-blue">✓</span>{" "}
+                          Resuelve problemas complejos.
                         </motion.li>
                         <motion.li
                           className="flex items-center"
@@ -609,7 +708,9 @@ export default function Home() {
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: 0.6 }}
                         >
-                          <span className="mr-2 text-ooi-dark-blue">✓</span> Prepárate para seguir desarrollando tu camino profesional.
+                          <span className="mr-2 text-ooi-dark-blue">✓</span>{" "}
+                          Prepárate para seguir desarrollando tu camino
+                          profesional.
                         </motion.li>
                       </ul>
                     </motion.div>
@@ -641,8 +742,9 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
               >
                 <p className="text-lg mb-6 text-ooi-text-dark">
-                  Desde nuestra fundación, hemos trabajado para impulsar el talento oaxaqueño
-                  en competencias de programación a nivel nacional e internacional.
+                  Desde nuestra fundación, hemos trabajado para impulsar el
+                  talento oaxaqueño en competencias de programación a nivel
+                  nacional e internacional.
                 </p>
 
                 <motion.div
@@ -655,7 +757,10 @@ export default function Home() {
                   <motion.div
                     className="text-center p-4 bg-ooi-second-blue/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
-                    whileHover={{ y: -5, backgroundColor: "rgba(30, 119, 186, 0.15)" }}
+                    whileHover={{
+                      y: -5,
+                      backgroundColor: "rgba(30, 119, 186, 0.15)",
+                    }}
                   >
                     <Counter
                       from={0}
@@ -667,7 +772,10 @@ export default function Home() {
                   <motion.div
                     className="text-center p-4 bg-ooi-purple/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
-                    whileHover={{ y: -5, backgroundColor: "rgba(107, 60, 140, 0.15)" }}
+                    whileHover={{
+                      y: -5,
+                      backgroundColor: "rgba(107, 60, 140, 0.15)",
+                    }}
                   >
                     <Counter
                       from={0}
@@ -679,7 +787,10 @@ export default function Home() {
                   <motion.div
                     className="text-center p-4 bg-ooi-yellow/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
-                    whileHover={{ y: -5, backgroundColor: "rgba(250, 238, 80, 0.15)" }}
+                    whileHover={{
+                      y: -5,
+                      backgroundColor: "rgba(250, 238, 80, 0.15)",
+                    }}
                   >
                     <Counter
                       from={0}
@@ -692,7 +803,10 @@ export default function Home() {
                   <motion.div
                     className="text-center p-4 bg-ooi-pink/10 rounded-lg hover:shadow-md transition-all"
                     variants={itemVariants}
-                    whileHover={{ y: -5, backgroundColor: "rgba(254, 110, 154, 0.15)" }}
+                    whileHover={{
+                      y: -5,
+                      backgroundColor: "rgba(254, 110, 154, 0.15)",
+                    }}
                   >
                     <Counter
                       from={0}
@@ -729,7 +843,19 @@ export default function Home() {
                     ]}
                   >
                     <CarouselContent>
-                      {[2012, 2013, 2014, 2015, 2016, 2019, 2020, 2021, 2022, 2023, 'navidad'].map((item) => (
+                      {[
+                        2012,
+                        2013,
+                        2014,
+                        2015,
+                        2016,
+                        2019,
+                        2020,
+                        2021,
+                        2022,
+                        2023,
+                        "navidad",
+                      ].map((item) => (
                         <CarouselItem key={item}>
                           <motion.div
                             className="p-1 h-72 md:h-80 relative rounded-lg overflow-hidden"
@@ -752,22 +878,33 @@ export default function Home() {
                   </Carousel>
                 </motion.div>
               </motion.div>
-              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
         {/* Who We Are Section with More Distinctive Background */}
-        <section id="who-we-are" className="py-16 bg-gradient-to-br from-ooi-second-blue/5 via-ooi-light-blue/15 to-ooi-purple/10 relative">
+        <section
+          id="who-we-are"
+          className="py-16 bg-gradient-to-br from-ooi-second-blue/5 via-ooi-light-blue/15 to-ooi-purple/10 relative"
+        >
           {/* Decorative background elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-ooi-second-blue/10 to-transparent rounded-full filter blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-ooi-purple/10 to-transparent rounded-full filter blur-3xl"></div>
 
             {/* Optional geometric shapes */}
-            <svg className="absolute top-10 left-10 w-32 h-32 text-ooi-second-blue/5" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              className="absolute top-10 left-10 w-32 h-32 text-ooi-second-blue/5"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <circle cx="50" cy="50" r="40" fill="currentColor" />
             </svg>
-            <svg className="absolute bottom-20 right-20 w-48 h-48 text-ooi-purple/5" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              className="absolute bottom-20 right-20 w-48 h-48 text-ooi-purple/5"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <rect x="20" y="20" width="60" height="60" fill="currentColor" />
             </svg>
           </div>
@@ -793,13 +930,19 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
               >
-                <div style={{ width: '100%', maxWidth: '600px', position: 'relative' }}>
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "600px",
+                    position: "relative",
+                  }}
+                >
                   <Image
                     src="/images/team.png"
                     alt="Equipo OOI"
                     width={600}
                     height={600}
-                    style={{ objectFit: 'contain' }}
+                    style={{ objectFit: "contain" }}
                     priority
                   />
                 </div>
@@ -814,9 +957,10 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
-                  Somos un equipo de entusiastas de la programación, educadores y ex-olímpicos
-                  comprometidos con el desarrollo del talento tecnológico en Oaxaca. Nuestra misión
-                  es descubrir y potenciar a los futuros líderes en informática del estado.
+                  Somos un equipo de entusiastas de la programación, educadores
+                  y ex-olímpicos comprometidos con el desarrollo del talento
+                  tecnológico en Oaxaca. Nuestra misión es descubrir y potenciar
+                  a los futuros líderes en informática del estado.
                 </motion.p>
 
                 <motion.div
@@ -828,84 +972,84 @@ export default function Home() {
                 >
                   {[
                     {
-                      'name': 'Jose Garfias',
-                      'image': 'jose',
-                      'role': 'Coordinador',
+                      name: "Jose Garfias",
+                      image: "jose",
+                      role: "Coordinador",
                     },
                     {
-                      'name': 'Biniza Ruiz',
-                      'image': 'bini',
-                      'role': 'OFMI Oaxaca',
+                      name: "Biniza Ruiz",
+                      image: "bini",
+                      role: "OFMI Oaxaca",
                     },
                     {
-                      'name': 'Itzayana García',
-                      'image': 'itzayana',
-                      'role': 'OFMI Oaxaca',
+                      name: "Itzayana García",
+                      image: "itzayana",
+                      role: "OFMI Oaxaca",
                     },
                     {
-                      'name': 'Fernando Mauro',
-                      'image': 'fer',
-                      'role': 'Profesor',
+                      name: "Fernando Mauro",
+                      image: "fer",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Zaid Diaz',
-                      'image': 'zaid',
-                      'role': 'Profesor',
+                      name: "Zaid Diaz",
+                      image: "zaid",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Esaú Peralta',
-                      'image': 'esau',
-                      'role': 'Profesor',
+                      name: "Esaú Peralta",
+                      image: "esau",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Ander López',
-                      'image': 'ander',
-                      'role': 'Profesor',
+                      name: "Ander López",
+                      image: "ander",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Alex Ortega',
-                      'image': 'alex-ortega',
-                      'role': 'Profesor',
+                      name: "Alex Ortega",
+                      image: "alex-ortega",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Juliho García',
-                      'image': 'juliho',
-                      'role': 'Profesor',
+                      name: "Juliho García",
+                      image: "juliho",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Jhazeel Martínez',
-                      'image': 'jhazeel',
-                      'role': 'Profesor',
+                      name: "Jhazeel Martínez",
+                      image: "jhazeel",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Eduardo Calvo',
-                      'image': 'eduardo',
-                      'role': 'Profesor',
+                      name: "Eduardo Calvo",
+                      image: "eduardo",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Nelson Ortiz',
-                      'image': 'nelson',
-                      'role': 'Profesor',
+                      name: "Nelson Ortiz",
+                      image: "nelson",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Alejandro García',
-                      'image': 'alex',
-                      'role': 'Delegado Estatal',
+                      name: "Alejandro García",
+                      image: "alex",
+                      role: "Delegado Estatal",
                     },
                     {
-                      'name': 'Daniel Gómez',
-                      'image': 'daniel',
-                      'role': 'Líder de Competencia',
+                      name: "Daniel Gómez",
+                      image: "daniel",
+                      role: "Líder de Competencia",
                     },
                     {
-                      'name': 'Javier Alonso',
-                      'image': 'javi',
-                      'role': 'Profesor',
+                      name: "Javier Alonso",
+                      image: "javi",
+                      role: "Profesor",
                     },
                     {
-                      'name': 'Giovanni Martínez',
-                      'image': 'gio',
-                      'role': 'Profesor',
+                      name: "Giovanni Martínez",
+                      image: "gio",
+                      role: "Profesor",
                     },
                   ].map((person) => (
                     <motion.div
@@ -916,7 +1060,10 @@ export default function Home() {
                     >
                       <motion.div
                         className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden relative cursor-pointer"
-                        whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                        whileHover={{
+                          scale: 1.05,
+                          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+                        }}
                       >
                         <Image
                           src={`/images/team/${person.image}.jpeg`}
@@ -925,8 +1072,12 @@ export default function Home() {
                           className="object-cover"
                         />
                       </motion.div>
-                      <h3 className="font-semibold text-ooi-dark-blue">{person.name}</h3>
-                      <p className="text-sm text-ooi-second-blue">{person.role}</p>
+                      <h3 className="font-semibold text-ooi-dark-blue">
+                        {person.name}
+                      </h3>
+                      <p className="text-sm text-ooi-second-blue">
+                        {person.role}
+                      </p>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -976,12 +1127,17 @@ export default function Home() {
                       />
                     </motion.div>
                     <CardHeader>
-                      <CardTitle className="text-ooi-dark-blue">Convocatoria {convoYear}</CardTitle>
-                      <CardDescription className="text-ooi-second-blue">Fecha de publicación: {convoYear}</CardDescription>
+                      <CardTitle className="text-ooi-dark-blue">
+                        Convocatoria {convoYear}
+                      </CardTitle>
+                      <CardDescription className="text-ooi-second-blue">
+                        Fecha de publicación: {convoYear}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-grow">
                       <p className="line-clamp-3 text-ooi-text-dark">
-                        Convocatoria para representar al Estado de Oaxaca en la OMI {convoYear}.
+                        Convocatoria para representar al Estado de Oaxaca en la
+                        OMI {convoYear}.
                       </p>
                     </CardContent>
                     <CardFooter className="flex gap-2">
@@ -997,9 +1153,12 @@ export default function Home() {
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
                           <DialogHeader>
-                            <DialogTitle className="text-xl text-ooi-dark-blue">Convocatoria {convoYear}</DialogTitle>
+                            <DialogTitle className="text-xl text-ooi-dark-blue">
+                              Convocatoria {convoYear}
+                            </DialogTitle>
                             <DialogDescription className="text-ooi-second-blue">
-                              Convocatoria oficial para el proceso de selección estatal {convoYear}
+                              Convocatoria oficial para el proceso de selección
+                              estatal {convoYear}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="relative w-full aspect-[3/4] mt-4">
@@ -1013,14 +1172,20 @@ export default function Home() {
                           </div>
                           <div className="mt-4 text-center">
                             <p className="text-ooi-text-dark mb-2">
-                              Para más información, puedes contactarnos en <a href="mailto:contacto@omioaxaca.org" className="text-ooi-second-blue hover:underline">contacto@omioaxaca.org</a>
+                              Para más información, puedes contactarnos en{" "}
+                              <a
+                                href="mailto:contacto@omioaxaca.org"
+                                className="text-ooi-second-blue hover:underline"
+                              >
+                                contacto@omioaxaca.org
+                              </a>
                             </p>
                             <Link href="/registro">
                               <Button className="bg-ooi-second-blue hover:bg-ooi-dark-blue text-white mt-2">
                                 Registrarme ahora
                               </Button>
                             </Link>
-                  </div>
+                          </div>
                         </DialogContent>
                       </Dialog>
 
@@ -1088,40 +1253,52 @@ export default function Home() {
                   {[
                     {
                       question: "¿Qué es la OOI?",
-                      answer: "Nosotros formamos parte del Comité de la Olimpiada Oaxaqueña de Informática y somos un grupo de jóvenes con el ideal de ayudar a mejorar el nivel de competitividad en programación del estado de Oaxaca. Tenemos dos grandes categorías: Así como la OMI es un concurso a nivel nacional, la Olimpiada Oaxaqueña de Informática es la Fase Estatal donde se seleccionan a los mejores programadores para que representen a nuestro estado a nivel nacional. De la misma forma, preparamos a las mejores programadoras para que representen a nuestro estado a nivel nacional en la OFMI."
+                      answer:
+                        "Nosotros formamos parte del Comité de la Olimpiada Oaxaqueña de Informática y somos un grupo de jóvenes con el ideal de ayudar a mejorar el nivel de competitividad en programación del estado de Oaxaca. Tenemos dos grandes categorías: Así como la OMI es un concurso a nivel nacional, la Olimpiada Oaxaqueña de Informática es la Fase Estatal donde se seleccionan a los mejores programadores para que representen a nuestro estado a nivel nacional. De la misma forma, preparamos a las mejores programadoras para que representen a nuestro estado a nivel nacional en la OFMI.",
                     },
                     {
                       question: "¿Qué es la OMI?",
-                      answer: "La Olimpiada Mexicana de Informática (OMI) es un concurso a nivel nacional para jóvenes con facilidad para resolver problemas prácticos mediante la lógica y el uso de computadoras, que busca promover el desarrollo tecnológico en México y encontrar a los mejores programadores, quienes formarán la selección mexicana para participar en las próximas Olimpiada Internacional de Informática (IOI). Si quieres saber más de la OMI puedes visitar su página oficial: https://www.olimpiadadeinformatica.org.mx/"
+                      answer:
+                        "La Olimpiada Mexicana de Informática (OMI) es un concurso a nivel nacional para jóvenes con facilidad para resolver problemas prácticos mediante la lógica y el uso de computadoras, que busca promover el desarrollo tecnológico en México y encontrar a los mejores programadores, quienes formarán la selección mexicana para participar en las próximas Olimpiada Internacional de Informática (IOI). Si quieres saber más de la OMI puedes visitar su página oficial: https://www.olimpiadadeinformatica.org.mx/",
                     },
                     {
-                      question: "¿Necesito tener experiencia previa en programación?",
-                      answer: "No es necesario tener experiencia previa, aunque es útil contar con conocimientos básicos. Nuestro programa está diseñado para enseñar desde los fundamentos hasta conceptos avanzados."
+                      question:
+                        "¿Necesito tener experiencia previa en programación?",
+                      answer:
+                        "No es necesario tener experiencia previa, aunque es útil contar con conocimientos básicos. Nuestro programa está diseñado para enseñar desde los fundamentos hasta conceptos avanzados.",
                     },
                     {
-                      question: "¿Cómo son seleccionados los representantes del Estado de Oaxaca en la OMI?",
-                      answer: "Los seleccionados para representar el Estado de Oaxaca siempre son los mejores programadores. El proceso es el siguiente: 1) Inscribete a los cursos de la OOI, 2) Crea una cuenta en OmegaUp, será nuestra referencia para ver tu progreso, 3) Los cursos tienen una duración aproximada de 8 meses con dos sesiones semanales, 4) En cada sesión se dejarán problemas de práctica en OmegaUp, 5) Durante los cursos se realizarán 3 mini-concursos de evaluación. Si logras destacar en OmegaUp y en los concursos, es muy probable que seas uno de los seleccionados."
+                      question:
+                        "¿Cómo son seleccionados los representantes del Estado de Oaxaca en la OMI?",
+                      answer:
+                        "Los seleccionados para representar el Estado de Oaxaca siempre son los mejores programadores. El proceso es el siguiente: 1) Inscribete a los cursos de la OOI, 2) Crea una cuenta en OmegaUp, será nuestra referencia para ver tu progreso, 3) Los cursos tienen una duración aproximada de 8 meses con dos sesiones semanales, 4) En cada sesión se dejarán problemas de práctica en OmegaUp, 5) Durante los cursos se realizarán 3 mini-concursos de evaluación. Si logras destacar en OmegaUp y en los concursos, es muy probable que seas uno de los seleccionados.",
                     },
                     {
                       question: "¿Qué tipo de problemas son?",
-                      answer: "La mayoría de los problemas que resolveremos serán del estilo de Programación Competitiva, donde tu ingenio, lógica y conocimiento de matemáticas son esenciales."
+                      answer:
+                        "La mayoría de los problemas que resolveremos serán del estilo de Programación Competitiva, donde tu ingenio, lógica y conocimiento de matemáticas son esenciales.",
                     },
                     {
                       question: "¿Cuál es el costo de participación?",
-                      answer: "Participar en los cursos y la selección de la OOI no tiene ningún costo. Hacemos todo el esfuerzo para que tengas todo lo necesario para prepararte como un excelente candidato para representar el Estado de Oaxaca. Sin embargo, no podemos hacernos cargo de los gastos operativos que implica ir a la OMI (transporte y hospedaje). Estamos buscando patrocinadores, pero por el momento es probable que necesites del apoyo de tu escuela, familia y amigos para cubrir estos gastos."
+                      answer:
+                        "Participar en los cursos y la selección de la OOI no tiene ningún costo. Hacemos todo el esfuerzo para que tengas todo lo necesario para prepararte como un excelente candidato para representar el Estado de Oaxaca. Sin embargo, no podemos hacernos cargo de los gastos operativos que implica ir a la OMI (transporte y hospedaje). Estamos buscando patrocinadores, pero por el momento es probable que necesites del apoyo de tu escuela, familia y amigos para cubrir estos gastos.",
                     },
                     {
                       question: "¿Qué lenguajes de programación se utilizan?",
-                      answer: "Principalmente C++, por ser el estándar en competencias de programación. Sin embargo, también se introducen conceptos en Python y Java."
+                      answer:
+                        "Principalmente C++, por ser el estándar en competencias de programación. Sin embargo, también se introducen conceptos en Python y Java.",
                     },
                     {
                       question: "¿Cuál es el horario de las clases?",
-                      answer: "Las clases tienen una duración aproximada de 5 meses, cada semana se imparte 1 sesion de una hora y media a través de videoconferencias."
+                      answer:
+                        "Las clases tienen una duración aproximada de 5 meses, cada semana se imparte 1 sesion de una hora y media a través de videoconferencias.",
                     },
                     {
-                      question: "¿Puedo participar si no vivo en la ciudad de Oaxaca?",
-                      answer: "¡Sí! Ofrecemos modalidad híbrida para estudiantes que viven en otras partes del estado. Las sesiones se transmiten en vivo y contamos con plataformas digitales para el seguimiento."
-                    }
+                      question:
+                        "¿Puedo participar si no vivo en la ciudad de Oaxaca?",
+                      answer:
+                        "¡Sí! Ofrecemos modalidad híbrida para estudiantes que viven en otras partes del estado. Las sesiones se transmiten en vivo y contamos con plataformas digitales para el seguimiento.",
+                    },
                   ].map((faq, index) => (
                     <motion.div
                       key={index}
@@ -1130,7 +1307,10 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                     >
-                      <AccordionItem value={`item-${index}`} className="border-ooi-second-blue/30">
+                      <AccordionItem
+                        value={`item-${index}`}
+                        className="border-ooi-second-blue/30"
+                      >
                         <AccordionTrigger className="text-ooi-dark-blue hover:text-ooi-second-blue">
                           {faq.question}
                         </AccordionTrigger>
@@ -1151,20 +1331,27 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
-                <div style={{ width: '100%', maxWidth: '300px', height: '300px', position: 'relative' }}>
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "300px",
+                    height: "300px",
+                    position: "relative",
+                  }}
+                >
                   <Image
                     src="/images/faq.png"
                     alt="Preguntas Frecuentes"
                     width={300}
                     height={300}
-                    style={{ objectFit: 'contain' }}
+                    style={{ objectFit: "contain" }}
                     priority
                   />
                 </div>
               </motion.div>
             </div>
-            </div>
-          </section>
+          </div>
+        </section>
 
         {/* Merged Final CTA Section with 3D Image */}
         <section className="py-16 bg-gradient-to-br from-blue-600 via-blue-500 to-purple-600 relative overflow-hidden">
@@ -1173,11 +1360,16 @@ export default function Home() {
             className="absolute inset-0 opacity-20"
             initial={{ backgroundPosition: "0% 0%" }}
             animate={{ backgroundPosition: "100% 100%" }}
-            transition={{ repeat: Infinity, repeatType: "mirror", duration: 20, ease: "linear" }}
+            transition={{
+              repeat: Infinity,
+              repeatType: "mirror",
+              duration: 20,
+              ease: "linear",
+            }}
             style={{
               backgroundImage: `radial-gradient(circle at 30% 50%, rgba(250, 238, 80, 0.8) 0%, transparent 20%),
                                radial-gradient(circle at 70% 20%, rgba(254, 110, 154, 0.7) 0%, transparent 20%)`,
-              backgroundSize: "80% 80%"
+              backgroundSize: "80% 80%",
             }}
           />
 
@@ -1191,13 +1383,20 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.2 }}
               >
-                <div style={{ width: '100%', maxWidth: '300px', height: '300px', position: 'relative' }}>
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "300px",
+                    height: "300px",
+                    position: "relative",
+                  }}
+                >
                   <Image
                     src="/images/join.png"
                     alt="Comunidad OOI"
                     width={300}
                     height={300}
-                    style={{ objectFit: 'contain' }}
+                    style={{ objectFit: "contain" }}
                     priority
                   />
                 </div>
@@ -1211,10 +1410,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
               >
-                <h2 className="text-3xl font-bold mb-4 text-white">¿Listo(a) para ser parte de la OOI?</h2>
+                <h2 className="text-3xl font-bold mb-4 text-white">
+                  ¿Listo(a) para ser parte de la OOI?
+                </h2>
                 <p className="text-xl mb-6 text-white/90">
-                  La OOI es más que una competencia, es una comunidad donde desarrollarás
-                  habilidades que te acompañarán toda la vida. Únete y empieza tu camino.
+                  La OOI es más que una competencia, es una comunidad donde
+                  desarrollarás habilidades que te acompañarán toda la vida.
+                  Únete y empieza tu camino.
                 </p>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -1225,10 +1427,16 @@ export default function Home() {
                 >
                   <Link href="/registro">
                     <motion.div
-                      whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)" }}
+                      whileHover={{
+                        scale: 1.05,
+                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)",
+                      }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Button size="lg" className="bg-ooi-yellow text-ooi-dark-blue hover:bg-white font-semibold">
+                      <Button
+                        size="lg"
+                        className="bg-ooi-yellow text-ooi-dark-blue hover:bg-white font-semibold"
+                      >
                         Inscríbete Ahora
                       </Button>
                     </motion.div>
@@ -1252,28 +1460,33 @@ export default function Home() {
               <motion.div variants={itemVariants}>
                 <h3 className="text-white text-lg font-semibold mb-4">OOI</h3>
                 <p className="text-sm">
-                La Olimpiada Oaxaqueña de Informática y todas las personas que lo involucran, forman una asociación sin fines de lucro, por lo que todos los cursos, materiales, competencia e información son y siempre serán completamente gratis.
+                  La Olimpiada Oaxaqueña de Informática y todas las personas que
+                  lo involucran, forman una asociación sin fines de lucro, por
+                  lo que todos los cursos, materiales, competencia e información
+                  son y siempre serán completamente gratis.
                 </p>
               </motion.div>
               <motion.div variants={itemVariants}>
-                <h3 className="text-white text-lg font-semibold mb-4">Enlaces</h3>
+                <h3 className="text-white text-lg font-semibold mb-4">
+                  Enlaces
+                </h3>
                 <ul className="space-y-2 text-sm">
                   {[
                     {
                       title: "Únete a nuestro Discord",
-                      url: "https://discord.gg/VjHmAqKfwh"
+                      url: "https://discord.gg/VjHmAqKfwh",
                     },
                     {
                       title: "Fechas Importantes",
-                      url: "/calendario"
+                      url: "/calendario",
                     },
                     {
                       title: "Politica de privacidad",
-                      url: "/politica-de-privacidad"
+                      url: "/politica-de-privacidad",
                     },
                     {
                       title: "Términos y condiciones",
-                      url: "/terminos-y-condiciones"
+                      url: "/terminos-y-condiciones",
                     },
                   ].map((item, index) => (
                     <motion.li
@@ -1281,8 +1494,7 @@ export default function Home() {
                       whileHover={{ x: 5, color: "#ffffff" }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link href={item.url}
-                            className="hover:text-white">
+                      <Link href={item.url} className="hover:text-white">
                         {item.title}
                       </Link>
                     </motion.li>
@@ -1292,33 +1504,35 @@ export default function Home() {
 
               {/* New additional links column */}
               <motion.div variants={itemVariants}>
-                <h3 className="text-white text-lg font-semibold mb-4">Recursos</h3>
+                <h3 className="text-white text-lg font-semibold mb-4">
+                  Recursos
+                </h3>
                 <ul className="space-y-2 text-sm">
                   {[
                     {
-                      title: "Documentación",
+                      title: "Guía De Estudio",
                       url: "/blog",
-                      internal: true
+                      internal: true,
                     },
                     {
                       title: "Material de Estudio",
                       url: "https://wiki.omioaxaca.org/",
-                      internal: false
+                      internal: false,
                     },
                     {
                       title: "Github",
                       url: "https://github.com/omioaxaca",
-                      internal: false
+                      internal: false,
                     },
                     {
                       title: "Cursos",
                       url: "https://www.youtube.com/channel/UC1vuv9F35Nlsg4X__AK6AZw/playlists",
-                      internal: false
+                      internal: false,
                     },
                     {
                       title: "Preguntas Frecuentes",
                       url: "https://wiki.omioaxaca.org/es/faq",
-                      internal: false
+                      internal: false,
                     },
                   ].map((item, index) => (
                     <motion.li
@@ -1326,9 +1540,11 @@ export default function Home() {
                       whileHover={{ x: 5, color: "#ffffff" }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link href={item.url}
-                            target={item.internal ? undefined : "_blank"}
-                            className="hover:text-white">
+                      <Link
+                        href={item.url}
+                        target={item.internal ? undefined : "_blank"}
+                        className="hover:text-white"
+                      >
                         {item.title}
                       </Link>
                     </motion.li>
@@ -1337,53 +1553,174 @@ export default function Home() {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <h3 className="text-white text-lg font-semibold mb-4">Contacto</h3>
+                <h3 className="text-white text-lg font-semibold mb-4">
+                  Contacto
+                </h3>
                 <ul className="space-y-2 text-sm">
                   <motion.li
                     className="flex items-center gap-2"
                     whileHover={{ x: 5, color: "#ffffff" }}
                     transition={{ duration: 0.2 }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-mail"
+                    >
+                      <rect width="20" height="16" x="2" y="4" rx="2" />
+                      <path d="M22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
                     <span>contacto@omioaxaca.org</span>
                   </motion.li>
                 </ul>
               </motion.div>
               <motion.div variants={itemVariants}>
-                <h3 className="text-white text-lg font-semibold mb-4">Síguenos</h3>
+                <h3 className="text-white text-lg font-semibold mb-4">
+                  Síguenos
+                </h3>
                 <div className="flex gap-4">
                   {[
                     {
                       name: "Facebook",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
-                      url: "https://www.facebook.com/OMIOaxaca"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-facebook"
+                        >
+                          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                        </svg>
+                      ),
+                      url: "https://www.facebook.com/OMIOaxaca",
                     },
                     {
                       name: "Twitter",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-twitter"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4.77a5.07 5.07 0 0 0 5.07-5.07c0-1.21-.32-2.34-.89-3.3z"/></svg>,
-                      url: "https://twitter.com/omioaxaca"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-twitter"
+                        >
+                          <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4.77a5.07 5.07 0 0 0 5.07-5.07c0-1.21-.32-2.34-.89-3.3z" />
+                        </svg>
+                      ),
+                      url: "https://twitter.com/omioaxaca",
                     },
                     {
                       name: "Instagram",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>,
-                      url: "https://www.instagram.com/omioaxaca/"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-instagram"
+                        >
+                          <rect
+                            width="20"
+                            height="20"
+                            x="2"
+                            y="2"
+                            rx="5"
+                            ry="5"
+                          />
+                          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                          <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                        </svg>
+                      ),
+                      url: "https://www.instagram.com/omioaxaca/",
                     },
                     {
                       name: "Youtube",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-youtube"><path d="M22.54 6.42A2.5 2.5 0 0 0 20.12 4H3.88A2.5 2.5 0 0 0 1.46 6.42C1.16 7.68 1 9.31 1 12s.16 4.32 .46 5.58A2.5 2.5 0 0 0 3.88 20h16.24a2.5 2.5 0 0 0 2.42-2.42C22.84 16.32 23 14.69 23 12s-.16-4.32-.46-5.58z"/><polygon points="9.54,15.54 9.54,8.46,15,12"/></svg>,
-                      url: "https://www.youtube.com/channel/UC1vuv9F35Nlsg4X__AK6AZw/"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-youtube"
+                        >
+                          <path d="M22.54 6.42A2.5 2.5 0 0 0 20.12 4H3.88A2.5 2.5 0 0 0 1.46 6.42C1.16 7.68 1 9.31 1 12s.16 4.32 .46 5.58A2.5 2.5 0 0 0 3.88 20h16.24a2.5 2.5 0 0 0 2.42-2.42C22.84 16.32 23 14.69 23 12s-.16-4.32-.46-5.58z" />
+                          <polygon points="9.54,15.54 9.54,8.46,15,12" />
+                        </svg>
+                      ),
+                      url: "https://www.youtube.com/channel/UC1vuv9F35Nlsg4X__AK6AZw/",
                     },
                     {
                       name: "Discord",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-discord"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 7.2c3.4-1 5.6-1 9 0"/><path d="M7.5 16.8c3.4 1 5.6 1 9 0"/><path d="M3 7.2v9.6c0 1 .8 1.8 1.8 1.8h3l1.8 3h4.8l1.8-3h3c1 0 1.8-.8 1.8-1.8V7.2c0-1-.8-1.8-1.8-1.8H4.8C3.8 5.4 3 6.2 3 7.2z"/></svg>,
-                      url: "https://discord.gg/VjHmAqKfwh"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-discord"
+                        >
+                          <circle cx="9" cy="12" r="1" />
+                          <circle cx="15" cy="12" r="1" />
+                          <path d="M7.5 7.2c3.4-1 5.6-1 9 0" />
+                          <path d="M7.5 16.8c3.4 1 5.6 1 9 0" />
+                          <path d="M3 7.2v9.6c0 1 .8 1.8 1.8 1.8h3l1.8 3h4.8l1.8-3h3c1 0 1.8-.8 1.8-1.8V7.2c0-1-.8-1.8-1.8-1.8H4.8C3.8 5.4 3 6.2 3 7.2z" />
+                        </svg>
+                      ),
+                      url: "https://discord.gg/VjHmAqKfwh",
                     },
                     {
                       name: "Github",
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>,
-                      url: "https://github.com/omioaxaca"
+                      icon: (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-github"
+                        >
+                          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                        </svg>
+                      ),
+                      url: "https://github.com/omioaxaca",
                     },
-
                   ].map((social, index) => (
                     <motion.a
                       key={index}
@@ -1408,7 +1745,10 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
-              <p>© {new Date().getFullYear()} Olimpiada Oaxaqueña de Informática. Todos los derechos reservados.</p>
+              <p>
+                © {new Date().getFullYear()} Olimpiada Oaxaqueña de Informática.
+                Todos los derechos reservados.
+              </p>
             </motion.div>
           </div>
         </footer>

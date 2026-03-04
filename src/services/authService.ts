@@ -43,7 +43,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const token = localStorageUtils.getItem<string>("token");
-    
+
     if (token) {
       if (isTokenExpired(token)) {
         try {
@@ -58,12 +58,12 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    
+
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add response interceptor
@@ -88,7 +88,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
-export default axiosInstance; 
+export default axiosInstance;

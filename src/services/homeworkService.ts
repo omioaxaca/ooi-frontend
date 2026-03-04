@@ -2,7 +2,11 @@ import axios from "axios";
 import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import { User } from "@/types/user";
-import type { Homework, HomeworkAttempt, NewHomeworkAttempt } from "@/types/dashboard/homework";
+import type {
+  Homework,
+  HomeworkAttempt,
+  NewHomeworkAttempt,
+} from "@/types/dashboard/homework";
 import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
@@ -42,7 +46,7 @@ export const fetchUserHomeworks = async (): Promise<Homework[]> => {
       },
       {
         encodeValuesOnly: true,
-      }
+      },
     );
     const response = await axiosInstance.get(`/api/homeworks?${query}`);
     return response.data.data;
@@ -52,8 +56,49 @@ export const fetchUserHomeworks = async (): Promise<Homework[]> => {
   }
 };
 
+// Fetch homeworks filtered by contest cycle document ID
+export const fetchUserHomeworksByContestCycle = async (
+  contestCycleDocumentId: string,
+): Promise<Homework[]> => {
+  try {
+    const query = qs.stringify(
+      {
+        fields: "*",
+        filters: {
+          contestCycle: {
+            documentId: {
+              $eq: contestCycleDocumentId,
+            },
+          },
+        },
+        populate: {
+          classLesson: {
+            fields: "*",
+          },
+          contestCycle: {
+            fields: "*",
+          },
+          files: {
+            fields: "name,url",
+          },
+        },
+      },
+      {
+        encodeValuesOnly: true,
+      },
+    );
+    const response = await axiosInstance.get(`/api/homeworks?${query}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching homeworks by contest cycle:", error);
+    throw error;
+  }
+};
+
 // Fetch a single homework by ID
-export const fetchHomeworkById = async (id: string | number): Promise<Homework> => {
+export const fetchHomeworkById = async (
+  id: string | number,
+): Promise<Homework> => {
   try {
     const query = qs.stringify(
       {
@@ -72,7 +117,7 @@ export const fetchHomeworkById = async (id: string | number): Promise<Homework> 
       },
       {
         encodeValuesOnly: true,
-      }
+      },
     );
     const response = await axiosInstance.get(`/api/homeworks/${id}?${query}`);
     return response.data.data;
@@ -83,35 +128,37 @@ export const fetchHomeworkById = async (id: string | number): Promise<Homework> 
 };
 
 // Fetch all homework attempts for the current user
-export const fetchUserHomeworkAttempts = async (): Promise<HomeworkAttempt[]> => {
+export const fetchUserHomeworkAttempts = async (): Promise<
+  HomeworkAttempt[]
+> => {
   const userId = getCurrentUserId();
   try {
     const query = qs.stringify(
       {
         filters: {
           user: {
-            $eq: userId
-          }
+            $eq: userId,
+          },
         },
         fields: "*",
         populate: {
           user: {
-            fields: "id"
+            fields: "id",
           },
           deliveredFiles: {
-            fields: "name,url"
+            fields: "name,url",
           },
           contestCycle: {
-            fields: "id"
+            fields: "id",
           },
           homework: {
-            fields: "id"
-          }
+            fields: "id",
+          },
         },
       },
       {
         encodeValuesOnly: true,
-      }
+      },
     );
     const response = await axiosInstance.get(`/api/homework-attempts?${query}`);
     return response.data.data;
@@ -131,18 +178,18 @@ interface StrapiUploadFile {
 
 // Submit an homework attempt
 export const submitHomeworkAttempt = async (
-  homeworkData: NewHomeworkAttempt, 
-  files: File[]
+  homeworkData: NewHomeworkAttempt,
+  files: File[],
 ): Promise<HomeworkAttempt> => {
   try {
     const authHeaders = getAuthHeaders();
-    
+
     // Step 1: Upload the files first
     const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
+    files.forEach((file) => {
+      formData.append("files", file);
     });
-    
+
     // Upload files to Strapi's upload endpoint
     const uploadResponse = await axios.post<StrapiUploadFile[]>(
       `${API_URL}/api/upload`,
@@ -150,26 +197,28 @@ export const submitHomeworkAttempt = async (
       {
         headers: {
           ...authHeaders.headers,
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
-    
+
     // Step 2: Get the file IDs from the response
-    const fileIds = uploadResponse.data.map((file: StrapiUploadFile) => file.id);
-    
+    const fileIds = uploadResponse.data.map(
+      (file: StrapiUploadFile) => file.id,
+    );
+
     // Step 3: Create the homework attempt with the file IDs
     const response = await axios.post(
       `${API_URL}/api/homework-attempts`,
-      { 
+      {
         data: {
           ...homeworkData,
           deliveredFiles: fileIds,
-        } 
+        },
       },
-      authHeaders
+      authHeaders,
     );
-    
+
     return response.data.data;
   } catch (error) {
     console.error("Error submitting homework attempt:", error);
@@ -182,4 +231,4 @@ const getCurrentUserId = (): number => {
   const user = localStorageUtils.getItem<User>("user");
   // Convert the string ID to a number if needed
   return user ? user.id : 0;
-}; 
+};

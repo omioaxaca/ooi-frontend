@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/nav-bar";
-import { getNavigationStructure, getPostsByCategory, getCategories } from "@/lib/mdx";
+import {
+  getNavigationStructure,
+  getPostsByCategory,
+  getCategories,
+} from "@/lib/mdx";
 import { DocsSidebar, DocsMobileSidebar } from "@/components/docs-sidebar";
 import {
   Card,
@@ -40,7 +44,13 @@ export async function generateStaticParams() {
 // Generate metadata for the page
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { category } = await params;
-  const configPath = path.join(process.cwd(), "content", "docs", category, "_category.json");
+  const configPath = path.join(
+    process.cwd(),
+    "content",
+    "docs",
+    category,
+    "_category.json",
+  );
   let categoryName = category;
   let description = "";
 
@@ -51,7 +61,7 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   }
 
   return {
-    title: `${categoryName} | Documentación | OOI`,
+    title: `${categoryName} | Guía De Estudio | OOI`,
     description: description || `Artículos sobre ${categoryName}`,
   };
 }
@@ -85,7 +95,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <Breadcrumb className="mb-6">
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/blog">Documentación</BreadcrumbLink>
+                  <BreadcrumbLink href="/blog">Guía De Estudio</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
@@ -96,7 +106,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
             {/* Category Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">{currentCategory.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                {currentCategory.name}
+              </h1>
               {currentCategory.description && (
                 <p className="text-muted-foreground text-lg">
                   {currentCategory.description}
@@ -147,7 +159,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                         {post.tags.length > 0 && (
                           <div className="flex gap-1">
                             {post.tags.slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="text-xs"
+                              >
                                 {tag}
                               </Badge>
                             ))}

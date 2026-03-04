@@ -13,8 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar, User, Tag, FolderOpen } from "lucide-react";
 
 export const metadata = {
-  title: "Documentación | OOI",
-  description: "Recursos de estudio, tutoriales y guías para la Olimpiada de Informática",
+  title: "Guía De Estudio | OOI",
+  description:
+    "Recursos de estudio, tutoriales y guías para la Olimpiada de Informática",
 };
 
 export default function BlogPage() {
@@ -29,10 +30,11 @@ export default function BlogPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Documentación</h1>
+            <h1 className="text-4xl font-bold mb-4">Guía De Estudio</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Recursos de estudio, tutoriales y guías para prepararte en la Olimpiada
-              de Informática. Explora los diferentes temas y aprende a tu propio ritmo.
+              Recursos de estudio, tutoriales y guías para prepararte en la
+              Olimpiada de Informática. Explora los diferentes temas y aprende a
+              tu propio ritmo.
             </p>
           </div>
 
@@ -57,13 +59,17 @@ export default function BlogPage() {
                           {category.name}
                         </CardTitle>
                         {category.description && (
-                          <CardDescription>{category.description}</CardDescription>
+                          <CardDescription>
+                            {category.description}
+                          </CardDescription>
                         )}
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-muted-foreground">
                           {category.posts.length}{" "}
-                          {category.posts.length === 1 ? "artículo" : "artículos"}
+                          {category.posts.length === 1
+                            ? "artículo"
+                            : "artículos"}
                         </p>
                       </CardContent>
                     </Card>
@@ -83,7 +89,10 @@ export default function BlogPage() {
               <div className="flex flex-wrap gap-2">
                 {allTags.map((tag) => (
                   <Link key={tag} href={`/blog/tags/${tag}`}>
-                    <Badge variant="secondary" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                    <Badge
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                    >
                       {tag}
                     </Badge>
                   </Link>
@@ -98,18 +107,26 @@ export default function BlogPage() {
             {allPosts.length === 0 ? (
               <Card className="p-8 text-center">
                 <p className="text-muted-foreground">
-                  No hay artículos disponibles todavía. ¡Pronto agregaremos contenido!
+                  No hay artículos disponibles todavía. ¡Pronto agregaremos
+                  contenido!
                 </p>
               </Card>
             ) : (
               <div className="space-y-6">
                 {allPosts.slice(0, 10).map((post) => (
-                  <Card key={`${post.category}-${post.slug}`} className="overflow-hidden">
+                  <Card
+                    key={`${post.category}-${post.slug}`}
+                    className="overflow-hidden"
+                  >
                     <CardHeader>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         <Badge variant="outline">{post.category}</Badge>
                         {post.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}

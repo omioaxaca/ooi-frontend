@@ -63,7 +63,7 @@ export default async function TagPage({ params }: TagPageProps) {
           <Breadcrumb className="mb-6">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/blog">Documentación</BreadcrumbLink>
+                <BreadcrumbLink href="/blog">Guía De Estudio</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -79,7 +79,8 @@ export default async function TagPage({ params }: TagPageProps) {
               Etiqueta: {decodedTag}
             </h1>
             <p className="text-muted-foreground">
-              {posts.length} {posts.length === 1 ? "artículo" : "artículos"} encontrados
+              {posts.length} {posts.length === 1 ? "artículo" : "artículos"}{" "}
+              encontrados
             </p>
           </div>
 

@@ -7,22 +7,58 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Video, ExternalLink, FileText, User as UserIcon, Clock, Calendar, Check } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Video,
+  ExternalLink,
+  FileText,
+  User as UserIcon,
+  Clock,
+  Calendar,
+  Check,
+} from "lucide-react";
 import { WithConstructionBanner } from "@/components/with-construction-banner";
-import { fetchUserClassLessons } from "@/services/classLessonService";
-import type { ClassLesson, ClassLessonView } from "@/types/dashboard/classLessons";
+import {
+  fetchUserClassLessons,
+  fetchUserClassLessonsByContestCycle,
+} from "@/services/classLessonService";
+import { fetchAllContestCycles } from "@/services/contestCycle";
+import type {
+  ClassLesson,
+  ClassLessonView,
+} from "@/types/dashboard/classLessons";
+import type { ContestCycle } from "@/types/dashboard/contestCycle";
 import type { ContestPhase } from "@/types/dashboard/contestPhase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
@@ -34,15 +70,46 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [classLessons, setClassLessons] = useState<ClassLesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Contest cycle filter
+  const [contestCycles, setContestCycles] = useState<ContestCycle[]>([]);
+  const [selectedCycleId, setSelectedCycleId] = useState<string>("");
   // For class numbering
   const [classNumbersAssigned, setClassNumbersAssigned] = useState(false);
   const classNumberMapRef = useRef<Map<number, number>>(new Map());
 
-  // Fetch class lessons when component mounts
+  // Fetch contest cycles when component mounts
   useEffect(() => {
-    const getClassLessons = async () => {
+    const getContestCycles = async () => {
       try {
-        const lessons = await fetchUserClassLessons();
+        const cycles = await fetchAllContestCycles();
+        setContestCycles(cycles);
+        // Default to the most recent cycle if available
+        if (cycles.length > 0) {
+          setSelectedCycleId(cycles[0].documentId);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contest cycles:", error);
+      }
+    };
+
+    getContestCycles();
+  }, []);
+
+  // Fetch class lessons when selected cycle changes
+  useEffect(() => {
+    // Don't fetch until contest cycles have loaded and a selection is made
+    if (!selectedCycleId) return;
+
+    const getClassLessons = async () => {
+      setIsLoading(true);
+      setClassNumbersAssigned(false);
+      try {
+        let lessons: ClassLesson[];
+        if (selectedCycleId !== "all") {
+          lessons = await fetchUserClassLessonsByContestCycle(selectedCycleId);
+        } else {
+          lessons = await fetchUserClassLessons();
+        }
         setClassLessons(lessons);
       } catch (error) {
         console.error("Failed to fetch class lessons:", error);
@@ -52,14 +119,17 @@ export default function CalendarPage() {
     };
 
     getClassLessons();
-  }, []);
+  }, [selectedCycleId]);
 
   // Sort class lessons by date for consistent numbering
-  const sortedLessons = useMemo(() =>
-    [...classLessons]
-      .filter(lesson => lesson?.syllabi && lesson.syllabi.length > 1)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    [classLessons]
+  const sortedLessons = useMemo(
+    () =>
+      [...classLessons]
+        .filter((lesson) => lesson?.syllabi && lesson.syllabi.length > 1)
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        ),
+    [classLessons],
   );
 
   // Assign sequential class numbers once data is loaded
@@ -70,7 +140,7 @@ export default function CalendarPage() {
 
       // Assign sequential numbers to classes with syllabi
       let counter = 1;
-      sortedLessons.forEach(lesson => {
+      sortedLessons.forEach((lesson) => {
         classNumberMapRef.current.set(lesson.id, counter++);
       });
 
@@ -108,7 +178,7 @@ export default function CalendarPage() {
       const date = new Date(currentYear, currentMonth, day);
 
       // Find class lessons for this day (with validation)
-      const dayEvents = classLessons.filter(lesson => {
+      const dayEvents = classLessons.filter((lesson) => {
         if (!lesson.date) return false;
         try {
           const lessonDate = new Date(lesson.date);
@@ -130,8 +200,18 @@ export default function CalendarPage() {
 
   const calendarDays = generateCalendarDays();
   const monthNames = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -157,15 +237,16 @@ export default function CalendarPage() {
   };
 
   // Get events for selected day
-  const selectedDayEvents = selectedDay ?
-    classLessons.filter(lesson => {
-      const lessonDate = new Date(lesson.date);
-      return (
-        lessonDate.getDate() === selectedDay &&
-        lessonDate.getMonth() === currentMonth &&
-        lessonDate.getFullYear() === currentYear
-      );
-    }) : [];
+  const selectedDayEvents = selectedDay
+    ? classLessons.filter((lesson) => {
+        const lessonDate = new Date(lesson.date);
+        return (
+          lessonDate.getDate() === selectedDay &&
+          lessonDate.getMonth() === currentMonth &&
+          lessonDate.getFullYear() === currentYear
+        );
+      })
+    : [];
 
   // Sort class lessons by date
   const sortedClassLessons = [...classLessons].sort((a, b) => {
@@ -174,32 +255,32 @@ export default function CalendarPage() {
 
   // Format date with proper fallback
   const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return 'No date specified';
+    if (!dateString) return "No date specified";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('es-MX', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return date.toLocaleDateString("es-MX", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     } catch (e) {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
 
   // Format time with proper fallback
   const formatTime = (dateString: string | undefined) => {
-    if (!dateString) return 'No time specified';
+    if (!dateString) return "No time specified";
     try {
       const date = new Date(dateString);
-      return date.toLocaleTimeString('es-MX', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+      return date.toLocaleTimeString("es-MX", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
       });
     } catch (e) {
-      return 'Invalid time';
+      return "Invalid time";
     }
   };
 
@@ -232,18 +313,25 @@ export default function CalendarPage() {
   };
 
   // Safe access to date parts
-  const getDatePart = (dateString: string | undefined, part: 'day' | 'month' | 'year') => {
+  const getDatePart = (
+    dateString: string | undefined,
+    part: "day" | "month" | "year",
+  ) => {
     if (!dateString) return 1; // Default to 1 for day, January for month, current year for year
     try {
       const date = new Date(dateString);
-      switch(part) {
-        case 'day': return date.getDate();
-        case 'month': return date.getMonth();
-        case 'year': return date.getFullYear();
-        default: return 1;
+      switch (part) {
+        case "day":
+          return date.getDate();
+        case "month":
+          return date.getMonth();
+        case "year":
+          return date.getFullYear();
+        default:
+          return 1;
       }
     } catch (e) {
-      return part === 'year' ? new Date().getFullYear() : 1;
+      return part === "year" ? new Date().getFullYear() : 1;
     }
   };
 
@@ -254,15 +342,29 @@ export default function CalendarPage() {
     // Use the phase title to determine color
     const phaseLower = phaseTitle.toLowerCase();
 
-    if (phaseLower.includes('fase 1') || phaseLower.includes('aprendiz')) {
+    if (phaseLower.includes("fase 1") || phaseLower.includes("aprendiz")) {
       return "bg-blue-100 text-blue-800";
-    } else if (phaseLower.includes('fase 2') || phaseLower.includes('matemático')) {
+    } else if (
+      phaseLower.includes("fase 2") ||
+      phaseLower.includes("matemático")
+    ) {
       return "bg-green-100 text-green-800";
-    } else if (phaseLower.includes('fase 3') || phaseLower.includes('programador') || phaseLower.includes('explorador')) {
+    } else if (
+      phaseLower.includes("fase 3") ||
+      phaseLower.includes("programador") ||
+      phaseLower.includes("explorador")
+    ) {
       return "bg-purple-100 text-purple-800";
-    } else if (phaseLower.includes('fase 4') || phaseLower.includes('algoritmista')) {
+    } else if (
+      phaseLower.includes("fase 4") ||
+      phaseLower.includes("algoritmista")
+    ) {
       return "bg-amber-100 text-amber-800";
-    } else if (phaseLower.includes('fase 5') || phaseLower.includes('olimpico') || phaseLower.includes('leyenda')) {
+    } else if (
+      phaseLower.includes("fase 5") ||
+      phaseLower.includes("olimpico") ||
+      phaseLower.includes("leyenda")
+    ) {
       return "bg-red-100 text-red-800";
     } else {
       return "bg-gray-100 text-gray-800";
@@ -271,24 +373,24 @@ export default function CalendarPage() {
 
   // Get phase name for display
   const getPhaseName = (lesson: ClassLesson) => {
-    return lesson.contestPhase?.title || '';
+    return lesson.contestPhase?.title || "";
   };
 
   // Get safe syllabus title based on number of syllabi items
   const getSyllabusTitle = (lesson: ClassLesson) => {
     // If no syllabi, use default title
     if (!lesson?.syllabi || lesson.syllabi.length === 0) {
-      return 'Clase programada';
+      return "Clase programada";
     }
 
     // If only one syllabus, use its title
     if (lesson.syllabi.length === 1) {
-      return lesson.syllabi[0]?.title || 'Clase programada';
+      return lesson.syllabi[0]?.title || "Clase programada";
     }
 
     // If multiple syllabi, format as "Clase número X"
     const classNumber = getClassNumber(lesson.id);
-    return `Clase número ${classNumber || '?'} (${lesson.syllabi.length} temas)`;
+    return `Clase número ${classNumber || "?"} (${lesson.syllabi.length} temas)`;
   };
 
   // Get all syllabi titles for a lesson
@@ -297,29 +399,37 @@ export default function CalendarPage() {
       return [];
     }
 
-    return lesson.syllabi.map(syllabus => syllabus.title).filter(Boolean);
+    return lesson.syllabi.map((syllabus) => syllabus.title).filter(Boolean);
   };
 
   // Get safe syllabus description
   const getSyllabusDescription = (lesson: ClassLesson) => {
-    return lesson?.description ||
-      (lesson?.syllabi && lesson.syllabi.length > 0 && lesson.syllabi[0]?.description) ||
-      'No hay descripción disponible.';
+    return (
+      lesson?.description ||
+      (lesson?.syllabi &&
+        lesson.syllabi.length > 0 &&
+        lesson.syllabi[0]?.description) ||
+      "No hay descripción disponible."
+    );
   };
 
   // Get safe teacher name
   const getTeacherName = (lesson: ClassLesson) => {
     return lesson?.teacher
-      ? `${lesson.teacher.firstName || ''} ${lesson.teacher.lastName || ''}`.trim() || 'Profesor no asignado'
-      : 'Profesor no asignado';
+      ? `${lesson.teacher.firstName || ""} ${lesson.teacher.lastName || ""}`.trim() ||
+          "Profesor no asignado"
+      : "Profesor no asignado";
   };
 
   // Get teacher initials for avatar fallback
   const getTeacherInitials = (lesson: ClassLesson) => {
-    if (!lesson?.teacher) return 'NA';
-    const firstName = lesson.teacher.firstName || '';
-    const lastName = lesson.teacher.lastName || '';
-    return `${firstName.charAt(0) || ''}${lastName.charAt(0) || ''}`.toUpperCase() || 'NA';
+    if (!lesson?.teacher) return "NA";
+    const firstName = lesson.teacher.firstName || "";
+    const lastName = lesson.teacher.lastName || "";
+    return (
+      `${firstName.charAt(0) || ""}${lastName.charAt(0) || ""}`.toUpperCase() ||
+      "NA"
+    );
   };
 
   return (
@@ -331,7 +441,10 @@ export default function CalendarPage() {
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
@@ -339,7 +452,7 @@ export default function CalendarPage() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Calendario</BreadcrumbPage>
+                    <BreadcrumbPage>Calendario de clases</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -355,12 +468,39 @@ export default function CalendarPage() {
             >
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-ooi-second-blue" />
-                <h1 className="text-2xl font-semibold text-ooi-dark-blue">Calendario de Clases</h1>
+                <h1 className="text-2xl font-semibold text-ooi-dark-blue">
+                  Calendario de Clases
+                </h1>
               </div>
-              <div className="flex items-center gap-2">
-                <Tabs value={viewType} onValueChange={setViewType} className="w-[250px]">
+              <div className="flex items-center gap-3">
+                <Select
+                  value={selectedCycleId}
+                  onValueChange={setSelectedCycleId}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Ciclo de competencia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los ciclos</SelectItem>
+                    {contestCycles.map((cycle) => (
+                      <SelectItem
+                        key={cycle.documentId}
+                        value={cycle.documentId}
+                      >
+                        {cycle.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Tabs
+                  value={viewType}
+                  onValueChange={setViewType}
+                  className="w-[250px]"
+                >
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="calendar">Calendario</TabsTrigger>
+                    <TabsTrigger value="calendar">
+                      Calendario de clases
+                    </TabsTrigger>
                     <TabsTrigger value="list">Lista</TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -391,13 +531,21 @@ export default function CalendarPage() {
                       <Card>
                         <CardHeader className="pb-3">
                           <div className="flex justify-between items-center">
-                            <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={goToPreviousMonth}
+                            >
                               <ChevronLeft className="h-5 w-5" />
                             </Button>
                             <CardTitle className="text-xl font-medium">
                               {monthNames[currentMonth]} {currentYear}
                             </CardTitle>
-                            <Button variant="ghost" size="icon" onClick={goToNextMonth}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={goToNextMonth}
+                            >
                               <ChevronRight className="h-5 w-5" />
                             </Button>
                           </div>
@@ -406,7 +554,10 @@ export default function CalendarPage() {
                           <div className="grid grid-cols-7 gap-1">
                             {/* Days of the week */}
                             {weekDays.map((day, i) => (
-                              <div key={i} className="text-center text-sm font-medium text-gray-500 py-2">
+                              <div
+                                key={i}
+                                className="text-center text-sm font-medium text-gray-500 py-2"
+                              >
                                 {day}
                               </div>
                             ))}
@@ -416,11 +567,17 @@ export default function CalendarPage() {
                               <div
                                 key={i}
                                 className={`border rounded-md min-h-[80px] p-1 ${
-                                  dayData.day === selectedDay ? 'ring-2 ring-ooi-second-blue' : ''
+                                  dayData.day === selectedDay
+                                    ? "ring-2 ring-ooi-second-blue"
+                                    : ""
                                 } ${
-                                  dayData.day ? 'hover:bg-gray-50 cursor-pointer' : 'bg-gray-50/50'
+                                  dayData.day
+                                    ? "hover:bg-gray-50 cursor-pointer"
+                                    : "bg-gray-50/50"
                                 }`}
-                                onClick={() => dayData.day && setSelectedDay(dayData.day)}
+                                onClick={() =>
+                                  dayData.day && setSelectedDay(dayData.day)
+                                }
                               >
                                 {dayData.day && (
                                   <>
@@ -428,16 +585,19 @@ export default function CalendarPage() {
                                       {dayData.day}
                                     </div>
                                     <div className="space-y-1">
-                                      {dayData.events.slice(0, 2).map((lesson, j) => (
-                                        <div
-                                          key={j}
-                                          className={`text-xs truncate px-1 py-0.5 rounded ${getPhaseBadgeColor(getPhaseName(lesson))}`}
-                                        >
-                                          <span className="font-medium">
-                                            {formatTime(lesson.date)}
-                                          </span>: {getSyllabusTitle(lesson)}
-                                        </div>
-                                      ))}
+                                      {dayData.events
+                                        .slice(0, 2)
+                                        .map((lesson, j) => (
+                                          <div
+                                            key={j}
+                                            className={`text-xs truncate px-1 py-0.5 rounded ${getPhaseBadgeColor(getPhaseName(lesson))}`}
+                                          >
+                                            <span className="font-medium">
+                                              {formatTime(lesson.date)}
+                                            </span>
+                                            : {getSyllabusTitle(lesson)}
+                                          </div>
+                                        ))}
                                       {dayData.events.length > 2 && (
                                         <div className="text-xs text-gray-500 text-center">
                                           + {dayData.events.length - 2} más
@@ -457,11 +617,9 @@ export default function CalendarPage() {
                       <Card>
                         <CardHeader>
                           <CardTitle className="text-lg">
-                            {selectedDay ? (
-                              `Clases: ${selectedDay} de ${monthNames[currentMonth]}`
-                            ) : (
-                              "Selecciona un día"
-                            )}
+                            {selectedDay
+                              ? `Clases: ${selectedDay} de ${monthNames[currentMonth]}`
+                              : "Selecciona un día"}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -469,16 +627,25 @@ export default function CalendarPage() {
                             selectedDayEvents.length > 0 ? (
                               <div className="space-y-4">
                                 {selectedDayEvents.map((lesson, i) => (
-                                  <div key={i} className="border rounded-lg p-3">
+                                  <div
+                                    key={i}
+                                    className="border rounded-lg p-3"
+                                  >
                                     <div className="flex items-center justify-between mb-2">
-                                      <Badge className={getPhaseBadgeColor(getPhaseName(lesson))}>
-                                        {getPhaseName(lesson) || 'Clase'}
+                                      <Badge
+                                        className={getPhaseBadgeColor(
+                                          getPhaseName(lesson),
+                                        )}
+                                      >
+                                        {getPhaseName(lesson) || "Clase"}
                                       </Badge>
                                       <span className="text-sm text-gray-500">
                                         {formatTime(lesson.date)}
                                       </span>
                                     </div>
-                                    <h3 className="font-medium">{getSyllabusTitle(lesson)}</h3>
+                                    <h3 className="font-medium">
+                                      {getSyllabusTitle(lesson)}
+                                    </h3>
                                     <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
                                       <UserIcon className="h-4 w-4" />
                                       <span>{getTeacherName(lesson)}</span>
@@ -506,7 +673,8 @@ export default function CalendarPage() {
                             )
                           ) : (
                             <div className="text-center text-gray-500 py-6">
-                              Selecciona un día en el calendario para ver las clases
+                              Selecciona un día en el calendario para ver las
+                              clases
                             </div>
                           )}
                         </CardContent>
@@ -535,15 +703,22 @@ export default function CalendarPage() {
                         ) : (
                           <div className="space-y-6">
                             {sortedClassLessons.map((lesson) => (
-                              <div key={lesson.id} className="flex flex-col md:flex-row gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                              <div
+                                key={lesson.id}
+                                className="flex flex-col md:flex-row gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                              >
                                 <div className="flex-shrink-0">
-                                  <div className={`p-4 rounded-lg ${isPast(lesson.date) ? 'bg-gray-100' : isToday(lesson.date) ? 'bg-blue-100' : 'bg-green-50'}`}>
+                                  <div
+                                    className={`p-4 rounded-lg ${isPast(lesson.date) ? "bg-gray-100" : isToday(lesson.date) ? "bg-blue-100" : "bg-green-50"}`}
+                                  >
                                     <div className="text-center">
                                       <div className="text-2xl font-bold">
-                                        {getDatePart(lesson.date, 'day')}
+                                        {getDatePart(lesson.date, "day")}
                                       </div>
                                       <div className="text-sm uppercase">
-                                        {monthNames[getDatePart(lesson.date, 'month')].slice(0, 3)}
+                                        {monthNames[
+                                          getDatePart(lesson.date, "month")
+                                        ].slice(0, 3)}
                                       </div>
                                       <div className="text-xs mt-1">
                                         {formatTime(lesson.date)}
@@ -552,7 +727,10 @@ export default function CalendarPage() {
                                   </div>
                                   {isPast(lesson.date) && (
                                     <div className="mt-2 flex justify-center">
-                                      <Badge variant="outline" className="text-gray-500 border-gray-300">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-gray-500 border-gray-300"
+                                      >
                                         <Check className="h-3 w-3 mr-1" />
                                         Completada
                                       </Badge>
@@ -578,25 +756,40 @@ export default function CalendarPage() {
                                         {formatDate(lesson.date)}
                                       </div>
                                     </div>
-                                    <Badge className={getPhaseBadgeColor(getPhaseName(lesson))}>
-                                      {getPhaseName(lesson) || lesson.contestCycle?.name || 'OOI 2026'}
+                                    <Badge
+                                      className={getPhaseBadgeColor(
+                                        getPhaseName(lesson),
+                                      )}
+                                    >
+                                      {getPhaseName(lesson) ||
+                                        lesson.contestCycle?.name ||
+                                        "OOI 2026"}
                                     </Badge>
                                   </div>
 
                                   {/* Display syllabus topics if multiple exist */}
-                                  {lesson.syllabi && lesson.syllabi.length > 1 && (
-                                    <div className="mb-3">
-                                      <p className="text-sm text-gray-600 mb-1 font-medium">Temas:</p>
-                                      <div className="flex flex-wrap gap-1.5">
-                                        {getSyllabiTitles(lesson).map((title, i) => (
-                                          <Badge key={i} variant="outline" className="bg-gray-50 text-xs">
-                                            <ChevronRight className="h-3 w-3 mr-1 text-gray-400" />
-                                            {title}
-                                          </Badge>
-                                        ))}
+                                  {lesson.syllabi &&
+                                    lesson.syllabi.length > 1 && (
+                                      <div className="mb-3">
+                                        <p className="text-sm text-gray-600 mb-1 font-medium">
+                                          Temas:
+                                        </p>
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {getSyllabiTitles(lesson).map(
+                                            (title, i) => (
+                                              <Badge
+                                                key={i}
+                                                variant="outline"
+                                                className="bg-gray-50 text-xs"
+                                              >
+                                                <ChevronRight className="h-3 w-3 mr-1 text-gray-400" />
+                                                {title}
+                                              </Badge>
+                                            ),
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
+                                    )}
 
                                   <p className="text-sm text-gray-700 mb-3 line-clamp-2">
                                     {getSyllabusDescription(lesson)}
@@ -604,20 +797,39 @@ export default function CalendarPage() {
 
                                   <div className="flex items-center gap-2 mt-3">
                                     <Avatar className="h-8 w-8">
-                                      <AvatarImage src={lesson.teacher?.avatar?.url} alt={lesson.teacher?.firstName || 'Teacher'} />
-                                      <AvatarFallback>{getTeacherInitials(lesson)}</AvatarFallback>
+                                      <AvatarImage
+                                        src={lesson.teacher?.avatar?.url}
+                                        alt={
+                                          lesson.teacher?.firstName || "Teacher"
+                                        }
+                                      />
+                                      <AvatarFallback>
+                                        {getTeacherInitials(lesson)}
+                                      </AvatarFallback>
                                     </Avatar>
                                     <div className="text-sm">
-                                      <div className="font-medium">{getTeacherName(lesson)}</div>
-                                      <div className="text-gray-500">Instructor</div>
+                                      <div className="font-medium">
+                                        {getTeacherName(lesson)}
+                                      </div>
+                                      <div className="text-gray-500">
+                                        Instructor
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
 
                                 <div className="flex flex-col gap-2 justify-center mt-4 md:mt-0">
                                   {lesson.meetingURL && (
-                                    <Button asChild variant="default" className="gap-2">
-                                      <Link href={lesson.meetingURL} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      asChild
+                                      variant="default"
+                                      className="gap-2"
+                                    >
+                                      <Link
+                                        href={lesson.meetingURL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
                                         <Video className="h-4 w-4" />
                                         Unirse a la clase
                                       </Link>
@@ -625,8 +837,16 @@ export default function CalendarPage() {
                                   )}
 
                                   {lesson.classRecordingURL && (
-                                    <Button asChild variant="outline" className="gap-2">
-                                      <Link href={lesson.classRecordingURL} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      asChild
+                                      variant="outline"
+                                      className="gap-2"
+                                    >
+                                      <Link
+                                        href={lesson.classRecordingURL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
                                         <Video className="h-4 w-4" />
                                         Grabación
                                       </Link>
@@ -634,8 +854,16 @@ export default function CalendarPage() {
                                   )}
 
                                   {lesson.presentation?.url && (
-                                    <Button asChild variant="outline" className="gap-2">
-                                      <Link href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${lesson.presentation.url}`} target="_blank" rel="noopener noreferrer">
+                                    <Button
+                                      asChild
+                                      variant="outline"
+                                      className="gap-2"
+                                    >
+                                      <Link
+                                        href={`${process.env.NEXT_PUBLIC_STRAPI_URL}${lesson.presentation.url}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
                                         <FileText className="h-4 w-4" />
                                         Presentación
                                       </Link>

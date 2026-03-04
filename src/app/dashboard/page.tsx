@@ -6,12 +6,22 @@ import {
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,29 +37,44 @@ import {
   ArrowRight,
   Clock,
   CheckCircle2,
-  Star
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { WithConstructionBanner } from "@/components/with-construction-banner";
-import { fetchUserNotifications, mapBackendNotificationToFrontendNotification } from "@/services/notificationService";
-import { fetchCurrentContestCycle, isSignupOpen } from "@/services/contestCycle";
-import { fetchUserParticipations, createParticipation } from "@/services/participation";
+import { ProfileCompletionReminder } from "@/components/profile-completion-reminder";
+import {
+  fetchUserNotifications,
+  mapBackendNotificationToFrontendNotification,
+} from "@/services/notificationService";
+import {
+  fetchCurrentContestCycle,
+  isSignupOpen,
+} from "@/services/contestCycle";
+import {
+  fetchUserParticipations,
+  createParticipation,
+} from "@/services/participation";
 import { useAuth } from "@/contexts/auth-context";
 import type { NotificationView } from "@/types/dashboard/notification";
 import type { ContestCycle } from "@/types/dashboard/contestCycle";
 import type { ParticipationListItem } from "@/types/dashboard/participation";
 
 // Helper to format dates in Spanish
-const formatDateSpanish = (dateString: string | null): string => {
+const formatDateSpanish = (
+  dateString: string | null,
+  includeTime = false,
+): string => {
   if (!dateString) return "No definida";
   const date = new Date(dateString);
-  return date.toLocaleDateString("es-MX", {
+  const options: Intl.DateTimeFormatOptions = {
     day: "numeric",
     month: "long",
-    year: "numeric"
-  });
+    year: "numeric",
+    ...(includeTime && { hour: "numeric", minute: "2-digit", hour12: true }),
+  };
+  return date.toLocaleDateString("es-MX", options);
 };
 
 export default function Dashboard() {
@@ -57,22 +82,26 @@ export default function Dashboard() {
   const [userName, setUserName] = useState("");
   const [notifications, setNotifications] = useState<NotificationView[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
-  const [notificationsError, setNotificationsError] = useState<string | null>(null);
+  const [notificationsError, setNotificationsError] = useState<string | null>(
+    null,
+  );
 
   // Cycle registration state
   const [isLoadingCycle, setIsLoadingCycle] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [currentCycle, setCurrentCycle] = useState<ContestCycle | null>(null);
-  const [isRegisteredInCurrentCycle, setIsRegisteredInCurrentCycle] = useState(false);
-  const [currentParticipation, setCurrentParticipation] = useState<ParticipationListItem | null>(null);
+  const [isRegisteredInCurrentCycle, setIsRegisteredInCurrentCycle] =
+    useState(false);
+  const [currentParticipation, setCurrentParticipation] =
+    useState<ParticipationListItem | null>(null);
 
   useEffect(() => {
     // Get user info from localStorage
-    const userString = localStorage.getItem('user');
+    const userString = localStorage.getItem("user");
     if (userString) {
       try {
         const user = JSON.parse(userString);
-        setUserName(user.firstName || 'estudiante');
+        setUserName(user.firstName || "estudiante");
       } catch (e) {
         console.error("Error parsing user data", e);
       }
@@ -83,8 +112,8 @@ export default function Dashboard() {
       try {
         setIsLoadingNotifications(true);
         const backendNotifications = await fetchUserNotifications();
-        const mappedNotifications = backendNotifications.map(notification =>
-          mapBackendNotificationToFrontendNotification(notification)
+        const mappedNotifications = backendNotifications.map((notification) =>
+          mapBackendNotificationToFrontendNotification(notification),
         );
         setNotifications(mappedNotifications);
         setNotificationsError(null);
@@ -102,14 +131,14 @@ export default function Dashboard() {
         setIsLoadingCycle(true);
         const [cycle, userParticipations] = await Promise.all([
           fetchCurrentContestCycle(),
-          fetchUserParticipations()
+          fetchUserParticipations(),
         ]);
 
         setCurrentCycle(cycle);
 
         if (cycle && userParticipations.length > 0) {
           const currentParticipationFound = userParticipations.find(
-            (p) => p.contestCycle.id === cycle.id
+            (p) => p.contestCycle.id === cycle.id,
           );
           setIsRegisteredInCurrentCycle(!!currentParticipationFound);
           setCurrentParticipation(currentParticipationFound || null);
@@ -139,18 +168,18 @@ export default function Dashboard() {
       // Refresh participations
       const updatedParticipations = await fetchUserParticipations();
       const newCurrentParticipation = updatedParticipations.find(
-        (p) => p.contestCycle.id === currentCycle.id
+        (p) => p.contestCycle.id === currentCycle.id,
       );
       setCurrentParticipation(newCurrentParticipation || null);
       setIsRegisteredInCurrentCycle(true);
 
       toast.success("¡Te has inscrito exitosamente!", {
-        description: `Ahora eres parte de ${currentCycle.name}`
+        description: `Ahora eres parte de ${currentCycle.name}`,
       });
     } catch (error) {
       console.error("Error joining cycle:", error);
       toast.error("Error al inscribirse", {
-        description: "Por favor intenta nuevamente más tarde"
+        description: "Por favor intenta nuevamente más tarde",
       });
     } finally {
       setIsJoining(false);
@@ -160,11 +189,11 @@ export default function Dashboard() {
   // Get priority color based on notification priority
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'HIGH':
+      case "HIGH":
         return "bg-red-500";
-      case 'MEDIUM':
+      case "MEDIUM":
         return "bg-yellow-500";
-      case 'LOW':
+      case "LOW":
         return "bg-green-500";
       default:
         return "bg-blue-500";
@@ -173,10 +202,10 @@ export default function Dashboard() {
 
   // Format date from ISO string to a more readable format
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -204,137 +233,227 @@ export default function Dashboard() {
           </header>
 
           <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+            {/* Profile Completion Reminder */}
+            <ProfileCompletionReminder />
 
             {/* Cycle Registration Section */}
             {isLoadingCycle ? (
               <Skeleton className="h-40 w-full" />
-            ) : currentCycle && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {!isRegisteredInCurrentCycle ? (
-                  /* Join Current Cycle CTA */
-                  <Card className="border-2 border-ooi-second-blue bg-gradient-to-br from-ooi-second-blue/5 via-ooi-purple/5 to-transparent overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="flex-shrink-0">
-                          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-ooi-second-blue to-ooi-purple flex items-center justify-center">
-                            <Sparkles className="h-10 w-10 text-white" />
-                          </div>
-                        </div>
-
-                        <div className="flex-1 text-center md:text-left">
-                          <h2 className="text-xl font-bold text-ooi-dark-blue mb-2">
-                            ¡Únete a {currentCycle.name}!
-                          </h2>
-                          <p className="text-gray-600 mb-3">
-                            {currentCycle.description || "Una nueva edición de la Olimpiada Oaxaqueña de Informática está por comenzar. ¡No te quedes fuera!"}
-                          </p>
-
-                          <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4 justify-center md:justify-start">
-                            {currentCycle.signupDeadline && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                <span>Inscripciones hasta: {formatDateSpanish(currentCycle.signupDeadline)}</span>
-                              </div>
-                            )}
-                            {currentCycle.startClassesDate && (
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>Inicio de clases: {formatDateSpanish(currentCycle.startClassesDate)}</span>
-                              </div>
-                            )}
+            ) : (
+              currentCycle && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {!isRegisteredInCurrentCycle ? (
+                    /* Join Current Cycle CTA */
+                    <Card className="border-2 border-ooi-second-blue bg-gradient-to-br from-ooi-second-blue/5 via-ooi-purple/5 to-transparent overflow-hidden">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col md:flex-row items-center gap-6">
+                          <div className="flex-shrink-0">
+                            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-ooi-second-blue to-ooi-purple flex items-center justify-center">
+                              <Sparkles className="h-10 w-10 text-white" />
+                            </div>
                           </div>
 
-                          {isSignupOpen(currentCycle) ? (
-                            <Button
-                              onClick={handleJoinCurrentCycle}
-                              disabled={isJoining}
-                              className="bg-ooi-second-blue hover:bg-ooi-dark-blue text-white"
-                              size="lg"
-                            >
-                              {isJoining ? (
-                                <>
-                                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                  </svg>
-                                  Inscribiendo...
-                                </>
-                              ) : (
-                                <>
-                                  <UserPlus className="h-5 w-5 mr-2" />
-                                  Inscribirme ahora
-                                  <ArrowRight className="h-5 w-5 ml-2" />
-                                </>
+                          <div className="flex-1 text-center md:text-left">
+                            <h2 className="text-xl font-bold text-ooi-dark-blue mb-2">
+                              ¡Únete a {currentCycle.name}!
+                            </h2>
+                            <p className="text-gray-600 mb-3">
+                              {currentCycle.description ||
+                                "Una nueva edición de la Olimpiada Oaxaqueña de Informática está por comenzar. ¡No te quedes fuera!"}
+                            </p>
+
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4 justify-center md:justify-start">
+                              {currentCycle.signupDeadline && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>
+                                    Inscripciones hasta:{" "}
+                                    {formatDateSpanish(
+                                      currentCycle.signupDeadline,
+                                    )}
+                                  </span>
+                                </div>
                               )}
-                            </Button>
-                          ) : (
-                            <Badge variant="outline" className="text-red-600 border-red-300">
-                              Las inscripciones han cerrado
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : currentParticipation && (
-                  /* Current Cycle Participation Info */
-                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-transparent">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          <CardTitle className="text-lg text-ooi-dark-blue">
-                            {currentCycle.name}
-                          </CardTitle>
-                        </div>
-                        <Badge className="bg-green-100 text-green-800 border-green-300">
-                          Inscrito
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white rounded-lg p-3 border">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Calendar className="h-4 w-4 text-gray-500" />
-                            <span className="text-xs text-gray-500">Fecha de inscripción</span>
-                          </div>
-                          <p className="font-medium text-sm">{formatDateSpanish(currentParticipation.signupDate)}</p>
-                        </div>
+                              {currentCycle.startClassesDate && (
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>
+                                    Inicio de clases:{" "}
+                                    {formatDateSpanish(
+                                      currentCycle.startClassesDate,
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
 
-                        <div className="bg-white rounded-lg p-3 border">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="h-4 w-4 text-gray-500" />
-                            <span className="text-xs text-gray-500">Inicio de clases</span>
-                          </div>
-                          <p className="font-medium text-sm">{formatDateSpanish(currentCycle.startClassesDate)}</p>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-3 border">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Star className="h-4 w-4 text-gray-500" />
-                            <span className="text-xs text-gray-500">Examen diagnóstico</span>
-                          </div>
-                          <p className="font-medium text-sm">
-                            {currentParticipation.diagnosticExamDone ? (
-                              <span className="text-green-600">Completado ✓</span>
+                            {isSignupOpen(currentCycle) ? (
+                              <Button
+                                onClick={handleJoinCurrentCycle}
+                                disabled={isJoining}
+                                className="bg-ooi-second-blue hover:bg-ooi-dark-blue text-white"
+                                size="lg"
+                              >
+                                {isJoining ? (
+                                  <>
+                                    <svg
+                                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                      ></circle>
+                                      <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                      ></path>
+                                    </svg>
+                                    Inscribiendo...
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserPlus className="h-5 w-5 mr-2" />
+                                    Inscribirme ahora
+                                    <ArrowRight className="h-5 w-5 ml-2" />
+                                  </>
+                                )}
+                              </Button>
                             ) : (
-                              <span className="text-yellow-600">Pendiente</span>
+                              <Badge
+                                variant="outline"
+                                className="text-red-600 border-red-300"
+                              >
+                                Las inscripciones han cerrado
+                              </Badge>
                             )}
-                          </p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </motion.div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    currentParticipation && (
+                      /* Current Cycle Participation Info */
+                      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-transparent">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-green-600" />
+                              <CardTitle className="text-lg text-ooi-dark-blue">
+                                {currentCycle.name}
+                              </CardTitle>
+                            </div>
+                            <Badge className="bg-green-100 text-green-800 border-green-300">
+                              Inscrito
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-white rounded-lg p-3 border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <span className="text-xs text-gray-500">
+                                  Fecha de inscripción
+                                </span>
+                              </div>
+                              <p className="font-medium text-sm">
+                                {formatDateSpanish(
+                                  currentParticipation.signupDate,
+                                )}
+                              </p>
+                            </div>
+
+                            <div className="bg-white rounded-lg p-3 border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Clock className="h-4 w-4 text-gray-500" />
+                                <span className="text-xs text-gray-500">
+                                  Sesión de Bienvenida
+                                </span>
+                              </div>
+                              <p className="font-medium text-sm">
+                                {formatDateSpanish(
+                                  currentCycle.introductionSessionDate,
+                                  true,
+                                )}
+                              </p>
+                              {currentCycle.introductionSessionUrl && (
+                                <a
+                                  href={currentCycle.introductionSessionUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-ooi-second-blue hover:underline mt-2"
+                                >
+                                  Unirse <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+
+                            <div className="bg-white rounded-lg p-3 border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Clock className="h-4 w-4 text-gray-500" />
+                                <span className="text-xs text-gray-500">
+                                  Inicio de clases
+                                </span>
+                              </div>
+                              <p className="font-medium text-sm">
+                                {formatDateSpanish(
+                                  currentCycle.startClassesDate,
+                                  true,
+                                )}
+                              </p>
+                              {currentCycle.startClassUrl && (
+                                <a
+                                  href={currentCycle.startClassUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-ooi-second-blue hover:underline mt-2"
+                                >
+                                  Unirse <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+
+                            <div className="bg-white rounded-lg p-3 border">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Star className="h-4 w-4 text-gray-500" />
+                                <span className="text-xs text-gray-500">
+                                  Examen diagnóstico
+                                </span>
+                              </div>
+                              <p className="font-medium text-sm">
+                                {currentParticipation.diagnosticExamDone ? (
+                                  <span className="text-green-600">
+                                    Completado ✓
+                                  </span>
+                                ) : (
+                                  <span className="text-yellow-600">
+                                    Pendiente
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  )}
+                </motion.div>
+              )
             )}
 
-          <motion.div
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -345,9 +464,10 @@ export default function Dashboard() {
                     Anuncios
                     <button
                       onClick={() => {
-                        const announcementsEl = document.getElementById('announcements-card');
+                        const announcementsEl =
+                          document.getElementById("announcements-card");
                         if (announcementsEl) {
-                          announcementsEl.style.display = 'none';
+                          announcementsEl.style.display = "none";
                         }
                       }}
                       className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -369,7 +489,18 @@ export default function Dashboard() {
                   ) : (
                     <div className="space-y-4">
                       {notifications.length > 0 ? (
-                        notifications
+                        [...notifications]
+                          .sort((a, b) => {
+                            const priorityOrder: Record<string, number> = {
+                              HIGH: 0,
+                              MEDIUM: 1,
+                              LOW: 2,
+                            };
+                            return (
+                              (priorityOrder[a.priority] ?? 3) -
+                              (priorityOrder[b.priority] ?? 3)
+                            );
+                          })
                           .slice(0, 3) // Limit to first 3 notifications
                           .map((notification) => (
                             <div
@@ -393,7 +524,8 @@ export default function Dashboard() {
                                 </p>
                                 <p className="text-xs text-gray-500 mt-2">
                                   {formatDate(notification.initialDate)}
-                                  {notification.finalDate && ` - ${formatDate(notification.finalDate)}`}
+                                  {notification.finalDate &&
+                                    ` - ${formatDate(notification.finalDate)}`}
                                 </p>
                               </div>
                               {notification.redirectionURL && (
@@ -441,8 +573,6 @@ export default function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-
-
                   <p className="mb-4">
                     Bienvenido olímpico(a), tu viaje de preparación para
                     convertirte en el/la mejor programador(a) del estado ha
@@ -523,8 +653,8 @@ export default function Dashboard() {
                   <ul className="space-y-3 ml-4 mt-2 list-disc text-gray-700">
                     <li className="pl-2">
                       A lo largo de un periodo de ocho meses se te impartirán
-                      cursos en línea, resolverás muchos problemas y
-                      aprenderás cosas nuevas.
+                      cursos en línea, resolverás muchos problemas y aprenderás
+                      cosas nuevas.
                     </li>
                     <li className="pl-2">
                       Tendremos clases de algoritmos y también clases de
@@ -537,7 +667,7 @@ export default function Dashboard() {
                     <Link href="/dashboard/calendar">
                       <Button className="bg-ooi-second-blue hover:bg-ooi-dark-blue flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        Ver calendario
+                        Ver calendario de clases
                       </Button>
                     </Link>
                     {/* <Link href="/dashboard/recordings">
@@ -564,17 +694,20 @@ export default function Dashboard() {
                       href="/dashboard/calendar"
                       className="text-sm text-ooi-second-blue hover:underline flex items-center"
                     >
-                      Ver calendario <ChevronRight className="h-4 w-4" />
+                      Ver calendario de clases{" "}
+                      <ChevronRight className="h-4 w-4" />
                     </Link>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-3">
-                    <p className="text-sm text-gray-700">Te invitamos a seguir los siguientes pasos para dar comienzo a tu viaje en la olimpiada de informática:</p>
+                    <p className="text-sm text-gray-700">
+                      Te invitamos a seguir los siguientes pasos para dar
+                      comienzo a tu viaje en la olimpiada de informática:
+                    </p>
                   </div>
 
                   <div className="space-y-5">
-
                     {/* Step 1 */}
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-ooi-second-blue/10 p-3 flex items-center">
@@ -582,19 +715,37 @@ export default function Dashboard() {
                           1
                         </div>
                         <div>
-                          <h3 className="font-medium text-ooi-dark-blue">Crea tu usuario de OmegaUp</h3>
+                          <h3 className="font-medium text-ooi-dark-blue">
+                            Crea tu usuario de OmegaUp
+                          </h3>
                           <p className="text-xs text-gray-600">• Requerido</p>
                         </div>
                       </div>
                       <div className="p-3">
                         <p className="text-sm text-gray-700 mb-2">
-                          Si aun no tienes un usuario, ingresa a <a href="https://www.omegaup.com" className="text-ooi-second-blue hover:underline">www.omegaup.com</a> y crea una cuenta.
+                          Si aun no tienes un usuario, ingresa a{" "}
+                          <a
+                            href="https://www.omegaup.com"
+                            className="text-ooi-second-blue hover:underline"
+                          >
+                            www.omegaup.com
+                          </a>{" "}
+                          y crea una cuenta.
                         </p>
                         <p className="text-xs text-gray-600 mb-3">
-                          Luego, completa el formulario con tus datos de usuario.
+                          Luego, completa el formulario con tus datos de
+                          usuario.
                         </p>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover" asChild>
-                          <a href="https://www.omegaup.com/login" target="_blank" rel="noopener noreferrer">
+                        <Button
+                          size="sm"
+                          className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover"
+                          asChild
+                        >
+                          <a
+                            href="https://www.omegaup.com/login"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             Registrar usuario
                           </a>
                         </Button>
@@ -608,22 +759,46 @@ export default function Dashboard() {
                           2
                         </div>
                         <div>
-                          <h3 className="font-medium text-ooi-dark-blue">Examen de evaluación diagnóstica en línea</h3>
-                          <p className="text-xs text-gray-600">7 de marzo - 7 de abril de 2026 • Requerido</p>
+                          <h3 className="font-medium text-ooi-dark-blue">
+                            Examen de evaluación diagnóstica en línea
+                          </h3>
+                          <p className="text-xs text-gray-600">
+                            7 de marzo - 7 de abril de 2026 • Requerido
+                          </p>
                         </div>
                       </div>
                       <div className="p-3">
                         <p className="text-sm text-gray-700 mb-2">
-                          Este examen es exclusivamente de lógica. El objetivo es evaluar tus habilidades lógicas y matemáticas al resolver problemas computacionales.
-                          Podras realizar el examen en cualquier momento desde que se encuentre disponible hasta el 7 de abril.
+                          Este examen es exclusivamente de lógica. El objetivo
+                          es evaluar tus habilidades lógicas y matemáticas al
+                          resolver problemas computacionales. Podras realizar el
+                          examen en cualquier momento desde que se encuentre
+                          disponible hasta el 7 de abril.
                         </p>
                         <ul className="text-xs text-gray-600 space-y-1 mb-3">
-                          <li>• Ingresa el mismo correo electrónico que usaste en tu registro a la olimpiada.</li>
-                          <li>• El examen contiene 20 preguntas. Debes contestar correctamente al menos 13 preguntas para continuar en la olimpiada.</li>
-                          <li>• Debes realizar el examen por tu cuenta, sin ayuda de nadie más.</li>
+                          <li>
+                            • Ingresa el mismo correo electrónico que usaste en
+                            tu registro a la olimpiada.
+                          </li>
+                          <li>
+                            • El examen contiene 20 preguntas. Debes contestar
+                            correctamente al menos 13 preguntas para continuar
+                            en la olimpiada.
+                          </li>
+                          <li>
+                            • Debes realizar el examen por tu cuenta, sin ayuda
+                            de nadie más.
+                          </li>
                         </ul>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
-                          <a href="/dashboard/evaluations" target="_blank" rel="noopener noreferrer">
+                        <Button
+                          size="sm"
+                          className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover"
+                        >
+                          <a
+                            href="/dashboard/evaluations"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             Realizar examen
                           </a>
                         </Button>
@@ -637,43 +812,32 @@ export default function Dashboard() {
                           3
                         </div>
                         <div>
-                          <h3 className="font-medium text-ooi-dark-blue">Selecciona tu horario de clases</h3>
-                          <p className="text-xs text-gray-600">7 Marzo - 7 de Abril de 2026 • Requerido</p>
-                        </div>
-                      </div>
-                      <div className="p-3">
-                        <p className="text-sm text-gray-700 mb-2">
-                          Llena el formulario para elegir el horario de clases de tu preferencia.
-                        </p>
-                        <p className="text-xs text-gray-600 italic mb-3">
-                          Nota: Por temas de logística no podemos asegurar que el horario que elijas sea el horario final de las clases, se contabilizaran los votos y el horario con mayor votación será el elegido.
-                        </p>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
-                          <a href="https://forms.office.com/e/xSbdtdWBBH" target="_blank" rel="noopener noreferrer">
-                            Seleccionar horario
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Step 4 */}
-                    <div className="border rounded-lg overflow-hidden">
-                      <div className="bg-ooi-second-blue/10 p-3 flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-ooi-second-blue flex items-center justify-center text-white font-medium mr-3">
-                          4
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-ooi-dark-blue">Asiste a la bienvenida en línea</h3>
-                          <p className="text-xs text-gray-600">28 de Febrero de 2026 • 11:00 A.M. • Requerido</p>
+                          <h3 className="font-medium text-ooi-dark-blue">
+                            Asiste a la bienvenida en línea
+                          </h3>
+                          <p className="text-xs text-gray-600">
+                            {currentCycle
+                              ? `${formatDateSpanish(currentCycle.introductionSessionDate, true)} • Requerido`
+                              : "• Requerido"}
+                          </p>
                         </div>
                       </div>
                       <div className="p-3">
                         <p className="text-sm text-gray-700 mb-3">
-                          Te esperamos para la sesión de bienvenida en línea donde conocerás más sobre la olimpiada.
+                          Te esperamos para la sesión de bienvenida en línea
+                          donde conocerás más sobre la olimpiada.
                         </p>
-                        <Button size="sm" className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover">
-                          <a href="https://omioaxaca.org/bienvenida-2026" target="_blank" rel="noopener noreferrer">
-                            Unirse a la bienvenida 2026
+                        <Button
+                          size="sm"
+                          className="w-full bg-ooi-second-blue hover:bg-ooi-blue-hover"
+                          asChild
+                        >
+                          <a
+                            href={currentCycle?.introductionSessionUrl || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Unirse a la bienvenida
                           </a>
                         </Button>
                       </div>
@@ -681,41 +845,82 @@ export default function Dashboard() {
 
                     {/* Optional Steps */}
                     <div className="mt-4">
-                      <h3 className="font-medium text-sm text-ooi-dark-blue mb-3">Pasos opcionales</h3>
+                      <h3 className="font-medium text-sm text-ooi-dark-blue mb-3">
+                        Pasos opcionales
+                      </h3>
                       <div className="space-y-3">
                         <div className="flex items-start gap-3 p-3 border rounded-lg">
                           <div className="h-6 w-6 rounded-full bg-ooi-purple/20 flex items-center justify-center text-ooi-purple text-xs font-medium">
-                            5
+                            4
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium">Revisa el calendario</h4>
-                            <p className="text-xs text-gray-600 mb-2">Consulta todas las actividades programadas</p>
-                            <Button size="sm" variant="outline" className="text-xs h-7 border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
-                              <Link href="/dashboard/calendar">Ver calendario</Link>
+                            <h4 className="text-sm font-medium">
+                              Revisa el calendario de clases
+                            </h4>
+                            <p className="text-xs text-gray-600 mb-2">
+                              Consulta todas las actividades programadas
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10"
+                              asChild
+                            >
+                              <Link href="/dashboard/calendar">
+                                Ver calendario de clases
+                              </Link>
                             </Button>
                           </div>
                         </div>
 
                         <div className="flex items-start gap-3 p-3 border rounded-lg">
                           <div className="h-6 w-6 rounded-full bg-ooi-purple/20 flex items-center justify-center text-ooi-purple text-xs font-medium">
-                            6
+                            5
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium">Prepárate para las clases</h4>
-                            <p className="text-xs text-gray-600 mb-2">Comienza tu preparación anticipada con estos recursos:</p>
+                            <h4 className="text-sm font-medium">
+                              Prepárate para las clases
+                            </h4>
+                            <p className="text-xs text-gray-600 mb-2">
+                              Comienza tu preparación anticipada con estos
+                              recursos:
+                            </p>
                             <div className="space-y-2">
-                              <Button size="sm" variant="outline" className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10"
+                                asChild
+                              >
                                 <Link href="/blog">
-                                  📚 Documentación y guías
+                                  📚 Guía De Estudio y guías
                                 </Link>
                               </Button>
-                              <Button size="sm" variant="outline" className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
-                                <a href="https://youtube.com/playlist?list=PLLLsY3RQV2bhHhhoDoIfEEgRJGmjZBTii&si=89ogv39b1zY27S2V" target="_blank" rel="noopener noreferrer">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10"
+                                asChild
+                              >
+                                <a
+                                  href="https://youtube.com/playlist?list=PLLLsY3RQV2bhHhhoDoIfEEgRJGmjZBTii&si=89ogv39b1zY27S2V"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
                                   Cursos anteriores
                                 </a>
                               </Button>
-                              <Button size="sm" variant="outline" className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10" asChild>
-                                <a href="https://omegaup.com/course/Curso-OMI/" target="_blank" rel="noopener noreferrer">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 w-full border-ooi-purple text-ooi-purple hover:bg-ooi-purple/10"
+                                asChild
+                              >
+                                <a
+                                  href="https://omegaup.com/course/Curso-OMI/"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
                                   Ejercicios introductorios
                                 </a>
                               </Button>

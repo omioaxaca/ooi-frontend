@@ -2,7 +2,10 @@ import axios from "axios";
 import qs from "qs";
 import * as localStorageUtils from "@/utils/localStorage";
 import { User } from "@/types/user";
-import type { ClassLesson, ClassLessonView } from "@/types/dashboard/classLessons";
+import type {
+  ClassLesson,
+  ClassLessonView,
+} from "@/types/dashboard/classLessons";
 import axiosInstance from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
@@ -22,32 +25,37 @@ const getAuthHeaders = () => {
   };
 };
 
-export const mapBackendClassLessonToFrontendClassLesson = (classLesson: ClassLesson): ClassLessonView => {
+export const mapBackendClassLessonToFrontendClassLesson = (
+  classLesson: ClassLesson,
+): ClassLessonView => {
   console.log(classLesson);
   return {
     id: classLesson?.id || 0,
     date: classLesson?.date || new Date().toISOString(),
     teacher: {
       id: classLesson?.teacher?.id || 0,
-      documentId: '',
-      fullname: classLesson?.teacher ? 
-        `${classLesson.teacher.firstName || ''} ${classLesson.teacher.lastName || ''}`.trim() || 'Profesor no asignado' : 
-        'Profesor no asignado',
-      avatarURL: classLesson?.teacher?.avatar?.url || '',
+      documentId: "",
+      fullname: classLesson?.teacher
+        ? `${classLesson.teacher.firstName || ""} ${classLesson.teacher.lastName || ""}`.trim() ||
+          "Profesor no asignado"
+        : "Profesor no asignado",
+      avatarURL: classLesson?.teacher?.avatar?.url || "",
     },
     syllabi: (classLesson?.syllabi || []).map((syllabus) => ({
       id: syllabus?.id || 0,
-      documentId: syllabus?.documentId || '',
-      title: syllabus?.title || 'Título no disponible',
-      description: syllabus?.description || 'Sin descripción',
-      category: syllabus?.category || 'general',
+      documentId: syllabus?.documentId || "",
+      title: syllabus?.title || "Título no disponible",
+      description: syllabus?.description || "Sin descripción",
+      category: syllabus?.category || "general",
     })),
-    contestPhase: classLesson?.contestPhase?.title || '',
-    presentationURL: classLesson?.presentation?.url || '',
-    classRecordingURL: classLesson?.classRecordingURL || '',
-    meetingURL: classLesson?.meetingURL || '',
-    contestCycle: classLesson?.contestCycle?.name || 'Ciclo actual',
-    notesURLs: (classLesson?.notesFromClass || []).map((note) => note?.url || ''),
+    contestPhase: classLesson?.contestPhase?.title || "",
+    presentationURL: classLesson?.presentation?.url || "",
+    classRecordingURL: classLesson?.classRecordingURL || "",
+    meetingURL: classLesson?.meetingURL || "",
+    contestCycle: classLesson?.contestCycle?.name || "Ciclo actual",
+    notesURLs: (classLesson?.notesFromClass || []).map(
+      (note) => note?.url || "",
+    ),
   };
 };
 
@@ -59,22 +67,22 @@ export const fetchUserClassLessons = async (): Promise<ClassLesson[]> => {
         fields: "*",
         populate: {
           teacher: {
-            fields: "*"
+            fields: "*",
           },
           syllabi: {
-            fields: "*"
+            fields: "*",
           },
           presentation: {
-            fields: "*"
+            fields: "*",
           },
           contestCycle: {
-            fields: "*"
+            fields: "*",
           },
           notesFromClass: {
-            fields: "*"
+            fields: "*",
           },
           contestPhase: {
-            fields: "*"
+            fields: "*",
           },
         },
         pagination: {
@@ -83,12 +91,63 @@ export const fetchUserClassLessons = async (): Promise<ClassLesson[]> => {
       },
       {
         encodeValuesOnly: true,
-      }
+      },
     );
     const response = await axiosInstance.get(`/api/class-lessons?${query}`);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching class lessons:", error);
+    throw error;
+  }
+};
+
+// Fetch class lessons filtered by contest cycle document ID
+export const fetchUserClassLessonsByContestCycle = async (
+  contestCycleDocumentId: string,
+): Promise<ClassLesson[]> => {
+  try {
+    const query = qs.stringify(
+      {
+        fields: "*",
+        filters: {
+          contestCycle: {
+            documentId: {
+              $eq: contestCycleDocumentId,
+            },
+          },
+        },
+        populate: {
+          teacher: {
+            fields: "*",
+          },
+          syllabi: {
+            fields: "*",
+          },
+          presentation: {
+            fields: "*",
+          },
+          contestCycle: {
+            fields: "*",
+          },
+          notesFromClass: {
+            fields: "*",
+          },
+          contestPhase: {
+            fields: "*",
+          },
+        },
+        pagination: {
+          pageSize: 1000,
+        },
+      },
+      {
+        encodeValuesOnly: true,
+      },
+    );
+    const response = await axiosInstance.get(`/api/class-lessons?${query}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching class lessons by contest cycle:", error);
     throw error;
   }
 };

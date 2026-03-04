@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sidebar, SidebarFooter } from "@/components/ui/sidebar"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
 import {
   Calendar,
   Bell,
@@ -15,17 +15,17 @@ import {
   Code,
   GraduationCap,
   ChevronRight,
-  LogOut
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "./ui/button"
-import { Logo } from "@/components/ui/logo"
-import { ProfileMenu } from "@/components/profile-menu"
-import { useAuth } from "@/contexts/auth-context"
+  LogOut,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Logo } from "@/components/ui/logo";
+import { ProfileMenu } from "@/components/profile-menu";
+import { useAuth } from "@/contexts/auth-context";
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  const { logout } = useAuth()
+  const pathname = usePathname();
+  const { logout } = useAuth();
 
   // Navigation groups
   const navItems = [
@@ -43,7 +43,7 @@ export function AppSidebar() {
           icon: Bell,
         },
         {
-          title: "Calendario",
+          title: "Calendario de clases",
           href: "/dashboard/calendar",
           icon: Calendar,
         },
@@ -98,13 +98,13 @@ export function AppSidebar() {
       title: "Recursos",
       items: [
         {
-          title: "Documentación",
+          title: "Guía De Estudio",
           href: "/blog",
           icon: Book,
         },
       ],
     },
-  ]
+  ];
 
   return (
     <Sidebar className="border-r">
@@ -136,7 +136,7 @@ export function AppSidebar() {
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100",
                     pathname === item.href
                       ? "bg-gray-100 text-ooi-second-blue"
-                      : "text-gray-700"
+                      : "text-gray-700",
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -164,5 +164,5 @@ export function AppSidebar() {
         </div>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
