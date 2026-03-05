@@ -1,5 +1,14 @@
-// Backend of a syllabus
-export type SyllabusCategory = 'BLUE' | 'GREEN';
+// Syllabus category (Strapi relationship)
+export type SyllabusCategory = {
+  id: number;
+  documentId: string;
+  name: string;
+  description: string;
+  color: string;
+};
+
+// Syllabus level
+export type SyllabusLevel = "Principiante" | "Intermedio" | "Avanzado";
 
 // Backend of a syllabus
 export type Syllabus = {
@@ -8,15 +17,16 @@ export type Syllabus = {
   title: string;
   description: string;
   externalReferences: string;
+  level: SyllabusLevel;
   category: SyllabusCategory;
   youtubeLinks: Array<{
     id: number;
-    dociumentId: string;
+    documentId: string;
     value: string;
   }>;
   pdfLinks: Array<{
     id: number;
-    dociumentId: string;
+    documentId: string;
     value: string;
   }>;
 };
@@ -28,6 +38,14 @@ export type SyllabusView = {
   title: string;
   description: string;
   externalReferences: string;
+  level: SyllabusLevel;
+  category: SyllabusCategory;
   youtubeLinks: Array<string>;
   pdfLinks: Array<string>;
+};
+
+// Syllabi grouped by category for display
+export type SyllabusByCategory = {
+  category: SyllabusCategory;
+  syllabi: Syllabus[];
 };

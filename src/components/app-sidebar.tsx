@@ -82,6 +82,11 @@ export function AppSidebar() {
           href: "/dashboard/syllabus/intermediate",
           icon: GraduationCap,
         },
+        {
+          title: "Avanzado",
+          href: "/dashboard/syllabus/advanced",
+          icon: Code,
+        },
       ],
     },
     {

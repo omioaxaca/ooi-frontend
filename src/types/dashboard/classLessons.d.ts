@@ -1,4 +1,4 @@
-import type { Syllabus } from "./Syllabus";
+import type { Syllabus, SyllabusCategory } from "./syllabus";
 import type { User } from "../user";
 import type { ContestCycle } from "./contestCycle";
 import type { StrapiFile } from "../common";
