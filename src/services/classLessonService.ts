@@ -54,7 +54,7 @@ export const mapBackendClassLessonToFrontendClassLesson = (
         color: "#808080",
       },
     })),
-    contestPhase: classLesson?.contestPhase?.title || "",
+    contestPhase: "",
     presentationURL: classLesson?.presentation?.url || "",
     classRecordingURL: classLesson?.classRecordingURL || "",
     meetingURL: classLesson?.meetingURL || "",
@@ -85,9 +85,6 @@ export const fetchUserClassLessons = async (): Promise<ClassLesson[]> => {
             fields: "*",
           },
           notesFromClass: {
-            fields: "*",
-          },
-          contestPhase: {
             fields: "*",
           },
         },
@@ -136,9 +133,6 @@ export const fetchUserClassLessonsByContestCycle = async (
             fields: "*",
           },
           notesFromClass: {
-            fields: "*",
-          },
-          contestPhase: {
             fields: "*",
           },
         },
