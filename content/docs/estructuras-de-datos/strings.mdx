@@ -9,6 +9,45 @@ syllabusId: 19
 
 ## ¿Qué es un string?
 
+**Antes de empezar:** necesitas arreglos e índices. `std::string` guarda unidades `char`; en los problemas de alfabeto ASCII cada una corresponde a un carácter. En UTF-8, un símbolo visible puede ocupar varios bytes: `size()` no cuenta necesariamente letras visibles.
+
+## Subcadenas y búsquedas sin confundir posiciones
+
+`substr(inicio, cantidad)` recibe una **longitud**, no un extremo derecho. `find` devuelve una posición o `string::npos` si no encuentra lo pedido. Compara con `npos` antes de usar esa posición.
+
+```cpp test
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string texto;
+    getline(cin, texto);
+    cout << texto.size() << '\n';
+    size_t espacio = texto.find(' ');
+    if (espacio != string::npos) cout << texto.substr(espacio + 1) << '\n';
+    cout << (texto.find("xyz") == string::npos ? "NO" : "SI") << '\n';
+}
+```
+
+Entrada:
+
+```text input
+Hola mundo
+```
+
+Salida:
+
+```text output
+10
+mundo
+NO
+```
+
+La copia creada por `substr` cuesta tiempo y espacio proporcionales a su longitud. Comparar dos strings puede recorrer todos sus caracteres comunes. No trates esas operaciones como constantes dentro de ciclos grandes.
+
+**Autocomprobación:** una línea vacía produce tamaño cero; no consultes `front()` ni `back()` en ese caso. Para conservar espacios, usa `getline`. Si viene después de `cin >>`, consume el salto pendiente según el formato, como en la guía de [entrada y salida](/blog/cpp-basico/entrada-salida).
+
 Un **string** es una secuencia de caracteres: letras, números, espacios, símbolos. Piensa en él como un **collar de cuentas** donde cada cuenta es un carácter.
 
 ```
@@ -341,4 +380,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Matrices** para trabajar con datos en dos dimensiones.
+[Matrices y arreglos de dos o más dimensiones](/blog/estructuras-de-datos/matrices).

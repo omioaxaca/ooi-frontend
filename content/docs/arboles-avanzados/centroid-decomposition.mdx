@@ -1,0 +1,144 @@
+---
+title: "Centroid decomposition"
+description: "Separa un árbol en componentes de tamaño a lo sumo la mitad y responde distancias a vértices marcados."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "centroid decomposition", "árboles", "distancias"]
+---
+
+## Antes de empezar
+
+Necesitas tamaños de subárbol, DFS y distancias en árboles. Un **centroide** es un vértice cuya eliminación deja componentes de tamaño como máximo la mitad del total. No es lo mismo que el centro que minimiza la distancia máxima: no confundas ambos conceptos.
+
+## Dividir repetidamente
+
+Calcula tamaños, encuentra un centroide y márcalo como retirado. Repite en cada componente que deja. Como sus tamaños se reducen al menos a la mitad, un vértice pertenece a $O(\log n)$ componentes de la descomposición.
+
+Para encontrar el centroide, comienza en una raíz temporal y baja hacia un hijo cuyo subárbol supere la mitad del tamaño de la componente. Al no existir tal hijo, el vértice actual es un centroide. La parte hacia el padre tampoco supera la mitad después de estos movimientos.
+
+## Aplicación: el marcado más cercano
+
+Podemos marcar vértices y preguntar la distancia al marcado más cercano. Para cada vértice guarda sus centroides ancestros en la **descomposición**, junto con la distancia original a cada uno.
+
+`mejor[centroide]` guarda la menor distancia a un marcado que contribuyó a ese centroide. Marcar un vértice actualiza sus $O(\log n)$ centroides. Una consulta minimiza `distancia(vertice, centroide) + mejor[centroide]`.
+
+Cada suma describe un recorrido y nunca subestima una distancia real. Para el marcado óptimo hay un primer centroide que separa sus ramas; ese centroide está en el camino original y proporciona la distancia exacta. Por eso el mínimo es correcto.
+
+## C++17
+
+Árbol no vacío, sin pesos, índices desde cero. `M vertice` marca y `Q vertice` consulta; si no hay marcados, responde -1. No se permite desmarcar. Esta versión recursiva es didáctica: usa árboles de profundidad moderada.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <utility>
+#include <vector>
+using namespace std;
+
+vector<vector<int>> vecinos;
+vector<vector<pair<int, int>>> camino;
+vector<int> tamano, mejor;
+vector<bool> retirado;
+const int INF = 1000000000;
+
+int calcularTamano(int actual, int padre) {
+    tamano[actual] = 1;
+    for (int vecino : vecinos[actual]) {
+        if (vecino != padre && !retirado[vecino]) tamano[actual] += calcularTamano(vecino, actual);
+    }
+    return tamano[actual];
+}
+
+int encontrar(int actual, int padre, int total) {
+    for (int vecino : vecinos[actual]) {
+        if (vecino != padre && !retirado[vecino] && tamano[vecino] > total / 2) return encontrar(vecino, actual, total);
+    }
+    return actual;
+}
+
+void registrar(int actual, int padre, int distancia, int centroide) {
+    camino[actual].push_back({centroide, distancia});
+    for (int vecino : vecinos[actual]) {
+        if (vecino != padre && !retirado[vecino]) registrar(vecino, actual, distancia + 1, centroide);
+    }
+}
+
+void descomponer(int inicio) {
+    int total = calcularTamano(inicio, -1);
+    int centroide = encontrar(inicio, -1, total);
+    registrar(centroide, -1, 0, centroide);
+    retirado[centroide] = true;
+    for (int vecino : vecinos[centroide]) if (!retirado[vecino]) descomponer(vecino);
+}
+
+int main() {
+    int cantidad, operaciones;
+    cin >> cantidad >> operaciones;
+    vecinos.resize(cantidad);
+    camino.resize(cantidad);
+    tamano.resize(cantidad);
+    mejor.assign(cantidad, INF);
+    retirado.assign(cantidad, false);
+    for (int indice = 1; indice < cantidad; indice++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        vecinos[origen].push_back(destino);
+        vecinos[destino].push_back(origen);
+    }
+    descomponer(0);
+    while (operaciones--) {
+        char tipo;
+        int actual;
+        cin >> tipo >> actual;
+        if (tipo == 'M') {
+            for (auto [centroide, distancia] : camino[actual]) mejor[centroide] = min(mejor[centroide], distancia);
+        } else {
+            int respuesta = INF;
+            for (auto [centroide, distancia] : camino[actual]) respuesta = min(respuesta, distancia + mejor[centroide]);
+            cout << (respuesta == INF ? -1 : respuesta) << '\n';
+        }
+    }
+}
+```
+
+Entrada:
+
+```text input
+5 5
+0 1
+0 2
+1 3
+1 4
+M 3
+Q 2
+M 2
+Q 4
+Q 2
+```
+
+Salida:
+
+```text output
+3
+2
+0
+```
+
+## Coste y precauciones
+
+Preprocesar distancias cuesta $O(n\log n)$ tiempo y memoria. Cada marca y consulta cuesta $O(\log n)$. Repetir una marca es válido porque solo hacemos mínimos.
+
+La recursión de **descomposición** tiene profundidad logarítmica, pero las DFS auxiliares pueden tener profundidad lineal. Para una cadena grande, conviértelas a recorridos con pila explícita. No borres aristas del vector mientras lo recorres: el arreglo `retirado` evita esa necesidad.
+
+Desmarcar no se resuelve asignando infinito: perderías otros marcados que contribuían al mismo centroide. Esa variante requiere mantener colecciones de distancias, por ejemplo multisets.
+
+## Practica
+
+¿Qué responde una consulta sobre un vértice ya marcado? ¿Y una consulta antes de la primera marca?
+
+<details>
+<summary>Respuesta</summary>
+
+Responde 0 y -1, respectivamente. Compara además un árbol estrella y una cadena pequeña con una BFS directa desde cada consulta; son formas útiles de comprobar las distancias almacenadas.
+
+</details>

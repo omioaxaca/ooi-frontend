@@ -1,6 +1,6 @@
 ---
-title: "Matrices"
-description: "Aprende a trabajar con arreglos bidimensionales y matrices en C++"
+title: "Matrices y arreglos de varias dimensiones"
+description: "Representa coordenadas, verifica sus límites y calcula el espacio que ocupa cada dimensión."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "matrices", "arreglos 2D", "bidimensional"]
@@ -48,6 +48,35 @@ vector<vector<int>> mat(filas, vector<int>(cols, 0));  // 3×4, todo ceros
 const int MAXN = 1001;
 int mat[MAXN][MAXN];  // Se inicializa a 0 automáticamente por ser global
 ```
+
+## Más de dos dimensiones
+
+Cada dimensión agrega una coordenada. Para guardar datos por capa, fila y columna, puedes anidar tres vectores. También puedes aplanar las coordenadas en un solo vector: el índice `(capa * filas + fila) * columnas + columna` reserva un bloque completo para cada capa y una fila completa para cada fila.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int capas = 2, filas = 3, columnas = 4;
+    vector<vector<vector<int>>> datos(capas, vector<vector<int>>(filas, vector<int>(columnas, 0)));
+    vector<int> plano(capas * filas * columnas, 0);
+    datos[1][2][3] = 7;
+    plano[(1 * filas + 2) * columnas + 3] = 7;
+    cout << datos[1][2][3] << ' ' << plano[(1 * filas + 2) * columnas + 3] << '\n';
+}
+```
+
+Salida:
+
+```text output
+7 7
+```
+
+Antes de reservar memoria, multiplica los tamaños de **todas** las dimensiones. Una tabla de $1000^3$ enteros de 4 bytes requiere aproximadamente 4 GB, sin contar sobrecarga. Pasar de dos a tres dimensiones puede cambiar completamente la viabilidad. Para dimensiones grandes calcula el producto con un tipo suficientemente ancho y comprueba el límite del problema.
+
+**Practica:** en una tabla de 2 capas, 3 filas y 4 columnas, el índice plano de `(1, 0, 2)` es 14. Hay 24 posiciones válidas, de 0 a 23. Una coordenada fuera de su dimensión sigue siendo inválida aunque la fórmula produzca un índice menor que 24.
 
 ## Leer y escribir matrices
 
@@ -229,10 +258,10 @@ Para responder rápidamente "¿cuál es la suma del subrectángulo de (r1,c1) a 
 
 ```cpp
 // Construir la tabla de prefijos
-int prefix[1001][1001] = {0};
+vector<vector<long long>> prefix(n + 1, vector<long long>(m + 1, 0));
 for (int i = 1; i <= n; i++) {
     for (int j = 1; j <= m; j++) {
-        prefix[i][j] = mat[i][j]
+        prefix[i][j] = mat[i - 1][j - 1]
                       + prefix[i-1][j]
                       + prefix[i][j-1]
                       - prefix[i-1][j-1];
@@ -240,25 +269,27 @@ for (int i = 1; i <= n; i++) {
 }
 
 // Consultar suma del subrectángulo (r1,c1) a (r2,c2)
-int suma = prefix[r2][c2]
+long long suma = prefix[r2][c2]
          - prefix[r1-1][c2]
          - prefix[r2][c1-1]
          + prefix[r1-1][c1-1];
 ```
 
-Esto permite responder cada consulta en $O(1)$ después de $O(n \times m)$ de preprocesamiento.
+La matriz original está indexada desde cero; los prefijos agregan una fila y una columna de ceros. En esta consulta, `(r1, c1)` y `(r2, c2)` son extremos inclusivos indexados desde 1. Esto permite responder en $O(1)$ después de $O(n \times m)$ de preprocesamiento. La explicación de [sumas acumuladas](/blog/iteracion-inteligente/sumas-acumuladas) desarrolla primero la versión de una dimensión.
 
 ## Ejercicio de práctica
 
 Lee una matriz de N×M y encuentra el valor máximo junto con su posición (fila y columna).
 
 **Entrada:**
+
 ```
 3 4
 1 2 3 4
 5 6 7 8
 9 10 11 12
 ```
+
 **Salida:** `12 2 3` (el máximo es 12, en fila 2, columna 3, contando desde 0)
 
 <details>
@@ -297,4 +328,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Structs** para crear tus propios tipos de datos combinados.
+[Complejidad de un algoritmo: Big O](/blog/introduccion/complejidad-algoritmica).

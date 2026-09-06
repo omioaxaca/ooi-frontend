@@ -9,6 +9,8 @@ syllabusId: 5
 
 ## Tu primer programa en C++
 
+**Objetivo:** identificar qué se compila, dónde empieza la ejecución y qué aparece realmente en la salida. La configuración del compilador debe estar lista; todavía no necesitas funciones propias ni macros.
+
 Imagina que quieres decirle algo a la computadora y que ella te responda. Para eso necesitas hablarle en un idioma que entienda. Ese idioma es **C++**, y en esta sección aprenderás las primeras "frases" de este lenguaje.
 
 Todo programa en C++ tiene una estructura básica que siempre se repite, como la estructura de una carta: siempre tiene un saludo, un cuerpo y una despedida. Veamos:
@@ -39,13 +41,13 @@ Esta línea le dice al compilador: **"Necesito usar herramientas de entrada y sa
 
 Las bibliotecas más comunes que usarás son:
 
-| Biblioteca | ¿Qué te da? | Analogía |
-|------------|------------|----------|
-| `<iostream>` | `cin` y `cout` para leer/escribir | Un teléfono para comunicarte |
-| `<cmath>` | Funciones matemáticas como `sqrt`, `pow` | Una calculadora científica |
-| `<string>` | Manejo de textos | Un procesador de palabras |
-| `<vector>` | Arreglos que pueden crecer | Una lista que se expande |
-| `<algorithm>` | Funciones útiles como `sort`, `min`, `max` | Una caja de herramientas |
+| Biblioteca    | ¿Qué te da?                                | Analogía                     |
+| ------------- | ------------------------------------------ | ---------------------------- |
+| `<iostream>`  | `cin` y `cout` para leer/escribir          | Un teléfono para comunicarte |
+| `<cmath>`     | Funciones matemáticas como `sqrt`, `pow`   | Una calculadora científica   |
+| `<string>`    | Manejo de textos                           | Un procesador de palabras    |
+| `<vector>`    | Arreglos que pueden crecer                 | Una lista que se expande     |
+| `<algorithm>` | Funciones útiles como `sort`, `min`, `max` | Una caja de herramientas     |
 
 **Para competencias**, existe un atajo mágico que incluye TODAS las bibliotecas de una vez:
 
@@ -53,7 +55,7 @@ Las bibliotecas más comunes que usarás son:
 #include <bits/stdc++.h>
 ```
 
-Es como decir "tráeme TODAS las herramientas de la ferretería". Esto solo funciona con el compilador `g++` y es exclusivo para competencias (no lo uses en proyectos profesionales).
+Ese encabezado es una extensión de la biblioteca de GCC, no parte de C++ estándar. Puede faltar con Clang y la biblioteca de Apple o con MSVC. En estas guías preferimos incluir los encabezados necesarios para que el código sea más fácil de entender y portar.
 
 ### 2. El espacio de nombres: "de dónde vienen mis herramientas"
 
@@ -106,7 +108,9 @@ int x = 5;  // También puedes poner comentarios al final de una línea
 ```
 
 <Callout type="info">
-  Los comentarios son tu mejor amigo. Cuando vuelvas a leer tu código después de una semana, los comentarios te recordarán qué estabas pensando. Úsalos generosamente.
+  Los comentarios son tu mejor amigo. Cuando vuelvas a leer tu código después de
+  una semana, los comentarios te recordarán qué estabas pensando. Úsalos
+  generosamente.
 </Callout>
 
 ## El operador de salida: `cout`
@@ -130,7 +134,7 @@ cout << "Tengo " << edad << " años" << endl;
 // Muestra: Tengo 15 años
 ```
 
-**Sobre `endl` vs `'\n'`:** Ambos hacen un salto de línea, pero `'\n'` es más rápido. `endl` además "vacía el buffer" (forza a que todo se muestre inmediatamente), lo cual es innecesario en competencias y lo hace más lento.
+**Sobre `endl` y `'\n'`:** ambos agregan un salto de línea, pero `endl` también vacía el búfer. Para salida normal suele bastar `'\n'`; en problemas interactivos sí puede ser necesario vaciar el búfer antes de esperar una respuesta.
 
 ```cpp
 cout << "Línea 1" << endl;   // Más lento (vacía el buffer)
@@ -140,47 +144,27 @@ cout << "Línea 3\n";         // Equivalente al anterior
 
 ## Template para competencias
 
-En la sección de Configuración del Entorno ya vimos el template completo. Aquí lo repasamos con una explicación más detallada de cada parte:
+La plantilla inicial necesita solamente el encabezado de salida y `main`. Añade herramientas conforme las necesites:
 
-```cpp
-#include <bits/stdc++.h>
+```cpp test
+#include <iostream>
 using namespace std;
 
-#define int long long
-#define endl '\n'
-#define pb push_back
-#define all(x) (x).begin(), (x).end()
-
-void solve() {
-    // Tu solución va aquí
-}
-
-signed main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int t = 1;
-    // cin >> t;
-    while (t--) {
-        solve();
-    }
-
+int main() {
+    cout << "Hola\n";
     return 0;
 }
 ```
 
-### ¿Por qué `signed main()` en lugar de `int main()`?
+Salida:
 
-Porque usamos `#define int long long`, que reemplaza TODAS las apariciones de `int` por `long long`. Si escribiéramos `int main()`, se convertiría en `long long main()`, y eso no es válido. `signed main()` no se ve afectado por el `#define`.
-
-### Los macros de atajo
-
-```cpp
-#define pb push_back     // v.pb(x) es lo mismo que v.push_back(x)
-#define all(x) (x).begin(), (x).end()  // sort(all(v)) es lo mismo que sort(v.begin(), v.end())
+```text output
+Hola
 ```
 
-Estos macros te ahorran escritura. En competencias, cada segundo cuenta, y escribir `push_back` 50 veces puede ser tedioso.
+`int main()` debe seguir devolviendo `int`. No redefinas palabras del lenguaje con macros. Escribir `push_back`, tipos explícitos y nombres descriptivos permite relacionar el programa con su explicación.
+
+**Autocomprobación:** cambia el texto por `42`. ¿El programa calcula algo o imprime esos dos caracteres? Imprime el contenido de la cadena. Si escribes `cout << 4 + 2`, calcula la suma y muestra 6. `return 0` indica éxito al sistema, pero no agrega un cero a la salida.
 
 ## Compilación y ejecución
 
@@ -204,12 +188,12 @@ g++ -std=c++17 -O2 -Wall programa.cpp -o programa
 
 **¿Qué hace cada flag (opción)?**
 
-| Flag | Significado | ¿Por qué usarlo? |
-|------|-------------|-------------------|
-| `-std=c++17` | Usar estándar C++17 | Acceso a funciones modernas del lenguaje |
-| `-O2` | Optimización nivel 2 | El programa corre más rápido |
-| `-Wall` | Mostrar todas las advertencias | Te ayuda a encontrar posibles errores |
-| `-o programa` | Nombrar el ejecutable "programa" | Si no, se llamará "a.out" |
+| Flag          | Significado                                | ¿Por qué usarlo?                                |
+| ------------- | ------------------------------------------ | ----------------------------------------------- |
+| `-std=c++17`  | Usar estándar C++17                        | Acceso a funciones modernas del lenguaje        |
+| `-O2`         | Optimización nivel 2                       | El programa corre más rápido                    |
+| `-Wall`       | Activar un conjunto amplio de advertencias | Puedes añadir `-Wextra` para más comprobaciones |
+| `-o programa` | Nombrar el ejecutable "programa"           | Si no, se llamará "a.out"                       |
 
 ## Errores comunes (y cómo solucionarlos)
 
@@ -270,7 +254,9 @@ int main() {
 ```
 
 <Callout type="warning">
-  Cuando el compilador te muestra un error, lee el mensaje cuidadosamente. Te dice el número de línea donde detectó el problema. A veces el error real está una o dos líneas antes de donde el compilador lo señala.
+  Cuando el compilador te muestra un error, lee el mensaje cuidadosamente. Te
+  dice el número de línea donde detectó el problema. A veces el error real está
+  una o dos líneas antes de donde el compilador lo señala.
 </Callout>
 
 ## Ejemplo completo: programa que suma dos números
@@ -288,16 +274,19 @@ int main() {
 ```
 
 **Entrada (lo que escribe el usuario):**
+
 ```
 5 3
 ```
 
 **Salida (lo que muestra el programa):**
+
 ```
 8
 ```
 
 **Paso a paso de lo que ocurre:**
+
 1. `int a, b;` — Se crean dos "cajitas" en memoria llamadas `a` y `b`.
 2. `cin >> a >> b;` — El programa espera que el usuario escriba dos números. Los guarda en `a` y `b`.
 3. `cout << a + b << endl;` — Calcula `a + b` (5 + 3 = 8) y lo muestra en pantalla.
@@ -330,4 +319,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Tipos de Datos y Variables** para entender cómo la computadora almacena diferentes tipos de información.
+[Tipos de datos y variables](/blog/cpp-basico/tipos-de-datos).

@@ -9,6 +9,8 @@ syllabusId: 42
 
 ## ¿Qué son GCD y LCM?
 
+En esta guía trabajamos con enteros no negativos. Las siglas correctas son **GCD** y **LCM**: máximo común divisor y mínimo común múltiplo. Para dos valores positivos, el LCM es el menor múltiplo común **positivo**. Usaremos las convenciones `gcd(0, 0) = 0` y `lcm(0, numero) = 0` de C++17.
+
 - **GCD** (Greatest Common Divisor / Máximo Común Divisor): el número más grande que divide a ambos sin dejar residuo.
   - GCD(12, 8) = 4 porque 4 divide a 12 y a 8.
 - **LCM** (Least Common Multiple / Mínimo Común Múltiplo): el número más pequeño que es múltiplo de ambos.
@@ -34,6 +36,7 @@ int gcd(int a, int b) {
 ### Ejemplo paso a paso
 
 $\gcd(48, 18)$:
+
 - $\gcd(48, 18) = \gcd(18, 48 \mod 18) = \gcd(18, 12)$
 - $\gcd(18, 12) = \gcd(12, 18 \mod 12) = \gcd(12, 6)$
 - $\gcd(12, 6) = \gcd(6, 12 \mod 6) = \gcd(6, 0)$
@@ -53,12 +56,10 @@ int gcd(int a, int b) {
 ### C++ ya lo tiene
 
 ```cpp
-#include <algorithm>  // En C++14
-// o
-#include <numeric>    // En C++17
+#include <numeric>
 
-int g = __gcd(12, 8);    // 4 (funciona en todas las versiones)
-int g2 = gcd(12, 8);     // 4 (C++17)
+int divisorComun = std::gcd(12, 8);
+int multiploComun = std::lcm(4, 6);
 ```
 
 ## LCM a partir de GCD
@@ -68,13 +69,18 @@ La relación mágica:
 $$\text{lcm}(a, b) = \frac{a \times b}{\gcd(a, b)}$$
 
 ```cpp
-long long lcm(long long a, long long b) {
-    return a / gcd(a, b) * b;  // Dividir primero para evitar overflow
+long long lcm(long long primero, long long segundo) {
+    if (primero == 0 || segundo == 0) return 0;
+    return primero / std::gcd(primero, segundo) * segundo;
 }
 ```
 
 <Callout type="warning">
-  Escribe `a / gcd(a, b) * b` y NO `a * b / gcd(a, b)`. El producto `a * b` puede causar overflow incluso con `long long`.
+  Dividir antes de multiplicar reduce el producto intermedio, pero no garantiza
+  que el resultado final quepa. Para valores positivos comprueba que `primero /
+  gcd(primero, segundo)` no exceda `LLONG_MAX / segundo` si las restricciones no
+  garantizan el rango. También `std::lcm` exige que el resultado sea
+  representable.
 </Callout>
 
 ## GCD de más de dos números
@@ -85,7 +91,7 @@ $\gcd(a, b, c) = \gcd(\gcd(a, b), c)$
 int gcdMultiple(vector<int> &v) {
     int resultado = v[0];
     for (int i = 1; i < v.size(); i++) {
-        resultado = __gcd(resultado, v[i]);
+        resultado = std::gcd(resultado, v[i]);
     }
     return resultado;
 }
@@ -135,11 +141,14 @@ int gcdExtendido(int a, int b, int &x, int &y) {
 Dados N números, encuentra el GCD y LCM de todos ellos.
 
 **Entrada:**
+
 ```
 4
 12 18 24 36
 ```
+
 **Salida:**
+
 ```
 GCD: 6
 LCM: 72
@@ -148,18 +157,19 @@ LCM: 72
 <details>
 <summary>Ver solución</summary>
 
-```cpp
+```cpp test
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <numeric>
 using namespace std;
 
 long long gcd(long long a, long long b) {
     return b == 0 ? a : gcd(b, a % b);
 }
 
-long long lcm(long long a, long long b) {
-    return a / gcd(a, b) * b;
+long long lcm(long long primero, long long segundo) {
+    if (primero == 0 || segundo == 0) return 0;
+    return primero / std::gcd(primero, segundo) * segundo;
 }
 
 int main() {
@@ -180,5 +190,21 @@ int main() {
     return 0;
 }
 ```
+
+Entrada de comprobación con ceros:
+
+```text input
+3
+0 0 12
+```
+
+Salida:
+
+```text output
+GCD: 12
+LCM: 0
+```
+
+El programa supone al menos un dato y que los LCM intermedios caben en `long long`. Explica por qué comprobar ambos ceros antes de dividir evita calcular `0 / gcd(0, 0)`.
 
 </details>

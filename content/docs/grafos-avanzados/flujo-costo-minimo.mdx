@@ -1,0 +1,133 @@
+---
+title: "Min-cost max flow"
+description: "Entre los flujos máximos, encuentra el de menor coste usando caminos residuales de coste mínimo."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "flujo", "coste mínimo", "potenciales"]
+---
+
+## Antes de empezar
+
+Repasa [flujo máximo](/blog/grafos-avanzados/flujo-maximo) y Bellman-Ford. Cada arista tiene capacidad y coste por unidad. El objetivo es primero maximizar el flujo y, entre los flujos de ese valor, minimizar el coste total.
+
+Si el enunciado pide exactamente $K$ unidades, detén los aumentos al alcanzar $K$ y comprueba que la red permite enviarlas. Esa variante no es idéntica a enviar siempre el máximo posible.
+
+## El coste de cancelar
+
+La inversa residual de una arista con coste $c$ tiene coste $-c$: cancelar una unidad recupera el coste que pagaste. Por ello, aunque los costes originales sean no negativos, aparecen costes residuales negativos. Dijkstra directo no es válido en esa red.
+
+Partiendo de flujo cero, busca un camino residual de coste mínimo, envía tanto como permita su capacidad mínima y repite. En una red inicial sin ciclos de coste negativo, estos aumentos conservan la optimalidad para el valor de flujo alcanzado.
+
+## Una implementación de referencia
+
+Usaremos Bellman-Ford en cada aumento. Es más lenta que una versión con potenciales, pero permite ver claramente capacidades, costes, predecesores y aristas inversas.
+
+El código supone capacidades enteras no negativas, costes originales no negativos, fuente distinta de sumidero y valores/sumas/productos representables en `long long`. Ignora lazos. Estas condiciones excluyen ciclos negativos iniciales; una implementación general que permita esos ciclos necesitaría tratamiento adicional de circulaciones.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <utility>
+#include <vector>
+using namespace std;
+
+struct Arista { int destino, inversa; long long capacidad, coste; };
+
+struct Red {
+    vector<vector<Arista>> grafo;
+    Red(int cantidad) : grafo(cantidad) {}
+    void agregar(int origen, int destino, long long capacidad, long long coste) {
+        if (origen == destino) return;
+        Arista directa{destino, static_cast<int>(grafo[destino].size()), capacidad, coste};
+        Arista inversa{origen, static_cast<int>(grafo[origen].size()), 0, -coste};
+        grafo[origen].push_back(directa);
+        grafo[destino].push_back(inversa);
+    }
+    pair<long long, long long> resolver(int fuente, int sumidero) {
+        int cantidad = static_cast<int>(grafo.size());
+        const long long INF = 4000000000000000000LL;
+        long long flujo = 0, costeTotal = 0;
+        while (true) {
+            vector<long long> distancia(cantidad, INF);
+            vector<int> padre(cantidad, -1), aristaPadre(cantidad, -1);
+            distancia[fuente] = 0;
+            for (int vuelta = 0; vuelta < cantidad - 1; vuelta++) {
+                bool cambio = false;
+                for (int actual = 0; actual < cantidad; actual++) {
+                    if (distancia[actual] == INF) continue;
+                    for (int indice = 0; indice < static_cast<int>(grafo[actual].size()); indice++) {
+                        const Arista& arista = grafo[actual][indice];
+                        if (arista.capacidad > 0 && distancia[actual] + arista.coste < distancia[arista.destino]) {
+                            distancia[arista.destino] = distancia[actual] + arista.coste;
+                            padre[arista.destino] = actual;
+                            aristaPadre[arista.destino] = indice;
+                            cambio = true;
+                        }
+                    }
+                }
+                if (!cambio) break;
+            }
+            if (distancia[sumidero] == INF) break;
+            long long enviado = INF;
+            for (int actual = sumidero; actual != fuente; actual = padre[actual]) {
+                enviado = min(enviado, grafo[padre[actual]][aristaPadre[actual]].capacidad);
+            }
+            for (int actual = sumidero; actual != fuente; actual = padre[actual]) {
+                Arista& arista = grafo[padre[actual]][aristaPadre[actual]];
+                arista.capacidad -= enviado;
+                grafo[actual][arista.inversa].capacidad += enviado;
+            }
+            flujo += enviado;
+            costeTotal += enviado * distancia[sumidero];
+        }
+        return {flujo, costeTotal};
+    }
+};
+
+int main() {
+    int vertices, aristas, fuente, sumidero;
+    cin >> vertices >> aristas >> fuente >> sumidero;
+    Red red(vertices);
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, destino;
+        long long capacidad, coste;
+        cin >> origen >> destino >> capacidad >> coste;
+        red.agregar(origen, destino, capacidad, coste);
+    }
+    auto [flujo, coste] = red.resolver(fuente, sumidero);
+    cout << flujo << ' ' << coste << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4 5 0 3
+0 1 2 1
+0 2 1 5
+1 2 1 0
+1 3 1 3
+2 3 2 1
+```
+
+Salida:
+
+```text output
+3 12
+```
+
+Los aumentos pueden usar caminos de costes 2, 4 y 6, una unidad cada uno. La suma es 12 y las capacidades que salen de la fuente limitan el flujo a 3.
+
+## Potenciales para acelerar
+
+Un potencial $p[v]$ redefine el coste como $c'(u,v)=c(u,v)+p[u]-p[v]$. En cualquier camino fuente-sumidero, los potenciales intermedios se cancelan, por lo que ordenar caminos por coste reducido equivale a ordenarlos por coste original.
+
+Si los costes reducidos residuales son no negativos, usa Dijkstra. Después de cada búsqueda actualiza `p[v] += distanciaReducida[v]` para los vértices alcanzables. Con costes originales no negativos puedes comenzar con potencial cero; con costes negativos permitidos necesitarías una inicialización válida y ausencia de ciclos negativos pertinentes.
+
+## Coste y práctica
+
+Con $A$ aumentos, la versión mostrada cuesta $O(A VE)$ y memoria $O(V+E)$. Con capacidades enteras, $A$ no supera el flujo total, pero ese número puede ser grande. Una versión con potenciales reduce cada búsqueda a un coste cercano a $O(E\log V)$.
+
+**Practica:** limita el ejemplo a exactamente dos unidades. Los dos primeros caminos cuestan 2 y 4, para coste total 6. Debes limitar el último envío a `K - flujo`, no enviar de más y corregir la cifra después.

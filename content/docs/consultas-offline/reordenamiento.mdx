@@ -1,0 +1,117 @@
+---
+title: "Reordenamiento offline de consultas"
+description: "Ordena por umbral, activa elementos gradualmente y devuelve las respuestas en el orden original."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "offline", "consultas", "barrido", "Fenwick"]
+---
+
+## Antes de empezar
+
+Necesitas ordenamiento, pares y sumas de prefijos. Offline significa que el orden de **procesamiento** puede ser distinto al de entrada. El orden de **salida** debe seguir siendo el que pide el juez. Un problema de solo salida es otro formato de concurso, no un requisito de esta técnica.
+
+## El problema
+
+En un arreglo fijo, cada consulta contiene un intervalo `[izquierda, derecha)` y un umbral. Debemos contar cuántos valores del intervalo son menores o iguales a ese umbral.
+
+Ordena los elementos por valor y las consultas por umbral. Al avanzar por las consultas, activa las posiciones cuyo valor ya cumple el umbral. Las posiciones activas contienen 1 y las demás 0. La respuesta es la suma de ese arreglo de indicadores dentro del intervalo.
+
+No ordenamos físicamente el arreglo por posiciones: guardamos cada elemento junto con su índice original. Activar el valor 4 significa marcar su posición original, no su posición en el orden por valor.
+
+## Un acumulador con actualizaciones
+
+Los prefijos normales quedarían desactualizados después de activar una posición. Usaremos un pequeño **Fenwick**: `agregar` actualiza bloques de prefijo y `prefijo` suma bloques disjuntos. Con índices internos desde 1, `indice & -indice` da el tamaño del bloque correspondiente. Ambas operaciones cuestan $O(\log n)$; la guía de BIT en Verde profundiza en esa representación.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <utility>
+#include <vector>
+using namespace std;
+
+struct Fenwick {
+    vector<int> arbol;
+    Fenwick(int cantidad) : arbol(cantidad + 1, 0) {}
+    void agregar(int posicion) {
+        for (int indice = posicion + 1; indice < static_cast<int>(arbol.size()); indice += indice & -indice) arbol[indice]++;
+    }
+    int prefijo(int fin) const {
+        int suma = 0;
+        for (int indice = fin; indice > 0; indice -= indice & -indice) suma += arbol[indice];
+        return suma;
+    }
+};
+
+struct Consulta { int izquierda, derecha, umbral, id; };
+bool porUmbral(const Consulta& primera, const Consulta& segunda) {
+    return primera.umbral < segunda.umbral;
+}
+
+int main() {
+    int cantidad, totalConsultas;
+    cin >> cantidad >> totalConsultas;
+    vector<pair<int, int>> elementos;
+    for (int posicion = 0; posicion < cantidad; posicion++) {
+        int valor;
+        cin >> valor;
+        elementos.push_back({valor, posicion});
+    }
+    vector<Consulta> consultas(totalConsultas);
+    for (int indice = 0; indice < totalConsultas; indice++) {
+        cin >> consultas[indice].izquierda >> consultas[indice].derecha >> consultas[indice].umbral;
+        consultas[indice].id = indice;
+    }
+    sort(elementos.begin(), elementos.end());
+    sort(consultas.begin(), consultas.end(), porUmbral);
+    Fenwick activas(cantidad);
+    vector<int> respuesta(totalConsultas);
+    int siguiente = 0;
+    for (const Consulta& consulta : consultas) {
+        while (siguiente < cantidad && elementos[siguiente].first <= consulta.umbral) {
+            activas.agregar(elementos[siguiente].second);
+            siguiente++;
+        }
+        respuesta[consulta.id] = activas.prefijo(consulta.derecha) - activas.prefijo(consulta.izquierda);
+    }
+    for (int valor : respuesta) cout << valor << '\n';
+}
+```
+
+Entrada:
+
+```text input
+5 3
+4 1 4 2 8
+0 4 3
+1 5 4
+0 5 8
+```
+
+Salida:
+
+```text output
+2
+3
+5
+```
+
+## Invariante, coste y límites
+
+Antes de responder cada consulta, están activados exactamente los elementos con valor a lo sumo su umbral. Los umbrales nunca disminuyen, así que ninguna posición necesita desactivarse. Cada elemento se activa una vez y cada consulta hace dos sumas.
+
+Ordenar cuesta $O(n\log n+q\log q)$; activar y consultar cuesta $O((n+q)\log n)$ para $n\geq1$. La memoria es $O(n+q)$. Los valores pueden ser negativos porque ordenamos valores y actualizamos por posición.
+
+Si la siguiente consulta viene cifrada con la respuesta anterior, no la conoces de antemano y quizá no puedas reordenarla. Si hay actualizaciones intercaladas, tampoco puedes aplicar este barrido estático sin modelar el tiempo.
+
+## Practica
+
+Cambia «menores o iguales» por «estrictamente menores». ¿Dónde debe cambiar el comparador?
+
+<details>
+<summary>Respuesta</summary>
+
+Cambia `elementos[siguiente].first <= consulta.umbral` por `<`. No cambies el orden de los intervalos ni los prefijos. Para `[4, 4]` y umbral 4, el conteo pasa de 2 a 0.
+
+</details>

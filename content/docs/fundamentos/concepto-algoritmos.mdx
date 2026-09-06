@@ -9,6 +9,8 @@ syllabusId: 3
 
 ## ¿Qué es un algoritmo?
 
+**Objetivo de estudio:** poder escribir el contrato de un problema, proponer pasos finitos y explicar por qué producen la salida correcta. Todavía puedes trabajar en lenguaje natural; los bloques C++ muestran cómo se traducirán esas ideas cuando aprendas la sintaxis.
+
 Un **algoritmo** es una serie de pasos ordenados y precisos que resuelven un problema específico. Siempre tiene un inicio, un final, y cada paso está claramente definido para que no haya ambigüedad.
 
 ### Analogía: la receta de cocina
@@ -29,23 +31,25 @@ Si alguien te da una receta con pasos claros, cualquier persona puede seguirla y
 
 Todo algoritmo debe cumplir con estas propiedades:
 
-| Característica | Descripción | Ejemplo (receta) |
-|----------------|-------------|-------------------|
-| **Finito** | Debe terminar después de un número finito de pasos | Una receta tiene un final: "hornear 30 minutos" |
-| **Definido** | Cada paso debe estar claramente especificado, sin ambigüedad | "Agregar 200g de harina" (no "agregar un poco de harina") |
-| **Entrada** | Tiene cero o más valores de entrada | Los ingredientes |
-| **Salida** | Produce al menos un valor de salida | El platillo terminado |
-| **Efectivo** | Cada paso debe ser realizable | "Mezclar" es algo que podemos hacer; "convertir plomo en oro" no |
+| Característica | Descripción                                                  | Ejemplo (receta)                                                 |
+| -------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **Finito**     | Debe terminar después de un número finito de pasos           | Una receta tiene un final: "hornear 30 minutos"                  |
+| **Definido**   | Cada paso debe estar claramente especificado, sin ambigüedad | "Agregar 200g de harina" (no "agregar un poco de harina")        |
+| **Entrada**    | Tiene cero o más valores de entrada                          | Los ingredientes                                                 |
+| **Salida**     | Produce al menos un valor de salida                          | El platillo terminado                                            |
+| **Efectivo**   | Cada paso debe ser realizable                                | "Mezclar" es algo que podemos hacer; "convertir plomo en oro" no |
 
 <Callout type="warning">
-  Si un conjunto de instrucciones no termina nunca (por ejemplo, "cuenta todos los números naturales"), **no es un algoritmo**. Los algoritmos SIEMPRE deben terminar.
+  Si un conjunto de instrucciones no termina nunca (por ejemplo, "cuenta todos
+  los números naturales"), **no es un algoritmo**. Los algoritmos SIEMPRE deben
+  terminar.
 </Callout>
 
 ## Tu primer algoritmo: encontrar el número más grande
 
 Imagina que tienes una fila de cajas, cada una con un número adentro, y necesitas encontrar el número más grande. No puedes ver todos los números al mismo tiempo; solo puedes abrir una caja a la vez.
 
-**Problema:** Dado un conjunto de números, encontrar el mayor.
+**Problema:** dada una lista **no vacía** de números, encontrar el mayor. La condición no vacía importa: el método necesita un primer valor y una lista vacía no tiene máximo sin una convención adicional.
 
 ### Paso 1: Pensarlo en lenguaje natural
 
@@ -57,6 +61,10 @@ Antes de escribir código, pensemos cómo lo haríamos en la vida real:
 4. Al terminar, "el más grande hasta ahora" es la respuesta.
 
 ¿Ves? Ni siquiera hemos tocado una computadora y ya tenemos un algoritmo claro.
+
+Después de cada caja, el valor recordado es el mayor de todas las cajas abiertas. Al abrir otra, comparar y conservar el mayor mantiene esa propiedad. Como quedan menos cajas pendientes, el proceso termina y la propiedad final cubre toda la lista.
+
+**Comprueba:** para `[-8,-3,-5]` debe devolver -3. Empezar con máximo igual a cero daría una respuesta que ni siquiera aparece en la lista. Para una sola caja, devuelve su valor sin comparaciones adicionales. Un algoritmo correcto necesita tanto un contrato claro como casos que intenten refutarlo.
 
 ### Paso 2: Escribirlo en pseudocódigo
 
@@ -114,7 +122,8 @@ Siempre debemos probar nuestro algoritmo con ejemplos para asegurarnos de que fu
 - **Ejemplo 4:** [-3, -1, -7] → Con negativos. maximo = -3, luego -1. Resultado: **-1** ✓
 
 <Callout type="info">
-  Probar con **casos extremos** (un solo elemento, todos iguales, números negativos) es fundamental. Muchos errores se esconden en estos casos.
+  Probar con **casos extremos** (un solo elemento, todos iguales, números
+  negativos) es fundamental. Muchos errores se esconden en estos casos.
 </Callout>
 
 ## Diseñando algoritmos: metodología paso a paso
@@ -130,6 +139,7 @@ Antes de escribir una sola línea de código, asegúrate de entender completamen
 - **¿Hay restricciones?** ¿Qué tan grande puede ser la entrada? ¿Hay casos especiales?
 
 **Ejemplo de problema:**
+
 > "Dado un número N, calcula la suma de todos los números del 1 al N."
 
 - **Entrada:** Un número entero N (por ejemplo, N = 5)
@@ -333,6 +343,7 @@ vector<int> duplicar(vector<int>& arr) {
 ### Ejercicio 1: Año bisiesto
 
 Un año es bisiesto si:
+
 - Es divisible por 4, **PERO**
 - Si es divisible por 100, **NO** es bisiesto, **A MENOS QUE**
 - Sea divisible por 400, en cuyo caso **SÍ** es bisiesto.
@@ -410,4 +421,4 @@ long long fibonacci(int n) {
 
 ## Siguiente paso
 
-Aprende a representar algoritmos visualmente con **Diagramas de Flujo**, que te ayudarán a pensar más claramente antes de programar.
+[Configuración de VS Code y computadora](/blog/introduccion/configuracion-entorno).

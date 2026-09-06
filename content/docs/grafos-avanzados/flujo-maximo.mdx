@@ -1,0 +1,190 @@
+---
+title: "Maximum flow: Dinic y HLPP"
+description: "Modela capacidades y redes residuales, y compara caminos por niveles con preflujo de mayor etiqueta."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "flujo máximo", "Dinic", "HLPP", "push-relabel"]
+---
+
+## Antes de empezar
+
+Necesitas grafos dirigidos, BFS, DFS y colas de prioridad. Cada arista tiene una capacidad no negativa. Queremos enviar tanto flujo como sea posible de una fuente a un sumidero distinto, respetando capacidades y conservación en los demás vértices.
+
+## La red residual permite corregir decisiones
+
+Si enviamos $f$ unidades por una arista de capacidad $c$, queda capacidad residual $c-f$ hacia delante y $f$ hacia atrás. La arista inversa permite **cancelar** parte de lo enviado, no representa una capacidad original adicional.
+
+Guarda en cada arista el índice de su pareja inversa. Cada envío disminuye una capacidad residual y aumenta la otra en la misma cantidad. Sin estas inversas, elegir un camino temprano podría bloquear una solución mejor.
+
+## Dinic: niveles y flujo bloqueante
+
+BFS calcula niveles usando aristas residuales positivas. DFS envía flujo solo a vértices del nivel siguiente. Un puntero por vértice recuerda las aristas ya agotadas para no revisarlas desde cero en cada intento.
+
+Cuando ya no hay caminos dentro de ese grafo de niveles, construimos nuevos niveles. Cuando el sumidero deja de ser alcanzable en la red residual, el flujo es máximo: los alcanzables definen un corte cuya capacidad coincide con el flujo enviado.
+
+## HLPP: highest-label push-relabel
+
+Push-relabel permite temporalmente exceso de flujo en vértices internos. La fuente empieza con altura $n$ y se saturan sus aristas salientes. Un vértice con exceso puede empujar por una arista residual si su altura es exactamente uno mayor que la del destino.
+
+Si no puede empujar, eleva su etiqueta a uno más que la menor altura residual vecina. HLPP elige siempre un vértice activo de **mayor altura**. Al desaparecer los excesos internos, el preflujo se convierte en un flujo factible máximo.
+
+## C++17: dos métodos sobre la misma red
+
+La implementación de HLPP es una versión base de mayor etiqueta, sin heurísticas de gap ni relabel global. Las capacidades son enteras y sus sumas deben caber en `long long`, por debajo de `INF`. Los lazos se ignoran porque no mejoran el flujo fuente-sumidero.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <queue>
+#include <utility>
+#include <vector>
+using namespace std;
+
+struct Arista { int destino, inversa; long long capacidad; };
+
+struct Red {
+    vector<vector<Arista>> grafo;
+    vector<int> nivel, siguiente;
+    static constexpr long long INF = 4000000000000000000LL;
+    Red(int cantidad) : grafo(cantidad), nivel(cantidad), siguiente(cantidad) {}
+    void agregar(int origen, int destino, long long capacidad) {
+        if (origen == destino) return;
+        Arista directa{destino, static_cast<int>(grafo[destino].size()), capacidad};
+        Arista inversa{origen, static_cast<int>(grafo[origen].size()), 0};
+        grafo[origen].push_back(directa);
+        grafo[destino].push_back(inversa);
+    }
+    bool capas(int fuente, int sumidero) {
+        fill(nivel.begin(), nivel.end(), -1);
+        queue<int> pendientes;
+        nivel[fuente] = 0;
+        pendientes.push(fuente);
+        while (!pendientes.empty()) {
+            int actual = pendientes.front(); pendientes.pop();
+            for (const Arista& arista : grafo[actual]) {
+                if (arista.capacidad > 0 && nivel[arista.destino] == -1) {
+                    nivel[arista.destino] = nivel[actual] + 1;
+                    pendientes.push(arista.destino);
+                }
+            }
+        }
+        return nivel[sumidero] != -1;
+    }
+    long long enviar(int actual, int sumidero, long long disponible) {
+        if (actual == sumidero) return disponible;
+        for (int& indice = siguiente[actual]; indice < static_cast<int>(grafo[actual].size()); indice++) {
+            Arista& arista = grafo[actual][indice];
+            if (arista.capacidad == 0 || nivel[arista.destino] != nivel[actual] + 1) continue;
+            long long enviado = enviar(arista.destino, sumidero, min(disponible, arista.capacidad));
+            if (enviado > 0) {
+                arista.capacidad -= enviado;
+                grafo[arista.destino][arista.inversa].capacidad += enviado;
+                return enviado;
+            }
+        }
+        return 0;
+    }
+    long long dinic(int fuente, int sumidero) {
+        long long flujo = 0;
+        while (capas(fuente, sumidero)) {
+            fill(siguiente.begin(), siguiente.end(), 0);
+            while (long long enviado = enviar(fuente, sumidero, INF)) flujo += enviado;
+        }
+        return flujo;
+    }
+    long long hlpp(int fuente, int sumidero) {
+        int cantidad = static_cast<int>(grafo.size());
+        vector<int> altura(cantidad, 0), cursor(cantidad, 0);
+        vector<long long> exceso(cantidad, 0);
+        vector<bool> activo(cantidad, false);
+        priority_queue<pair<int, int>> pendientes;
+        auto activar = [&](int vertice) {
+            if (vertice != fuente && vertice != sumidero && exceso[vertice] > 0 && !activo[vertice]) {
+                activo[vertice] = true;
+                pendientes.push({altura[vertice], vertice});
+            }
+        };
+        altura[fuente] = cantidad;
+        for (Arista& arista : grafo[fuente]) {
+            long long enviado = arista.capacidad;
+            if (enviado == 0) continue;
+            arista.capacidad = 0;
+            grafo[arista.destino][arista.inversa].capacidad += enviado;
+            exceso[arista.destino] += enviado;
+            exceso[fuente] -= enviado;
+            activar(arista.destino);
+        }
+        while (!pendientes.empty()) {
+            int actual = pendientes.top().second; pendientes.pop();
+            activo[actual] = false;
+            while (exceso[actual] > 0) {
+                if (cursor[actual] == static_cast<int>(grafo[actual].size())) {
+                    int minima = 2 * cantidad;
+                    for (const Arista& arista : grafo[actual]) if (arista.capacidad > 0) minima = min(minima, altura[arista.destino]);
+                    altura[actual] = minima + 1;
+                    cursor[actual] = 0;
+                    continue;
+                }
+                Arista& arista = grafo[actual][cursor[actual]];
+                if (arista.capacidad > 0 && altura[actual] == altura[arista.destino] + 1) {
+                    long long enviado = min(exceso[actual], arista.capacidad);
+                    arista.capacidad -= enviado;
+                    grafo[arista.destino][arista.inversa].capacidad += enviado;
+                    exceso[actual] -= enviado;
+                    exceso[arista.destino] += enviado;
+                    activar(arista.destino);
+                } else cursor[actual]++;
+            }
+        }
+        return exceso[sumidero];
+    }
+};
+
+int main() {
+    int vertices, aristas, fuente, sumidero;
+    cin >> vertices >> aristas >> fuente >> sumidero;
+    Red primera(vertices), segunda(vertices);
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, destino;
+        long long capacidad;
+        cin >> origen >> destino >> capacidad;
+        primera.agregar(origen, destino, capacidad);
+        segunda.agregar(origen, destino, capacidad);
+    }
+    cout << primera.dinic(fuente, sumidero) << ' ' << segunda.hlpp(fuente, sumidero) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4 5 0 3
+0 1 3
+0 2 2
+1 2 1
+1 3 2
+2 3 3
+```
+
+Salida:
+
+```text output
+5 5
+```
+
+## Coste y selección
+
+Dinic tiene cota general $O(V^2E)$, con mejores cotas en redes especiales. Para la versión base de push-relabel, una cota conservadora es $O(V^2E)$ operaciones y un factor logarítmico adicional por la cola de prioridades usada aquí. Implementaciones HLPP optimizadas agregan heurísticas, pero no debes atribuir sus rendimientos a cualquier variante.
+
+Ambas guardan $O(V+E)$ datos. La DFS de Dinic puede ser profunda; HLPP no usa recursión. Cada método consume las capacidades residuales, por eso el ejemplo construye dos redes independientes.
+
+## Practica
+
+¿Qué ocurre si eliminas todas las aristas que llegan al sumidero? ¿Cómo compruebas que un resultado 5 es óptimo en el ejemplo?
+
+<details>
+<summary>Respuesta</summary>
+
+Sin acceso al sumidero, ambos devuelven 0; HLPP devuelve el exceso a la fuente por las aristas residuales. En el ejemplo, la suma de capacidades que sale de la fuente es 5 y encontramos un flujo de 5: ningún flujo puede superar ese corte.
+
+</details>

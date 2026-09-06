@@ -9,6 +9,44 @@ syllabusId: 21
 
 ## ¿Para qué sirve un struct?
 
+`struct` es una construcción del **lenguaje C++**, no un contenedor STL. `pair` y `vector` sí pertenecen a la biblioteca estándar. Necesitas conocer tipos, vectores y funciones para combinar estas herramientas.
+
+## Un registro completo y un par sencillo
+
+Usa campos con nombre cuando su significado importa. Para dos datos estrechamente relacionados, `pair` puede ser suficiente; sus campos se llaman `first` y `second`.
+
+```cpp test
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+using namespace std;
+
+struct Estudiante {
+    string nombre;
+    int puntos = 0;
+};
+
+int main() {
+    vector<Estudiante> grupo = {{"Ana", 10}, {"Luis", 8}};
+    grupo[1].puntos += 3;
+    pair<int, int> coordenada = {2, 5};
+    cout << grupo[1].nombre << ' ' << grupo[1].puntos << '\n';
+    cout << coordenada.first << ' ' << coordenada.second << '\n';
+}
+```
+
+Salida:
+
+```text output
+Luis 11
+2 5
+```
+
+Modificar el puntaje no cambia el nombre del registro. Al ordenar el vector, se mueve el registro completo. Un `pair` se compara lexicográficamente; un `struct` no adquiere automáticamente un orden útil en C++17. Define un comparador cuando llegues a ordenamiento personalizado.
+
+**Autocomprobación:** `for (Estudiante estudiante : grupo)` recorre copias; cambiar sus puntos no modifica el vector. Usa `Estudiante&` para modificar y `const Estudiante&` para consultar sin copiar. Inicializa los campos numéricos para no leer valores indeterminados.
+
 Imagina que estás organizando una competencia y necesitas guardar información de cada participante: su nombre, su puntaje y su escuela. Podrías usar tres arreglos separados:
 
 ```cpp
@@ -219,7 +257,8 @@ sort(puntos.begin(), puntos.end());
 ```
 
 <Callout type="info">
-  `pair` es muy cómodo, pero para más de dos campos, usa un struct con nombres descriptivos. Es más legible `evento.inicio` que `evento.first`.
+  `pair` es muy cómodo, pero para más de dos campos, usa un struct con nombres
+  descriptivos. Es más legible `evento.inicio` que `evento.first`.
 </Callout>
 
 ## Ejercicio de práctica
@@ -227,6 +266,7 @@ sort(puntos.begin(), puntos.end());
 Lee N estudiantes con nombre y calificación. Ordénalos por calificación descendente y muestra la tabla de posiciones.
 
 **Entrada:**
+
 ```
 4
 Ana 85
@@ -234,7 +274,9 @@ Carlos 92
 María 78
 Pedro 92
 ```
+
 **Salida:**
+
 ```
 1. Carlos 92
 2. Pedro 92
@@ -286,4 +328,4 @@ int main() {
 
 ## Siguiente paso
 
-Con las estructuras de datos básicas dominadas, avanza a los **Algoritmos de Ordenamiento** para aprender cómo organizar datos de forma eficiente.
+[Pilas y colas: STL stack y queue](/blog/pilas-y-colas/pilas-concepto).

@@ -1,0 +1,89 @@
+---
+title: "Números de Catalan"
+description: "Cuenta estructuras balanceadas separándolas en dos partes y reconoce la recurrencia de Catalan."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Catalan", "combinatoria", "recurrencias"]
+---
+
+## Antes de empezar
+
+Repasa combinaciones, recurrencias y arreglos. Queremos contar cadenas de paréntesis balanceados con $n$ pares, sin generar todas las cadenas posibles.
+
+Para tres pares hay cinco: `((()))`, `(()())`, `(())()`, `()(())` y `()()()`. Balanceado significa que cada prefijo tiene al menos tantos paréntesis de apertura como de cierre, y al terminar ambas cantidades coinciden.
+
+## Separar usando el primer paréntesis
+
+Toda cadena balanceada no vacía puede escribirse de manera única como `(A)B`, donde A y B también están balanceadas. Si A usa $i$ pares, B usa $n-1-i$ pares.
+
+Por la regla del producto, esa elección permite $C_iC_{n-1-i}$ combinaciones. Sumamos sobre todos los tamaños posibles de A:
+
+$$C_0=1,\qquad C_n=\sum_{i=0}^{n-1} C_iC_{n-1-i}.$$
+
+El caso vacío vale **uno**, porque hay exactamente una forma de no colocar ningún par. Poner cero anularía todos los productos posteriores.
+
+## Ejemplo razonado
+
+Partimos de $C_0=1$, $C_1=1$ y $C_2=2$. Para tres pares:
+
+$$C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5.$$
+
+La descomposición es única, por lo que no contamos una cadena dos veces. A y B usan menos pares que la cadena completa, así que podemos llenar una tabla de menor a mayor tamaño. Esta es una primera aparición de tabulación, que estudiarás después en programación dinámica.
+
+## C++17
+
+El ejemplo calcula valores exactos para $0\leq n\leq30$, dentro del rango de `long long`.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int pares;
+    cin >> pares;
+    vector<long long> catalan(pares + 1, 0);
+    catalan[0] = 1;
+    for (int total = 1; total <= pares; total++) {
+        for (int dentro = 0; dentro < total; dentro++) {
+            catalan[total] += catalan[dentro] * catalan[total - 1 - dentro];
+        }
+    }
+    cout << catalan[pares] << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4
+```
+
+Salida:
+
+```text output
+14
+```
+
+## Reconocer la misma estructura
+
+Catalan también cuenta las formas de un árbol de búsqueda binaria con $n$ claves distintas: al elegir la raíz, las claves menores forman el subárbol izquierdo y las mayores el derecho. Cuenta también caminos desde `(0, 0)` hasta `(n, n)` que no cruzan la diagonal, con una convención fija de qué lado está permitido.
+
+Antes de aplicar la fórmula, identifica qué representan las dos partes y por qué la descomposición no duplica objetos. No toda pregunta sobre árboles tiene respuesta Catalan.
+
+## Coste y números grandes
+
+La tabla cuesta $O(n^2)$ tiempo y $O(n)$ memoria. Existe la fórmula $C_n=\binom{2n}{n}/(n+1)$, pero calcular factoriales directamente puede desbordarse aunque la respuesta final quepa.
+
+Si el problema pide un módulo, reduce cada operación. Dividir entre $n+1$ bajo módulo requiere un inverso que no siempre existe; la recurrencia por sumas y productos evita esa división.
+
+## Practica
+
+¿Cuántos árboles de búsqueda diferentes pueden construirse con las claves 1, 2 y 3?
+
+<details>
+<summary>Respuesta</summary>
+
+Cinco. Con raíz 1 hay dos posibilidades a la derecha; con raíz 2 hay una; con raíz 3 hay dos a la izquierda. Es exactamente la suma $2+1+2$. Dibujarlos es una buena comprobación de la recurrencia.
+
+</details>

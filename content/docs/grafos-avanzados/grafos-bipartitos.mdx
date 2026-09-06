@@ -1,20 +1,59 @@
 ---
-title: "Grafos Bipartitos"
-description: "Identifica y trabaja con grafos que se pueden dividir en dos grupos"
+title: "Graph coloring y grafos bipartitos"
+description: "Distingue coloración válida, mínimo número de colores y el caso especial que se resuelve con dos colores."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "grafo bipartito", "coloración", "matching"]
 syllabusId: 63
 ---
 
+## Coloración general
+
+Una coloración de vértices asigna un color a cada vértice de modo que los extremos de toda arista tengan colores distintos. No es lo mismo encontrar **alguna** coloración que minimizar el número de colores.
+
+Para un grafo simple, una estrategia voraz visita vértices en un orden fijo y elige el primer color que no usan sus vecinos ya coloreados. Siempre obtiene una coloración válida, pero puede usar más colores que el óptimo. Con grado máximo $\Delta$, usa como máximo $\Delta+1$ colores.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<vector<int>> vecinos = {{1, 2}, {0, 2}, {0, 1}};
+    int cantidad = static_cast<int>(vecinos.size());
+    vector<int> color(cantidad, -1), prohibido(cantidad, -1);
+    for (int actual = 0; actual < cantidad; actual++) {
+        for (int vecino : vecinos[actual]) {
+            if (color[vecino] != -1) prohibido[color[vecino]] = actual;
+        }
+        int elegido = 0;
+        while (prohibido[elegido] == actual) elegido++;
+        color[actual] = elegido;
+    }
+    for (int elegido : color) cout << elegido << '\n';
+}
+```
+
+Salida para un triángulo:
+
+```text output
+0
+1
+2
+```
+
+Las marcas guardan el vértice actual para evitar limpiar un vector completo en cada paso. Cada color descartado corresponde a algún vecino coloreado: el tiempo total es $O(n+m)$ y el espacio adicional $O(n)$. El código supone que no hay lazos; un vértice unido consigo mismo no admite una coloración propia.
+
+Encontrar el número cromático mínimo en grafos generales es un problema difícil, NP-hard. Para **dos colores**, en cambio, BFS o DFS permite decidir en tiempo lineal: ese es el caso bipartito.
+
 ## ¿Qué es un grafo bipartito?
 
 Un grafo es **bipartito** si puedes dividir sus nodos en dos grupos (A y B) de modo que todas las aristas van de un grupo al otro (nunca dentro del mismo grupo).
 
-**Analogía:** Piensa en un baile donde hay hombres y mujeres. Si solo se forman parejas hombre-mujer, la red de parejas es un grafo bipartito.
+**Ejemplo:** Un grupo contiene tareas y el otro máquinas; una arista indica que una máquina puede realizar una tarea. Todas las aristas cruzan entre grupos.
 
 ```
-Grupo A: {1, 3, 5}     Grupo B: {2, 4, 6}
+Grupo A: {1, 4, 5}     Grupo B: {2, 3, 6}
 
 1 --- 2
 |     |
@@ -83,6 +122,8 @@ int main() {
 ```
 
 **Propiedad:** Un grafo es bipartito si y solo si **no tiene ciclos de longitud impar**.
+
+Un recorrido alterna colores en cada arista. Un ciclo impar exigiría que el vértice inicial tuviera el color contrario al regresar, una contradicción. Revisa todas las componentes, no solamente la que contiene al primer vértice. Un triángulo no es bipartito y necesita tres colores; un ciclo de cuatro vértices sí admite dos. El BFS cuesta $O(n+m)$ tiempo y $O(n)$ espacio adicional.
 
 ## Ejercicio de práctica
 

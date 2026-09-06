@@ -1,0 +1,88 @@
+---
+title: "Nim"
+description: "Usa XOR para clasificar una posición y construir un movimiento ganador bajo la regla normal."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Nim", "XOR", "juegos"]
+---
+
+## Antes de empezar
+
+Necesitas enteros y XOR bit a bit, que C++ escribe `^`. En Nim hay varias pilas. En cada turno eliges exactamente una y retiras una cantidad positiva de sus elementos. Pierde quien no puede mover: es la **regla normal**.
+
+Ambos jugadores conocen la posición completa y juegan óptimamente. No puedes retirar de dos pilas en el mismo movimiento, agregar elementos ni saltarte el turno.
+
+## La suma de Nim
+
+Calcula el XOR de todos los tamaños. Si vale cero, la posición es perdedora para quien tiene el turno; si no, es ganadora. Esto no se obtiene sumando tamaños ni contando pilas pares.
+
+Para `[3,4,5]`, el XOR es 2. Podemos reemplazar la pila 3 por `3 ^ 2 = 1`: quedan `[1,4,5]`, cuyo XOR es cero.
+
+## Por qué siempre existe ese movimiento
+
+Si el XOR total es cero, cambiar una sola pila de $a$ a otro valor $b$ cambia el total a $a\oplus b$, que no puede ser cero cuando $a\ne b$.
+
+Si el total $X$ no es cero, considera su bit encendido más alto. Alguna pila también tiene ese bit encendido. Para ella, $a\oplus X<a$: ese bit se apaga y ningún bit superior cambia. Reemplazarla por $a\oplus X$ es legal y deja XOR total cero.
+
+La posición sin elementos tiene XOR cero y no permite mover. Las dos propiedades anteriores demuestran por inducción que cero es perdedor y no cero es ganador.
+
+## C++17
+
+El programa indica quién tiene estrategia ganadora y, si gana el primero, imprime el índice de una pila y cuántos elementos retirar. Los tamaños son no negativos y caben en `long long`.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    vector<long long> pilas(cantidad);
+    long long total = 0;
+    for (long long& tamano : pilas) { cin >> tamano; total ^= tamano; }
+    if (total == 0) {
+        cout << "SEGUNDO\n";
+        return 0;
+    }
+    cout << "PRIMERO\n";
+    for (int indice = 0; indice < cantidad; indice++) {
+        long long nuevo = pilas[indice] ^ total;
+        if (nuevo < pilas[indice]) {
+            cout << indice << ' ' << pilas[indice] - nuevo << '\n';
+            break;
+        }
+    }
+}
+```
+
+Entrada:
+
+```text input
+3
+3 4 5
+```
+
+Salida:
+
+```text output
+PRIMERO
+0 2
+```
+
+## Coste y límites del teorema
+
+Calculamos el XOR y buscamos una pila en $O(n)$ tiempo. El ejemplo almacena las pilas, usando $O(n)$ espacio; para decidir únicamente el ganador basta memoria adicional constante.
+
+Si solo puedes retirar cantidades de un conjunto, ya no es Nim ordinario: necesitas analizar cada pila con Grundy. Si quien toma el último elemento **pierde**, estás en una variante misère y la regla anterior necesita cambios. Por ejemplo, una única pila de tamaño 1 es ganadora en Nim normal y perdedora con esa regla misère.
+
+## Practica
+
+Clasifica `[1,2,3]`, `[0,0]` y `[7]`. Para la última, construye el movimiento.
+
+<details>
+<summary>Respuesta</summary>
+
+Las dos primeras son perdedoras porque su XOR es cero. `[7]` es ganadora: retira los siete elementos y deja al oponente sin movimiento. No elimines la posibilidad de vaciar una pila si las reglas la permiten.
+
+</details>

@@ -1,0 +1,114 @@
+---
+title: "BFS y DFS en árboles"
+description: "Enraíza un árbol, calcula profundidades y procesa hijos antes que padres sin depender de recursión profunda."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "árboles", "BFS", "DFS", "subárboles"]
+---
+
+## Antes de empezar
+
+Necesitas árboles, listas de vecinos, pilas y colas. Aquí el árbol es conexo y no dirigido, con $n$ vértices y $n-1$ aristas. Elegir una raíz define quién es padre y quién es hijo; no exige que cada nodo tenga dos hijos.
+
+## BFS: procesar por profundidad
+
+Comenzamos con la raíz a profundidad cero. Al descubrir un vecino distinto del padre, su profundidad es la del actual más uno. La cola garantiza que primero se procesan los niveles cercanos.
+
+Como en un árbol hay un único camino entre dos vértices, omitir el padre basta para no regresar. Esto **no basta en un grafo con ciclos**: allí necesitas un conjunto de visitados.
+
+## DFS: terminar una rama
+
+Una pila permite explorar en profundidad. Guardaremos el orden de visita. Cada padre aparece antes que sus descendientes; al recorrer ese orden al revés, los hijos estarán listos antes que el padre.
+
+Así calculamos el tamaño de cada subárbol: comienza en 1 por el propio nodo y añade los tamaños de sus hijos. Es un ejemplo sencillo de procesamiento en postorden, aunque la pila no reproduzca exactamente el orden de una DFS recursiva que visita vecinos en el orden de entrada.
+
+## C++17
+
+Entrada: un árbol no vacío con vértices de 0 a $n-1$. La raíz es 0. Imprimimos por vértice su profundidad y el tamaño de su subárbol.
+
+```cpp test
+#include <iostream>
+#include <queue>
+#include <stack>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    vector<vector<int>> vecinos(cantidad);
+    for (int arista = 0; arista < cantidad - 1; arista++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        vecinos[origen].push_back(destino);
+        vecinos[destino].push_back(origen);
+    }
+    vector<int> padre(cantidad, -1), profundidad(cantidad, 0);
+    queue<int> cola;
+    cola.push(0);
+    while (!cola.empty()) {
+        int actual = cola.front();
+        cola.pop();
+        for (int vecino : vecinos[actual]) {
+            if (vecino == padre[actual]) continue;
+            padre[vecino] = actual;
+            profundidad[vecino] = profundidad[actual] + 1;
+            cola.push(vecino);
+        }
+    }
+    stack<int> pila;
+    vector<int> orden;
+    pila.push(0);
+    while (!pila.empty()) {
+        int actual = pila.top();
+        pila.pop();
+        orden.push_back(actual);
+        for (int vecino : vecinos[actual]) if (vecino != padre[actual]) pila.push(vecino);
+    }
+    vector<int> tamano(cantidad, 1);
+    for (int indice = cantidad - 1; indice > 0; indice--) {
+        int actual = orden[indice];
+        tamano[padre[actual]] += tamano[actual];
+    }
+    for (int actual = 0; actual < cantidad; actual++) {
+        cout << profundidad[actual] << ' ' << tamano[actual] << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+5
+0 1
+0 2
+1 3
+1 4
+```
+
+Salida:
+
+```text output
+0 5
+1 3
+1 1
+2 1
+2 1
+```
+
+## Coste y comprobaciones
+
+Cada recorrido visita cada vértice y cada arista un número constante de veces: tiempo $O(n)$ y memoria $O(n)$. La versión iterativa evita una pila recursiva de profundidad $n$ en un árbol que sea una cadena.
+
+La raíz siempre tiene tamaño de subárbol $n$, cada hoja tiene tamaño 1 y un hijo siempre tiene profundidad mayor en uno que su padre. Estas propiedades sirven para comprobar la implementación.
+
+## Practica
+
+Con una cadena `0-1-2-3` enraizada en 0, ¿qué profundidades y tamaños esperas?
+
+<details>
+<summary>Respuesta</summary>
+
+Profundidades 0, 1, 2, 3 y tamaños 4, 3, 2, 1. Si cambias la raíz, cambian padres, profundidades y subárboles, aunque las aristas del árbol sean las mismas.
+
+</details>

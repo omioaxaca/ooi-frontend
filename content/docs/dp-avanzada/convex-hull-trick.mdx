@@ -1,0 +1,111 @@
+---
+title: "Convex hull trick: rectas y Li Chao"
+description: "Transforma transiciones de DP en mínimos de rectas y consulta su envolvente inferior sin probarlas todas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "CHT", "Li Chao", "DP", "rectas"]
+---
+
+## Antes de empezar
+
+Necesitas despejar expresiones algebraicas y entender árboles de segmentos. Convex hull trick es una familia de técnicas para mantener rectas y consultar cuál da el menor o mayor valor en una coordenada.
+
+No necesitas construir un dibujo para usarlo, pero sí demostrar que tu transición se puede separar en una parte de la consulta y otra de cada candidato.
+
+## De una DP a una recta
+
+Considera $dp[i]=\min_{j<i}(dp[j]+(x_i-x_j)^2)$. Expande el cuadrado:
+
+$$dp[i]=x_i^2+\min_{j<i}\big((-2x_j)x_i+(dp[j]+x_j^2)\big).$$
+
+Cada estado anterior aporta una recta de pendiente $-2x_j$ e intercepto $dp[j]+x_j^2$. Consultamos el mínimo en $x_i$ y luego agregamos la nueva recta. Insertarla antes de consultar permitiría usar indebidamente el estado actual.
+
+## Dos variantes, distintas condiciones
+
+Si pendientes y consultas llegan en órdenes monótonos compatibles, una envolvente con deque puede dar coste amortizado constante. Hay que manejar pendientes iguales, sentido de las consultas y comparaciones de intersecciones sin desbordamiento.
+
+Aquí implementaremos un **árbol de Li Chao** sobre coordenadas de consulta conocidas. No requiere ordenar las pendientes ni recibir las consultas en orden. Evita divisiones de intersecciones y funciona con comparaciones enteras.
+
+## Idea de Li Chao
+
+Cada nodo guarda la mejor de sus rectas en la coordenada central. Al insertar otra, conserva allí la que gana en el centro. Como dos rectas se cruzan como máximo una vez, la perdedora solo podría mejorar en uno de los lados; la enviamos a ese hijo.
+
+Al consultar, evalúa las rectas del camino hacia la coordenada y toma el mínimo. Las coordenadas pueden estar comprimidas: no hace falta que sean consecutivas, solo ordenadas.
+
+## C++17
+
+La lista de coordenadas es no vacía y todas las consultas pertenecen a ella. En el ejemplo y sus adaptaciones, exige que los productos `pendiente * coordenada + intercepto` quepan en `long long` y sean menores que `INF`.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const long long INF = 4000000000000000000LL;
+struct Recta {
+    long long pendiente = 0, intercepto = INF;
+    long long evaluar(long long coordenada) const { return pendiente * coordenada + intercepto; }
+};
+
+struct LiChao {
+    vector<long long> coordenadas;
+    vector<Recta> arbol;
+    LiChao(vector<long long> puntos) : coordenadas(puntos) {
+        sort(coordenadas.begin(), coordenadas.end());
+        coordenadas.erase(unique(coordenadas.begin(), coordenadas.end()), coordenadas.end());
+        arbol.resize(4 * coordenadas.size());
+    }
+    void insertar(Recta nueva, int nodo, int inicio, int fin) {
+        int medio = inicio + (fin - inicio) / 2;
+        bool ganaIzquierda = nueva.evaluar(coordenadas[inicio]) < arbol[nodo].evaluar(coordenadas[inicio]);
+        bool ganaCentro = nueva.evaluar(coordenadas[medio]) < arbol[nodo].evaluar(coordenadas[medio]);
+        if (ganaCentro) swap(nueva, arbol[nodo]);
+        if (fin - inicio == 1) return;
+        if (ganaIzquierda != ganaCentro) insertar(nueva, 2 * nodo, inicio, medio);
+        else insertar(nueva, 2 * nodo + 1, medio, fin);
+    }
+    long long consultar(int posicion, int nodo, int inicio, int fin) const {
+        long long respuesta = arbol[nodo].evaluar(coordenadas[posicion]);
+        if (fin - inicio == 1) return respuesta;
+        int medio = inicio + (fin - inicio) / 2;
+        if (posicion < medio) return min(respuesta, consultar(posicion, 2 * nodo, inicio, medio));
+        return min(respuesta, consultar(posicion, 2 * nodo + 1, medio, fin));
+    }
+    void insertar(Recta recta) { insertar(recta, 1, 0, static_cast<int>(coordenadas.size())); }
+    long long consultar(long long coordenada) const {
+        int posicion = static_cast<int>(lower_bound(coordenadas.begin(), coordenadas.end(), coordenada) - coordenadas.begin());
+        return consultar(posicion, 1, 0, static_cast<int>(coordenadas.size()));
+    }
+};
+
+int main() {
+    LiChao rectas({1, 3, 5});
+    rectas.insertar({5, 1});
+    rectas.insertar({2, 4});
+    cout << rectas.consultar(1) << ' ' << rectas.consultar(3) << ' ' << rectas.consultar(5) << '\n';
+}
+```
+
+Salida:
+
+```text output
+6 10 14
+```
+
+## Coste y comprobaciones
+
+Con $Q$ coordenadas distintas, cada inserción y consulta cuesta $O(\log Q)$ y el árbol ocupa $O(Q)$. Ordenar las coordenadas cuesta $O(Q\log Q)$. Si llegan coordenadas desconocidas, necesitas otra variante, por ejemplo un dominio entero acotado con nodos dinámicos.
+
+Prueba rectas paralelas, intersecciones en coordenadas consultadas, coordenadas negativas y una sola coordenada. No uses punto flotante para decidir cuál recta gana si los valores exactos pueden evaluarse con enteros suficientemente anchos.
+
+## Practica
+
+Agrega la recta constante $y=8$ al ejemplo. ¿Cuáles son ahora las respuestas en 1, 3 y 5?
+
+<details>
+<summary>Respuesta</summary>
+
+6, 8 y 8. La recta nueva no mejora todas las coordenadas. Esa es precisamente la razón para mantener una envolvente: ninguna recta tiene que ser la mejor en todo el dominio.
+
+</details>

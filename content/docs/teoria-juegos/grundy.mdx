@@ -1,0 +1,85 @@
+---
+title: "Grundy numbers"
+description: "Asigna un nimber a cada estado mediante mex y distingue ganar/perder de la composición de juegos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Grundy", "mex", "juegos", "DP"]
+---
+
+## Antes de empezar
+
+Repasa [Nim](/blog/teoria-juegos/nim) y programación dinámica. Trabajamos con juegos imparciales, sin azar, con información completa, regla normal y que siempre terminan. Imparcial significa que los movimientos disponibles dependen del estado, no de la identidad del jugador.
+
+## El mínimo excluido
+
+`mex` de un conjunto es el menor entero no negativo que no aparece. Por ejemplo, `mex({1,2})=0`, `mex({0,2})=1` y `mex({0,1,2})=3`. Repeticiones no cambian el resultado.
+
+El valor de Grundy de una posición es el mex de los valores de sus sucesores. Una posición terminal tiene conjunto vacío de movimientos y Grundy cero.
+
+Una posición es perdedora si su Grundy es cero: no tiene sucesor de valor cero. Si su Grundy es positivo, cero aparece entre sus sucesores y puedes mover a una posición perdedora.
+
+## Ejemplo: retirar 1, 3 o 4
+
+Para una pila de $n$ elementos, podemos retirar 1, 3 o 4 sin dejar cantidad negativa. Cada sucesor tiene menos elementos, de modo que calculamos de menor a mayor.
+
+Los primeros valores son `0,1,0,1,2,3,2,0,1`. Para $n=4$, los sucesores tienen tamaños 3, 1 y 0, con nimbers 1, 1 y 0; el mex de `{0,1}` es 2.
+
+## C++17
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> movimientos = {1, 3, 4};
+    int limite = 8;
+    vector<int> grundy(limite + 1, 0);
+    for (int cantidad = 1; cantidad <= limite; cantidad++) {
+        vector<bool> alcanzable(movimientos.size() + 1, false);
+        for (int movimiento : movimientos) {
+            if (movimiento <= cantidad) {
+                int valor = grundy[cantidad - movimiento];
+                if (valor < static_cast<int>(alcanzable.size())) alcanzable[valor] = true;
+            }
+        }
+        int minimoExcluido = 0;
+        while (minimoExcluido < static_cast<int>(alcanzable.size()) && alcanzable[minimoExcluido]) minimoExcluido++;
+        grundy[cantidad] = minimoExcluido;
+    }
+    for (int cantidad = 0; cantidad <= limite; cantidad++) {
+        if (cantidad > 0) cout << ' ';
+        cout << grundy[cantidad];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 1 0 1 2 3 2 0 1
+```
+
+## Por qué basta un arreglo pequeño para mex
+
+Si un estado tiene como máximo $k$ movimientos, sus sucesores contienen como máximo $k$ valores distintos. Su mex es como máximo $k$: para excluir todos los números de 0 a $k$ harían falta $k+1$ valores. Por eso marcamos un arreglo de tamaño $k+1$.
+
+Con $N$ tamaños y $k$ movimientos, la tabla cuesta $O(Nk)$ tiempo y $O(N+k)$ espacio. Todos los movimientos deben ser positivos: permitir retirar cero introduce una dependencia de un estado consigo mismo y rompe la tabulación.
+
+## Qué significa un nimber
+
+Un Grundy 3 no significa «tres movimientos para ganar» ni «más ganador» que Grundy 1. Su información adicional sirve al combinar juegos independientes mediante XOR, tema de la siguiente guía.
+
+No calcules mex recursivamente sobre un ciclo sin resolver el modelo de juego. Puede haber partidas infinitas o empates y el teorema de Grundy ordinario no aplicaría. Observar una secuencia periódica en ejemplos tampoco prueba su periodicidad para todo tamaño.
+
+## Practica
+
+Con movimientos permitidos `{1,3}`, calcula los valores de 0 a 5 y justifica el patrón.
+
+<details>
+<summary>Respuesta</summary>
+
+Son `0,1,0,1,0,1`. Cada movimiento cambia la paridad. Desde un tamaño par solo alcanzas impares de valor 1; desde un impar puedes retirar 1 y alcanzar un par de valor 0. Una inducción completa el argumento, no solo la tabla inicial.
+
+</details>

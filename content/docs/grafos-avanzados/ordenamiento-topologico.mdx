@@ -9,19 +9,22 @@ syllabusId: 58
 
 ## ¿Qué es un ordenamiento topológico?
 
+**Antes de empezar:** distingue orden numérico de orden de dependencias. Puede haber varios órdenes válidos. La condición que debes comprobar es que, para cada arista, el origen aparezca antes que el destino; no que el resultado coincida con un único ejemplo.
+
 **Analogía:** Piensa en las materias de una carrera universitaria. Algunas requieren prerrequisitos: no puedes tomar Cálculo 2 sin Cálculo 1. Un **ordenamiento topológico** es un orden válido para cursarlas todas respetando los prerrequisitos.
 
 Formalmente: dado un **grafo dirigido acíclico (DAG)**, encuentra un orden lineal de los nodos tal que si hay una arista $u \to v$, entonces $u$ aparece antes que $v$.
 
 <Callout type="warning">
-  Solo existe en **DAGs**. Si hay un ciclo, no hay ordenamiento topológico posible.
+  Solo existe en **DAGs**. Si hay un ciclo, no hay ordenamiento topológico
+  posible.
 </Callout>
 
 ## Algoritmo de Kahn (BFS)
 
 Usa los **grados de entrada** (cuántas aristas llegan a cada nodo):
 
-```cpp
+```cpp test
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -75,7 +78,7 @@ int main() {
 
     vector<int> orden = topoSort(n);
 
-    if (orden.empty()) {
+    if (static_cast<int>(orden.size()) != n) {
         cout << "Hay ciclo, no existe ordenamiento topológico" << endl;
     } else {
         for (int x : orden) cout << x << " ";
@@ -85,6 +88,27 @@ int main() {
     return 0;
 }
 ```
+
+Entrada:
+
+```text input
+4 3
+1 3
+2 3
+3 4
+```
+
+Salida de esta implementación:
+
+```text output
+1 2 3 4
+```
+
+También `2 1 3 4` sería válido. Kahn elimina un vértice cuyas dependencias pendientes ya son cero; al retirarlo reduce una vez cada arista saliente. Por eso cuesta $O(V+E)$ tiempo y $O(V)$ espacio adicional.
+
+El algoritmo **modifica** los grados de entrada. Si necesitas repetirlo, trabaja con una copia o reconstruye los grados. Si te piden el orden lexicográficamente menor, usa una cola de prioridad de mínimos en lugar de FIFO y considera su coste logarítmico.
+
+**Autocomprobación:** agregar `4 -> 3` crea un ciclo y no se deben presentar los vértices procesados parcialmente como una solución completa. Un vértice aislado también debe aparecer en el orden.
 
 ## Algoritmo con DFS
 
@@ -111,7 +135,7 @@ void dfs(int u) {
 // En main: hacer DFS desde todos los nodos, luego reverse(orden)
 ```
 
-El ordenamiento topológico es el **reverso del orden de finalización** del DFS.
+Si no se detectó un ciclo y se recorrieron todos los vértices, el ordenamiento topológico es el reverso del orden de finalización de DFS. Si hay ciclo, descarta el orden parcial; invertirlo no lo vuelve válido.
 
 ## Ejercicio de práctica
 

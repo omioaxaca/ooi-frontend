@@ -1,0 +1,54 @@
+---
+title: "Razonamiento de cotas inferiores"
+description: "Demuestra cuándo ningún protocolo puede resolver un problema con tan pocos bits o consultas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["comunicación", "cotas inferiores", "demostración", "árbol de decisión"]
+---
+
+## Antes de empezar
+
+Repasa [minimización de bits](/blog/comunicacion/minimizar-bits). Una cota superior dice cuánto consume un algoritmo que conocemos. Una **cota inferior** dice cuánto necesita cualquier algoritmo dentro de un modelo específico.
+
+No basta con decir «no se me ocurre hacerlo más rápido». Debes explicar qué impide a cualquier solución válida usar menos recursos.
+
+## Argumento de las respuestas distinguibles
+
+Supón que hay $M$ secretos y que debes identificar exactamente cuál es. Cada consulta tiene como máximo $k$ respuestas. Con $q$ consultas, incluso si cada pregunta depende de las respuestas anteriores, existen como máximo $k^q$ transcripciones de respuestas.
+
+Si dos secretos que requieren salidas distintas producen la misma transcripción, el algoritmo no puede distinguirlos y falla en al menos uno. Por tanto:
+
+$$k^q\geq M,\qquad q\geq\lceil\log_k M\rceil.$$
+
+Para 100 secretos y preguntas binarias, seis preguntas permiten solo 64 transcripciones. Necesitas al menos siete. Con respuestas ternarias, cuatro preguntas permiten 81 y cinco permiten 243: necesitas al menos cinco.
+
+El argumento supone respuestas sin ruido, un algoritmo determinista que siempre acierta y que la transcripción contiene toda la información que recibe del secreto. Los algoritmos probabilísticos o con error permitido requieren un análisis diferente.
+
+## El principio del palomar
+
+El mismo razonamiento se aplica a mensajes. Si intentas codificar cinco resultados distintos usando dos bits, solo hay cuatro mensajes posibles. Dos resultados compartirán mensaje. El receptor no puede saber cuál ocurrió.
+
+Si el problema solo exige la paridad de un entero, no cuentes todos los enteros como salidas distintas: solo hay dos clases que el receptor debe distinguir. Una cota basada en información innecesaria puede ser falsa.
+
+## Una aplicación: ordenar por comparaciones
+
+Con $n$ valores distintos existen $n!$ órdenes posibles. Cada comparación entre dos de ellos tiene dos resultados relevantes. Un árbol de decisión que ordene cualquier entrada necesita altura al menos $\lceil\log_2(n!)\rceil$, que crece como $\Omega(n\log n)$.
+
+Esto no prohíbe counting sort en tiempo lineal para claves enteras pequeñas: counting sort usa información y operaciones que van más allá del modelo de «solo comparaciones». Toda cota tiene un modelo.
+
+## Una cota no construye automáticamente un protocolo
+
+Aunque $\lceil\log_2 M\rceil$ respuestas sean suficientes para etiquetar los secretos, quizá las preguntas permitidas no separan los candidatos como necesitas. Si solo puedes preguntar «¿es este el secreto?», el peor caso requiere hasta $M-1$ preguntas, no un número logarítmico.
+
+Para afirmar optimalidad combina dos pruebas: una cota inferior y un algoritmo que alcanza esa cota. Para la búsqueda por mitades con consultas de prefijo, ambas coinciden.
+
+## Practica
+
+Un protocolo identifica uno de 17 estados usando cuatro preguntas de sí/no. ¿Puede ser siempre correcto? ¿Y si únicamente debe decidir entre dos grupos ya conocidos de estados?
+
+<details>
+<summary>Respuesta</summary>
+
+Identificar exactamente el estado es imposible: $2^4=16<17$. Distinguir dos grupos puede requerir solo un bit, siempre que exista una consulta permitida que los separe. Cambiar la salida requerida cambia el argumento de información.
+
+</details>

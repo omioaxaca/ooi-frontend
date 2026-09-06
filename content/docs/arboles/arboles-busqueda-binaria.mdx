@@ -9,7 +9,10 @@ syllabusId: 52
 
 ## ¿Qué es un BST?
 
+**Antes de empezar:** repasa árboles binarios y recorridos. La regla de orden se aplica a **todo el subárbol**, no solo a los hijos inmediatos. Esta guía trata las claves como un conjunto y no inserta duplicados.
+
 Un **Árbol de Búsqueda Binaria** (Binary Search Tree) es un árbol binario donde:
+
 - Todo nodo en el subárbol **izquierdo** tiene un valor **menor** que la raíz.
 - Todo nodo en el subárbol **derecho** tiene un valor **mayor** que la raíz.
 
@@ -63,6 +66,7 @@ bool buscar(Nodo* raiz, int val) {
 
 // Encontrar el mínimo
 Nodo* minimo(Nodo* raiz) {
+    if (raiz == nullptr) return nullptr;
     while (raiz->izq != nullptr) {
         raiz = raiz->izq;
     }
@@ -134,11 +138,11 @@ Si insertas elementos en orden (1, 2, 3, 4, 5), el BST degenera en una lista:
         5
 ```
 
-Altura = $n$, y todas las operaciones son $O(n)$. Solución: usar árboles **autobalanceados** (AVL, Red-Black) o simplemente `std::set` de C++.
+La altura medida en aristas es $n-1$ y una operación puede costar $O(n)$. Insertar una secuencia ordenada completa puede costar $O(n^2)$. Los árboles autobalanceados o `std::set` evitan ese peor caso para búsquedas e inserciones.
 
 ## En la práctica: usa std::set
 
-`std::set` en C++ es un BST autobalanceado (Red-Black Tree):
+`std::set` ofrece orden y operaciones logarítmicas; suele implementarse con un red-black tree, aunque el estándar no impone ese árbol concreto:
 
 ```cpp
 #include <set>
@@ -159,6 +163,8 @@ s.lower_bound(5);  // Primer elemento >= 5
 Todas las operaciones son $O(\log n)$ garantizado.
 
 ## K-ésimo elemento más pequeño
+
+El recorrido de abajo puede visitar $O(n)$ nodos: no es una consulta logarítmica. Para obtener orden estadístico rápidamente necesitas guardar tamaños de subárbol y mantenerlos al insertar y borrar. La función supone `1 <= k <= cantidadDeNodos`; su -1 de error no distinguiría un fallo de una clave válida igual a -1.
 
 ```cpp
 int kesimo(Nodo* raiz, int &k) {
@@ -181,7 +187,7 @@ Inserta N números en un BST e imprime el recorrido inorden (que debería ser la
 <details>
 <summary>Ver solución</summary>
 
-```cpp
+```cpp test
 #include <iostream>
 using namespace std;
 
@@ -205,6 +211,13 @@ void inorden(Nodo* r) {
     inorden(r->der);
 }
 
+void liberar(Nodo* raiz) {
+    if (raiz == nullptr) return;
+    liberar(raiz->izq);
+    liberar(raiz->der);
+    delete raiz;
+}
+
 int main() {
     int n;
     cin >> n;
@@ -218,9 +231,25 @@ int main() {
 
     inorden(raiz);
     cout << endl;
+    liberar(raiz);
 
     return 0;
 }
 ```
+
+Entrada:
+
+```text input
+6
+8 3 10 1 6 3
+```
+
+Salida:
+
+```text output
+1 3 6 8 10
+```
+
+El 3 repetido se guarda una sola vez. **Comprueba:** insertar sobre un árbol vacío debe actualizar la raíz, y eliminar la raíz puede devolver otra distinta: conserva el valor retornado. Los ejemplos recursivos son para árboles de profundidad moderada; para tamaños grandes prefiere una estructura balanceada ya implementada.
 
 </details>

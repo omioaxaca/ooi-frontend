@@ -32,6 +32,100 @@ export interface Category {
   posts: PostMeta[];
 }
 
+export interface SyllabusLevel {
+  slug: string;
+  name: string;
+  color: "AZUL" | "AMARILLO" | "VERDE";
+  categories: {
+    slug: string;
+    name: string;
+    topics: { path: string; title: string }[];
+  }[];
+}
+
+export interface StudyLevel {
+  slug: string;
+  name: string;
+  color: SyllabusLevel["color"] | "MISC";
+  categories: Category[];
+}
+
+export function buildStudyNavigation(
+  posts: PostMeta[],
+  syllabus: SyllabusLevel[],
+): StudyLevel[] {
+  const published = posts.filter((post) => !post.draft);
+  const byPath = new Map(
+    published.map((post) => [`${post.category}/${post.slug}`, post]),
+  );
+  const assigned = new Set<string>();
+  const levels: StudyLevel[] = syllabus.map((level) => ({
+    slug: level.slug,
+    name: level.name,
+    color: level.color,
+    categories: level.categories.map((category, categoryIndex) => ({
+      slug: category.slug,
+      name: category.name,
+      description: "",
+      order: categoryIndex,
+      posts: category.topics.map((topic, topicIndex) => {
+        const post = byPath.get(topic.path);
+        if (!post) throw new Error(`Syllabus guide not found: ${topic.path}`);
+        if (assigned.has(topic.path))
+          throw new Error(`Duplicate syllabus guide: ${topic.path}`);
+        assigned.add(topic.path);
+        return { ...post, title: topic.title, order: topicIndex + 1 };
+      }),
+    })),
+  }));
+
+  const extras = published
+    .filter((post) => !assigned.has(`${post.category}/${post.slug}`))
+    .sort((first, second) => first.title.localeCompare(second.title, "es"));
+
+  if (extras.length > 0) {
+    levels.push({
+      slug: "misc",
+      name: "MISC",
+      color: "MISC",
+      categories: [
+        { slug: "misc", name: "MISC", description: "", posts: extras },
+      ],
+    });
+  }
+
+  return levels;
+}
+
+export function getStudyPostContext(
+  levels: StudyLevel[],
+  category: string,
+  slug: string,
+) {
+  const entries = levels.flatMap((level) =>
+    level.categories.flatMap((section) =>
+      section.posts.map((post) => ({ level, section, post })),
+    ),
+  );
+  const index = entries.findIndex(
+    (entry) => entry.post.category === category && entry.post.slug === slug,
+  );
+  if (index === -1) return null;
+  return {
+    ...entries[index],
+    previous: entries[index - 1]?.post ?? null,
+    next: entries[index + 1]?.post ?? null,
+  };
+}
+
+export function getStudyNavigation(): StudyLevel[] {
+  const configPath = path.join(contentDirectory, "docs", "_config.json");
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8")) as {
+    levels?: SyllabusLevel[];
+  };
+  return buildStudyNavigation(getAllPosts(), config.levels ?? []);
+}
+
 /**
  * Get all categories from the content directory
  */
@@ -55,7 +149,9 @@ export function getPostsByCategory(category: string): PostMeta[] {
     return [];
   }
 
-  const files = fs.readdirSync(categoryPath).filter((file) => file.endsWith(".mdx"));
+  const files = fs
+    .readdirSync(categoryPath)
+    .filter((file) => file.endsWith(".mdx"));
 
   const posts = files
     .map((file) => {
@@ -104,8 +200,12 @@ export function getPostsByCategory(category: string): PostMeta[] {
  */
 export function getAllPosts(): PostMeta[] {
   const categories = getCategories();
-  const allPosts = categories.flatMap((category) => getPostsByCategory(category));
-  return allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const allPosts = categories.flatMap((category) =>
+    getPostsByCategory(category),
+  );
+  return allPosts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
 }
 
 /**
@@ -147,7 +247,9 @@ export function getAllPostSlugs(): { category: string; slug: string }[] {
   categories.forEach((category) => {
     const categoryPath = path.join(contentDirectory, "docs", category);
     if (fs.existsSync(categoryPath)) {
-      const files = fs.readdirSync(categoryPath).filter((file) => file.endsWith(".mdx"));
+      const files = fs
+        .readdirSync(categoryPath)
+        .filter((file) => file.endsWith(".mdx"));
       files.forEach((file) => {
         slugs.push({
           category,
@@ -180,10 +282,19 @@ export function getNavigationStructure(): Category[] {
   const categoryOrder = getCategoryOrder();
 
   const categoryList = categories.map((categorySlug) => {
-    const configPath = path.join(contentDirectory, "docs", categorySlug, "_category.json");
-    let categoryConfig: { name?: string; description?: string; order?: number } = {
+    const configPath = path.join(
+      contentDirectory,
+      "docs",
+      categorySlug,
+      "_category.json",
+    );
+    let categoryConfig: {
+      name?: string;
+      description?: string;
+      order?: number;
+    } = {
       name: categorySlug,
-      description: ""
+      description: "",
     };
 
     if (fs.existsSync(configPath)) {
@@ -225,7 +336,7 @@ export function searchPosts(query: string): PostMeta[] {
     (post) =>
       post.title.toLowerCase().includes(lowerQuery) ||
       post.description.toLowerCase().includes(lowerQuery) ||
-      post.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      post.tags.some((tag) => tag.toLowerCase().includes(lowerQuery)),
   );
 }
 
@@ -234,7 +345,9 @@ export function searchPosts(query: string): PostMeta[] {
  */
 export function getPostsByTag(tag: string): PostMeta[] {
   const allPosts = getAllPosts();
-  return allPosts.filter((post) => post.tags.some((t) => t.toLowerCase() === tag.toLowerCase()));
+  return allPosts.filter((post) =>
+    post.tags.some((t) => t.toLowerCase() === tag.toLowerCase()),
+  );
 }
 
 /**

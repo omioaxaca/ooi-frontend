@@ -1,0 +1,96 @@
+---
+title: "Rabin-Karp"
+description: "Desliza una huella sobre el texto para filtrar coincidencias y verifica los caracteres cuando necesitas exactitud."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Rabin-Karp", "strings", "hashing"]
+---
+
+## Antes de empezar
+
+Repasa [hashing](/blog/strings-avanzados/hashing). Queremos encontrar un patrón de longitud $m$ en un texto de longitud $n$. Comparamos su hash con el de cada ventana de tamaño $m$.
+
+Si las huellas difieren, descartamos la ventana. Si coinciden, verificamos los caracteres para descartar colisiones. Esta verificación hace la respuesta exacta, aunque afecta el peor tiempo de ejecución.
+
+## Actualizar la ventana
+
+Usamos una huella polinómica donde el primer carácter tiene coeficiente $B^{m-1}$. Para mover la ventana una posición:
+
+1. Resta la contribución del carácter que sale.
+2. Multiplica por la base para desplazar las posiciones.
+3. Agrega el código del carácter nuevo.
+
+Normaliza la resta módulo $M$ antes de continuar. Cada actualización cuesta $O(1)$ y no necesita reconstruir el hash de toda la ventana.
+
+## C++17
+
+El ejemplo busca `aa` en `aaaaa`. Las coincidencias se superponen, así que avanzamos una posición después de cada ventana, incluso si hubo una respuesta.
+
+```cpp test
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+vector<int> buscar(const string& texto, const string& patron) {
+    int longitud = static_cast<int>(texto.size());
+    int tamano = static_cast<int>(patron.size());
+    vector<int> posiciones;
+    if (tamano == 0) {
+        for (int posicion = 0; posicion <= longitud; posicion++) posiciones.push_back(posicion);
+        return posiciones;
+    }
+    if (tamano > longitud) return posiciones;
+    const long long MOD = 1000000007, BASE = 257;
+    long long potencia = 1, objetivo = 0, ventana = 0;
+    for (int indice = 0; indice < tamano; indice++) {
+        objetivo = (objetivo * BASE + static_cast<unsigned char>(patron[indice]) + 1) % MOD;
+        ventana = (ventana * BASE + static_cast<unsigned char>(texto[indice]) + 1) % MOD;
+        if (indice + 1 < tamano) potencia = potencia * BASE % MOD;
+    }
+    for (int inicio = 0; inicio + tamano <= longitud; inicio++) {
+        if (ventana == objetivo && texto.compare(inicio, tamano, patron) == 0) posiciones.push_back(inicio);
+        if (inicio + tamano < longitud) {
+            long long sale = static_cast<unsigned char>(texto[inicio]) + 1;
+            long long entra = static_cast<unsigned char>(texto[inicio + tamano]) + 1;
+            ventana = (ventana - sale * potencia % MOD + MOD) % MOD;
+            ventana = (ventana * BASE + entra) % MOD;
+        }
+    }
+    return posiciones;
+}
+
+int main() {
+    vector<int> posiciones = buscar("aaaaa", "aa");
+    for (int indice = 0; indice < static_cast<int>(posiciones.size()); indice++) {
+        if (indice > 0) cout << ' ';
+        cout << posiciones[indice];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 1 2 3
+```
+
+## Coste real
+
+Preparar las huellas y deslizarlas cuesta $O(n+m)$. Si verificamos $c$ ventanas comparando hasta $m$ caracteres, el total es $O(n+m+cm)$, con peor caso $O(nm)$. Incluso sin colisiones, muchas coincidencias verdaderas largas pueden provocar ese coste.
+
+Omitir la verificación da tiempo lineal para calcular coincidencias de **hash**, pero puede producir falsos positivos. No presentes esa variante como exacta. KMP y Z ofrecen búsqueda determinista lineal.
+
+El espacio adicional de la huella es constante; guardar las posiciones usa espacio proporcional a las respuestas. Aquí el patrón vacío aparece en las $n+1$ fronteras del texto, una convención que debe coincidir con el enunciado si lo permite.
+
+## Practica
+
+¿Qué debería devolver la búsqueda de `ana` en `banana`? ¿Y un patrón más largo que el texto?
+
+<details>
+<summary>Respuesta</summary>
+
+Las posiciones 1 y 3, contando desde cero. Un patrón más largo no tiene coincidencias. El primer caso detecta errores que saltan posiciones después de encontrar una coincidencia.
+
+</details>

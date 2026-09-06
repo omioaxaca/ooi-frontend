@@ -9,6 +9,8 @@ syllabusId: 43
 
 ## ¿Qué es el módulo?
 
+**Antes de empezar:** necesitas residuo, GCD y potencias. El módulo debe ser positivo. Para una representación canónica de un entero posiblemente negativo, usa `(valor % modulo + modulo) % modulo` con tipos que soporten la suma intermedia.
+
 La operación módulo (`%`) devuelve el **residuo** de la división. Es como un reloj: después de las 12, vuelve al 1.
 
 - $17 \mod 5 = 2$ (porque $17 = 3 \times 5 + 2$)
@@ -42,7 +44,8 @@ $$
 $$
 
 <Callout type="warning">
-  La resta puede dar negativo en C++. Siempre suma `m` antes de tomar módulo: `((a - b) % m + m) % m`.
+  La resta puede dar negativo en C++. Siempre suma `m` antes de tomar módulo:
+  `((a - b) % m + m) % m`.
 </Callout>
 
 **¡La división NO funciona así!** No puedes hacer $(a / b) \mod m$. Necesitas el **inverso modular** (ver más abajo).
@@ -76,8 +79,8 @@ Calcular $a^n \mod m$ directamente sería imposible para $n$ grande. Usamos la t
 
 ```cpp
 long long potencia(long long base, long long exp, long long mod) {
-    long long resultado = 1;
-    base %= mod;
+    long long resultado = 1 % mod;
+    base = (base % mod + mod) % mod;
 
     while (exp > 0) {
         if (exp % 2 == 1) {           // Si el exponente es impar
@@ -95,13 +98,13 @@ long long potencia(long long base, long long exp, long long mod) {
 
 $2^{10} \mod 1000$:
 
-| Paso | base | exp | resultado |
-|------|------|-----|-----------|
-| 0 | 2 | 10 | 1 |
-| 1 | 4 | 5 | 1 |
-| 2 | 16 | 2 | 4 (×4, exp impar) |
-| 3 | 256 | 1 | 4 |
-| 4 | ... | 0 | 1024 mod 1000 = **24** |
+| Paso | base | exp | resultado              |
+| ---- | ---- | --- | ---------------------- |
+| 0    | 2    | 10  | 1                      |
+| 1    | 4    | 5   | 1                      |
+| 2    | 16   | 2   | 4 (×4, exp impar)      |
+| 3    | 256  | 1   | 4                      |
+| 4    | ...  | 0   | 1024 mod 1000 = **24** |
 
 ## Inverso modular
 
@@ -109,7 +112,7 @@ Para "dividir" en aritmética modular, multiplicamos por el **inverso modular**.
 
 $a^{-1} \mod m$ es el número $x$ tal que $a \times x \equiv 1 \pmod{m}$.
 
-Si $m$ es primo, por el Pequeño Teorema de Fermat: $a^{-1} \equiv a^{m-2} \pmod{m}$
+Si $m$ es primo y $a$ no es divisible entre $m$, el Pequeño Teorema de Fermat da $a^{-1} \equiv a^{m-2}\pmod m$. En general, el inverso existe si y solo si $\gcd(a,m)=1$; con un módulo compuesto puedes calcularlo mediante Euclides extendido cuando esa condición se cumple.
 
 ```cpp
 long long inverso(long long a, long long mod) {
@@ -121,6 +124,8 @@ long long dividir(long long a, long long b, long long mod) {
     return a % mod * inverso(b, mod) % mod;
 }
 ```
+
+Estas funciones de inverso por potencia suponen módulo primo y denominador no nulo módulo él. Por ejemplo, el inverso de 3 módulo 7 es 5 porque `3 * 5 % 7 = 1`; 6 módulo 9 no tiene inverso. No reemplaces la división entera de un enunciado por división modular sin justificarlo: calculan operaciones distintas.
 
 ## Ejemplo completo: Fibonacci grande
 
@@ -163,13 +168,15 @@ Calcula $a^b \mod m$ dados a, b y m.
 <details>
 <summary>Ver solución</summary>
 
-```cpp
+Suponemos exponente no negativo y `1 <= modulo <= 1000000007`; así, tras reducir factores, los productos caben en `long long`. Para módulos de 64 bits completos necesitas multiplicación modular más ancha.
+
+```cpp test
 #include <iostream>
 using namespace std;
 
 long long potencia(long long base, long long exp, long long mod) {
-    long long res = 1;
-    base %= mod;
+    long long res = 1 % mod;
+    base = (base % mod + mod) % mod;
     while (exp > 0) {
         if (exp & 1) res = res * base % mod;
         base = base * base % mod;
@@ -185,5 +192,19 @@ int main() {
     return 0;
 }
 ```
+
+Entrada de borde:
+
+```text input
+9 0 1
+```
+
+Salida:
+
+```text output
+0
+```
+
+Tomamos la convención de potencia con exponente cero igual a 1; su residuo módulo 1 es 0. La exponenciación usa $O(\log(exponente+1))$ tiempo y memoria adicional constante. Mantiene el producto de lo acumulado y la potencia pendiente equivalente a la potencia original.
 
 </details>

@@ -9,6 +9,8 @@ syllabusId: 1
 
 ## ¿Qué tienen en común los detectives y los programadores?
 
+**Antes de empezar:** esta primera lección trata de ideas, no de sintaxis. Resuelve los ejemplos en papel; los fragmentos de C++ son una vista previa que podrás retomar después de estudiar ciclos y contenedores. La meta es reformular una pregunta sin cambiar lo que pide.
+
 Tanto un detective como un programador resuelven problemas usando la misma herramienta: **el pensamiento lógico**. Un detective observa las pistas, descarta lo que no sirve y llega a una conclusión. Un programador analiza un problema, descarta las soluciones ineficientes y encuentra la mejor forma de resolverlo.
 
 En la programación competitiva, no basta con saber escribir código. Necesitas saber **pensar**. Y eso es exactamente lo que aprenderás en esta sección: a pensar de formas que te permitan ver soluciones donde otros solo ven problemas.
@@ -42,6 +44,7 @@ Hay dos formas principales de razonar, y las usarás constantemente en programac
 Observas casos específicos y descubres un patrón general. Es como ser un científico que hace experimentos y descubre una ley.
 
 **Ejemplo:** Si observamos la suma de los primeros n números naturales:
+
 - n=1: 1 = **1**
 - n=2: 1+2 = **3**
 - n=3: 1+2+3 = **6**
@@ -50,10 +53,12 @@ Observas casos específicos y descubres un patrón general. Es como ser un cient
 
 ¿Ves el patrón? Los resultados son 1, 3, 6, 10, 15... Cada resultado es $\frac{n(n+1)}{2}$. Verifiquemos: para n=5, $\frac{5 \times 6}{2} = 15$ ✓
 
-¡Acabamos de **inducir** una fórmula general a partir de ejemplos específicos! Esta fórmula nos permite calcular la suma sin hacer el ciclo completo, lo cual es mucho más rápido.
+Los ejemplos sugieren una fórmula, pero todavía falta demostrarla. Emparejar el primero con el último produce siempre `n + 1`; al sumar la lista normal y la invertida aparecen `n` de esas parejas. Así obtenemos `2 * suma = n * (n + 1)`. La siguiente lección distingue con más detalle conjetura, contraejemplo y demostración.
 
 <Callout type="info">
-  En competencias, una estrategia muy útil es probar tu solución con casos pequeños (n=1, 2, 3, 4...) para descubrir patrones. Muchas veces, un problema que parece complicado tiene una fórmula simple escondida.
+  En competencias, una estrategia muy útil es probar tu solución con casos
+  pequeños (n=1, 2, 3, 4...) para descubrir patrones. Muchas veces, un problema
+  que parece complicado tiene una fórmula simple escondida.
 </Callout>
 
 ### Razonamiento Deductivo: de lo general a lo particular
@@ -61,6 +66,7 @@ Observas casos específicos y descubres un patrón general. Es como ser un cient
 Partes de reglas generales que ya conoces y las aplicas a un caso específico. Es como usar teoremas matemáticos para resolver un ejercicio.
 
 **Ejemplo:**
+
 - Regla general: Todo número divisible entre 2 es par.
 - Caso específico: 846 es divisible entre 2 (porque termina en 6, que es par).
 - Conclusión: 846 es par.
@@ -95,7 +101,7 @@ bool existeParLento(vector<int>& arr, int k) {
 **Reformulación:** Si necesito que `arr[i] + arr[j] = K`, entonces para cada número `arr[i]`, necesito que exista el número `K - arr[i]` en alguna parte del arreglo. ¡Eso es simplemente **buscar un número**!
 
 ```cpp
-// Enfoque reformulado: O(n) — ¡mucho más rápido!
+// Con set: O(n log n).
 bool existeParRapido(vector<int>& arr, int k) {
     set<int> vistos;  // Un conjunto que recuerda los números que ya vimos
 
@@ -111,6 +117,8 @@ bool existeParRapido(vector<int>& arr, int k) {
 ```
 
 **¿Qué pasó aquí?** Cambiamos la pregunta de "¿qué pares suman K?" a "para cada número, ¿su complemento ya apareció?". Misma respuesta, pero la segunda pregunta se puede responder mucho más rápido.
+
+Cada búsqueda e inserción en `set` cuesta $O(\log n)$, así que el tiempo total es $O(n\log n)$ y el espacio $O(n)$. Preguntar **antes** de insertar evita usar dos veces la misma posición. Prueba `[5]` con objetivo 10: no hay pareja; con `[5,5]`, sí. Los cálculos de suma y complemento deben caber en el tipo elegido.
 
 ### 2. Trabajar hacia atrás: "¿Y si empiezo por el final?"
 
@@ -234,6 +242,7 @@ bool esPalindromo(string s) {
 ## Ejercicios para entrenar tu pensamiento
 
 ### Problema 1: Las monedas
+
 Tienes 100 monedas en una fila, todas mostrando "cara". Haces 100 pasadas: en la pasada k, volteas cada k-ésima moneda (la k, la 2k, la 3k, etc.). ¿Cuáles monedas terminan mostrando "cara"?
 
 <details>
@@ -295,9 +304,11 @@ Este tipo de conteo se usa constantemente en programación para problemas de pro
 </details>
 
 <Callout type="success">
-  El pensamiento lateral es un músculo que se entrena con práctica. Cada problema que resuelvas te hará un poco mejor. No te frustres si no ves la solución de inmediato; incluso los expertos necesitan tiempo para pensar.
+  El pensamiento lateral es un músculo que se entrena con práctica. Cada
+  problema que resuelvas te hará un poco mejor. No te frustres si no ves la
+  solución de inmediato; incluso los expertos necesitan tiempo para pensar.
 </Callout>
 
 ## Siguiente paso
 
-Continúa aprendiendo sobre **Concepto de Algoritmos** para formalizar estas ideas y aprender a diseñar soluciones paso a paso.
+[Razonamiento inductivo y deductivo](/blog/fundamentos/razonamiento-inductivo-deductivo).

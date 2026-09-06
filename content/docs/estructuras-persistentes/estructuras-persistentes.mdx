@@ -1,6 +1,6 @@
 ---
-title: "Estructuras Persistentes"
-description: "Estructuras de datos que guardan todas sus versiones anteriores"
+title: "Segment tree persistente"
+description: "Copia caminos de actualización, comparte nodos inmutables y consulta o ramifica versiones anteriores."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "persistente", "segment tree persistente", "versionado"]
@@ -8,6 +8,8 @@ syllabusId: 72
 ---
 
 ## ¿Qué son las estructuras persistentes?
+
+**Objetivo:** conservar el estado anterior sin copiar un arreglo completo en cada actualización. Una versión se identifica por su raíz. Compartir un nodo solo es seguro si ninguna actualización posterior lo modifica.
 
 **Analogía:** Imagina que escribes un documento en Google Docs. Cada vez que haces un cambio, Google guarda una versión. Puedes volver a cualquier versión anterior sin perder las actuales. Las **estructuras persistentes** hacen exactamente eso con datos: guardan todas las versiones.
 
@@ -36,12 +38,83 @@ Versión 0:          Versión 1 (cambiar pos 3):
 
 Solo se crean A', C', F'. Los demás se comparten. Cada versión cuesta $O(\log n)$ nodos extra.
 
+## Ejemplo completo: versiones que se ramifican
+
+El siguiente árbol guarda sumas e intervalos semiabiertos. Cada actualización devuelve otra raíz. Guardamos índices de nodos y recuperamos sus datos después de las llamadas recursivas: `push_back` puede realocar un vector e invalidar referencias a sus elementos.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Nodo { int izquierdo = -1, derecho = -1; long long suma = 0; };
+vector<Nodo> nodos;
+
+int construir(int inicio, int fin, const vector<long long>& valores) {
+    int actual = static_cast<int>(nodos.size());
+    nodos.push_back({});
+    if (fin - inicio == 1) nodos[actual].suma = valores[inicio];
+    else {
+        int medio = inicio + (fin - inicio) / 2;
+        int izquierdo = construir(inicio, medio, valores);
+        int derecho = construir(medio, fin, valores);
+        nodos[actual] = {izquierdo, derecho, nodos[izquierdo].suma + nodos[derecho].suma};
+    }
+    return actual;
+}
+
+int actualizar(int raiz, int inicio, int fin, int posicion, long long valor) {
+    Nodo copia = nodos[raiz];
+    int nueva = static_cast<int>(nodos.size());
+    nodos.push_back(copia);
+    if (fin - inicio == 1) nodos[nueva].suma = valor;
+    else {
+        int medio = inicio + (fin - inicio) / 2;
+        if (posicion < medio) {
+            int hijo = actualizar(copia.izquierdo, inicio, medio, posicion, valor);
+            nodos[nueva].izquierdo = hijo;
+        } else {
+            int hijo = actualizar(copia.derecho, medio, fin, posicion, valor);
+            nodos[nueva].derecho = hijo;
+        }
+        nodos[nueva].suma = nodos[nodos[nueva].izquierdo].suma + nodos[nodos[nueva].derecho].suma;
+    }
+    return nueva;
+}
+
+long long consultar(int raiz, int inicio, int fin, int izquierda, int derecha) {
+    if (fin <= izquierda || derecha <= inicio) return 0;
+    if (izquierda <= inicio && fin <= derecha) return nodos[raiz].suma;
+    int medio = inicio + (fin - inicio) / 2;
+    return consultar(nodos[raiz].izquierdo, inicio, medio, izquierda, derecha)
+         + consultar(nodos[raiz].derecho, medio, fin, izquierda, derecha);
+}
+
+int main() {
+    int original = construir(0, 3, {1, 2, 3});
+    int primera = actualizar(original, 0, 3, 1, 8);
+    int rama = actualizar(original, 0, 3, 0, 9);
+    cout << consultar(original, 0, 3, 0, 3) << ' ';
+    cout << consultar(primera, 0, 3, 0, 3) << ' ';
+    cout << consultar(rama, 0, 3, 0, 3) << ' ';
+    cout << consultar(original, 0, 3, 0, 3) << '\n';
+}
+```
+
+Salida:
+
+```text output
+6 12 14 6
+```
+
+Ambas versiones nuevas parten del arreglo original; la segunda no hereda la modificación de la primera. La última consulta confirma que el pasado permanece intacto. El árbol exige un arreglo inicial no vacío e índices válidos.
+
 ## Implementación: Segment Tree Persistente
 
 En vez de usar un arreglo `tree[4*N]`, usamos nodos dinámicos con punteros (índices):
 
 ```cpp
-const int MAXNODES = 20000005;  // Suficientes nodos
+const int MAXNODES = 200005 * 22;
 
 struct Node {
     int left, right;  // Índices de hijos
@@ -168,7 +241,7 @@ Dado un arreglo, responder: ¿cuál es el k-ésimo menor valor en el rango `[l, 
 Para consultar `[l, r]`, restamos la versión `r` menos la versión `l-1`.
 
 ```cpp
-const int MAXNODES = 20000005;
+const int MAXNODES = 200005 * 22;
 
 struct Node {
     int left, right, cnt;
@@ -225,20 +298,27 @@ int kth(int vl, int vr, int tl, int tr, int k) {
 ```
 
 <Callout type="info">
-Este problema requiere **comprimir coordenadas** primero: mapear los valores a un rango `[1, M]` para que el Segment Tree no sea demasiado grande.
+  Este problema requiere **comprimir coordenadas** primero: mapear los valores a
+  un rango `[1, M]` para que el Segment Tree no sea demasiado grande.
 </Callout>
+
+La diferencia de versiones aquí representa frecuencias de **prefijos anidados del mismo arreglo**, no una resta arbitraria entre ramas. Exige `1 <= k <= r - l + 1`, resta la versión `l - 1` de la `r` y vuelve del índice comprimido al valor original al responder.
 
 ## Complejidad
 
-| Operación | Tiempo | Espacio extra |
-|-----------|--------|--------------|
-| Build | $O(n)$ | $O(n)$ |
-| Update (nueva versión) | $O(\log n)$ | $O(\log n)$ nodos |
-| Query (cualquier versión) | $O(\log n)$ | — |
-| Total con V versiones | — | $O(n + V \log n)$ |
+| Operación                 | Tiempo      | Espacio extra     |
+| ------------------------- | ----------- | ----------------- |
+| Build                     | $O(n)$      | $O(n)$            |
+| Update (nueva versión)    | $O(\log n)$ | $O(\log n)$ nodos |
+| Query (cualquier versión) | $O(\log n)$ | —                 |
+| Total con V versiones     | —           | $O(n + V \log n)$ |
 
 <Callout type="warning">
-La memoria es el cuello de botella. Con $n = 200000$ y $V = 200000$ versiones, necesitas ~$200000 \times 18 \approx 3.6M$ nodos. Asegúrate de declarar `MAXNODES` suficientemente grande.
+  Incluye el árbol inicial al calcular memoria: tiene hasta `2*n - 1` nodos.
+  Cada actualización puntual copia a lo sumo `ceil(log2(n)) + 1`, contando raíz
+  y hoja. Para 200000 elementos y 200000 actualizaciones, la cota supera 4
+  millones de nodos; reservar solo `20*n` puede ser insuficiente. Multiplica por
+  el tamaño real del nodo y por el límite de memoria del juez.
 </Callout>
 
 ## Ejercicio
@@ -248,14 +328,16 @@ Dado un arreglo de N enteros y Q consultas `(l, r, k)`, encuentra el k-ésimo me
 <details>
 <summary>Ver solución</summary>
 
-```cpp
+Este ejemplo admite `1 <= n <= 200000` y consultas de rango y k válidas.
+
+```cpp test
 #include <iostream>
 #include <vector>
 #include <algorithm>
 using namespace std;
 
 const int MAXN = 200005;
-const int MAXNODES = MAXN * 20;
+const int MAXNODES = MAXN * 22;
 
 struct Node { int left, right, cnt; } nodes[MAXNODES];
 int cntN = 0, roots[MAXN];
@@ -321,5 +403,25 @@ int main() {
     return 0;
 }
 ```
+
+Entrada:
+
+```text input
+5 3
+5 1 5 2 4
+1 5 3
+2 4 2
+1 1 1
+```
+
+Salida:
+
+```text output
+4
+2
+5
+```
+
+**Autocomprobación:** prueba valores repetidos, un rango de un elemento y k igual a la longitud del rango. En el ejemplo inicial de versiones, consulta una raíz antigua después de varias ramas nuevas: modificarla accidentalmente viola la propiedad principal que estás aprendiendo.
 
 </details>

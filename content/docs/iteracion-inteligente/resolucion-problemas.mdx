@@ -1,0 +1,103 @@
+---
+title: "Técnicas para resolver problemas"
+description: "Convierte un enunciado en un modelo verificable, una solución simple y una implementación comprobable."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "simulación", "casos borde", "estrategia"]
+---
+
+## Antes de empezar
+
+Ya conoces condiciones, ciclos, arreglos y complejidad. Ahora practicaremos la decisión más importante: **qué hace falta calcular**. Conocer muchos algoritmos no sirve si resolvemos un problema diferente del enunciado.
+
+## La pirámide de pasos
+
+1. **Contrato:** escribe entrada, salida, restricciones y qué se permite.
+2. **Ejemplo manual:** resuelve un caso pequeño sin código.
+3. **Modelo:** define qué información del pasado afecta el siguiente paso.
+4. **Solución directa:** propón una estrategia que puedas explicar y justificar.
+5. **Límites:** calcula tiempo, memoria y máximos valores numéricos.
+6. **Implementación y pruebas:** convierte los pasos a código y busca contraejemplos.
+
+Si falla un nivel, vuelve al anterior. No intentes arreglar un modelo incorrecto agregando condiciones sin explicación.
+
+## Ejemplo: simular una batería
+
+Una batería empieza llena, con capacidad $C$. Cada evento agrega una cantidad, positiva para recarga y negativa para consumo. La carga no puede superar $C$. Si un consumo deja una cantidad negativa, debemos imprimir el número del primer evento fallido; si no falla ninguno, imprimimos 0.
+
+Con capacidad 10 y cambios `[3, -5, -9, 2]`:
+
+| Evento | Operación             | Resultado |
+| ------ | --------------------- | --------- |
+| 1      | 10 + 3, limitado a 10 | 10        |
+| 2      | 10 - 5                | 5         |
+| 3      | 5 - 9                 | Falla     |
+
+El cuarto evento no puede reparar una falla anterior: el problema pide cuándo ocurrió por primera vez. Una suma total de cambios perdería tanto ese orden como el límite de capacidad.
+
+## Estado e invariante
+
+Solo necesitamos la carga actual y el índice del evento. Antes de cada evento, si no hemos terminado, la carga es la que queda tras simular exactamente todos los anteriores y está entre 0 y $C$.
+
+La actualización aplica literalmente las reglas del enunciado. Al hallar una carga negativa, el índice actual es la primera falla porque todos los anteriores fueron comprobados. Si terminamos el recorrido, ningún evento falló.
+
+## C++17
+
+Suponemos $0\leq C\leq10^9$, cambios entre $-10^9$ y $10^9$, y un número de eventos que cabe en `int`. `long long` deja margen para la suma intermedia.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+using namespace std;
+
+int main() {
+    long long capacidad;
+    int eventos;
+    cin >> capacidad >> eventos;
+    long long carga = capacidad;
+    for (int evento = 1; evento <= eventos; evento++) {
+        long long cambio;
+        cin >> cambio;
+        carga = min(capacidad, carga + cambio);
+        if (carga < 0) {
+            cout << evento << '\n';
+            return 0;
+        }
+    }
+    cout << 0 << '\n';
+}
+```
+
+Entrada:
+
+```text input
+10 4
+3 -5 -9 2
+```
+
+Salida:
+
+```text output
+3
+```
+
+El algoritmo tarda $O(n)$ y usa $O(1)$ memoria adicional. No necesita guardar todos los eventos.
+
+## Casos borde con una finalidad
+
+Prueba cero eventos, capacidad cero, consumo exactamente igual a la carga, falla en el primer evento, falla en el último y recargas que exceden la capacidad. Cada prueba cuestiona una regla distinta. Un consumo que deja carga **cero** no falla: usar `<= 0` sería un error.
+
+## Cuando te bloqueas
+
+Reduce el tamaño y enumera respuestas. Escribe la solución lenta aunque todavía no alcance los límites: puede revelar qué trabajo se repite y servir como referencia para probar una versión rápida. Cambia la representación, dibuja los estados o pregunta qué información puede descartarse sin cambiar el futuro. Separa «no entiendo el problema» de «no sé optimizarlo».
+
+## Practica
+
+Si la batería iniciara con carga $B$ en vez de estar llena, ¿qué cambiaría? Para capacidad 5, carga inicial 2 y cambios `[-2, 10, -5]`, ¿qué resultado esperas?
+
+<details>
+<summary>Respuesta</summary>
+
+Solo cambia la inicialización y la entrada: exige $0\leq B\leq C$. Las cargas serían 0, 5 y 0; la respuesta es 0. El estado, la actualización, la demostración y la complejidad permanecen iguales.
+
+</details>

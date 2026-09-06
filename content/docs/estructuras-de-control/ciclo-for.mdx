@@ -1,6 +1,6 @@
 ---
-title: "Ciclo For"
-description: "Domina el ciclo for para repetir instrucciones de forma controlada"
+title: "Ciclos: for, while y do while"
+description: "Elige una forma de repetición, sigue su condición y garantiza que el ciclo termine."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "for", "ciclos", "loops", "iteración"]
@@ -32,6 +32,7 @@ for (int i = 1; i <= 5; i++) {
 ```
 
 **Salida:**
+
 ```
 1
 2
@@ -68,6 +69,47 @@ Desglosemos `for (int i = 1; i <= 5; i++)`:
 ```
 
 **Analogía:** Piensa en dar vueltas a una pista de atletismo. La inicialización es ponerte en la línea de salida. La condición es "¿ya di las vueltas necesarias?". La actualización es contar una vuelta más.
+
+## While y do while: cuándo se comprueba la condición
+
+`while (condicion)` comprueba antes de entrar: puede ejecutar cero veces. Sirve, por ejemplo, para leer valores hasta que aparezca un centinela o hasta que termine la entrada. `while (cin >> valor && valor != 0)` procesa valores hasta leer cero o llegar a EOF; el cero no se procesa.
+
+`do { ... } while (condicion);` comprueba después de ejecutar: entra al menos una vez. El punto y coma final es obligatorio. Un uso útil es contar dígitos, porque el número cero tiene un dígito aunque no cumpla `numero > 0` inicialmente.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+    int sumaFor = 0;
+    for (int contador = 1; contador <= 3; contador++) sumaFor += contador;
+    int sumaWhile = 0;
+    int contador = 1;
+    while (contador <= 3) {
+        sumaWhile += contador;
+        contador++;
+    }
+    int numero = 0;
+    int digitos = 0;
+    do {
+        digitos++;
+        numero /= 10;
+    } while (numero > 0);
+    cout << sumaFor << ' ' << sumaWhile << ' ' << digitos << '\n';
+}
+```
+
+Salida:
+
+```text output
+6 6 1
+```
+
+En los dos primeros ciclos, después de procesar `contador`, la suma contiene los enteros de 1 a ese valor. El `for` concentra inicialización y avance en el encabezado; el `while` los escribe separados. Ninguna forma es automáticamente más rápida.
+
+En un `for`, `continue` salta a la actualización del encabezado. En un `while`, salta directamente a comprobar la condición: si omitiste actualizar la variable, podrías repetir para siempre. Antes de programar, explica qué cantidad cambia para acercarte a la salida.
+
+**Comprueba:** si comienzas con `contador = 4` y la condición es `contador <= 3`, un `while` ejecuta cero veces y un `do while` ejecuta una. El conteo de dígitos mostrado supone un número no negativo; no ignores esa condición si adaptas el ejemplo.
 
 ## Variaciones del `for`
 
@@ -149,6 +191,7 @@ for (int i = 1; i <= 3; i++) {
 ```
 
 **Salida:**
+
 ```
 (1,1) (1,2) (1,3)
 (2,1) (2,2) (2,3)
@@ -170,6 +213,7 @@ for (int i = 1; i <= 10; i++) {
 
 **Entrada:** `7`
 **Salida:**
+
 ```
 7 x 1 = 7
 7 x 2 = 14
@@ -191,6 +235,7 @@ for (int i = 1; i <= n; i++) {
 ```
 
 **Salida:**
+
 ```
 *
 * *
@@ -318,7 +363,10 @@ for (int i = 0; i < n; i++)
 ```
 
 <Callout type="warning">
-  En competencias, una regla general es que una computadora puede hacer aproximadamente $10^8$ operaciones por segundo. Si tu solución tiene $O(n^2)$ y $n = 10^5$, eso son $10^{10}$ operaciones... ¡demasiadas! Necesitarás un algoritmo más eficiente.
+  En competencias, una regla general es que una computadora puede hacer
+  aproximadamente $10^8$ operaciones por segundo. Si tu solución tiene $O(n^2)$
+  y $n = 10^5$, eso son $10^{10}$ operaciones... ¡demasiadas! Necesitarás un
+  algoritmo más eficiente.
 </Callout>
 
 ## Ejercicio de práctica
@@ -365,4 +413,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende el **Ciclo While** para repetir cuando no sabes de antemano cuántas veces necesitas.
+[Arreglos y STL vector](/blog/estructuras-de-datos/arreglos-y-vectores).

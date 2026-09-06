@@ -1,0 +1,131 @@
+---
+title: "Sqrt decomposition, Mo y modificaciones"
+description: "Divide el trabajo en bloques y mueve una ventana de consultas, incluyendo una dimensión de tiempo para actualizaciones."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "sqrt decomposition", "Mo", "offline"]
+---
+
+## Antes de empezar
+
+Necesitas intervalos, frecuencias y [reordenamiento offline](/blog/consultas-offline/reordenamiento). Hay dos ideas relacionadas que no deben confundirse: resumir bloques del arreglo y ordenar consultas para mover una ventana poco a poco.
+
+## Descomposición en bloques
+
+Divide el arreglo en bloques de tamaño $B$. Para consultar una suma, recorre individualmente los extremos incompletos y usa una suma precalculada para cada bloque completo. El coste es $O(B+n/B)$, equilibrado con $B$ cercano a $\sqrt n$. Cambiar un elemento actualiza la suma de su bloque en $O(1)$.
+
+Esta técnica puede responder en línea. Mo, en cambio, necesita conocer las consultas para reordenarlas.
+
+## Mo sin actualizaciones
+
+Supón que agregar o quitar un elemento de los extremos permite actualizar la respuesta rápidamente. Para contar valores distintos, guarda frecuencias: pasar de 0 a 1 agrega un distinto; pasar de 1 a 0 lo elimina.
+
+Ordena las consultas por bloque de su extremo izquierdo y luego por extremo derecho. Mantén una ventana `[izquierda, derecha)` y muévela hasta cada consulta. Con bloques de tamaño $\sqrt n$, el número de movimientos es $O((n+q)\sqrt n)$, además de ordenar.
+
+La operación debe admitir **agregar y quitar**. Un mínimo simple no basta si no sabes recuperar el siguiente mínimo al quitar el actual.
+
+## Agregar una dimensión de tiempo
+
+Con actualizaciones intercaladas, cada consulta guarda cuántos cambios ocurrieron antes. Cada cambio guarda posición, valor anterior y nuevo. Ahora movemos tres coordenadas: izquierda, derecha y tiempo.
+
+Si un cambio afecta una posición dentro de la ventana, primero retira su valor actual, cambia el dato y agrega el nuevo. Para retroceder el tiempo restaura el valor anterior. Es indispensable registrar ese valor durante la lectura cronológica, no deducirlo después de reordenar.
+
+## C++17: Mo con modificaciones
+
+Valores entre 0 y 100000. `Q izquierda derecha` consulta un intervalo semiabierto; `U posicion valor` actualiza una posición. Todos los índices empiezan en cero. El arreglo es no vacío.
+
+```cpp test
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Cambio { int posicion, anterior, nuevo; };
+struct Consulta { int izquierda, derecha, tiempo, id; };
+
+int main() {
+    int cantidad, operaciones;
+    cin >> cantidad >> operaciones;
+    vector<int> inicial(cantidad);
+    for (int& valor : inicial) cin >> valor;
+    vector<int> lectura = inicial;
+    vector<Cambio> cambios;
+    vector<Consulta> consultas;
+    for (int indice = 0; indice < operaciones; indice++) {
+        char tipo;
+        int primero, segundo;
+        cin >> tipo >> primero >> segundo;
+        if (tipo == 'U') {
+            cambios.push_back({primero, lectura[primero], segundo});
+            lectura[primero] = segundo;
+        } else {
+            consultas.push_back({primero, segundo, static_cast<int>(cambios.size()), static_cast<int>(consultas.size())});
+        }
+    }
+    int bloque = max(1, static_cast<int>(pow(cantidad, 2.0 / 3.0)));
+    sort(consultas.begin(), consultas.end(), [&](const Consulta& primera, const Consulta& segunda) {
+        if (primera.izquierda / bloque != segunda.izquierda / bloque) return primera.izquierda / bloque < segunda.izquierda / bloque;
+        if (primera.derecha / bloque != segunda.derecha / bloque) return primera.derecha / bloque < segunda.derecha / bloque;
+        return primera.tiempo < segunda.tiempo;
+    });
+    vector<int> valores = inicial, frecuencia(100001, 0), respuesta(consultas.size());
+    int izquierda = 0, derecha = 0, tiempo = 0, distintos = 0;
+    auto agregar = [&](int posicion) { if (frecuencia[valores[posicion]]++ == 0) distintos++; };
+    auto quitar = [&](int posicion) { if (--frecuencia[valores[posicion]] == 0) distintos--; };
+    auto aplicar = [&](int indice, bool avanzar) {
+        const Cambio& cambio = cambios[indice];
+        bool dentro = izquierda <= cambio.posicion && cambio.posicion < derecha;
+        if (dentro) quitar(cambio.posicion);
+        valores[cambio.posicion] = avanzar ? cambio.nuevo : cambio.anterior;
+        if (dentro) agregar(cambio.posicion);
+    };
+    for (const Consulta& consulta : consultas) {
+        while (tiempo < consulta.tiempo) { aplicar(tiempo, true); tiempo++; }
+        while (tiempo > consulta.tiempo) { tiempo--; aplicar(tiempo, false); }
+        while (izquierda > consulta.izquierda) agregar(--izquierda);
+        while (derecha < consulta.derecha) agregar(derecha++);
+        while (izquierda < consulta.izquierda) quitar(izquierda++);
+        while (derecha > consulta.derecha) quitar(--derecha);
+        respuesta[consulta.id] = distintos;
+    }
+    for (int valor : respuesta) cout << valor << '\n';
+}
+```
+
+Entrada:
+
+```text input
+5 5
+1 2 1 3 2
+Q 0 5
+U 2 2
+Q 0 3
+U 0 2
+Q 0 3
+```
+
+Salida:
+
+```text output
+3
+2
+1
+```
+
+## Coste y límites
+
+Cuando $n$, consultas y cambios son del mismo orden $N$, bloques de tamaño cercano a $N^{2/3}$ dan una cota habitual de $O(N^{5/3})$ movimientos, más ordenamiento. Con cantidades muy desiguales debes ajustar el análisis y el tamaño de bloque. Sin cambios, conviene la ordenación clásica con $\sqrt n$.
+
+La memoria es lineal en datos, operaciones y rango de valores. Para valores grandes o negativos, comprime todas las coordenadas, incluyendo las de las actualizaciones, antes de usar el vector de frecuencias.
+
+## Practica
+
+Agrega una actualización que vuelva a escribir el valor que ya tenía una posición. ¿Debe cambiar la respuesta? ¿Y una consulta `[2,2)`?
+
+<details>
+<summary>Respuesta</summary>
+
+Reescribir el mismo valor no cambia los distintos, aunque aplicar y deshacer deben seguir funcionando. Un intervalo vacío tiene cero distintos. Compara casos pequeños con un recorrido directo después de aplicar los cambios en su orden original.
+
+</details>

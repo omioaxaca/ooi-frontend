@@ -20,5 +20,248 @@
     "programacion-dinamica",
     "teoria-juegos",
     "estructuras-persistentes"
+  ],
+  "levels": [
+    {
+      "slug": "azul",
+      "name": "Azul",
+      "color": "AZUL",
+      "categories": [
+        {
+          "slug": "introduccion", "name": "Introducción",
+          "topics": [
+            { "path": "fundamentos/pensamiento-lateral", "title": "Desarrollo de pensamiento lateral" },
+            { "path": "fundamentos/razonamiento-inductivo-deductivo", "title": "Razonamiento inductivo y deductivo" },
+            { "path": "fundamentos/concepto-algoritmos", "title": "Concepto de algoritmos" },
+            { "path": "introduccion/configuracion-entorno", "title": "Configuración de VS Code y computadora" }
+          ]
+        },
+        {
+          "slug": "programacion-cpp", "name": "Programación en C++",
+          "topics": [
+            { "path": "cpp-basico/estructura-programa", "title": "Estructura de un programa en C++" },
+            { "path": "cpp-basico/tipos-de-datos", "title": "Tipos de datos y variables" },
+            { "path": "cpp-basico/entrada-salida", "title": "Entrada y salida de datos: STDIN y STDOUT" },
+            { "path": "cpp-basico/operadores-aritmeticos", "title": "Jerarquía, operadores aritméticos, relacionales, lógicos y pre/post incremento" },
+            { "path": "estructuras-de-control/if-else", "title": "Control de flujo: if, else y else if" },
+            { "path": "estructuras-de-control/funciones", "title": "Funciones: paso por valor, referencia y apuntadores" }
+          ]
+        },
+        {
+          "slug": "estructuras-de-datos", "name": "Estructuras de datos",
+          "topics": [
+            { "path": "estructuras-de-control/ciclo-for", "title": "Ciclos: for, while y do while" },
+            { "path": "estructuras-de-datos/arreglos-y-vectores", "title": "Arreglos y STL vector" },
+            { "path": "estructuras-de-datos/strings", "title": "Cadenas: string" },
+            { "path": "estructuras-de-datos/matrices", "title": "Matrices y arreglos de dos o más dimensiones" },
+            { "path": "introduccion/complejidad-algoritmica", "title": "Complejidad de un algoritmo: Big O" },
+            { "path": "algoritmos/ordenamiento", "title": "Ordenamiento: burbuja y STL sort" }
+          ]
+        },
+        {
+          "slug": "recursividad", "name": "Recursividad",
+          "topics": [
+            { "path": "recursion/funciones-recursivas", "title": "Recursión: caso base, paso recursivo y funciones matemáticas" },
+            { "path": "recursion/visualizacion-estado", "title": "Árbol de llamadas, diseño de estado y recursión sobre arreglos" },
+            { "path": "recursion/backtracking", "title": "Backtracking" },
+            { "path": "recursion/subconjuntos-permutaciones", "title": "Generación de subconjuntos y permutaciones" },
+            { "path": "recursion/complejidad-recursiva", "title": "Poda (pruning) y complejidad exponencial" },
+            { "path": "recursion/memorizacion", "title": "Memorización (memoization)" }
+          ]
+        },
+        {
+          "slug": "busquedas", "name": "Búsquedas",
+          "topics": [
+            { "path": "estructuras-de-datos/struct", "title": "Estructuras y pares: struct, vector de structs y pair" },
+            { "path": "pilas-y-colas/pilas-concepto", "title": "Pilas y colas: STL stack y queue" },
+            { "path": "busquedas/busqueda-profundidad", "title": "Búsqueda en profundidad: DFS" },
+            { "path": "busquedas/busqueda-amplitud", "title": "Búsqueda en amplitud: BFS" },
+            { "path": "busquedas/busqueda-binaria", "title": "Búsqueda binaria" },
+            { "path": "busquedas/lower-upper-bound", "title": "Lower bound y upper bound" }
+          ]
+        },
+        {
+          "slug": "iteracion-inteligente", "name": "Iteración inteligente",
+          "topics": [
+            { "path": "diccionarios-mapas/map-unordered-map", "title": "Sets y diccionarios: STL set y map" },
+            { "path": "iteracion-inteligente/recorridos-arreglos", "title": "Iteración avanzada: frecuencias, condiciones, extremos, segmentos, picos y valles" },
+            { "path": "iteracion-inteligente/sumas-acumuladas", "title": "Sumas acumuladas: prefix sum" },
+            { "path": "iteracion-inteligente/dos-punteros", "title": "Two pointers: sliding window, pares con suma y subarreglos" },
+            { "path": "iteracion-inteligente/ordenamiento-personalizado", "title": "Custom sort con pairs y structs" },
+            { "path": "iteracion-inteligente/resolucion-problemas", "title": "Técnicas de resolución: pasos, casos borde, simulación, límites y bloqueos" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "amarillo", "name": "Amarillo", "color": "AMARILLO",
+      "categories": [
+        {
+          "slug": "matematicas", "name": "Matemáticas",
+          "topics": [
+            { "path": "matematicas/numeros-primos", "title": "Números primos y criba de Eratóstenes" },
+            { "path": "matematicas/gcd-lcm", "title": "Máximo común divisor y mínimo común múltiplo: GCD, LCM y Euclides" },
+            { "path": "matematicas/aritmetica-modular", "title": "Aritmética modular: exponenciación rápida e inverso modular" },
+            { "path": "matematicas/divisores-factorizacion", "title": "Divisores y factorización prima" },
+            { "path": "matematicas/combinaciones-permutaciones", "title": "Combinaciones y permutaciones: fuerza bruta y prueba de primalidad" },
+            { "path": "matematicas/triangulo-pascal", "title": "Triángulo de Pascal" },
+            { "path": "matematicas/bases-numericas", "title": "Manipulación de números en diferentes bases" },
+            { "path": "matematicas/numeros-catalan", "title": "Números de Catalan" }
+          ]
+        },
+        {
+          "slug": "comunicacion", "name": "Problemas de comunicación",
+          "topics": [
+            { "path": "comunicacion/diseno-protocolos", "title": "Diseño de protocolos (designing protocols)" },
+            { "path": "comunicacion/minimizar-bits", "title": "Minimización de bits (minimizing bits)" },
+            { "path": "comunicacion/optimizacion-consultas", "title": "Optimización de consultas (query optimization)" },
+            { "path": "comunicacion/cotas-inferiores", "title": "Razonamiento de cotas inferiores (lower bounds reasoning)" }
+          ]
+        },
+        {
+          "slug": "interactivos", "name": "Problemas interactivos",
+          "topics": [
+            { "path": "interactivos/diseno-estrategias", "title": "Diseño de estrategias (strategy design)" },
+            { "path": "interactivos/arboles-decision", "title": "Árboles de decisión binarios (binary decision trees)" },
+            { "path": "interactivos/teoria-informacion", "title": "Fundamentos de teoría de la información" },
+            { "path": "interactivos/razonamiento-adversarial", "title": "Razonamiento adversarial" }
+          ]
+        },
+        {
+          "slug": "solo-salida", "name": "Problemas solo salida (offline tricks)",
+          "topics": [
+            { "path": "consultas-offline/cdq", "title": "CDQ divide and conquer" },
+            { "path": "consultas-offline/busqueda-binaria-paralela", "title": "Parallel binary search" },
+            { "path": "consultas-offline/reordenamiento", "title": "Offline query reordering" }
+          ]
+        },
+        {
+          "slug": "programacion-dinamica", "name": "Programación dinámica",
+          "topics": [
+            { "path": "programacion-dinamica/introduccion-dp", "title": "Fundamentos: superposición de subproblemas y optimalidad" },
+            { "path": "programacion-dinamica/tecnicas-implementacion", "title": "Memorización top-down y tabulación bottom-up" },
+            { "path": "programacion-dinamica/patrones-dp", "title": "Problemas clásicos: mochila, coin change, LCS y Fibonacci" }
+          ]
+        },
+        {
+          "slug": "estructuras-avanzadas", "name": "Estructuras de datos avanzadas",
+          "topics": [
+            { "path": "estructuras-avanzadas/colas-prioridad", "title": "Colas de prioridad" },
+            { "path": "listas-enlazadas/introduccion-listas", "title": "Listas ligadas" },
+            { "path": "arboles/representacion-arboles", "title": "Árboles binarios" },
+            { "path": "estructuras-avanzadas/trie", "title": "Trie" },
+            { "path": "estructuras-avanzadas/rmq", "title": "Sparse table: RMQ y su relación con LCA" }
+          ]
+        },
+        {
+          "slug": "arboles", "name": "Árboles",
+          "topics": [
+            { "path": "arboles/recorridos-arboles", "title": "Recorridos: preorden, inorden y postorden" },
+            { "path": "arboles/recorridos-bfs-dfs", "title": "BFS y DFS en árboles" },
+            { "path": "arboles/arboles-busqueda-binaria", "title": "Binary search tree" },
+            { "path": "arboles/implementacion-heap", "title": "Heap" },
+            { "path": "arboles/lca-binary-lifting", "title": "LCA y binary lifting" }
+          ]
+        },
+        {
+          "slug": "grafos", "name": "Grafos",
+          "topics": [
+            { "path": "grafos/introduccion-grafos", "title": "Teoría de grafos sencillos" },
+            { "path": "grafos/representacion-recorridos", "title": "Representación de grafos y recorrido" },
+            { "path": "grafos-avanzados/deteccion-ciclos", "title": "Detección de ciclos" },
+            { "path": "grafos-avanzados/grafos-bipartitos", "title": "Graph coloring" },
+            { "path": "grafos-avanzados/union-find", "title": "Disjoint set union" },
+            { "path": "grafos/dijkstra", "title": "Dijkstra" }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "verde", "name": "Verde", "color": "VERDE",
+      "categories": [
+        {
+          "slug": "grafos-intermedios", "name": "Grafos intermedios",
+          "topics": [
+            { "path": "grafos-avanzados/caminos-cortos", "title": "Floyd-Warshall, Bellman-Ford y A*" },
+            { "path": "grafos-avanzados/emparejamiento-bipartito", "title": "Maximum bipartite matching" },
+            { "path": "grafos-avanzados/ordenamiento-topologico", "title": "Topological sort" },
+            { "path": "arboles/lca-rmq", "title": "Lowest common ancestor: Euler tour y RMQ" },
+            { "path": "grafos/componentes-conexas", "title": "Componentes conexas" }
+          ]
+        },
+        {
+          "slug": "strings-avanzados", "name": "Strings avanzados",
+          "topics": [
+            { "path": "strings-avanzados/hashing", "title": "Hashing" },
+            { "path": "strings-avanzados/rabin-karp", "title": "Rabin-Karp" },
+            { "path": "strings-avanzados/kmp", "title": "KMP" },
+            { "path": "strings-avanzados/z-function", "title": "Z function" },
+            { "path": "strings-avanzados/suffix-array", "title": "Suffix array" },
+            { "path": "strings-avanzados/aho-corasick", "title": "Aho-Corasick" }
+          ]
+        },
+        {
+          "slug": "arboles-avanzados", "name": "Árboles avanzados",
+          "topics": [
+            { "path": "estructuras-avanzadas/segment-tree", "title": "Segment tree y Euler tour" },
+            { "path": "estructuras-avanzadas/fenwick-tree", "title": "BIT: Fenwick tree" },
+            { "path": "arboles-avanzados/sqrt-mo", "title": "Sqrt decomposition: Mo y Mo con modificaciones" },
+            { "path": "arboles-avanzados/arboles-balanceados", "title": "Árboles balanceados: AVL, red-black trees y treaps" },
+            { "path": "arboles-avanzados/heavy-light", "title": "Heavy-light decomposition" },
+            { "path": "arboles-avanzados/centroid-decomposition", "title": "Centroid decomposition" }
+          ]
+        },
+        {
+          "slug": "grafos-avanzados", "name": "Grafos avanzados",
+          "topics": [
+            { "path": "grafos-avanzados/dos-sat", "title": "2-SAT" },
+            { "path": "grafos-avanzados/bridge-tree", "title": "Bridge tree" },
+            { "path": "grafos-avanzados/puntos-articulacion-puentes", "title": "Puntos de articulación" },
+            { "path": "grafos-avanzados/scc", "title": "Componentes fuertemente conexas: Kosaraju y Tarjan" },
+            { "path": "grafos-avanzados/flujo-maximo", "title": "Maximum flow: Dinic y HLPP" },
+            { "path": "grafos-avanzados/flujo-costo-minimo", "title": "Min-cost max flow" },
+            { "path": "grafos-avanzados/mst", "title": "Minimum spanning tree" }
+          ]
+        },
+        {
+          "slug": "estructuras-persistentes", "name": "Estructuras persistentes",
+          "topics": [
+            { "path": "estructuras-persistentes/estructuras-persistentes", "title": "Persistent segment tree" },
+            { "path": "estructuras-persistentes/lazy-propagation", "title": "Segment tree con lazy propagation" },
+            { "path": "estructuras-persistentes/dsu-persistente", "title": "Persistent disjoint set union" }
+          ]
+        },
+        {
+          "slug": "teoria-juegos", "name": "Teoría de juegos",
+          "topics": [
+            { "path": "teoria-juegos/nim", "title": "Nim" },
+            { "path": "teoria-juegos/grundy", "title": "Grundy numbers" },
+            { "path": "teoria-juegos/teoria-juegos", "title": "Teorema de Sprague-Grundy" },
+            { "path": "teoria-juegos/minimax", "title": "Minimax" },
+            { "path": "teoria-juegos/grafos-juego", "title": "Game graphs" }
+          ]
+        },
+        {
+          "slug": "dp-avanzada", "name": "Programación dinámica avanzada",
+          "topics": [
+            { "path": "dp-avanzada/divide-conquer", "title": "Divide and conquer DP" },
+            { "path": "dp-avanzada/knuth", "title": "Knuth optimization" },
+            { "path": "dp-avanzada/convex-hull-trick", "title": "Convex hull trick (CHT)" },
+            { "path": "dp-avanzada/arboles", "title": "Programación dinámica en árboles" },
+            { "path": "dp-avanzada/dag", "title": "Programación dinámica en grafos: DAG" }
+          ]
+        },
+        {
+          "slug": "matematicas-avanzadas", "name": "Matemáticas avanzadas",
+          "topics": [
+            { "path": "matematicas-avanzadas/euclides-extendido", "title": "Extended Euclid" },
+            { "path": "matematicas-avanzadas/pollard-rho", "title": "Pollard rho" },
+            { "path": "matematicas-avanzadas/fft-ntt", "title": "Fast Fourier transform y number theoretic transform" },
+            { "path": "matematicas-avanzadas/walsh-hadamard", "title": "Walsh-Hadamard transform" },
+            { "path": "matematicas-avanzadas/multiplicacion-polinomios", "title": "Multiplicación de polinomios" }
+          ]
+        }
+      ]
+    }
   ]
 }

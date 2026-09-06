@@ -1,0 +1,106 @@
+---
+title: "Knuth optimization"
+description: "Acota el mejor corte de una DP de intervalos entre los cortes de sus intervalos vecinos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "DP", "Knuth", "intervalos"]
+---
+
+## Antes de empezar
+
+Necesitas DP de intervalos y prefijos. Queremos fusionar montones **adyacentes** hasta quedar con uno. Fusionar dos grupos cuesta la suma de sus pesos. Los pesos son no negativos y el orden original no puede cambiar.
+
+Esto no es el problema de unir libremente los dos segmentos más pequeños con una cola de prioridad: aquí la adyacencia restringe las elecciones.
+
+## Recurrencia cúbica
+
+`dp[izquierda][derecha]` es el coste mínimo de fusionar ese intervalo cerrado. Un solo montón cuesta cero. Si la última fusión separa en `corte`:
+
+$$dp[l][r]=\min_{l\leq k<r}(dp[l][k]+dp[k+1][r])+W(l,r).$$
+
+`W` es la suma del intervalo, obtenida con prefijos. Hay $O(n^2)$ intervalos y hasta $O(n)$ cortes por intervalo: tiempo cúbico.
+
+## La desigualdad de los óptimos
+
+Knuth permite usar:
+
+$$opt[l][r-1]\leq opt[l][r]\leq opt[l+1][r].$$
+
+No es válida para cualquier DP. Una condición suficiente es que $W$ sea monótono al incluir intervalos y satisfaga la desigualdad cuadrangular: para $a\leq b\leq c\leq d$, $W(a,c)+W(b,d)\leq W(a,d)+W(b,c)$.
+
+Las sumas de pesos no negativos cumplen estas condiciones. Al llenar por longitud, los dos óptimos que acotan el siguiente corte ya están disponibles.
+
+## C++17
+
+El arreglo es no vacío. Los costes totales deben caber en `long long` y la tabla cuadrática debe caber en memoria.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    vector<long long> prefijo(cantidad + 1, 0);
+    for (int indice = 0; indice < cantidad; indice++) {
+        long long peso;
+        cin >> peso;
+        prefijo[indice + 1] = prefijo[indice] + peso;
+    }
+    vector<vector<long long>> coste(cantidad, vector<long long>(cantidad, 0));
+    vector<vector<int>> optimo(cantidad, vector<int>(cantidad));
+    for (int indice = 0; indice < cantidad; indice++) optimo[indice][indice] = indice;
+    const long long INF = 4000000000000000000LL;
+    for (int longitud = 2; longitud <= cantidad; longitud++) {
+        for (int izquierda = 0; izquierda + longitud <= cantidad; izquierda++) {
+            int derecha = izquierda + longitud - 1;
+            coste[izquierda][derecha] = INF;
+            int primerCorte = optimo[izquierda][derecha - 1];
+            int ultimoCorte = min(derecha - 1, optimo[izquierda + 1][derecha]);
+            long long suma = prefijo[derecha + 1] - prefijo[izquierda];
+            for (int corte = primerCorte; corte <= ultimoCorte; corte++) {
+                long long candidato = coste[izquierda][corte] + coste[corte + 1][derecha] + suma;
+                if (candidato < coste[izquierda][derecha]) {
+                    coste[izquierda][derecha] = candidato;
+                    optimo[izquierda][derecha] = corte;
+                }
+            }
+        }
+    }
+    cout << coste[0][cantidad - 1] << '\n';
+}
+```
+
+Entrada:
+
+```text input
+3
+10 20 30
+```
+
+Salida:
+
+```text output
+90
+```
+
+Fusionar 10 y 20 cuesta 30; después fusionar 30 y 30 cuesta 60: total 90. La otra primera fusión costaría 50 + 60 = 110.
+
+## Por qué queda tiempo cuadrático
+
+Los rangos de candidatos entre intervalos vecinos se solapan de forma controlada. Al sumar sus longitudes a lo largo de una diagonal, los extremos se cancelan telescópicamente y el trabajo es lineal por longitud. El total es $O(n^2)$ tiempo y memoria.
+
+Limita siempre el corte por `derecha - 1`: la última parte no puede quedar vacía. Define `opt[i][i]` aunque el intervalo de un elemento no necesite fusión. Mantén un criterio consistente para empates.
+
+## Practica
+
+¿Qué pasa con un solo montón? ¿Por qué no deberías reutilizar la optimización sin revisión si el coste de un intervalo cambia a otra función?
+
+<details>
+<summary>Respuesta</summary>
+
+Un solo montón cuesta cero. Una función distinta puede violar la desigualdad de óptimos; restringir los cortes entonces podría omitir la respuesta verdadera. Compara contra la DP cúbica en entradas pequeñas, pero recuerda que esas pruebas acompañan la demostración, no la reemplazan.
+
+</details>

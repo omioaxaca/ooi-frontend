@@ -1,0 +1,133 @@
+---
+title: "Bridge tree"
+description: "Comprime las regiones sin puentes de un grafo no dirigido y conserva sus conexiones críticas como un bosque."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "puentes", "bridge tree", "low-link"]
+---
+
+## Antes de empezar
+
+Necesitas DFS y componentes conexas. Un **puente** es una arista cuya eliminación aumenta el número de componentes. Una bridge tree comprime las partes que siguen conectadas sin usar puentes. Si el grafo original no es conexo, el resultado es un **bosque**, no un solo árbol.
+
+## Detectar puentes con low-link
+
+`entrada[vertice]` es su tiempo de descubrimiento. `bajo[vertice]` guarda el menor tiempo alcanzable desde su subárbol usando aristas del árbol DFS y, al final, como máximo una arista de regreso.
+
+Una arista del árbol DFS de padre a hijo es puente exactamente cuando `bajo[hijo] > entrada[padre]`: desde ese subárbol no existe un regreso al padre o a un ancestro sin usar la arista.
+
+Usa identificadores de **aristas**, no solo el vértice padre. Si hay dos aristas paralelas al padre, solo una es la arista de llegada; la otra evita que cualquiera de las dos sea puente.
+
+## Comprimir después de marcar
+
+Recorre otra vez el grafo, ahora sin atravesar puentes. Cada componente resultante recibe un identificador. Por cada puente original, agrega una arista entre los identificadores de sus extremos.
+
+El resultado no tiene ciclos: si hubiera uno, sus aristas tendrían una ruta alternativa y no podrían ser puentes. Esta representación permite convertir preguntas sobre conexiones críticas en preguntas sobre caminos de árboles.
+
+## C++17
+
+Entrada: grafo no dirigido con índices desde cero. Se permiten aristas paralelas. Imprimimos el número de componentes comprimidas y las conexiones del bosque.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <stack>
+#include <utility>
+#include <vector>
+using namespace std;
+
+vector<vector<pair<int, int>>> vecinos;
+vector<int> entrada, bajo;
+vector<bool> puente;
+int reloj = 0;
+
+void buscarPuentes(int actual, int aristaPadre) {
+    entrada[actual] = bajo[actual] = reloj++;
+    for (auto [vecino, id] : vecinos[actual]) {
+        if (id == aristaPadre) continue;
+        if (entrada[vecino] == -1) {
+            buscarPuentes(vecino, id);
+            bajo[actual] = min(bajo[actual], bajo[vecino]);
+            if (bajo[vecino] > entrada[actual]) puente[id] = true;
+        } else bajo[actual] = min(bajo[actual], entrada[vecino]);
+    }
+}
+
+int main() {
+    int vertices, aristas;
+    cin >> vertices >> aristas;
+    vecinos.resize(vertices);
+    entrada.assign(vertices, -1);
+    bajo.resize(vertices);
+    puente.assign(aristas, false);
+    vector<pair<int, int>> extremos(aristas);
+    for (int id = 0; id < aristas; id++) {
+        auto& [origen, destino] = extremos[id];
+        cin >> origen >> destino;
+        vecinos[origen].push_back({destino, id});
+        vecinos[destino].push_back({origen, id});
+    }
+    for (int actual = 0; actual < vertices; actual++) if (entrada[actual] == -1) buscarPuentes(actual, -1);
+    vector<int> componente(vertices, -1);
+    int grupos = 0;
+    for (int inicio = 0; inicio < vertices; inicio++) {
+        if (componente[inicio] != -1) continue;
+        stack<int> pendientes;
+        pendientes.push(inicio);
+        componente[inicio] = grupos;
+        while (!pendientes.empty()) {
+            int actual = pendientes.top();
+            pendientes.pop();
+            for (auto [vecino, id] : vecinos[actual]) {
+                if (!puente[id] && componente[vecino] == -1) {
+                    componente[vecino] = grupos;
+                    pendientes.push(vecino);
+                }
+            }
+        }
+        grupos++;
+    }
+    cout << grupos << '\n';
+    for (int id = 0; id < aristas; id++) {
+        if (puente[id]) cout << componente[extremos[id].first] << ' ' << componente[extremos[id].second] << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+5 6
+0 1
+1 2
+2 0
+2 3
+2 3
+3 4
+```
+
+Salida:
+
+```text output
+2
+0 1
+```
+
+Las dos aristas `2-3` se respaldan entre sí. Solo `3-4` es puente. Los vértices 0, 1, 2 y 3 quedan en la misma componente comprimida.
+
+## Coste y límites
+
+Ambos recorridos cuestan $O(n+m)$ tiempo y memoria. La primera DFS puede tener profundidad $n$; para grafos muy grandes usa una versión iterativa que conserve eventos de salida.
+
+No confundas estas componentes con SCC de grafos dirigidos ni con bloques separados por puntos de articulación. Quitar una arista y quitar un vértice son problemas diferentes. En el bosque, la distancia entre dos componentes cuenta los puentes que cualquier camino entre ellas debe atravesar.
+
+## Practica
+
+¿Qué bridge tree produce un ciclo de cuatro vértices? ¿Y una cadena de cuatro vértices?
+
+<details>
+<summary>Respuesta</summary>
+
+El ciclo se comprime a un solo vértice sin aristas. En la cadena, todas las aristas son puentes y el bosque comprimido conserva cuatro vértices y tres conexiones.
+
+</details>

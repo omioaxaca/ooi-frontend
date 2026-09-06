@@ -1,6 +1,6 @@
 ---
-title: "Componentes Fuertemente Conexas (SCC)"
-description: "Encuentra grupos de nodos mutuamente alcanzables en grafos dirigidos"
+title: "SCC: Kosaraju y Tarjan"
+description: "Agrupa vértices mutuamente alcanzables y compara dos algoritmos lineales para construir el grafo de condensación."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "SCC", "Kosaraju", "Tarjan", "grafos dirigidos"]
@@ -88,6 +88,92 @@ int main() {
 
 1. El primer DFS ordena los nodos por tiempo de finalización.
 2. Procesar en orden inverso en el grafo transpuesto asegura que cada DFS solo alcanza nodos de la misma SCC.
+
+## Tarjan: una DFS y una pila de componentes pendientes
+
+Tarjan no necesita el grafo invertido. Guarda un tiempo de entrada, un valor `bajo` y una pila de vértices que todavía no han sido asignados a una SCC.
+
+Después de explorar un hijo, incorpora su `bajo`. Para una arista hacia un vértice ya visitado, incorpora su tiempo de entrada **solo si sigue en la pila**. Una arista hacia una SCC ya cerrada no debe unirla con la actual.
+
+Cuando `bajo[actual] == entrada[actual]`, encontramos la raíz de una SCC: retiramos de la pila hasta llegar a ese vértice. La pila de Tarjan no es la pila de llamadas; un vértice puede terminar su llamada y seguir pendiente de componente.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<vector<int>> grafo;
+vector<int> entrada, bajo, componente, pila;
+vector<bool> enPila;
+int reloj = 0, grupos = 0;
+
+void tarjan(int actual) {
+    entrada[actual] = bajo[actual] = reloj++;
+    pila.push_back(actual);
+    enPila[actual] = true;
+    for (int vecino : grafo[actual]) {
+        if (entrada[vecino] == -1) {
+            tarjan(vecino);
+            bajo[actual] = min(bajo[actual], bajo[vecino]);
+        } else if (enPila[vecino]) bajo[actual] = min(bajo[actual], entrada[vecino]);
+    }
+    if (bajo[actual] == entrada[actual]) {
+        while (true) {
+            int ultimo = pila.back(); pila.pop_back();
+            enPila[ultimo] = false;
+            componente[ultimo] = grupos;
+            if (ultimo == actual) break;
+        }
+        grupos++;
+    }
+}
+
+int main() {
+    int vertices, aristas;
+    cin >> vertices >> aristas;
+    grafo.resize(vertices);
+    entrada.assign(vertices, -1);
+    bajo.resize(vertices);
+    componente.resize(vertices);
+    enPila.assign(vertices, false);
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        grafo[origen].push_back(destino);
+    }
+    for (int actual = 0; actual < vertices; actual++) if (entrada[actual] == -1) tarjan(actual);
+    cout << grupos << '\n';
+    for (int actual = 0; actual < vertices; actual++) {
+        if (actual > 0) cout << ' ';
+        cout << componente[actual];
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+5 6
+0 1
+1 0
+1 2
+2 3
+3 2
+3 4
+```
+
+Salida:
+
+```text output
+3
+2 2 1 1 0
+```
+
+Las SCC son `{0,1}`, `{2,3}` y `{4}`. Sus números pueden ser distintos en Kosaraju y Tarjan: compara particiones, no IDs literales. Ambos algoritmos cuestan $O(V+E)$ tiempo y memoria; sus versiones recursivas requieren cuidado con caminos de profundidad lineal.
+
+**Practica:** agrega `4 -> 0`. Todos los vértices pasan a ser mutuamente alcanzables y debe quedar una sola SCC. Una arista de ida entre dos grupos no basta para fusionarlos: hace falta también un camino de regreso.
 
 ## Grafo de condensación (DAG de SCCs)
 

@@ -1,0 +1,96 @@
+---
+title: "Árbol de llamadas, estado y recursión sobre arreglos"
+description: "Define qué significa cada llamada y sigue el recorrido de sus parámetros y valores de retorno."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "recursión", "estado", "arreglos"]
+---
+
+## Antes de empezar
+
+Repasa [funciones recursivas](/blog/recursion/funciones-recursivas) y referencias a vectores. Queremos sumar un arreglo sin perder de vista qué parte del trabajo corresponde a cada llamada.
+
+## El estado debe tener un significado preciso
+
+Definimos `sumarDesde(valores, posicion)` como «la suma de los elementos desde `posicion` hasta el final». El vector no cambia; solamente cambia el índice del siguiente elemento pendiente.
+
+Con esta definición las decisiones son casi inevitables:
+
+1. Si `posicion` coincide con el tamaño, no quedan elementos: la suma vacía vale 0.
+2. En otro caso, el resultado es el elemento actual más la suma del resto.
+3. La siguiente llamada recibe `posicion + 1`, así que se acerca al caso base.
+
+No necesitas un parámetro por cada variable que aparece en el problema. Necesitas la información que distingue un subproblema de otro. Copiar el vector restante crearía datos nuevos sin aportar información al estado.
+
+## Traza de llamadas y retornos
+
+Para `[4, 1, 3]`, bajar por el árbol **prepara** las sumas. El resultado aparece cuando las llamadas regresan:
+
+```text
+sumarDesde(0) = 4 + sumarDesde(1)
+    sumarDesde(1) = 1 + sumarDesde(2)
+        sumarDesde(2) = 3 + sumarDesde(3)
+            sumarDesde(3) = 0
+        retorna 3
+    retorna 4
+retorna 8
+```
+
+Cada llamada conserva su propio `posicion`. Cuando regresa la llamada de posición 2, la llamada de posición 1 no cambió mágicamente de índice: seguía esperando ese resultado.
+
+Este árbol es una cadena porque cada llamada hace una sola llamada recursiva. Con Fibonacci aparecen ramas. El número de nodos estima el trabajo total; la máxima profundidad estima cuántas llamadas pueden estar pendientes a la vez.
+
+## C++17
+
+La entrada contiene una cantidad no negativa y sus valores. La suma debe caber en `long long`. Usa cantidades pequeñas para este ejercicio recursivo.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+long long sumarDesde(const vector<int>& valores, int posicion) {
+    if (posicion == static_cast<int>(valores.size())) return 0;
+    return valores[posicion] + sumarDesde(valores, posicion + 1);
+}
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    vector<int> valores(cantidad);
+    for (int& valor : valores) cin >> valor;
+    cout << sumarDesde(valores, 0) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+3
+4 1 3
+```
+
+Salida:
+
+```text output
+8
+```
+
+## Coste y límites
+
+Hay $n+1$ llamadas, cada una con trabajo constante: tiempo $O(n)$. La pila usa $O(n)$ memoria adicional. Pasar `const vector<int>&` evita copiar $n$ elementos en cada llamada.
+
+Para un millón de elementos, un ciclo es preferible: usa espacio adicional constante y evita desbordar la pila. La recursión no acelera por sí sola un recorrido.
+
+Para el arreglo vacío, el caso base se cumple inmediatamente. Es importante comprobarlo **antes** de consultar `valores[posicion]`.
+
+## Practica
+
+Modifica el contrato para contar cuántos elementos del sufijo son positivos. Traza `[2, -1, 0, 5]`. ¿Qué devuelve el arreglo vacío?
+
+<details>
+<summary>Pista y respuesta</summary>
+
+El caso base devuelve 0. El paso suma `(valores[posicion] > 0 ? 1 : 0)` al resultado del siguiente sufijo. Para el ejemplo devuelve 2 y para el arreglo vacío devuelve 0. Antes de cambiar el código, escribe este nuevo significado del estado.
+
+</details>

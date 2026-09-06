@@ -1,6 +1,6 @@
 ---
-title: "Funciones"
-description: "Aprende a crear y usar funciones para organizar y reutilizar tu código"
+title: "Funciones: valor, referencia y apuntadores"
+description: "Organiza una tarea en funciones y decide cuándo copiar un dato, modificarlo por referencia o usar su dirección."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "funciones", "parámetros", "return", "modularidad"]
@@ -14,6 +14,7 @@ Imagina que tienes una **receta** para hacer un pastel. Cada vez que quieres un 
 Una función es un bloque de código con un **nombre** que realiza una tarea específica. La defines una vez y la puedes **llamar** (usar) las veces que quieras.
 
 **Sin funciones** (código repetido):
+
 ```cpp
 // Calcular si 7 es primo
 bool esPrimo7 = true;
@@ -27,6 +28,7 @@ for (int j = 2; j * j <= 13; j++)
 ```
 
 **Con funciones** (código limpio):
+
 ```cpp
 bool esPrimo(int n) {
     for (int j = 2; j * j <= n; j++)
@@ -107,6 +109,7 @@ int main() {
 ```
 
 **Salida:**
+
 ```
 ========================
 Mi Programa
@@ -207,6 +210,7 @@ int main() {
 ### ¿Cuándo usar referencia?
 
 1. **Cuando necesitas modificar la variable original:**
+
    ```cpp
    void intercambiar(int &a, int &b) {
        int temp = a;
@@ -216,6 +220,7 @@ int main() {
    ```
 
 2. **Cuando pasas algo grande** (como un vector) y no quieres copiarlo (es más eficiente):
+
    ```cpp
    // ❌ Lento: copia TODO el vector cada vez que llamas la función
    int sumaVector(vector<int> v) { ... }
@@ -228,8 +233,57 @@ int main() {
    ```
 
 <Callout type="warning">
-  En competencias, **siempre** pasa vectores y strings por referencia (`&`). Pasarlos por valor (sin `&`) crea una copia cada vez, lo cual puede hacer tu programa mucho más lento.
+  Para consultar un vector o string sin copiarlo, usa una referencia constante.
+  Para modificar el original, usa una referencia no constante. Pasar por valor
+  también puede ser intencional si necesitas una copia independiente; considera
+  su coste.
 </Callout>
+
+## Paso mediante apuntadores
+
+Un apuntador guarda una dirección. `&variable` obtiene la dirección de una variable y `*apuntador` permite acceder al objeto situado allí. El parámetro apuntador se copia por valor, pero la dirección copiada sigue señalando el objeto original.
+
+Una referencia debe referirse a un objeto válido al inicializarse. Un apuntador puede valer `nullptr` para representar «ningún objeto»; debes comprobarlo antes de desreferenciarlo. Para un parámetro obligatorio y sencillo, una referencia suele expresar mejor la intención.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+void porValor(int numero) {
+        numero = numero + 1;
+}
+
+void porReferencia(int& numero) {
+        numero = numero + 1;
+}
+
+void porApuntador(int* direccion) {
+        if (direccion != nullptr) *direccion = *direccion + 1;
+}
+
+int main() {
+        int puntos = 10;
+        porValor(puntos);
+        cout << puntos << '\n';
+        porReferencia(puntos);
+        cout << puntos << '\n';
+        porApuntador(&puntos);
+        cout << puntos << '\n';
+        porApuntador(nullptr);
+}
+```
+
+Salida:
+
+```text output
+10
+11
+12
+```
+
+Los tres llamados no son intercambiables: el primero modifica una copia; los otros dos pueden modificar `puntos`. Cambiar solamente la dirección guardada en el parámetro apuntador no cambia el apuntador del llamador. Tampoco debes devolver la dirección de una variable local que dejará de existir al salir de la función.
+
+**Comprueba tu comprensión:** si la función debe leer un vector grande sin cambiarlo, ¿qué parámetro usarías? `const vector<int>& valores`: permite leerlo, evita copiarlo y prohíbe modificar sus elementos a través de esa referencia.
 
 ## Variables locales y globales
 
@@ -271,7 +325,10 @@ int main() {
 ```
 
 <Callout type="info">
-  En competencias, es común usar variables globales para arreglos grandes (como `int arr[100001]`), porque las variables globales se inicializan a cero automáticamente y no tienen el límite de tamaño de las variables locales (el stack tiene límite, el segmento de datos estáticos no).
+  Las variables globales se inicializan a cero y no ocupan la pila de llamadas.
+  Aun así, el almacenamiento estático y la memoria dinámica también cuentan para
+  el límite de memoria del programa. Un `vector` permite ajustar el tamaño a la
+  entrada.
 </Callout>
 
 ## `return` termina la función
@@ -381,6 +438,7 @@ signed main() {
 ```
 
 La función `solve()` contiene tu solución. Esto es útil porque:
+
 1. Si hay múltiples casos, solo descomentas `cin >> t`.
 2. Puedes usar `return` dentro de `solve()` para terminar un caso temprano sin terminar todo el programa.
 3. Las variables locales de `solve()` se reinician automáticamente en cada caso.
@@ -421,4 +479,4 @@ int main() {
 
 ## Siguiente paso
 
-Con funciones dominadas, estás listo para aprender las **Estructuras de Datos** fundamentales: arreglos, vectores, strings y más.
+[Ciclos: for, while y do while](/blog/estructuras-de-control/ciclo-for).

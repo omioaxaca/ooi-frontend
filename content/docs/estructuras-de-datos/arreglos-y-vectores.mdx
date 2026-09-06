@@ -9,6 +9,39 @@ syllabusId: 18
 
 ## ¿Qué es un arreglo?
 
+**Objetivo:** guardar una secuencia, distinguir sus índices de sus valores y recorrer exactamente los elementos que existen. Necesitas ciclos y tipos de datos. Un vector de tamaño cero es válido, pero no tiene primer ni último elemento.
+
+## Tamaño no es capacidad
+
+`reserve` aparta almacenamiento para posibles inserciones, pero no crea elementos. `resize` sí cambia el tamaño lógico. El límite para acceder con `[]` es `size()`, no `capacity()`.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> datos;
+    datos.reserve(3);
+    cout << datos.size() << '\n';
+    datos.resize(3, 0);
+    datos[1] = 7;
+    datos.push_back(9);
+    cout << datos.size() << ' ' << datos[0] << ' ' << datos[1] << ' ' << datos.back() << '\n';
+}
+```
+
+Salida:
+
+```text output
+0
+4 0 7 9
+```
+
+Acceder por índice cuesta $O(1)$. `push_back` cuesta $O(1)$ amortizado, pero una inserción individual puede realocar y copiar o mover $O(n)$ elementos. Esa realocación puede invalidar referencias, apuntadores e iteradores anteriores. Insertar o borrar en medio normalmente desplaza elementos y cuesta $O(n)$.
+
+**Autocomprobación:** después de `reserve(100)`, ¿puedes escribir `datos[50]` si el tamaño sigue siendo cero? No. Durante depuración, `at(indice)` comprueba límites y lanza una excepción; `[]` no lo hace. Un arreglo `int datos[cantidad]` con tamaño leído en ejecución es una extensión de algunos compiladores: usa `vector<int> datos(cantidad)` en C++17 estándar.
+
 Imagina que tienes 100 estudiantes y quieres guardar la calificación de cada uno. Sin arreglos, necesitarías 100 variables: `cal1`, `cal2`, `cal3`, ..., `cal100`. ¡Imposible de manejar!
 
 Un **arreglo** es una colección de variables del mismo tipo, todas agrupadas bajo un mismo nombre. Es como un **edificio de departamentos**: un solo edificio con muchos departamentos numerados, y cada departamento guarda un valor.
@@ -49,7 +82,10 @@ cout << arr[2] << endl;   // 99
 ```
 
 <Callout type="warning">
-  **¡Los índices empiezan en 0!** Un arreglo de tamaño `n` tiene índices del `0` al `n-1`. Acceder a `arr[n]` o `arr[-1]` es un error grave (undefined behavior) que puede causar resultados impredecibles o que tu programa se cierre.
+  **¡Los índices empiezan en 0!** Un arreglo de tamaño `n` tiene índices del `0`
+  al `n-1`. Acceder a `arr[n]` o `arr[-1]` es un error grave (undefined
+  behavior) que puede causar resultados impredecibles o que tu programa se
+  cierre.
 </Callout>
 
 ### Recorrer un arreglo
@@ -93,7 +129,10 @@ int main() {
 ```
 
 <Callout type="info">
-  En competencias, declara arreglos grandes como **variables globales**. Las variables locales viven en el "stack" que tiene un tamaño limitado (~1-8 MB). Las globales viven en un segmento diferente sin ese límite.
+  Los límites de la pila dependen del entorno. Los arreglos globales no ocupan
+  esa pila, pero también cuentan para el límite de memoria del juez. Un vector
+  permite reservar almacenamiento dinámico según la entrada; ninguna opción
+  ofrece memoria ilimitada.
 </Callout>
 
 ## Vectores (la versión moderna y flexible)
@@ -188,13 +227,13 @@ for (int i = 0; i < n; i++) {
 
 ## Arreglos vs Vectores
 
-| Característica | Arreglo | Vector |
-|---------------|---------|--------|
-| Tamaño | Fijo al declarar | Puede crecer/reducir |
-| Saber el tamaño | Debes recordar `n` | `v.size()` |
-| Agregar elementos | No se puede | `push_back()` |
-| Inicialización | Manual o parcial | Automática |
-| Velocidad | Ligeramente más rápido | Casi igual |
+| Característica    | Arreglo                | Vector               |
+| ----------------- | ---------------------- | -------------------- |
+| Tamaño            | Fijo al declarar       | Puede crecer/reducir |
+| Saber el tamaño   | Debes recordar `n`     | `v.size()`           |
+| Agregar elementos | No se puede            | `push_back()`        |
+| Inicialización    | Manual o parcial       | Automática           |
+| Velocidad         | Ligeramente más rápido | Casi igual           |
 
 En competencias, la mayoría de los programadores usan **vectores** por su flexibilidad.
 
@@ -310,10 +349,12 @@ cout << freq[5] << endl;
 Lee N números. Imprime cuántos son mayores que el promedio.
 
 **Entrada:**
+
 ```
 5
 10 20 30 40 50
 ```
+
 **Salida:** `3` (el promedio es 30, y 30 no es "mayor que" 30, pero 40 y 50 sí... ¡espera! Veamos: promedio = 30. Mayores estrictos que 30: 40 y 50. Son 2.)
 
 <details>
@@ -355,4 +396,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Strings** para manipular texto de forma poderosa en C++.
+[Cadenas: string](/blog/estructuras-de-datos/strings).

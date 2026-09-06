@@ -1,6 +1,6 @@
 ---
-title: "Pilas (Stacks)"
-description: "Entiende la estructura de datos pila y sus aplicaciones en competencias"
+title: "Pilas y colas: STL stack y queue"
+description: "Distingue LIFO de FIFO, usa las operaciones de stack y queue y elige cómo procesar los pendientes."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "pilas", "stack", "LIFO", "estructura de datos"]
@@ -10,6 +10,7 @@ syllabusId: 29
 ## ¿Qué es una pila?
 
 Imagina una **pila de platos**. Solo puedes:
+
 - **Poner** un plato **encima** de la pila.
 - **Quitar** el plato que está **encima** (el último que pusiste).
 
@@ -45,17 +46,57 @@ cout << pila.size() << endl; // 2
 cout << pila.empty() << endl; // 0 (false)
 ```
 
-| Operación | Método | Complejidad |
-|-----------|--------|-------------|
-| Poner encima | `push(x)` | $O(1)$ |
-| Ver el tope | `top()` | $O(1)$ |
-| Quitar el tope | `pop()` | $O(1)$ |
-| ¿Está vacía? | `empty()` | $O(1)$ |
-| Tamaño | `size()` | $O(1)$ |
+| Operación      | Método    | Complejidad |
+| -------------- | --------- | ----------- |
+| Poner encima   | `push(x)` | $O(1)$      |
+| Ver el tope    | `top()`   | $O(1)$      |
+| Quitar el tope | `pop()`   | $O(1)$      |
+| ¿Está vacía?   | `empty()` | $O(1)$      |
+| Tamaño         | `size()`  | $O(1)$      |
 
 <Callout type="warning">
-  **Nunca** hagas `top()` o `pop()` si la pila está vacía. Causa un error. Siempre verifica con `empty()` primero.
+  **Nunca** hagas `top()` o `pop()` si la pila está vacía. Causa un error.
+  Siempre verifica con `empty()` primero.
 </Callout>
+
+## Colas: primero en entrar, primero en salir
+
+Una cola atiende en orden de llegada: **FIFO** (first in, first out). `queue` usa `push` para agregar al final, `front` para consultar el primero y `pop` para retirarlo. `back` consulta el último. Con el contenedor subyacente predeterminado, estas operaciones, `size` y `empty` cuestan $O(1)$.
+
+Tanto `stack::pop` como `queue::pop` eliminan un elemento y **no devuelven su valor**. Consulta `top` o `front` antes de eliminarlo. Si están vacías, acceder o eliminar tiene comportamiento indefinido.
+
+```cpp test
+#include <iostream>
+#include <queue>
+#include <stack>
+using namespace std;
+
+int main() {
+    stack<int> pila;
+    queue<int> cola;
+    for (int valor = 10; valor <= 30; valor += 10) {
+        pila.push(valor);
+        cola.push(valor);
+    }
+    while (!pila.empty() && !cola.empty()) {
+        cout << pila.top() << ' ' << cola.front() << '\n';
+        pila.pop();
+        cola.pop();
+    }
+}
+```
+
+Salida:
+
+```text output
+30 10
+20 20
+10 30
+```
+
+El ejemplo procesa los mismos datos con dos políticas distintas. Una pila sirve para regresar a la decisión más reciente, como en DFS. Una cola sirve para procesar primero los estados descubiertos antes, como en BFS. Ninguna permite recorrer directamente todos sus elementos mediante índices.
+
+**Practica:** agrega A, B; retira un elemento; agrega C. ¿En qué orden salen los pendientes? En una pila salen C y A. En una cola salen B y C. Dibuja el contenido después de cada operación para comprobarlo.
 
 ## Aplicaciones de pilas
 
@@ -170,6 +211,6 @@ int main() {
 
 </details>
 
-## Siguiente paso
+## Material complementario
 
-Aprende sobre **Colas (Queues)**, la estructura de datos donde el primero en entrar es el primero en salir.
+La guía de [colas](/blog/pilas-y-colas/colas-concepto) amplía las aplicaciones FIFO y permanece disponible en MISC.

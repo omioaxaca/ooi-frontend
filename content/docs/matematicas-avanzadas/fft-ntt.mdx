@@ -1,0 +1,172 @@
+---
+title: "FFT y NTT"
+description: "Multiplica polinomios mediante evaluación, producto punto a punto e interpolación, con números complejos o aritmética modular."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "FFT", "NTT", "convolución", "polinomios"]
+---
+
+## Antes de empezar
+
+Necesitas polinomios, potencias y aritmética modular. Dos vectores guardan coeficientes desde el término constante hacia arriba. Su producto tiene coeficiente $c_k=\sum_{i+j=k}a_i b_j$, una **convolución por suma de índices**.
+
+La multiplicación directa cuesta $O(nm)$. Si evaluamos ambos polinomios en suficientes puntos, sus valores se multiplican uno a uno. Después recuperamos los coeficientes mediante la transformación inversa.
+
+## Por qué potencias de dos y raíces de la unidad
+
+Un polinomio se separa en coeficientes pares e impares: $P(x)=P_{par}(x^2)+xP_{impar}(x^2)$. Elegir raíces de la unidad permite reutilizar las evaluaciones de esas mitades. En cada nivel combinamos pares de resultados mediante operaciones conocidas como mariposas.
+
+Elige una longitud $N$ potencia de dos con $N\geq n+m-1$ y rellena con ceros. Sin ese espacio, obtendrías una convolución **circular**, mezclando coeficientes altos con los iniciales.
+
+## FFT con complejos
+
+La implementación iterativa comienza reordenando índices por inversión de bits; después combina bloques de longitudes 2, 4, 8 y así sucesivamente. La inversa cambia el signo del ángulo y divide entre $N$.
+
+```cpp test
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+using Complejo = complex<double>;
+
+void fft(vector<Complejo>& valores, bool inversa) {
+    int cantidad = static_cast<int>(valores.size());
+    int invertido = 0;
+    for (int indice = 1; indice < cantidad; indice++) {
+        int bit = cantidad >> 1;
+        while (invertido & bit) { invertido ^= bit; bit >>= 1; }
+        invertido ^= bit;
+        if (indice < invertido) swap(valores[indice], valores[invertido]);
+    }
+    const double PI = acos(-1.0);
+    for (int longitud = 2; longitud <= cantidad; longitud *= 2) {
+        double angulo = 2 * PI / longitud * (inversa ? -1 : 1);
+        Complejo raiz(cos(angulo), sin(angulo));
+        for (int inicio = 0; inicio < cantidad; inicio += longitud) {
+            Complejo potencia(1, 0);
+            for (int posicion = 0; posicion < longitud / 2; posicion++) {
+                Complejo par = valores[inicio + posicion];
+                Complejo impar = valores[inicio + posicion + longitud / 2] * potencia;
+                valores[inicio + posicion] = par + impar;
+                valores[inicio + posicion + longitud / 2] = par - impar;
+                potencia *= raiz;
+            }
+        }
+    }
+    if (inversa) for (Complejo& valor : valores) valor /= cantidad;
+}
+
+int main() {
+    vector<Complejo> primero = {1, 2, 0, 0}, segundo = {3, 4, 0, 0};
+    fft(primero, false);
+    fft(segundo, false);
+    for (int indice = 0; indice < 4; indice++) primero[indice] *= segundo[indice];
+    fft(primero, true);
+    for (int indice = 0; indice < 3; indice++) {
+        if (indice > 0) cout << ' ';
+        cout << llround(primero[indice].real());
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+3 10 8
+```
+
+Esto representa $(1+2x)(3+4x)=3+10x+8x^2$. FFT usa punto flotante: redondear es válido solo si el error acumulado es menor que media unidad para coeficientes enteros. No existe una garantía universal para tamaños y coeficientes arbitrarios con `double`.
+
+## NTT: raíces modulares
+
+NTT reemplaza complejos por residuos. Usaremos el primo $998244353=119\cdot2^{23}+1$ y raíz primitiva 3. Una longitud potencia de dos hasta $2^{23}$ divide $MOD-1$ y permite construir las raíces necesarias.
+
+La respuesta es exacta **módulo ese primo**, no necesariamente el producto entero original. Los coeficientes iniciales deben normalizarse a residuos entre cero y `MOD - 1`.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const long long MOD = 998244353;
+
+long long potencia(long long base, long long exponente) {
+    long long resultado = 1;
+    while (exponente > 0) {
+        if (exponente & 1) resultado = resultado * base % MOD;
+        base = base * base % MOD;
+        exponente >>= 1;
+    }
+    return resultado;
+}
+
+void ntt(vector<long long>& valores, bool inversa) {
+    int cantidad = static_cast<int>(valores.size());
+    int invertido = 0;
+    for (int indice = 1; indice < cantidad; indice++) {
+        int bit = cantidad >> 1;
+        while (invertido & bit) { invertido ^= bit; bit >>= 1; }
+        invertido ^= bit;
+        if (indice < invertido) swap(valores[indice], valores[invertido]);
+    }
+    for (int longitud = 2; longitud <= cantidad; longitud *= 2) {
+        long long raiz = potencia(3, (MOD - 1) / longitud);
+        if (inversa) raiz = potencia(raiz, MOD - 2);
+        for (int inicio = 0; inicio < cantidad; inicio += longitud) {
+            long long factor = 1;
+            for (int posicion = 0; posicion < longitud / 2; posicion++) {
+                long long par = valores[inicio + posicion];
+                long long impar = valores[inicio + posicion + longitud / 2] * factor % MOD;
+                valores[inicio + posicion] = (par + impar) % MOD;
+                valores[inicio + posicion + longitud / 2] = (par - impar + MOD) % MOD;
+                factor = factor * raiz % MOD;
+            }
+        }
+    }
+    if (inversa) {
+        long long inversoTamano = potencia(cantidad, MOD - 2);
+        for (long long& valor : valores) valor = valor * inversoTamano % MOD;
+    }
+}
+
+int main() {
+    vector<long long> primero = {1, 2, 0, 0}, segundo = {3, 4, 0, 0};
+    ntt(primero, false);
+    ntt(segundo, false);
+    for (int indice = 0; indice < 4; indice++) primero[indice] = primero[indice] * segundo[indice] % MOD;
+    ntt(primero, true);
+    for (int indice = 0; indice < 3; indice++) {
+        if (indice > 0) cout << ' ';
+        cout << primero[indice];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+3 10 8
+```
+
+## Coste y selección
+
+Las transformaciones usan $O(N\log N)$ mariposas y $O(N)$ memoria. Los vectores deben tener longitud positiva potencia de dos. Las implementaciones son apropiadas para longitudes prácticas que no desborden los índices de `int`.
+
+No puedes cambiar `MOD` por cualquier número y conservar raíz 3 y las mismas longitudes. Para recuperar coeficientes enteros grandes puedes usar varios módulos compatibles y el teorema chino del resto, pero necesitas una cota del resultado y tipos anchos para reconstruirlo. Para arreglos pequeños, la multiplicación directa es más simple y puede ser más rápida.
+
+## Practica
+
+Para dos vectores de longitudes 4 y 5, ¿cuántos coeficientes produce el resultado y qué tamaño de transformación basta?
+
+<details>
+<summary>Respuesta</summary>
+
+Produce 8 coeficientes y basta una transformación de tamaño 8. Si ambas longitudes fueran 5, necesitarías 9 coeficientes y el siguiente tamaño potencia de dos sería 16. Comprueba productos pequeños contra dos ciclos antes de usar una transformación en entradas grandes.
+
+</details>

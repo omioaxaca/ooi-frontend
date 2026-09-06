@@ -1,0 +1,118 @@
+---
+title: "2-SAT"
+description: "Convierte cláusulas de dos literales en implicaciones y decide su consistencia mediante componentes fuertemente conexas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "2-SAT", "SCC", "lógica"]
+---
+
+## Antes de empezar
+
+Necesitas lógica booleana y grafos dirigidos. Una fórmula 2-SAT es una conjunción de cláusulas de como máximo dos literales. Un literal es una variable o su negación. Por ejemplo, `(x o y) y (no x o y)` obliga a que `y` sea verdadero.
+
+No es un algoritmo para cláusulas arbitrarias de tres literales. Tampoco optimiza cuántas variables son verdaderas: busca una asignación que satisfaga todas las restricciones.
+
+## De una cláusula a dos implicaciones
+
+La cláusula $(a\lor b)$ equivale a exigir $\neg a\Rightarrow b$ y $\neg b\Rightarrow a$. Agregamos ambas aristas. Para obligar a que $a$ sea verdadero, usamos la cláusula $(a\lor a)$.
+
+Representamos dos vértices por variable: `2 * variable` significa que es falsa y `2 * variable + 1` que es verdadera. Cambiar el último bit con `^ 1` obtiene el literal opuesto.
+
+## Por qué aparecen las SCC
+
+Una componente fuertemente conexa reúne vértices que se alcanzan mutuamente. Si una variable y su negación están en la misma SCC, cualquiera de sus valores implica también el contrario: no hay solución.
+
+Si ninguna pareja opuesta comparte SCC, existe una asignación. Podemos construirla usando el orden de las componentes en el grafo de implicaciones. El ejemplo incluye Kosaraju: una DFS guarda tiempos de finalización y otra, sobre aristas invertidas y en orden inverso de finalización, identifica componentes. La sección de SCC profundiza en su demostración.
+
+## C++17
+
+Cada cláusula se lee como `variableA valorA variableB valorB`. Un valor 1 indica el literal positivo y 0 el negado. Los índices comienzan en cero.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void ordenar(int actual, const vector<vector<int>>& grafo, vector<bool>& visto, vector<int>& orden) {
+    visto[actual] = true;
+    for (int vecino : grafo[actual]) if (!visto[vecino]) ordenar(vecino, grafo, visto, orden);
+    orden.push_back(actual);
+}
+
+void asignar(int actual, int grupo, const vector<vector<int>>& inverso, vector<int>& componente) {
+    componente[actual] = grupo;
+    for (int vecino : inverso[actual]) if (componente[vecino] == -1) asignar(vecino, grupo, inverso, componente);
+}
+
+int main() {
+    int variables, clausulas;
+    cin >> variables >> clausulas;
+    vector<vector<int>> grafo(2 * variables), inverso(2 * variables);
+    auto implicar = [&](int origen, int destino) {
+        grafo[origen].push_back(destino);
+        inverso[destino].push_back(origen);
+    };
+    for (int indice = 0; indice < clausulas; indice++) {
+        int variableA, valorA, variableB, valorB;
+        cin >> variableA >> valorA >> variableB >> valorB;
+        int literalA = 2 * variableA + valorA;
+        int literalB = 2 * variableB + valorB;
+        implicar(literalA ^ 1, literalB);
+        implicar(literalB ^ 1, literalA);
+    }
+    vector<bool> visto(2 * variables, false);
+    vector<int> orden, componente(2 * variables, -1);
+    for (int literal = 0; literal < 2 * variables; literal++) {
+        if (!visto[literal]) ordenar(literal, grafo, visto, orden);
+    }
+    reverse(orden.begin(), orden.end());
+    int grupos = 0;
+    for (int literal : orden) if (componente[literal] == -1) asignar(literal, grupos++, inverso, componente);
+    for (int variable = 0; variable < variables; variable++) {
+        if (componente[2 * variable] == componente[2 * variable + 1]) {
+            cout << "NO\n";
+            return 0;
+        }
+    }
+    cout << "SI\n";
+    for (int variable = 0; variable < variables; variable++) {
+        if (variable > 0) cout << ' ';
+        cout << (componente[2 * variable + 1] > componente[2 * variable]);
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+2 3
+0 1 1 1
+0 0 1 1
+0 1 1 0
+```
+
+Salida:
+
+```text output
+SI
+1 1
+```
+
+## Coste y errores frecuentes
+
+Con $n$ variables y $m$ cláusulas, hay $2n$ vértices y $2m$ implicaciones: tiempo y memoria $O(n+m)$. Las DFS recursivas pueden tener profundidad lineal; conviértelas a iterativas para grafos muy grandes.
+
+La comparación de IDs para asignar valores depende del orden concreto de Kosaraju mostrado. Si cambias a Tarjan o inviertes la numeración, verifica la dirección antes de copiar esa comparación. Finalmente, evalúa todas las cláusulas con la asignación obtenida: es una comprobación barata.
+
+## Practica
+
+Representa las condiciones «x debe ser verdadero» y «x debe ser falso» simultáneamente.
+
+<details>
+<summary>Respuesta</summary>
+
+Agrega `(x o x)` y `(no x o no x)`. Aparecen aristas en ambas direcciones entre los dos literales, quedan en la misma SCC y la salida debe ser `NO`.
+
+</details>

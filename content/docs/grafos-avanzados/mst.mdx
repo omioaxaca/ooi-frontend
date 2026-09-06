@@ -9,9 +9,14 @@ syllabusId: 62
 
 ## ¿Qué es un MST?
 
+**Antes de empezar:** necesitas un grafo no dirigido ponderado y DSU. Un MST minimiza el peso de la red completa, no la distancia desde una fuente a cada destino. Puede contener pesos negativos y no tiene por qué ser único si hay empates.
+
+Si el grafo no es conexo, no existe un árbol que abarque todos los vértices. Kruskal todavía encuentra un bosque de expansión mínima por componentes, pero debes distinguir esa salida de un MST completo.
+
 **Analogía:** Necesitas conectar varias ciudades con carreteras gastando lo menos posible. No necesitas todas las carreteras posibles — solo las suficientes para que todas las ciudades estén conectadas. El **Árbol de Expansión Mínima** (Minimum Spanning Tree) es exactamente eso: un subconjunto de aristas que conecta todos los nodos con el **menor peso total**.
 
 **Propiedades:**
+
 - Tiene exactamente $n - 1$ aristas (es un árbol).
 - Conecta todos los $n$ nodos.
 - El peso total es el mínimo posible.
@@ -22,7 +27,9 @@ syllabusId: 62
 2. Para cada arista, si conecta dos componentes diferentes, agrégala.
 3. Usa **Union-Find** para verificar componentes.
 
-```cpp
+La propiedad del corte justifica la elección: una arista de peso mínimo que cruza entre una componente actual y el resto puede pertenecer a algún MST compatible con las elecciones anteriores. Si otra solución usa una arista más cara para cruzar ese corte, podemos intercambiarlas sin perder conectividad ni aumentar el peso.
+
+```cpp test
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -81,11 +88,30 @@ int main() {
 }
 ```
 
-**Complejidad:** $O(E \log E)$ por el ordenamiento.
+Entrada:
+
+```text input
+4 5
+1 2 1
+2 3 2
+3 4 3
+1 4 10
+1 3 4
+```
+
+Salida:
+
+```text output
+Costo MST: 6
+```
+
+Las aristas de pesos 1, 2 y 3 conectan los cuatro vértices. La inicialización cuesta $O(V)$ y ordenar cuesta $O(E\log(E+1))$; las uniones agregan un coste amortizado casi lineal. La suma usa `long long`, aunque cada peso individual quepa en `int`.
 
 ## Prim: expandir desde un nodo
 
 Similar a Dijkstra: empieza desde un nodo y siempre agrega la arista más barata que conecte un nodo nuevo.
+
+Prim prioriza el **peso de una arista de conexión**, no la distancia acumulada desde la raíz. Esa diferencia de clave es fundamental. El fragmento de abajo usa -1 para indicar desconexión; si admites pesos negativos y el coste válido puede ser -1, devuelve una marca de éxito separada en vez de depender de ese centinela.
 
 ```cpp
 #include <queue>
@@ -123,14 +149,16 @@ long long prim(int n) {
 
 ## ¿Kruskal o Prim?
 
-| Criterio | Kruskal | Prim |
-|----------|---------|------|
-| Grafo disperso ($E \approx V$) | ✅ | ✅ |
-| Grafo denso ($E \approx V^2$) | Más lento | ✅ |
-| Implementación | Más simple | Más compleja |
-| Necesita Union-Find | Sí | No |
+| Criterio                       | Kruskal                   | Prim                                                                        |
+| ------------------------------ | ------------------------- | --------------------------------------------------------------------------- |
+| Grafo disperso ($E \approx V$) | ✅                        | ✅                                                                          |
+| Grafo denso ($E \approx V^2$)  | Ordenar puede ser costoso | La variante con matriz cuesta $O(V^2)$; no es la variante con heap mostrada |
+| Implementación                 | Más simple                | Más compleja                                                                |
+| Necesita Union-Find            | Sí                        | No                                                                          |
 
 ## Ejercicio de práctica
+
+**Autocomprobación:** elimina todas las aristas incidentes al vértice 4 y verifica que el programa avise que no puede conectar todos los nodos. Una entrada de un solo vértice tiene MST de coste cero. Un lazo nunca debe agregarse a un árbol; DSU lo descarta porque ambos extremos ya coinciden.
 
 Conecta N ciudades con carreteras de costo mínimo. Imprime el costo total.
 

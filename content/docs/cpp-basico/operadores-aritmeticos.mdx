@@ -1,6 +1,6 @@
 ---
-title: "Operadores Aritméticos"
-description: "Aprende los operadores matemáticos en C++ incluyendo módulo, incremento y precedencia"
+title: "Operadores, jerarquía y pre/post incremento"
+description: "Combina aritmética, comparaciones y lógica sin confundir precedencia, asignación ni efectos de los incrementos."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "operadores", "aritmética", "módulo"]
@@ -57,7 +57,9 @@ cout << (double)7 / 2 << endl;  // 3.5
 ```
 
 <Callout type="warning">
-  **Dividir entre cero** causa un error fatal. Si `b` puede ser cero, siempre verifica antes de dividir: `if (b != 0) resultado = a / b;`
+  Dividir un entero entre cero tiene comportamiento indefinido. Si el divisor
+  puede ser cero, compruébalo antes de dividir: `if (divisor != 0) resultado =
+  dividendo / divisor;`.
 </Callout>
 
 ### El operador módulo `%` (residuo)
@@ -78,18 +80,22 @@ cout << 3 % 7 << endl;    // 3  (3 ÷ 7 = 0 con residuo 3)
 **Usos comunes del módulo:**
 
 1. **¿Es par o impar?**
+
    ```cpp
    if (n % 2 == 0) cout << "Par" << endl;
    else cout << "Impar" << endl;
    ```
+
    Si el residuo de dividir entre 2 es 0, es par.
 
 2. **¿Es divisible entre X?**
+
    ```cpp
    if (n % 3 == 0) cout << "Divisible entre 3" << endl;
    ```
 
 3. **Obtener el último dígito de un número:**
+
    ```cpp
    int n = 12345;
    cout << n % 10 << endl;   // 5 (último dígito)
@@ -97,6 +103,7 @@ cout << 3 % 7 << endl;    // 3  (3 ÷ 7 = 0 con residuo 3)
    ```
 
 4. **Hacer que un número "se enrolle" (wrap around):**
+
    ```cpp
    // Si tienes 7 días y quieres saber qué día de la semana es
    int diasTranscurridos = 10;
@@ -107,7 +114,7 @@ cout << 3 % 7 << endl;    // 3  (3 ÷ 7 = 0 con residuo 3)
    ```cpp
    // Los problemas piden la respuesta "módulo 10^9+7"
    int MOD = 1e9 + 7;
-   long long resultado = (a * b) % MOD;
+   long long resultado = (1LL * a * b) % MOD;
    ```
 
 <Callout type="info">
@@ -137,13 +144,13 @@ x = x % 2;     // x ahora vale 1
 x %= 2;         // Equivalente: x ahora vale 1
 ```
 
-| Atajo | Equivalencia |
-|-------|-------------|
-| `x += n` | `x = x + n` |
-| `x -= n` | `x = x - n` |
-| `x *= n` | `x = x * n` |
-| `x /= n` | `x = x / n` |
-| `x %= n` | `x = x % n` |
+| Atajo    | Equivalencia |
+| -------- | ------------ |
+| `x += n` | `x = x + n`  |
+| `x -= n` | `x = x - n`  |
+| `x *= n` | `x = x * n`  |
+| `x /= n` | `x = x / n`  |
+| `x %= n` | `x = x % n`  |
 
 ## Incremento `++` y Decremento `--`
 
@@ -182,15 +189,20 @@ cout << resultado << endl;     // 14 (multiplicación va primero)
 
 El orden de prioridad (de mayor a menor):
 
-| Prioridad | Operadores | Ejemplo |
-|-----------|-----------|---------|
-| 1 (más alta) | `()` Paréntesis | `(2 + 3) * 4 = 20` |
-| 2 | `++` `--` (prefijo), `-` (negativo) | `++x`, `-x` |
-| 3 | `*` `/` `%` | `6 / 2 * 3 = 9` |
-| 4 | `+` `-` | `2 + 3 - 1 = 4` |
-| 5 (más baja) | `=` `+=` `-=` etc. | `x = 5` |
+| Prioridad     | Operadores                               | Ejemplo                       |
+| ------------- | ---------------------------------------- | ----------------------------- |
+| 1 (más alta)  | `()` Paréntesis                          | `(2 + 3) * 4 = 20`            |
+| 2             | `++` `--` (posfijo)                      | `x++`                         |
+| 3             | `++` `--` (prefijo), `-` (negativo), `!` | `++x`, `!condicion`           |
+| 4             | `*` `/` `%`                              | `6 / 2 * 3 = 9`               |
+| 5             | `+` `-`                                  | `2 + 3 - 1 = 4`               |
+| 6             | `<` `<=` `>` `>=`                        | `edad >= 15`                  |
+| 7             | `==` `!=`                                | `valor != 0`                  |
+| 8             | `&&`                                     | `tieneBoleto && llegoATiempo` |
+| 9             | `\|\|`                                   | `esSabado \|\| esDomingo`     |
+| 10 (más baja) | `=` `+=` `-=` etc.                       | `x = 5`                       |
 
-Cuando los operadores tienen la **misma prioridad**, se evalúan de **izquierda a derecha**:
+Los operadores aritméticos binarios de la misma fila se agrupan de **izquierda a derecha**. La asignación se agrupa de derecha a izquierda. Precedencia no significa que todos los operandos de una expresión se evalúen en ese orden:
 
 ```cpp
 cout << 6 / 2 * 3 << endl;   // (6 / 2) * 3 = 9 (no 6 / 6 = 1)
@@ -206,6 +218,41 @@ int resultado = a + b * c - d / e % f;
 // Con paréntesis (claro y seguro)
 int resultado = a + (b * c) - ((d / e) % f);
 ```
+
+## Comparaciones, lógica y cortocircuito
+
+`==` compara; `=` asigna. `!=` significa distinto. Las comparaciones producen un `bool`. Para comprobar que una edad está entre 15 y 18, escribe `edad >= 15 && edad <= 18`, no `15 <= edad <= 18`: la segunda forma compara primero un booleano con 18.
+
+`&&` exige ambas condiciones, `||` exige al menos una y `!` invierte el valor lógico. En `condicionA && condicionB`, C++ no evalúa la segunda si la primera es falsa. En `condicionA || condicionB`, no la evalúa si la primera es verdadera. Este **cortocircuito** permite proteger una división o un acceso a un arreglo.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+   int cantidad = 5;
+   int anterior = cantidad++;
+   cout << anterior << ' ' << cantidad << '\n';
+   int nuevo = ++cantidad;
+   cout << nuevo << ' ' << cantidad << '\n';
+   cout << (cantidad >= 6 && cantidad <= 10) << '\n';
+   int divisor = 0;
+   cout << (divisor != 0 && cantidad / divisor > 2) << '\n';
+}
+```
+
+Salida:
+
+```text output
+5 6
+7 7
+1
+0
+```
+
+La última expresión no divide entre cero porque falla su primera condición. Separa incrementos y cálculos cuando puedan confundirse: expresiones como `numero++ + ++numero` modifican la misma variable sin la secuenciación necesaria y tienen comportamiento indefinido.
+
+**Practica:** evalúa `true || false && false`. Da verdadero porque `&&` tiene mayor precedencia. Con `(true || false) && false`, da falso.
 
 ## Funciones matemáticas útiles
 
@@ -238,10 +285,14 @@ cout << min({5, 2, 8, 1}) << endl;  // 1 (mínimo de varios)
 ```
 
 <Callout type="warning">
-  `pow()` devuelve un `double`, lo cual puede causar errores de precisión. `pow(2, 10)` podría dar `1023.9999999` que al convertir a `int` da `1023` en lugar de `1024`. Para potencias de enteros, es mejor multiplicar manualmente o escribir tu propia función.
+  `pow()` trabaja con punto flotante: algunas potencias enteras grandes no
+  pueden representarse exactamente. Si necesitas un resultado entero exacto, usa
+  aritmética entera y verifica que el resultado quepa en el tipo.
 </Callout>
 
-### Truco: potencia rápida para enteros
+### Potencias enteras por multiplicación repetida
+
+Este ciclo cuesta $O(exponente)$, no es exponenciación rápida. Más adelante, elevar al cuadrado repetidamente permitirá un coste $O(\log exponente)$.
 
 ```cpp
 // Mejor que pow() para enteros
@@ -295,6 +346,7 @@ int mod_positivo = ((a % m) + m) % m;
 
 **Entrada:** `347` (centavos)
 **Salida:**
+
 ```
 $1.00: 3
 $0.50: 0
@@ -334,6 +386,7 @@ int main() {
 ```
 
 **Paso a paso con 347 centavos:**
+
 1. `347 / 100 = 3` billetes de $1. Quedan `347 % 100 = 47` centavos.
 2. `47 / 50 = 0` monedas de 50¢. Quedan `47 % 50 = 47` centavos.
 3. `47 / 25 = 1` moneda de 25¢. Quedan `47 % 25 = 22` centavos.
@@ -379,4 +432,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Char y ASCII** para entender cómo la computadora representa los caracteres como números.
+[Control de flujo: if, else y else if](/blog/estructuras-de-control/if-else).

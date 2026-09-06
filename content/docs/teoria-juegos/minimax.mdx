@@ -13,13 +13,15 @@ syllabusId: 74
 
 ## Diferencia con Sprague-Grundy
 
-| Aspecto | Sprague-Grundy | Minimax |
-|---------|---------------|---------|
-| Resultado | Gana o pierde | Puntuación numérica |
-| Tipo de juego | Último en mover gana | Juegos con puntuación |
-| Ejemplo | Nim, piedras | Tic-tac-toe, ajedrez |
+| Aspecto       | Sprague-Grundy                  | Minimax                                                                 |
+| ------------- | ------------------------------- | ----------------------------------------------------------------------- |
+| Resultado     | Nimber y composición por XOR    | Valor de utilidad, también puede representar victoria, empate o derrota |
+| Tipo de juego | Imparcial, finito, regla normal | Dos jugadores de suma cero e información perfecta                       |
+| Ejemplo       | Nim, piedras                    | Tic-tac-toe, ajedrez                                                    |
 
 ## El algoritmo
+
+Explorar hasta estados terminales da un resultado exacto para ese modelo. Detenerse a profundidad limitada y usar una evaluación heurística no garantiza el valor óptimo del juego completo. Alfa-beta conserva el resultado de la misma búsqueda minimax, pero no vuelve exacta una evaluación aproximada.
 
 ```
 minimax(posición, profundidad, esMaximizador):
@@ -59,29 +61,31 @@ Diferencia = 5
 
 ### Solución con Minimax + DP
 
-```cpp
+```cpp test
+#include <algorithm>
+#include <cstring>
 #include <iostream>
 #include <vector>
 using namespace std;
 
 int n;
-int v[105];
-int memo[105][105];
+long long v[105];
+long long memo[105][105];
 bool calculado[105][105];
 
 // Retorna la máxima diferencia (mi_score - oponente_score)
 // para el subarreglo v[l..r]
-int minimax(int l, int r) {
+long long minimax(int l, int r) {
     if (l > r) return 0;
 
     if (calculado[l][r]) return memo[l][r];
     calculado[l][r] = true;
 
     // Tomar el izquierdo: gano v[l], luego el oponente juega óptimo
-    int tomarIzq = v[l] - minimax(l + 1, r);
+    long long tomarIzq = v[l] - minimax(l + 1, r);
 
     // Tomar el derecho: gano v[r], luego el oponente juega óptimo
-    int tomarDer = v[r] - minimax(l, r - 1);
+    long long tomarDer = v[r] - minimax(l, r - 1);
 
     memo[l][r] = max(tomarIzq, tomarDer);
     return memo[l][r];
@@ -93,15 +97,15 @@ int main() {
 
     memset(calculado, false, sizeof(calculado));
 
-    int diff = minimax(0, n - 1);
+    long long diff = minimax(0, n - 1);
 
     // diff = score_J1 - score_J2
     // score_J1 + score_J2 = suma_total
-    int sumaTotal = 0;
+    long long sumaTotal = 0;
     for (int i = 0; i < n; i++) sumaTotal += v[i];
 
-    int scoreJ1 = (sumaTotal + diff) / 2;
-    int scoreJ2 = (sumaTotal - diff) / 2;
+    long long scoreJ1 = (sumaTotal + diff) / 2;
+    long long scoreJ2 = (sumaTotal - diff) / 2;
 
     cout << "Jugador 1: " << scoreJ1 << endl;
     cout << "Jugador 2: " << scoreJ2 << endl;
@@ -111,8 +115,26 @@ int main() {
 ```
 
 <Callout type="info">
-El truco de restar `minimax(...)` funciona porque cuando yo tomo un elemento, el oponente se convierte en el "maximizador" del subproblema restante. Mi ganancia es `v[i] - (lo mejor del oponente)`.
+  El truco de restar `minimax(...)` funciona porque cuando yo tomo un elemento,
+  el oponente se convierte en el "maximizador" del subproblema restante. Mi
+  ganancia es `v[i] - (lo mejor del oponente)`.
 </Callout>
+
+Entrada:
+
+```text input
+4
+5 3 7 10
+```
+
+Salida:
+
+```text output
+Jugador 1: 15
+Jugador 2: 10
+```
+
+Esta tabla admite hasta 100 elementos y supone que sumas y diferencias caben en `long long`. Hay $O(n^2)$ intervalos, con dos transiciones por estado: tiempo y memoria $O(n^2)$. `calculado` evita confundir un resultado negativo con un estado todavía pendiente.
 
 ## Tic-Tac-Toe con Minimax
 
@@ -222,6 +244,8 @@ Minimax puro es lento porque explora **todas** las ramas. La poda alfa-beta elim
 - **beta:** El mejor valor que el minimizador puede garantizar.
 - Si alfa ≥ beta, podamos (no exploramos más hijos).
 
+El siguiente bloque es un esquema de integración: `esTerminal`, `movimientos`, `hacer` y `deshacer` deben implementarse para el juego concreto antes de compilarlo.
+
 ```cpp
 int alphabeta(int profundidad, int alfa, int beta, bool esMax) {
     if (profundidad == 0 || esTerminal()) {
@@ -261,12 +285,12 @@ En el mejor caso, alfa-beta reduce el número de nodos de $O(b^d)$ a $O(b^{d/2})
 
 ## Resumen
 
-| Concepto | Uso |
-|----------|-----|
-| Minimax básico | Juegos pequeños (tic-tac-toe) |
-| Minimax + DP | Juegos con estados repetidos |
-| Alfa-Beta | Juegos grandes (ajedrez) |
-| Negamax | Simplificación: `max(a, b) = -min(-a, -b)` |
+| Concepto       | Uso                                        |
+| -------------- | ------------------------------------------ |
+| Minimax básico | Juegos pequeños (tic-tac-toe)              |
+| Minimax + DP   | Juegos con estados repetidos               |
+| Alfa-Beta      | Juegos grandes (ajedrez)                   |
+| Negamax        | Simplificación: `max(a, b) = -min(-a, -b)` |
 
 ## Ejercicio
 

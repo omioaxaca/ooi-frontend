@@ -9,6 +9,45 @@ syllabusId: 14
 
 ## ¿Qué son los condicionales?
 
+**Antes de empezar:** necesitas variables, comparaciones y operadores lógicos. Una cadena `if / else if / else` elige la **primera** condición verdadera. Varios `if` independientes pueden ejecutar varios bloques.
+
+## Traza una decisión con límites
+
+Una clasificación entrega oro desde 90 puntos, plata desde 75 y bronce en los demás casos. Probamos primero el umbral mayor; de otra forma una puntuación de 95 podría quedar clasificada como plata.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+    int puntos;
+    cin >> puntos;
+    if (puntos >= 90) {
+        cout << "ORO\n";
+    } else if (puntos >= 75) {
+        cout << "PLATA\n";
+    } else {
+        cout << "BRONCE\n";
+    }
+}
+```
+
+Entrada:
+
+```text input
+80
+```
+
+Salida:
+
+```text output
+PLATA
+```
+
+Al llegar al segundo bloque ya sabemos que los puntos son menores que 90; no necesitamos repetir esa condición. El programa realiza una cantidad constante de comparaciones: tiempo y memoria adicional $O(1)$.
+
+**Autocomprobación:** prueba 74, 75, 89 y 90. Las respuestas son bronce, plata, plata y oro. Estas fronteras detectan errores entre `<` y `<=` mejor que repetir muchos valores interiores. No pongas un punto y coma inmediatamente después de `if (condicion)`: crearía un cuerpo vacío.
+
 Imagina que estás en un cruce de caminos. Dependiendo de la dirección que elijas, llegarás a un lugar diferente. Los **condicionales** son exactamente eso en programación: puntos donde tu programa decide qué camino seguir.
 
 Sin condicionales, tu programa haría siempre lo mismo, sin importar los datos que reciba. Con condicionales, puede **reaccionar** y **adaptarse**.
@@ -57,7 +96,8 @@ if (x > 0)
 ```
 
 <Callout type="warning">
-  **Siempre usa llaves**, incluso para una sola línea. Es más seguro y evita errores sutiles cuando agregas más instrucciones después.
+  **Siempre usa llaves**, incluso para una sola línea. Es más seguro y evita
+  errores sutiles cuando agregas más instrucciones después.
 </Callout>
 
 ## La instrucción `if-else`
@@ -201,7 +241,8 @@ cout << "Eres " << ((edad >= 18) ? "mayor" : "menor") << " de edad" << endl;
 ```
 
 <Callout type="info">
-  El operador ternario es útil para asignaciones simples, pero no abuses de él. Si la lógica es compleja, un `if-else` normal es más legible.
+  El operador ternario es útil para asignaciones simples, pero no abuses de él.
+  Si la lógica es compleja, un `if-else` normal es más legible.
 </Callout>
 
 ## Switch: otra forma de elegir
@@ -256,7 +297,8 @@ switch (x) {
 ```
 
 <Callout type="info">
-  `switch` solo funciona con valores enteros o `char` (no con `string` ni `double`). Para comparar strings o condiciones complejas, usa `if-else`.
+  `switch` solo funciona con valores enteros o `char` (no con `string` ni
+  `double`). Para comparar strings o condiciones complejas, usa `if-else`.
 </Callout>
 
 ## Patrones comunes en competencias
@@ -396,4 +438,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende el **Ciclo For** para repetir instrucciones un número determinado de veces.
+[Funciones: paso por valor, referencia y apuntadores](/blog/estructuras-de-control/funciones).

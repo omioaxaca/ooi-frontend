@@ -1,0 +1,104 @@
+---
+title: "Maximum bipartite matching"
+description: "Encuentra el mayor número de asignaciones compatibles mediante caminos aumentantes y reasignaciones."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "matching", "bipartito", "Kuhn"]
+---
+
+## Antes de empezar
+
+Repasa grafos bipartitos y DFS. Tenemos dos grupos, por ejemplo estudiantes y proyectos. Una arista indica una asignación permitida. Un **matching** elige aristas sin compartir extremos: cada estudiante y cada proyecto participa como máximo una vez.
+
+Buscamos un matching **máximo**, con la mayor cardinalidad posible. Un matching **maximal** solo significa que no puedes agregar otra arista directamente; todavía podría mejorarse reasignando parejas.
+
+## Por qué no basta elegir cualquier proyecto libre
+
+El estudiante 0 acepta proyectos 0 y 1; el estudiante 1 solamente acepta el 0. Si asignamos primero `0 -> 0`, el segundo parece bloqueado. Pero podemos cambiar `0 -> 1` y entonces asignar `1 -> 0`.
+
+Un camino aumentante alterna aristas no elegidas y elegidas, desde un vértice libre de la izquierda hasta uno libre de la derecha. Invertir cuáles están elegidas aumenta el matching en una arista y mantiene válidas las asignaciones.
+
+## Algoritmo de Kuhn
+
+Para cada vértice izquierdo, DFS intenta conseguirle un vecino derecho. Si ese vecino está ocupado, intenta mover a su pareja a otra opción. Un arreglo de visitados evita ciclos de reasignaciones dentro del mismo intento; se reinicia para cada búsqueda nueva.
+
+El teorema de los caminos aumentantes establece que un matching es máximo si y solo si no existe un camino aumentante. Kuhn busca esas mejoras mientras incorpora los vértices izquierdos.
+
+## C++17
+
+Entrada: tamaños de ambos grupos y número de aristas. Cada grupo usa sus propios índices desde cero.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+bool aumentar(int actual, const vector<vector<int>>& opciones, vector<int>& pareja, vector<bool>& visitado) {
+    if (visitado[actual]) return false;
+    visitado[actual] = true;
+    for (int proyecto : opciones[actual]) {
+        if (pareja[proyecto] == -1 || aumentar(pareja[proyecto], opciones, pareja, visitado)) {
+            pareja[proyecto] = actual;
+            return true;
+        }
+    }
+    return false;
+}
+
+int main() {
+    int izquierda, derecha, aristas;
+    cin >> izquierda >> derecha >> aristas;
+    vector<vector<int>> opciones(izquierda);
+    for (int indice = 0; indice < aristas; indice++) {
+        int estudiante, proyecto;
+        cin >> estudiante >> proyecto;
+        opciones[estudiante].push_back(proyecto);
+    }
+    vector<int> pareja(derecha, -1);
+    vector<bool> visitado(izquierda, false);
+    int total = 0;
+    for (int estudiante = 0; estudiante < izquierda; estudiante++) {
+        fill(visitado.begin(), visitado.end(), false);
+        if (aumentar(estudiante, opciones, pareja, visitado)) total++;
+    }
+    cout << total << '\n';
+    for (int proyecto = 0; proyecto < derecha; proyecto++) {
+        if (pareja[proyecto] != -1) cout << pareja[proyecto] << ' ' << proyecto << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+2 2 3
+0 0
+0 1
+1 0
+```
+
+Salida:
+
+```text output
+2
+1 0
+0 1
+```
+
+## Coste y límites
+
+Con $L$ vértices izquierdos y $E$ aristas, las búsquedas cuestan $O(LE)$, más el coste de reiniciar visitados ($O(L^2)$ en esta versión). La memoria es $O(L+R+E)$. Para tamaños grandes puedes usar marcas por intento para evitar reinicios completos y Hopcroft-Karp para mejorar las búsquedas a $O(E\sqrt{L+R})$.
+
+La recursión puede tener profundidad $O(L)$; esta implementación es apropiada para tamaños moderados. El matching no tiene por qué ser perfecto y no es único. Tampoco minimiza costes: una asignación con pesos requiere otro algoritmo.
+
+## Practica
+
+Agrega un tercer estudiante que solo acepta el proyecto 0. ¿Puede haber tres asignaciones?
+
+<details>
+<summary>Respuesta</summary>
+
+No: solo existen dos proyectos. El máximo sigue siendo 2. Cambiar el orden de los intentos puede cambiar quién queda libre, pero no debe cambiar la cardinalidad máxima obtenida.
+
+</details>

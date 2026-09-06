@@ -1,11 +1,53 @@
 ---
-title: "Complejidad de la Recursión"
-description: "Aprende a analizar la complejidad temporal y espacial de funciones recursivas"
+title: "Poda y complejidad exponencial"
+description: "Descarta ramas con una justificación, distingue profundidad de número de llamadas y calcula el peor caso."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "complejidad", "recursión", "análisis"]
 syllabusId: 28
 ---
+
+## Podar exige demostrar que no pierdes respuestas
+
+Una **poda** evita explorar una rama cuando sabemos que ninguna de sus continuaciones puede servir. No basta con que parezca poco prometedora.
+
+Contemos subconjuntos cuya suma sea un objetivo no negativo. Si todos los valores son no negativos y la suma parcial ya excedió el objetivo, añadir otros elementos no puede reducirla. Por eso podemos regresar inmediatamente. Con `[5, -4]` y objetivo 1, esa misma regla sería incorrecta: el 5 todavía podría completarse con -4.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+long long contar(const vector<int>& valores, int posicion, long long suma, long long objetivo) {
+    if (suma > objetivo) return 0;
+    if (posicion == static_cast<int>(valores.size())) return suma == objetivo ? 1 : 0;
+    return contar(valores, posicion + 1, suma, objetivo)
+         + contar(valores, posicion + 1, suma + valores[posicion], objetivo);
+}
+
+int main() {
+    vector<int> valores = {2, 4, 7};
+    cout << contar(valores, 0, 0, 6) << '\n';
+}
+```
+
+Salida:
+
+```text output
+1
+```
+
+La única solución es elegir 2 y 4. El programa cuenta subconjuntos de **posiciones**, de modo que copias iguales siguen siendo opciones diferentes. El conteo debe caber en `long long`.
+
+Una suma que ya coincide con el objetivo no autoriza a detenerse: podrían quedar ceros que generan otros subconjuntos válidos. Por eso aceptamos solamente al llegar al final.
+
+## El peor caso puede seguir siendo exponencial
+
+Si todos los valores son cero y el objetivo es cero, ninguna rama se poda. Hay $2^n$ hojas y $2^{n+1}-1$ llamadas en el árbol completo: tiempo $O(2^n)$ y espacio adicional $O(n)$ por la pila. Tiempo y profundidad no son lo mismo.
+
+Otra poda posible compara la suma actual más **todo lo que aún queda** con el objetivo: si ni siquiera así lo alcanzas, puedes descartar la rama. También necesita supuestos sobre los valores y una cota que no subestime las continuaciones.
+
+**Practica:** para `[0, 0]` y objetivo 0, la respuesta es 4. Explica por qué devolver 1 en cuanto `suma == objetivo` daría una respuesta incorrecta. Después prueba `[1, 2, 3]` con objetivo 3: hay dos soluciones.
 
 ## ¿Por qué analizar la recursión?
 
@@ -42,7 +84,7 @@ fib(5)
     └── fib(1)
 ```
 
-Es un árbol binario de profundidad $n$. Tiene hasta $2^n$ nodos. **Total: $O(2^n)$.**
+Es un árbol de llamadas de profundidad $O(n)$ cuyo número de nodos está acotado por $O(2^n)$. Esta es una cota superior; no afirma que el árbol esté completo.
 
 ### Fibonacci (con memo): $O(n)$
 
@@ -88,35 +130,35 @@ Dos subproblemas de tamaño $n/2$, más $O(n)$ para combinar. **Total: $O(n \log
 
 ## Recurrencias comunes
 
-| Recurrencia | Complejidad | Ejemplo |
-|------------|-------------|---------|
-| $T(n) = T(n-1) + O(1)$ | $O(n)$ | Factorial, búsqueda lineal recursiva |
-| $T(n) = T(n-1) + O(n)$ | $O(n^2)$ | Selection sort recursivo |
-| $T(n) = 2T(n-1) + O(1)$ | $O(2^n)$ | Fibonacci, torres de Hanoi |
-| $T(n) = T(n/2) + O(1)$ | $O(\log n)$ | Búsqueda binaria |
-| $T(n) = 2T(n/2) + O(n)$ | $O(n \log n)$ | Merge sort |
-| $T(n) = 2T(n/2) + O(1)$ | $O(n)$ | Recorrer árbol binario |
+| Recurrencia             | Complejidad   | Ejemplo                              |
+| ----------------------- | ------------- | ------------------------------------ |
+| $T(n) = T(n-1) + O(1)$  | $O(n)$        | Factorial, búsqueda lineal recursiva |
+| $T(n) = T(n-1) + O(n)$  | $O(n^2)$      | Selection sort recursivo             |
+| $T(n) = 2T(n-1) + O(1)$ | $O(2^n)$      | Fibonacci, torres de Hanoi           |
+| $T(n) = T(n/2) + O(1)$  | $O(\log n)$   | Búsqueda binaria                     |
+| $T(n) = 2T(n/2) + O(n)$ | $O(n \log n)$ | Merge sort                           |
+| $T(n) = 2T(n/2) + O(1)$ | $O(n)$        | Recorrer árbol binario               |
 
 ## Complejidad espacial
 
 La recursión usa espacio en la **pila de llamadas**. La profundidad máxima de la pila = la profundidad del árbol de recursión.
 
-| Función | Profundidad de recursión | Espacio |
-|---------|------------------------|---------|
-| Factorial | $n$ | $O(n)$ |
-| Fibonacci (sin memo) | $n$ | $O(n)$ |
-| Búsqueda binaria | $\log n$ | $O(\log n)$ |
-| Merge sort | $\log n$ | $O(n)$ (por el arreglo auxiliar) |
+| Función              | Profundidad de recursión | Espacio                          |
+| -------------------- | ------------------------ | -------------------------------- |
+| Factorial            | $n$                      | $O(n)$                           |
+| Fibonacci (sin memo) | $n$                      | $O(n)$                           |
+| Búsqueda binaria     | $\log n$                 | $O(\log n)$                      |
+| Merge sort           | $\log n$                 | $O(n)$ (por el arreglo auxiliar) |
 
 ## Consejos prácticos
 
 1. **Si la recursión es lineal** (una sola llamada recursiva por nivel), la complejidad suele ser simple de analizar.
 
-2. **Si hay dos llamadas recursivas** (como Fibonacci), la complejidad crece exponencialmente sin memorización.
+2. **Dos llamadas no implican por sí solas tiempo exponencial**. Importa cuánto disminuye cada subproblema: merge sort divide el tamaño a la mitad y cuesta $O(n\log n)$; Fibonacci sin memoria repite muchos estados casi del mismo tamaño.
 
 3. **Con memorización**, la complejidad es: (número de estados) × (trabajo por estado).
 
-4. **En competencias**, si $n \leq 20$, puedes usar $O(2^n)$. Si $n \leq 10^6$, necesitas $O(n)$ o $O(n \log n)$.
+4. **En competencias**, tamaños cercanos a 20 sugieren que explorar subconjuntos podría ser viable, pero cuenta el trabajo por candidato, la salida y el límite de tiempo. No es una garantía universal.
 
 ## Ejercicio de práctica
 
@@ -142,6 +184,6 @@ En términos simples: crece más rápido que $O(\log n)$ pero mucho más lento q
 
 </details>
 
-## Siguiente paso
+## Conexión con memorización
 
-Aprende sobre **Pilas y Colas**, estructuras de datos fundamentales que tienen conexión directa con la recursión.
+La [memorización](/blog/recursion/memorizacion) evita recalcular estados equivalentes. La poda descarta ramas que no pueden servir. Son ideas distintas y pueden combinarse cuando sus condiciones lo permiten.

@@ -1,11 +1,85 @@
 ---
-title: "Patrones de Programación Dinámica"
-description: "Los patrones más comunes de DP que aparecen en competencias"
+title: "DP clásica: mochila, coin change, LCS y Fibonacci"
+description: "Define estados y transiciones de cuatro problemas clásicos y reconoce patrones que puedes reutilizar."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "DP", "patrones", "subarreglo", "grid", "intervalos", "bitmask"]
 syllabusId: 67
 ---
+
+## Cuatro modelos fundamentales
+
+Antes de memorizar código, escribe qué significa cada celda, cómo se construye y qué caso representa la entrada vacía.
+
+| Problema                          | Estado y transición                                                          | Tiempo y memoria de la versión básica |
+| --------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------- |
+| Fibonacci                         | `fib[0]=0`, `fib[1]=1`, sumar los dos anteriores                             | $O(n)$ y $O(n)$                       |
+| Monedas ilimitadas, mínimo número | `monedas[0]=0`; probar la última denominación positiva                       | $O(Sk)$ y $O(S)$                      |
+| Mochila 0/1                       | Mejor valor con peso a lo sumo `capacidad`; usar o no el objeto actual       | $O(nW)$ y $O(W)$ con compresión       |
+| LCS                               | Longitud común de dos prefijos; emparejar últimos caracteres o descartar uno | $O(nm)$ y $O(nm)$                     |
+
+Fibonacci de índice 6 vale 8. Con monedas 1, 3 y 4, formar 6 requiere dos monedas. Una mochila de capacidad 5 con objetos `(peso, valor)` iguales a `(2,4)`, `(3,5)`, `(4,7)` consigue valor 9 tomando los dos primeros. La LCS de `ABCBDAB` y `BDCAB` tiene longitud 4, por ejemplo `BCAB`: una subsecuencia conserva el orden, pero no exige posiciones consecutivas.
+
+## C++17: los cuatro ejemplos
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<long long> fibonacci(7, 0);
+    fibonacci[1] = 1;
+    for (int indice = 2; indice <= 6; indice++) fibonacci[indice] = fibonacci[indice - 1] + fibonacci[indice - 2];
+    cout << fibonacci[6] << '\n';
+
+    const int INF = 1000000000;
+    vector<int> cambio(7, INF);
+    cambio[0] = 0;
+    for (int monto = 1; monto <= 6; monto++) {
+        for (int moneda : {1, 3, 4}) {
+            if (moneda <= monto) cambio[monto] = min(cambio[monto], cambio[monto - moneda] + 1);
+        }
+    }
+    cout << cambio[6] << '\n';
+
+    vector<int> peso = {2, 3, 4}, valor = {4, 5, 7};
+    vector<int> mochila(6, 0);
+    for (int objeto = 0; objeto < 3; objeto++) {
+        for (int capacidad = 5; capacidad >= peso[objeto]; capacidad--) {
+            mochila[capacidad] = max(mochila[capacidad], mochila[capacidad - peso[objeto]] + valor[objeto]);
+        }
+    }
+    cout << mochila[5] << '\n';
+
+    string primera = "ABCBDAB", segunda = "BDCAB";
+    vector<vector<int>> comun(primera.size() + 1, vector<int>(segunda.size() + 1, 0));
+    for (int fila = 1; fila <= static_cast<int>(primera.size()); fila++) {
+        for (int columna = 1; columna <= static_cast<int>(segunda.size()); columna++) {
+            if (primera[fila - 1] == segunda[columna - 1]) comun[fila][columna] = comun[fila - 1][columna - 1] + 1;
+            else comun[fila][columna] = max(comun[fila - 1][columna], comun[fila][columna - 1]);
+        }
+    }
+    cout << comun.back().back() << '\n';
+}
+```
+
+Salida:
+
+```text output
+8
+2
+9
+4
+```
+
+En mochila 0/1 recorremos capacidades **hacia atrás** para que la celda consultada todavía represente los objetos anteriores. Si avanzáramos, podríamos reutilizar el mismo objeto. En cambio, coin change permite repetir denominaciones y usa estados de montos menores ya calculados.
+
+Los límites son parte de la solución: Fibonacci exacto crece hasta desbordar `long long`; mochila depende del valor numérico $W$, no solo de la cantidad de objetos; una tabla LCS puede agotar la memoria. Para reconstruir una respuesta, guarda las decisiones o retrocede por transiciones compatibles con la tabla.
+
+**Practica:** con un único objeto de peso 2 y valor 3, y capacidad 4, mochila 0/1 debe devolver 3, no 6. Esta prueba detecta inmediatamente el recorrido de capacidades incorrecto.
 
 ## ¿Por qué estudiar patrones?
 
@@ -204,7 +278,9 @@ int matrixChain(vector<int> &dims) {
 ```
 
 <Callout type="info">
-En DP de intervalos siempre iteras por **longitud del intervalo** de menor a mayor.
+  En esta tabulación de intervalos iteramos por longitud creciente para que los
+  subintervalos estén listos. También son posibles otros órdenes compatibles con
+  las dependencias o una implementación con memorización.
 </Callout>
 
 ## Patrón 5: DP con bitmask
@@ -257,6 +333,7 @@ int tsp(vector<vector<int>> &dist) {
 Contar números en un rango `[0, N]` que cumplen cierta propiedad.
 
 **Idea:** Procesar dígito por dígito. El estado incluye:
+
 - `pos`: dígito actual
 - `tight`: ¿seguimos limitados por N?
 - Información adicional del problema
@@ -288,14 +365,14 @@ int solve(int pos, bool tight, int estado) {
 
 ## Resumen de patrones
 
-| Patrón | Estado | Complejidad típica |
-|--------|--------|-------------------|
-| Lineal | `dp[i]` | $O(n)$ o $O(n \cdot k)$ |
-| Grid | `dp[i][j]` | $O(n \cdot m)$ |
-| Subsecuencia | `dp[i][j]` | $O(n \cdot m)$ |
-| Intervalos | `dp[l][r]` | $O(n^3)$ |
-| Bitmask | `dp[mask][i]` | $O(2^n \cdot n^2)$ |
-| Dígitos | `dp[pos][tight][...]` | $O(d \cdot 10 \cdot ...)$ |
+| Patrón       | Estado                | Complejidad típica        |
+| ------------ | --------------------- | ------------------------- |
+| Lineal       | `dp[i]`               | $O(n)$ o $O(n \cdot k)$   |
+| Grid         | `dp[i][j]`            | $O(n \cdot m)$            |
+| Subsecuencia | `dp[i][j]`            | $O(n \cdot m)$            |
+| Intervalos   | `dp[l][r]`            | $O(n^3)$                  |
+| Bitmask      | `dp[mask][i]`         | $O(2^n \cdot n^2)$        |
+| Dígitos      | `dp[pos][tight][...]` | $O(d \cdot 10 \cdot ...)$ |
 
 ## Ejercicio integrador
 

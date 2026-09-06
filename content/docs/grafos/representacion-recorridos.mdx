@@ -1,0 +1,98 @@
+---
+title: "Representación de grafos y recorrido"
+description: "Traduce relaciones a listas o matrices de adyacencia y recorre solamente los vértices alcanzables."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "grafos", "adyacencia", "BFS", "DFS"]
+---
+
+## Antes de empezar
+
+Repasa [teoría de grafos](/blog/grafos/introduccion-grafos), matrices y colas. Antes de elegir una representación, identifica qué significa un vértice, qué significa una arista y si la relación tiene dirección o peso.
+
+## Lista frente a matriz
+
+Una lista de adyacencia guarda, para cada vértice, solamente sus vecinos. Usa $O(n+m)$ memoria y permite recorrerlos en tiempo proporcional a su grado. Una matriz guarda una celda para cada pareja: usa $O(n^2)$ memoria, pero comprueba una arista concreta en $O(1)$.
+
+Para un grafo disperso grande, la lista suele ser la opción adecuada. En uno no dirigido agregamos cada arista en ambas listas; en uno dirigido agregamos únicamente `origen -> destino`. Para pesos, cada entrada puede ser un `pair<destino, peso>`.
+
+Los identificadores de entrada pueden comenzar en 1. Convierte una vez al leer y mantén una convención interna uniforme. No restes uno solamente a uno de los extremos.
+
+## BFS en una componente
+
+Marca un vértice como descubierto **al agregarlo a la cola**, no al sacarlo. De otra forma, dos vecinos podrían agregarlo repetidamente antes de que lo proceses.
+
+En un grafo sin pesos, la primera llegada descubre una distancia mínima en número de aristas. Los vértices nunca descubiertos no pertenecen a la componente alcanzable desde el origen; aquí conservan distancia -1.
+
+## C++17
+
+Entrada: grafo no dirigido no vacío con vértices de 0 a $n-1$. Calculamos distancias desde 0.
+
+```cpp test
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+int main() {
+    int vertices, aristas;
+    cin >> vertices >> aristas;
+    vector<vector<int>> vecinos(vertices);
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        vecinos[origen].push_back(destino);
+        vecinos[destino].push_back(origen);
+    }
+    vector<int> distancia(vertices, -1);
+    queue<int> pendientes;
+    distancia[0] = 0;
+    pendientes.push(0);
+    while (!pendientes.empty()) {
+        int actual = pendientes.front();
+        pendientes.pop();
+        for (int vecino : vecinos[actual]) {
+            if (distancia[vecino] != -1) continue;
+            distancia[vecino] = distancia[actual] + 1;
+            pendientes.push(vecino);
+        }
+    }
+    for (int vertice = 0; vertice < vertices; vertice++) {
+        if (vertice > 0) cout << ' ';
+        cout << distancia[vertice];
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+5 3
+0 1
+1 2
+3 4
+```
+
+Salida:
+
+```text output
+0 1 2 -1 -1
+```
+
+## Por qué termina y cuánto cuesta
+
+Cada vértice se agrega a la cola como máximo una vez. Cada lista se recorre una vez: tiempo $O(n+m)$ contando la inicialización, y memoria $O(n+m)$. Los ciclos no causan un bucle infinito porque el arreglo de distancias también funciona como marca de visitado.
+
+DFS usa una pila o recursión para explorar una rama antes de continuar con otras. También sirve para alcanzabilidad, pero su primera llegada no garantiza distancia mínima. Para recorrer todas las componentes, inicia otro recorrido desde cada vértice que siga sin visitar; en grafos dirigidos eso no calcula automáticamente componentes fuertemente conexas.
+
+## Practica
+
+Agrega la arista `2-3` al ejemplo. ¿Qué cambia en la salida? ¿Qué ocurriría si todas las aristas fueran dirigidas en el sentido contrario al escrito?
+
+<details>
+<summary>Respuesta</summary>
+
+Con `2-3`, las distancias son `0 1 2 3 4`. Si las aristas originales son dirigidas al revés, desde 0 no sale ninguna y solo 0 es alcanzable. La representación debe respetar el significado del enunciado.
+
+</details>

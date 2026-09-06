@@ -1,0 +1,90 @@
+---
+title: "Multiplicación de polinomios"
+description: "Modela productos y conteos como convoluciones y elige entre el método directo, FFT y NTT."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "polinomios", "convolución", "FFT", "NTT"]
+---
+
+## Antes de empezar
+
+Repasa coeficientes, distributividad y [FFT/NTT](/blog/matematicas-avanzadas/fft-ntt). Aunque ya conocemos transformaciones rápidas, la multiplicación directa sigue siendo la forma más sencilla de entender el problema y comprobar resultados pequeños.
+
+## Representación e índices
+
+El vector `[1,-2,3]` representa $1-2x+3x^2$. Su posición es el exponente, no el orden en que solemos escribir el polinomio en papel. Al multiplicar $a_i x^i$ y $b_j x^j$, el resultado contribuye a la posición $i+j$.
+
+Para tamaños $n$ y $m$ no vacíos, el producto necesita $n+m-1$ coeficientes. Conserva ceros intermedios: `[4,0,-1]` representa $4-x^2$, no $4-x$.
+
+## Ejemplo razonado
+
+Multiplicamos $(1-2x+3x^2)(4-x^2)$:
+
+1. El término constante aporta `4, -8, 12` en grados 0, 1 y 2.
+2. El término $-x^2$ aporta `-1, 2, -3` en grados 2, 3 y 4.
+3. En grado 2 sumamos ambas contribuciones: $12-1=11$.
+
+El resultado es $4-8x+11x^2+2x^3-3x^4$.
+
+## C++17
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<long long> multiplicar(const vector<long long>& primero, const vector<long long>& segundo) {
+    if (primero.empty() || segundo.empty()) return {};
+    vector<long long> producto(primero.size() + segundo.size() - 1, 0);
+    for (int gradoA = 0; gradoA < static_cast<int>(primero.size()); gradoA++) {
+        for (int gradoB = 0; gradoB < static_cast<int>(segundo.size()); gradoB++) {
+            producto[gradoA + gradoB] += primero[gradoA] * segundo[gradoB];
+        }
+    }
+    return producto;
+}
+
+int main() {
+    vector<long long> producto = multiplicar({1, -2, 3}, {4, 0, -1});
+    for (int grado = 0; grado < static_cast<int>(producto.size()); grado++) {
+        if (grado > 0) cout << ' ';
+        cout << producto[grado];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+4 -8 11 2 -3
+```
+
+El algoritmo cuesta $O(nm)$ tiempo y $O(n+m)$ espacio para el resultado. Aquí un vector vacío se trata como ausencia de coeficientes y devuelve otro vacío; `[0]` es la representación explícita del polinomio cero. Todos los productos y sumas intermedias deben caber en `long long`.
+
+## Aplicación: contar pares por su suma
+
+Si `A[valor]` cuenta elementos con ese valor en una colección y `B[valor]` en otra, el coeficiente `C[suma]` cuenta pares de elementos, uno de cada colección, cuya suma es esa cantidad.
+
+Los duplicados aportan multiplicidades. Si usas la misma colección dos veces, contarás pares ordenados y posiblemente un elemento consigo mismo. Excluirlos o convertir a pares no ordenados requiere ajustar la respuesta según el enunciado.
+
+Para valores negativos puedes desplazar los índices, pero debes deshacer el desplazamiento total en el resultado. Si ambas colecciones se desplazan en $D$, el índice de una suma se desplaza en $2D$.
+
+## Elegir un método y comprobarlo
+
+Usa dos ciclos para tamaños pequeños o cuando un factor tiene muy pocos términos. FFT puede acelerar productos grandes con coeficientes reales, pero debes controlar error. NTT es exacta módulo un primo compatible. Para un resultado entero exacto mayor que ese módulo, necesitas una reconstrucción con suficientes módulos y una cota de coeficientes.
+
+Si ambos arreglos tienen longitudes $n,m$ y coeficientes de valor absoluto a lo sumo $B$, cada coeficiente del producto está acotado por $\min(n,m)B^2$. Esa cota ayuda a decidir tipos y módulos, aunque también debes considerar intermedios de la transformación.
+
+Una comprobación barata evalúa ambos factores y el producto en $x=1$: la suma de coeficientes del producto debe ser el producto de las sumas. No es una prueba completa, pero detecta varios errores de acumulación. Para pruebas completas pequeñas, compara todos los coeficientes contra esta versión directa.
+
+## Practica
+
+Multiplica `[1,1,1]` por sí mismo y explica el coeficiente de grado 2.
+
+<details>
+<summary>Respuesta</summary>
+
+El resultado es `[1,2,3,2,1]`. El grado 2 recibe contribuciones de `(0,2)`, `(1,1)` y `(2,0)`, por eso vale 3. Si pensabas en pares de índices no ordenados, necesitarías un ajuste adicional; la convolución cuenta las tres combinaciones ordenadas.
+
+</details>

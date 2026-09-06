@@ -1,0 +1,106 @@
+---
+title: "Generación de subconjuntos y permutaciones"
+description: "Distingue elegir elementos de ordenarlos y calcula el tamaño de una búsqueda exhaustiva."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "subconjuntos", "permutaciones", "backtracking"]
+---
+
+## Antes de empezar
+
+Repasa [backtracking](/blog/recursion/backtracking). Un subconjunto decide **qué elementos** tomar; una permutación decide **en qué orden** colocarlos. Para `[1, 2]` existen cuatro subconjuntos, pero solamente dos permutaciones completas.
+
+## Dos opciones por elemento
+
+En la posición actual podemos omitir el elemento o incluirlo. Cuando hemos decidido sobre todas las posiciones, imprimimos lo elegido. Este recorrido incluye el subconjunto vacío.
+
+El estado contiene el siguiente índice y el vector `elegidos`. El índice aumenta siempre y ninguna posición se decide dos veces. Por eso cada subconjunto de posiciones aparece exactamente una vez.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void generar(const vector<int>& valores, int posicion, vector<int>& elegidos) {
+    if (posicion == static_cast<int>(valores.size())) {
+        cout << '{';
+        for (int indice = 0; indice < static_cast<int>(elegidos.size()); indice++) {
+            if (indice > 0) cout << ' ';
+            cout << elegidos[indice];
+        }
+        cout << "}\n";
+        return;
+    }
+    generar(valores, posicion + 1, elegidos);
+    elegidos.push_back(valores[posicion]);
+    generar(valores, posicion + 1, elegidos);
+    elegidos.pop_back();
+}
+
+int main() {
+    vector<int> valores = {1, 2};
+    vector<int> elegidos;
+    generar(valores, 0, elegidos);
+}
+```
+
+Salida:
+
+```text output
+{}
+{2}
+{1}
+{1 2}
+```
+
+Hay $2^n$ subconjuntos de posiciones y hasta $n$ elementos por salida: tiempo $O(n2^n)$ para imprimirlos, con $O(n)$ memoria adicional. Si el arreglo contiene dos valores iguales, seleccionar la primera copia o la segunda son decisiones distintas: este programa puede imprimir contenidos iguales.
+
+## Permutaciones en orden lexicográfico
+
+Para una permutación, el siguiente valor debe ser uno de los que todavía no usamos. Un backtracking puede mantener un arreglo `usado` y deshacer esa marca después de explorar cada opción. Con valores distintos hay $n!$ hojas.
+
+C++ ofrece `next_permutation`, de `<algorithm>`. Reorganiza el arreglo en la siguiente permutación lexicográfica, como el orden de las palabras en un diccionario. Al comenzar **ordenado**, el siguiente programa visita todas las permutaciones distintas incluso si hay valores repetidos:
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> valores = {2, 1, 1};
+    sort(valores.begin(), valores.end());
+    do {
+        for (int indice = 0; indice < static_cast<int>(valores.size()); indice++) {
+            if (indice > 0) cout << ' ';
+            cout << valores[indice];
+        }
+        cout << '\n';
+    } while (next_permutation(valores.begin(), valores.end()));
+}
+```
+
+Salida:
+
+```text output
+1 1 2
+1 2 1
+2 1 1
+```
+
+El `do while` procesa la primera configuración antes de pedir la siguiente. Empezar desde un arreglo no ordenado omite las permutaciones anteriores. Para $n$ elementos distintos, generar e imprimir todo cuesta $O(n\cdot n!)$; con repetidos hay menos salidas.
+
+## ¿Cuándo alcanza la fuerza bruta?
+
+Para $n=10$, $2^{10}=1024$, pero $10!=3628800$. No confundas estos crecimientos. También cuenta cuánto cuesta evaluar cada candidato y cuánto texto imprimirás. Las restricciones del problema mandan, no una regla fija sobre el máximo $n$.
+
+## Practica
+
+Con `[1, 2, 3]`, enumera los subconjuntos cuya suma es 3. Luego cuenta sus permutaciones completas.
+
+<details>
+<summary>Respuesta</summary>
+
+Los subconjuntos son `{3}` y `{1, 2}`. Hay seis permutaciones completas: `123`, `132`, `213`, `231`, `312` y `321`. Para filtrar subconjuntos, agrega su suma al estado o calcúlala en la hoja; la segunda opción es más sencilla, pero repite trabajo.
+
+</details>

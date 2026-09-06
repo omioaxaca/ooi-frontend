@@ -9,6 +9,58 @@ syllabusId: 51
 
 ## Los tres recorridos fundamentales
 
+**Objetivo:** distinguir el momento de procesar un nodo del momento de entrar a su llamada. Los tres recorridos visitan los mismos nodos; solo cambia cuándo se emite el valor respecto a los hijos. Necesitas árboles binarios y recursión.
+
+## Comparación ejecutable
+
+Una misma función puede registrar los tres momentos. El nodo actual se agrega al preorden antes del hijo izquierdo, al inorden entre los dos hijos y al postorden después del derecho.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Nodo { int valor, izquierdo, derecho; };
+
+void recorrer(int actual, const vector<Nodo>& arbol, vector<int>& preorden, vector<int>& inorden, vector<int>& postorden) {
+    if (actual == -1) return;
+    preorden.push_back(arbol[actual].valor);
+    recorrer(arbol[actual].izquierdo, arbol, preorden, inorden, postorden);
+    inorden.push_back(arbol[actual].valor);
+    recorrer(arbol[actual].derecho, arbol, preorden, inorden, postorden);
+    postorden.push_back(arbol[actual].valor);
+}
+
+void imprimir(const vector<int>& valores) {
+    for (int indice = 0; indice < static_cast<int>(valores.size()); indice++) {
+        if (indice > 0) cout << ' ';
+        cout << valores[indice];
+    }
+    cout << '\n';
+}
+
+int main() {
+    vector<Nodo> arbol = {{1, 1, 2}, {2, 3, 4}, {3, -1, 5}, {4, -1, -1}, {5, -1, -1}, {6, -1, -1}};
+    vector<int> preorden, inorden, postorden;
+    recorrer(0, arbol, preorden, inorden, postorden);
+    imprimir(preorden);
+    imprimir(inorden);
+    imprimir(postorden);
+}
+```
+
+Salida:
+
+```text output
+1 2 4 5 3 6
+4 2 5 1 3 6
+4 5 2 6 3 1
+```
+
+Cada recorrido cuesta $O(n)$ y la pila usa $O(altura)$. Guardar las tres salidas añade $O(n)$ memoria. El inorden de este ejemplo **no** está ordenado: esa propiedad requiere un BST, no cualquier árbol binario.
+
+**Autocomprobación:** un árbol vacío no emite valores y una hoja aparece igual en los tres recorridos. Preorden e inorden permiten reconstrucción única si las claves son distintas; con repetidos o solo preorden y postorden puede haber ambigüedad.
+
 En un árbol binario, cada nodo tiene a lo más dos hijos: **izquierdo** y **derecho**. Hay tres formas clásicas de visitarlos:
 
 ```
@@ -19,10 +71,10 @@ En un árbol binario, cada nodo tiene a lo más dos hijos: **izquierdo** y **der
     4   5   6
 ```
 
-| Recorrido | Orden | Resultado |
-|-----------|-------|-----------|
-| **Preorden** | Nodo → Izquierda → Derecha | 1, 2, 4, 5, 3, 6 |
-| **Inorden** | Izquierda → Nodo → Derecha | 4, 2, 5, 1, 3, 6 |
+| Recorrido     | Orden                      | Resultado        |
+| ------------- | -------------------------- | ---------------- |
+| **Preorden**  | Nodo → Izquierda → Derecha | 1, 2, 4, 5, 3, 6 |
+| **Inorden**   | Izquierda → Nodo → Derecha | 4, 2, 5, 1, 3, 6 |
 | **Postorden** | Izquierda → Derecha → Nodo | 4, 5, 2, 6, 3, 1 |
 
 **Truco para recordar:** El nombre indica cuándo visitas la **raíz**: **pre** (antes), **in** (en medio), **post** (después).
@@ -82,6 +134,7 @@ Visitar nivel por nivel, de izquierda a derecha:
 
 ```cpp
 void porNiveles(int raiz) {
+    if (raiz == -1) return;
     queue<int> q;
     q.push(raiz);
 
@@ -125,6 +178,8 @@ void dfs(int nodo, int padre) {
 ```
 
 ## Euler Tour
+
+El ejemplo siguiente registra entrada y salida una vez por vértice, para un total de $2n$ eventos. Sirve para probar relaciones de ancestro. Para sumar subárboles suele usarse un aplanamiento de $n$ entradas; para LCA por RMQ, un recorrido de $2n-1$ entradas que registra cada regreso de un hijo. Esas variantes no son intercambiables.
 
 Técnica fundamental: asignar a cada nodo un **tiempo de entrada** y **salida**. Esto convierte el árbol en un arreglo lineal.
 

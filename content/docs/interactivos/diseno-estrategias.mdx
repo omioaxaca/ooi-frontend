@@ -1,0 +1,85 @@
+---
+title: "Diseño de estrategias interactivas"
+description: "Mantén candidatos compatibles, respeta el presupuesto y sincroniza cada pregunta con la respuesta del juez."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "interactivos", "estrategia", "flush"]
+---
+
+## Antes de empezar
+
+Repasa [optimización de consultas](/blog/comunicacion/optimizacion-consultas). En un problema interactivo, la entrada futura depende de las preguntas que imprimas. No puedes leer todas las respuestas al inicio ni tratar el problema como un archivo estático común.
+
+## Separa estrategia y protocolo
+
+La estrategia decide qué preguntar y por qué reduce los candidatos. El protocolo decide cómo se escribe la pregunta, cómo responde el juez, cuántas preguntas permite y cómo se entrega la respuesta final.
+
+En este **protocolo de ejemplo**, el juez elige un entero entre 1 y $n$. `? medio` pregunta si el secreto es menor o igual a `medio`: responde 1 para sí, 0 para no y -1 para un error. `! respuesta` entrega la solución. Estas marcas no son universales; copia las del enunciado real.
+
+El invariante es que el secreto pertenece a `[izquierda, derecha]`. Cada respuesta conserva la mitad compatible. El intervalo disminuye estrictamente hasta contener un solo elemento, que ya no necesitamos consultar.
+
+## C++17: preguntar, vaciar, leer
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+    int cantidad;
+    if (!(cin >> cantidad) || cantidad < 1) return 0;
+    int izquierda = 1, derecha = cantidad;
+    while (izquierda < derecha) {
+        int medio = izquierda + (derecha - izquierda) / 2;
+        cout << "? " << medio << endl;
+        int respuesta;
+        if (!(cin >> respuesta) || respuesta == -1) return 0;
+        if (respuesta != 0 && respuesta != 1) return 0;
+        if (respuesta == 1) derecha = medio;
+        else izquierda = medio + 1;
+    }
+    cout << "! " << izquierda << endl;
+}
+```
+
+Para comprobar esta implementación, podemos reproducir las respuestas que daría un secreto igual a 7. Esta entrada es una **transcripción de prueba**, no un formato de entrada para la entrega interactiva:
+
+```text input
+10
+0
+1
+1
+0
+```
+
+Preguntas y respuesta final esperadas:
+
+```text output
+? 5
+? 8
+? 7
+? 6
+! 7
+```
+
+`endl` agrega un salto de línea y vacía el búfer. También puedes usar `"\n" << flush`. Un salto de línea solo no siempre basta, especialmente si desactivaste la asociación entre `cin` y `cout`: programa y juez podrían quedarse esperando mutuamente.
+
+## Presupuesto y validación
+
+La estrategia necesita como máximo $\lceil\log_2 n\rceil$ preguntas, tiempo $O(\log n)$ y memoria adicional constante. Comprueba que la cota entra en el presupuesto **antes** de enviar consultas.
+
+Una transcripción verifica un recorrido concreto; un interactor local debe calcular cada respuesta desde el secreto y rechazar preguntas ilegales o excesivas. Prueba todos los secretos para tamaños pequeños, y los extremos para tamaños grandes. La interfaz oficial sigue siendo la referencia final.
+
+## Fallos que no son del algoritmo
+
+No imprimas mensajes de depuración en `stdout`: utiliza `cerr` durante las pruebas. Termina inmediatamente ante EOF o la respuesta de error indicada por el juez. No sigas preguntando tras entregar la respuesta final. Si hay varios casos o un veredicto final que debe leerse, respeta ese protocolo adicional.
+
+## Practica
+
+¿Qué debe hacer el programa para $n=1$? ¿Qué debe hacer si el juez contesta -1 a la primera pregunta?
+
+<details>
+<summary>Respuesta</summary>
+
+Con $n=1$ imprime `! 1` sin preguntas. Ante -1 termina sin enviar una respuesta final basada en datos inválidos. Ambos casos pueden verificarse con transcripciones cortas.
+
+</details>

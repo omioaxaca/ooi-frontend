@@ -1,0 +1,82 @@
+---
+title: "Extended Euclid"
+description: "Encuentra coeficientes de Bézout, resuelve ecuaciones diofánticas y calcula inversos cuando el módulo no es primo."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Euclides extendido", "Bézout", "inverso modular"]
+---
+
+## Antes de empezar
+
+Repasa [GCD](/blog/matematicas/gcd-lcm) y aritmética modular. Euclides extendido no solo calcula $g=\gcd(a,b)$: devuelve enteros $x,y$ tales que $ax+by=g$. Esta es la identidad de Bézout.
+
+## Deshacer la división
+
+La recursión resuelve primero $bx_1+(a\bmod b)y_1=g$. Como $a\bmod b=a-\lfloor a/b\rfloor b$ para entradas no negativas, sustituimos y agrupamos:
+
+$$a y_1+b\big(x_1-\lfloor a/b\rfloor y_1\big)=g.$$
+
+Así, los nuevos coeficientes son $x=y_1$ y $y=x_1-(a/b)y_1$. El caso base para $b=0$ y $a>0$ es $x=1,y=0$.
+
+Para 30 y 18, Euclides usa residuos 12, 6 y 0. Al regresar obtenemos $30(-1)+18(2)=6$. Los coeficientes pueden ser negativos y no son únicos.
+
+## C++17
+
+Este ejemplo admite enteros no negativos hasta $10^9$, no ambos cero. Esos límites mantienen las operaciones de coeficientes dentro de `long long`.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+struct Bezout { long long divisor, coeficienteA, coeficienteB; };
+
+Bezout extendido(long long primero, long long segundo) {
+    if (segundo == 0) return {primero, 1, 0};
+    Bezout anterior = extendido(segundo, primero % segundo);
+    return {anterior.divisor, anterior.coeficienteB,
+            anterior.coeficienteA - (primero / segundo) * anterior.coeficienteB};
+}
+
+int main() {
+    long long primero, segundo;
+    cin >> primero >> segundo;
+    Bezout resultado = extendido(primero, segundo);
+    cout << resultado.divisor << ' ' << resultado.coeficienteA << ' ' << resultado.coeficienteB << '\n';
+    cout << primero * resultado.coeficienteA + segundo * resultado.coeficienteB << '\n';
+}
+```
+
+Entrada:
+
+```text input
+30 18
+```
+
+Salida:
+
+```text output
+6 -1 2
+6
+```
+
+## Inversos modulares
+
+Para obtener el inverso de $a$ módulo $m>1$, necesitamos $ax+my=1$. Existe si y solo si $\gcd(a,m)=1$. Normaliza el coeficiente con `(x % modulo + modulo) % modulo`.
+
+Por ejemplo, $3\cdot3+8\cdot(-1)=1$, así que el inverso de 3 módulo 8 es 3. El módulo no es primo, pero el inverso existe. En cambio, 6 módulo 9 no tiene inverso porque su GCD es 3.
+
+Fermat permite usar $a^{m-2}$ cuando el módulo es primo y $a$ no es divisible por él. Euclides extendido es más general respecto del módulo, pero tampoco puede crear un inverso cuando no existe.
+
+## Ecuaciones diofánticas
+
+$ax+by=c$ tiene soluciones enteras si y solo si $g$ divide a $c$. Multiplica los coeficientes de Bézout por $c/g$ para obtener una solución. Todas las soluciones se describen como:
+
+$$x=x_0+t(b/g),\qquad y=y_0-t(a/g),\qquad t\in\mathbb Z.$$
+
+Pedir además valores no negativos o dentro de intervalos requiere restringir $t$ con cuidado; las divisiones de enteros negativos en C++ truncan hacia cero, no hacia menos infinito.
+
+## Coste y práctica
+
+La cantidad de divisiones es $O(\log(\min(a,b)+1))$ salvo los casos base inmediatos. La versión recursiva usa esa profundidad de pila. Si amplías los límites a enteros de 64 bits completos, revisa productos y negaciones de los coeficientes.
+
+**Practica:** ¿existe solución entera para $6x+9y=12$? Sí, porque 3 divide a 12; una solución es $x=2,y=0$. Para $6x+9y=10$ no existe. Verifica siempre sustituyendo los coeficientes obtenidos en la ecuación original.

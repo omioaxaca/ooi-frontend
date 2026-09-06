@@ -9,6 +9,8 @@ syllabusId: 41
 
 ## ¿Qué es un número primo?
 
+**Objetivo:** elegir entre probar un número y precalcular muchos. La prueba por divisores cuesta $O(\sqrt n)$ por valor; una criba comparte trabajo cuando necesitas todos los primos hasta un límite. Cero y uno no son primos.
+
 Un número primo es un número mayor que 1 que **solo es divisible entre 1 y sí mismo**. Piénsalo como un átomo: no se puede descomponer en factores más pequeños.
 
 - **Primos:** 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, …
@@ -25,7 +27,7 @@ bool esPrimo(int n) {
     if (n == 2) return true;
     if (n % 2 == 0) return false;
 
-    for (int i = 3; i * i <= n; i += 2) {
+    for (int i = 3; i <= n / i; i += 2) {
         if (n % i == 0) return false;
     }
     return true;
@@ -35,6 +37,53 @@ bool esPrimo(int n) {
 **¿Por qué solo hasta $\sqrt{n}$?** Si `n = a × b`, al menos uno de los dos factores es ≤ $\sqrt{n}$. Así que si no encontramos divisores hasta ahí, no hay.
 
 **¿Por qué saltar los pares?** Si n no es divisible entre 2, tampoco lo será entre 4, 6, 8… Así revisamos la mitad de candidatos.
+
+La condición `i <= n / i` evita desbordar `i * i` cerca del límite de `int`. La igualdad es necesaria para detectar cuadrados como 49.
+
+## Criba completa con tamaño según la entrada
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int limite;
+    cin >> limite;
+    vector<bool> primo(limite + 1, true);
+    primo[0] = false;
+    if (limite >= 1) primo[1] = false;
+    for (int divisor = 2; divisor <= limite / divisor; divisor++) {
+        if (!primo[divisor]) continue;
+        for (long long multiplo = 1LL * divisor * divisor; multiplo <= limite; multiplo += divisor) primo[multiplo] = false;
+    }
+    bool primero = true;
+    for (int numero = 2; numero <= limite; numero++) {
+        if (primo[numero]) {
+            if (!primero) cout << ' ';
+            cout << numero;
+            primero = false;
+        }
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+20
+```
+
+Salida:
+
+```text output
+2 3 5 7 11 13 17 19
+```
+
+El límite debe ser no negativo y suficientemente pequeño para reservar la tabla. Empezamos en el cuadrado del primo porque sus múltiplos menores ya tienen un factor primo anterior. Tiempo $O(n\log\log n)$ y espacio $O(n)$; para un intervalo enorme no reserves automáticamente hasta su extremo superior.
+
+**Autocomprobación:** prueba límites 0, 1, 2 y 49. Para 0 y 1 no se imprime ningún primo, para 2 se imprime 2 y 49 debe quedar tachado.
 
 ## La Criba de Eratóstenes
 

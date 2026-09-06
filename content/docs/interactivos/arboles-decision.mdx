@@ -1,0 +1,61 @@
+---
+title: "Árboles de decisión binarios"
+description: "Representa una estrategia de preguntas como un árbol y distingue profundidad máxima de coste promedio."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["interactivos", "árbol de decisión", "búsqueda binaria"]
+---
+
+## Antes de empezar
+
+Necesitas conjuntos de candidatos y [estrategias interactivas](/blog/interactivos/diseno-estrategias). Una estrategia adaptativa completa puede dibujarse antes de conocer las respuestas: cada nodo contiene una pregunta y cada arista una respuesta posible.
+
+## Qué representa cada parte
+
+La raíz contiene todos los secretos posibles. Un nodo interno pregunta algo. Su hijo izquierdo conserva los candidatos compatibles con «sí» y el derecho los compatibles con «no». Una hoja permite decidir la respuesta final.
+
+Si dos secretos necesitan salidas diferentes, no pueden terminar en la misma hoja. La cantidad de preguntas para un secreto es la profundidad de su hoja. El peor caso de la estrategia es la altura del árbol.
+
+## Ejemplo: cuatro candidatos
+
+Para secretos del 1 al 4 y preguntas de prefijo, una estrategia equilibrada es:
+
+```text
+                 secreto <= 2?
+                 /           \
+               si             no
+         secreto <= 1?    secreto <= 3?
+           /     \          /     \
+          1       2        3       4
+```
+
+Cada secreto requiere dos respuestas. Una estrategia que pregunta primero «¿es 1?», después «¿es 2?» y luego «¿es 3?» tiene profundidades 1, 2, 3 y 3. Su peor caso es tres, aunque acierte más rápido cuando el secreto es 1.
+
+## Balancear candidatos, no números
+
+Si los candidatos todavía posibles son `[2, 8, 9, 40, 99]`, el punto medio numérico entre 2 y 99 separa cuatro candidatos de uno. Un umbral como 8 o 9 separa dos de tres. Para reducir el peor caso, importa la distribución del conjunto que queda, no solamente la distancia numérica entre sus extremos.
+
+Elegir el umbral que minimiza el tamaño de la rama más grande produce una división local equilibrada en este modelo. En problemas con preguntas restringidas, el tamaño de las ramas no basta para conocer el coste futuro: importa qué preguntas seguirán siendo posibles.
+
+## Cota inferior y profundidad
+
+Un árbol binario de altura $q$ tiene como máximo $2^q$ hojas. Para distinguir $M$ secretos necesitas altura al menos $\lceil\log_2 M\rceil$. La búsqueda por mitades alcanza esa altura cuando las consultas permitidas pueden separar adecuadamente los candidatos.
+
+Si no todos los secretos son igual de probables, minimizar altura y minimizar profundidad promedio son objetivos distintos. No elijas uno sin leer qué penaliza el juez.
+
+## Llevar el árbol al código
+
+No hace falta construir todos los nodos. En la búsqueda binaria, dos límites representan el nodo actual y una condición elige el hijo. La implementación usa $O(1)$ memoria adicional aunque el árbol conceptual completo tenga $O(M)$ nodos.
+
+Para un conjunto irregular pequeño, puedes guardar explícitamente sus candidatos y filtrarlos tras cada respuesta. Eso cuesta hasta $O(M)$ por filtrado, pero es un buen modelo de referencia para comprobar una implementación más rápida.
+
+## Practica
+
+Diseña un árbol binario para cinco secretos con altura mínima. ¿Pueden todas las hojas tener profundidad 2?
+
+<details>
+<summary>Respuesta</summary>
+
+La altura mínima es 3 porque $2^2<5\leq2^3$. Divide primero en grupos de dos y tres; resuelve el primero con una pregunta adicional y el segundo con hasta dos. No todas las hojas pueden estar a profundidad 2, pues allí solo caben cuatro.
+
+</details>

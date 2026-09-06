@@ -9,22 +9,28 @@ syllabusId: 54
 
 ## ¿Qué es un grafo?
 
+**Objetivo:** convertir relaciones del enunciado en estados y conexiones, sin elegir todavía un algoritmo. Pregunta si la relación tiene dirección, peso, lazos, aristas repetidas y si pueden existir vértices aislados.
+
+Un **grafo simple** no tiene lazos ni aristas paralelas. En uno no dirigido, cada arista conecta dos extremos distintos y cuenta una vez, aunque la guardemos dos veces en listas de vecinos. La suma de grados es $2m$; un grafo simple de $n$ vértices tiene como máximo $n(n-1)/2$ aristas.
+
+En un grafo dirigido distinguimos grado de entrada y de salida. Tener un camino de A a B no garantiza uno de B a A. Tampoco confundas un recorrido que puede repetir vértices con un camino simple; muchos problemas especifican cuál permiten.
+
 Un **grafo** es una colección de **nodos** (vértices) conectados por **aristas** (edges). Es la forma más general de representar relaciones entre objetos.
 
 **Analogía:** Piensa en un mapa de ciudades. Las ciudades son los nodos, y las carreteras son las aristas. Algunas carreteras son de un solo sentido (grafo dirigido), otras van en ambas direcciones (no dirigido).
 
 ## Tipos de grafos
 
-| Tipo | Descripción | Ejemplo |
-|------|-------------|---------|
-| **No dirigido** | Las aristas van en ambos sentidos | Amistades en redes sociales |
-| **Dirigido** | Las aristas tienen dirección | Seguidores en Twitter |
-| **Ponderado** | Las aristas tienen peso (costo) | Distancias entre ciudades |
-| **No ponderado** | Todas las aristas pesan igual | Conexiones de red |
+| Tipo             | Descripción                       | Ejemplo                     |
+| ---------------- | --------------------------------- | --------------------------- |
+| **No dirigido**  | Las aristas van en ambos sentidos | Amistades en redes sociales |
+| **Dirigido**     | Las aristas tienen dirección      | Seguidores en Twitter       |
+| **Ponderado**    | Las aristas tienen peso (costo)   | Distancias entre ciudades   |
+| **No ponderado** | Todas las aristas pesan igual     | Conexiones de red           |
 
 ## Terminología
 
-- **Grado** de un nodo: cantidad de aristas que le llegan.
+- **Grado** en un grafo simple no dirigido: cantidad de aristas incidentes. En dirigidos, cuenta entrada y salida por separado.
 - **Camino:** Secuencia de nodos conectados por aristas.
 - **Ciclo:** Camino que empieza y termina en el mismo nodo.
 - **Conexo:** Puedes llegar de cualquier nodo a cualquier otro.
@@ -111,18 +117,18 @@ int main() {
 
 ## ¿Cuál usar?
 
-| Criterio | Lista de adyacencia | Matriz de adyacencia |
-|----------|--------------------|-----------------------|
-| Memoria | $O(n + m)$ ✅ | $O(n^2)$ |
-| ¿Hay arista u→v? | $O(\text{grado})$ | $O(1)$ ✅ |
-| Recorrer vecinos | $O(\text{grado})$ ✅ | $O(n)$ |
-| Grafos grandes | ✅ | ❌ |
+| Criterio         | Lista de adyacencia  | Matriz de adyacencia |
+| ---------------- | -------------------- | -------------------- |
+| Memoria          | $O(n + m)$ ✅        | $O(n^2)$             |
+| ¿Hay arista u→v? | $O(\text{grado})$    | $O(1)$ ✅            |
+| Recorrer vecinos | $O(\text{grado})$ ✅ | $O(n)$               |
+| Grafos grandes   | ✅                   | ❌                   |
 
-**Regla general:** Usa lista de adyacencia siempre, excepto cuando $n \leq 1000$ y necesitas consultar aristas frecuentemente.
+La lista suele convenir para grafos dispersos y recorridos. La matriz puede convenir si el tamaño cuadrático cabe y necesitas consultar parejas frecuentemente. Decide según las operaciones y la memoria, no por un umbral universal de vértices.
 
 ## Ejemplo: leer y recorrer un grafo
 
-```cpp
+```cpp test
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -142,8 +148,8 @@ int main() {
 
     // Imprimir el grafo
     for (int i = 1; i <= n; i++) {
-        cout << i << ": ";
-        for (int v : adj[i]) cout << v << " ";
+        cout << i << ":";
+        for (int v : adj[i]) cout << " " << v;
         cout << endl;
     }
 
@@ -152,15 +158,18 @@ int main() {
 ```
 
 **Input:**
-```
+
+```text input
 5 4
 1 2
 1 3
 2 4
 3 5
 ```
+
 **Output:**
-```
+
+```text output
 1: 2 3
 2: 1 4
 3: 1 5
@@ -168,6 +177,8 @@ int main() {
 5: 3
 ```
 
+**Comprueba:** hay cinco vértices y cuatro aristas; los grados 2, 2, 2, 1 y 1 suman 8. Agregar un vértice aislado no agrega ninguna arista, pero sí cambia el número de componentes. Tener $n-1$ aristas no basta para afirmar que un grafo sea árbol: también debe ser conexo.
+
 ## Siguiente paso
 
-Aprende a recorrer grafos con **BFS** y **DFS** para resolver problemas de caminos y componentes.
+[Representación de grafos y recorrido](/blog/grafos/representacion-recorridos).

@@ -23,14 +23,57 @@ En solo 7 preguntas puedes encontrar cualquier número entre 1 y 100. Con búsqu
 ## Requisito fundamental
 
 <Callout type="warning">
-  La búsqueda binaria **solo funciona en datos ordenados**. Si tus datos no están ordenados, ordénalos primero o usa búsqueda lineal.
+  Para buscar por valor en un vector, ordénalo según el mismo criterio que
+  usarás al comparar. Más generalmente, necesitas una condición monótona que
+  cambie una sola vez entre falso y verdadero. No es obligatorio almacenar un
+  arreglo: también puedes buscar una respuesta numérica si demuestras esa
+  monotonía.
 </Callout>
+
+## Invariante y fronteras
+
+Una forma de buscar la primera posición cuyo valor sea al menos el objetivo mantiene un intervalo semiabierto. Todas las posiciones antes de `izquierda` son demasiado pequeñas y todas desde `derecha` cumplen, o están después del arreglo. Al terminar, ambas fronteras coinciden en el punto de cambio.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int encontrar(const vector<int>& valores, int objetivo) {
+        int izquierda = 0, derecha = static_cast<int>(valores.size());
+        while (izquierda < derecha) {
+                int medio = izquierda + (derecha - izquierda) / 2;
+                if (valores[medio] < objetivo) izquierda = medio + 1;
+                else derecha = medio;
+        }
+        if (izquierda == static_cast<int>(valores.size()) || valores[izquierda] != objetivo) return -1;
+        return izquierda;
+}
+
+int main() {
+        cout << encontrar({1, 3, 3, 8}, 3) << '\n';
+        cout << encontrar({1, 3, 3, 8}, 4) << '\n';
+        cout << encontrar({}, 3) << '\n';
+}
+```
+
+Salida:
+
+```text output
+1
+-1
+-1
+```
+
+El intervalo se reduce estrictamente: nunca dejes `izquierda = medio` cuando el redondeo podría repetir el mismo punto. Esta versión devuelve la primera copia del valor; la versión de igualdad inmediata de abajo puede devolver cualquiera de las copias. El coste es $O(\log(n+1))$ y espacio adicional constante.
+
+**Comprueba:** todos iguales, valor menor que todos, mayor que todos, un elemento y arreglo vacío. Para búsqueda sobre una respuesta, agrega también los casos «ninguna respuesta es viable» y «todas son viables».
 
 ## Implementación básica
 
 ```cpp
 int busquedaBinaria(vector<int> &v, int objetivo) {
-    int lo = 0, hi = v.size() - 1;
+    int lo = 0, hi = static_cast<int>(v.size()) - 1;
 
     while (lo <= hi) {
         int mid = lo + (hi - lo) / 2;  // Punto medio
@@ -54,30 +97,30 @@ int busquedaBinaria(vector<int> &v, int objetivo) {
 
 Buscar `7` en `[1, 3, 5, 7, 9, 11, 13]`:
 
-| Paso | lo | hi | mid | v[mid] | Acción |
-|------|----|----|-----|--------|--------|
-| 1 | 0 | 6 | 3 | 7 | ¡Encontrado! |
+| Paso | lo  | hi  | mid | v[mid] | Acción       |
+| ---- | --- | --- | --- | ------ | ------------ |
+| 1    | 0   | 6   | 3   | 7      | ¡Encontrado! |
 
 Buscar `6`:
 
-| Paso | lo | hi | mid | v[mid] | Acción |
-|------|----|----|-----|--------|--------|
-| 1 | 0 | 6 | 3 | 7 | 6 &lt; 7, hi = 2 |
-| 2 | 0 | 2 | 1 | 3 | 6 > 3, lo = 2 |
-| 3 | 2 | 2 | 2 | 5 | 6 > 5, lo = 3 |
-| 4 | 3 | 2 | - | - | lo > hi → No encontrado |
+| Paso | lo  | hi  | mid | v[mid] | Acción                  |
+| ---- | --- | --- | --- | ------ | ----------------------- |
+| 1    | 0   | 6   | 3   | 7      | 6 &lt; 7, hi = 2        |
+| 2    | 0   | 2   | 1   | 3      | 6 > 3, lo = 2           |
+| 3    | 2   | 2   | 2   | 5      | 6 > 5, lo = 3           |
+| 4    | 3   | 2   | -   | -      | lo > hi → No encontrado |
 
 ## Complejidad
 
 - **Tiempo:** $O(\log n)$
 - **Espacio:** $O(1)$
 
-| $n$ | Pasos máximos |
-|-----|--------------|
-| 100 | 7 |
-| 1,000 | 10 |
-| 1,000,000 | 20 |
-| 1,000,000,000 | 30 |
+| $n$           | Pasos máximos |
+| ------------- | ------------- |
+| 100           | 7             |
+| 1,000         | 10            |
+| 1,000,000     | 20            |
+| 1,000,000,000 | 30            |
 
 ¡Con solo 30 comparaciones puedes buscar entre MIL MILLONES de elementos!
 
@@ -111,7 +154,7 @@ Esta es una técnica **poderosísima** en competencias. En lugar de buscar un el
 
 ```cpp
 bool esPosible(vector<int> &troncos, int longitud, int k) {
-    int total = 0;
+    long long total = 0;
     for (int t : troncos) {
         total += t / longitud;
     }
@@ -119,6 +162,7 @@ bool esPosible(vector<int> &troncos, int longitud, int k) {
 }
 
 int maxLongitud(vector<int> &troncos, int k) {
+    if (troncos.empty()) return 0;
     int lo = 1, hi = *max_element(troncos.begin(), troncos.end());
     int respuesta = 0;
 
@@ -136,15 +180,19 @@ int maxLongitud(vector<int> &troncos, int k) {
 }
 ```
 
+Este ejemplo de troncos supone longitudes no negativas y una cantidad pedida `k` positiva. Probar longitudes desde 1 evita dividir entre cero. Cada prueba recorre los troncos, así que el tiempo total es $O(n\log L)$, donde $L$ es la longitud máxima; no es solo $O(\log L)$.
+
 ## Ejercicio de práctica
 
 Dado un arreglo ordenado con posibles duplicados, encuentra cuántas veces aparece un número X.
 
 **Entrada:**
+
 ```
 8 3
 1 2 3 3 3 4 5 6
 ```
+
 **Salida:** `3`
 
 <details>
@@ -178,4 +226,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Lower y Upper Bound** para dominar las variantes de búsqueda binaria.
+[Lower bound y upper bound](/blog/busquedas/lower-upper-bound).

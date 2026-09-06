@@ -1,6 +1,6 @@
 ---
-title: "Segment Tree"
-description: "La estructura más versátil para consultas y actualizaciones en rangos"
+title: "Segment tree y Euler tour"
+description: "Combina intervalos, actualiza posiciones y convierte subárboles en rangos mediante tiempos de entrada y salida."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "segment tree", "lazy propagation", "consultas de rango"]
@@ -11,7 +11,8 @@ syllabusId: 69
 
 **Analogía:** Imagina que eres director de una escuela con 1000 alumnos. Quieres saber rápidamente: "¿Cuál es la calificación más alta entre el alumno 50 y el 200?". Además, a veces cambias calificaciones. En vez de revisar uno por uno, organizas a los alumnos en un **árbol** donde cada nodo guarda información resumida de un rango.
 
-Un Segment Tree es un **árbol binario completo** donde:
+Un segment tree divide recursivamente el arreglo en intervalos y combina sus resultados. En la representación habitual:
+
 - Cada hoja representa un elemento del arreglo.
 - Cada nodo interno guarda el resultado de combinar sus dos hijos (suma, mínimo, máximo, etc.).
 
@@ -118,22 +119,84 @@ int query(int v, int tl, int tr, int l, int r) {
 }
 ```
 
+## Euler tour: un subárbol es un intervalo
+
+Registra cada vértice **una vez al entrar** en DFS y guarda `entrada[vertice]` y `salida[vertice]`, donde salida es el siguiente índice libre al terminar sus hijos. Todos sus descendientes quedan juntos en `[entrada, salida)`.
+
+Este aplanamiento tiene $n$ elementos. No lo confundas con el recorrido de $2n-1$ elementos que repite regresos para resolver LCA. Aquí queremos que cada valor de vértice se sume una sola vez.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void aplanar(int actual, int padre, const vector<vector<int>>& vecinos, const vector<int>& valor,
+             vector<int>& entrada, vector<int>& salida, vector<int>& plano) {
+    entrada[actual] = static_cast<int>(plano.size());
+    plano.push_back(valor[actual]);
+    for (int vecino : vecinos[actual]) if (vecino != padre) aplanar(vecino, actual, vecinos, valor, entrada, salida, plano);
+    salida[actual] = static_cast<int>(plano.size());
+}
+
+int main() {
+    vector<vector<int>> vecinos = {{1, 2}, {0, 3, 4}, {0}, {1}, {1}};
+    vector<int> valor = {1, 2, 3, 4, 5}, entrada(5), salida(5), plano;
+    aplanar(0, -1, vecinos, valor, entrada, salida, plano);
+    int cantidad = static_cast<int>(plano.size());
+    vector<long long> arbol(2 * cantidad, 0);
+    for (int indice = 0; indice < cantidad; indice++) arbol[cantidad + indice] = plano[indice];
+    for (int nodo = cantidad - 1; nodo > 0; nodo--) arbol[nodo] = arbol[2 * nodo] + arbol[2 * nodo + 1];
+    auto consultar = [&](int izquierda, int derecha) {
+        long long suma = 0;
+        for (izquierda += cantidad, derecha += cantidad; izquierda < derecha; izquierda /= 2, derecha /= 2) {
+            if (izquierda % 2 == 1) suma += arbol[izquierda++];
+            if (derecha % 2 == 1) suma += arbol[--derecha];
+        }
+        return suma;
+    };
+    cout << consultar(entrada[1], salida[1]) << '\n';
+    int nodo = cantidad + entrada[3];
+    arbol[nodo] = 10;
+    while (nodo > 1) {
+        nodo /= 2;
+        arbol[nodo] = arbol[2 * nodo] + arbol[2 * nodo + 1];
+    }
+    cout << consultar(entrada[1], salida[1]) << '\n';
+}
+```
+
+Salida:
+
+```text output
+11
+17
+```
+
+El subárbol de 1 contiene valores 2, 4 y 5. Cambiar el valor del vértice 3 a 10 cambia su suma a 17. El segmento iterativo usa hojas desde `cantidad`; los límites semiabiertos se ajustan tomando los nodos que quedan sueltos antes de subir a los padres.
+
+Construir el orden y el árbol cuesta $O(n)$; actualizar o consultar un subárbol cuesta $O(\log n)$. La DFS mostrada supone profundidad moderada; usa eventos en una pila explícita para cadenas grandes. Un camino arbitrario no siempre es un intervalo Euler: para eso sirve heavy-light decomposition.
+
 ## Lazy Propagation
 
 ¿Qué pasa si quieres **sumar un valor a todo un rango**? Sin lazy, tendrías que actualizar cada elemento: $O(n)$. Con lazy, es $O(\log n)$.
 
 **Idea:** Cuando actualizas un rango completo de un nodo, no bajes a los hijos de inmediato. Guarda la actualización "pendiente" (lazy) y aplícala cuando sea necesario.
 
-```cpp
+```cpp test
+#include <iostream>
+using namespace std;
+
+const int MAXN = 200005;
+int arr[MAXN];
 long long tree[4 * MAXN];
 long long lazy[4 * MAXN];
 
-void push(int v) {
-    if (lazy[v] != 0) {
-        // Propagar a los hijos
-        tree[2*v] += lazy[v];
+void push(int v, int tl, int tr) {
+    if (lazy[v] != 0 && tl != tr) {
+        int medio = tl + (tr - tl) / 2;
+        tree[2*v] += lazy[v] * (medio - tl + 1);
         lazy[2*v] += lazy[v];
-        tree[2*v+1] += lazy[v];
+        tree[2*v+1] += lazy[v] * (tr - medio);
         lazy[2*v+1] += lazy[v];
         lazy[v] = 0;
     }
@@ -156,7 +219,7 @@ void rangeUpdate(int v, int tl, int tr, int l, int r, long long val) {
         lazy[v] += val;
         return;
     }
-    push(v);
+    push(v, tl, tr);
     int tm = (tl + tr) / 2;
     rangeUpdate(2*v, tl, tm, l, r, val);
     rangeUpdate(2*v+1, tm+1, tr, l, r, val);
@@ -166,29 +229,52 @@ void rangeUpdate(int v, int tl, int tr, int l, int r, long long val) {
 long long query(int v, int tl, int tr, int l, int r) {
     if (l > tr || r < tl) return 0;
     if (l <= tl && tr <= r) return tree[v];
-    push(v);
+    push(v, tl, tr);
     int tm = (tl + tr) / 2;
     return query(2*v, tl, tm, l, r) +
            query(2*v+1, tm+1, tr, l, r);
 }
+
+int main() {
+    for (int posicion = 1; posicion <= 4; posicion++) arr[posicion] = posicion;
+    build(1, 1, 4);
+    rangeUpdate(1, 1, 4, 1, 4, 2);
+    cout << query(1, 1, 4, 1, 2) << '\n';
+    cout << query(1, 1, 4, 3, 3) << '\n';
+    rangeUpdate(1, 1, 4, 2, 3, -1);
+    cout << query(1, 1, 4, 1, 4) << '\n';
+}
+```
+
+Salida:
+
+```text output
+7
+5
+16
 ```
 
 <Callout type="warning">
-No olvides llamar `push(v)` antes de bajar a los hijos en query y update. Si lo olvidas, los resultados serán incorrectos.
+  Antes de bajar, `push(v, tl, tr)` debe sumar la etiqueta multiplicada por la
+  longitud de **cada hijo**. La etiqueta representa un incremento por elemento,
+  no un incremento total del segmento. La guía de [lazy
+  propagation](/blog/estructuras-persistentes/lazy-propagation) separa aplicar,
+  propagar y reconstruir.
 </Callout>
 
 ## Resumen de complejidades
 
-| Operación | Sin Segment Tree | Con Segment Tree |
-|-----------|-----------------|------------------|
-| Construcción | — | $O(n)$ |
-| Consulta rango | $O(n)$ | $O(\log n)$ |
-| Actualización puntual | $O(1)$ | $O(\log n)$ |
-| Actualización rango | $O(n)$ | $O(\log n)$ con lazy |
+| Operación             | Sin Segment Tree | Con Segment Tree     |
+| --------------------- | ---------------- | -------------------- |
+| Construcción          | —                | $O(n)$               |
+| Consulta rango        | $O(n)$           | $O(\log n)$          |
+| Actualización puntual | $O(1)$           | $O(\log n)$          |
+| Actualización rango   | $O(n)$           | $O(\log n)$ con lazy |
 
 ## Ejercicio
 
 Dado un arreglo de N enteros, responde Q operaciones:
+
 - `1 l r`: suma de `[l, r]`
 - `2 pos val`: cambiar `arr[pos] = val`
 

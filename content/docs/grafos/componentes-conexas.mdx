@@ -9,6 +9,10 @@ syllabusId: 57
 
 ## ¿Qué es una componente conexa?
 
+Esta guía se refiere a grafos **no dirigidos**. En dirigidos, ignorar direcciones produce componentes débiles; exigir caminos en ambos sentidos produce SCC y requiere otro análisis. No confundas esas definiciones.
+
+**Objetivo:** asignar exactamente una etiqueta de componente a cada vértice. Un vértice aislado forma su propia componente, y el grafo vacío tiene cero. Los números de las etiquetas son arbitrarios: compara si coinciden, no su valor absoluto.
+
 Una **componente conexa** es un grupo máximo de nodos donde puedes llegar de cualquiera a cualquier otro siguiendo aristas.
 
 **Analogía:** Piensa en islas. Cada isla es una componente conexa: puedes caminar entre cualquier par de puntos dentro de la misma isla, pero no puedes caminar de una isla a otra.
@@ -24,7 +28,7 @@ Este grafo tiene **3 componentes conexas**.
 
 ## Encontrar componentes con DFS
 
-```cpp
+```cpp test
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -74,6 +78,27 @@ int main() {
     return 0;
 }
 ```
+
+Entrada:
+
+```text input
+4 1
+1 2
+```
+
+Salida:
+
+```text output
+Componentes: 3
+Nodo 1 → Componente 1
+Nodo 2 → Componente 1
+Nodo 3 → Componente 2
+Nodo 4 → Componente 3
+```
+
+Cada DFS nuevo comienza en un vértice todavía sin visitar y alcanza exactamente su componente. Conservamos visitados entre esos recorridos, por lo que cada vértice y cada arista se procesan una sola vez: tiempo $O(V+E)$ y memoria $O(V+E)$ incluyendo el grafo. La DFS recursiva requiere profundidad moderada o una conversión iterativa para casos grandes.
+
+**Autocomprobación:** la suma de los tamaños de componentes debe ser el total de vértices. Agregar una arista entre componentes distintas reduce su cantidad en uno; agregarla dentro de una componente no cambia el conteo.
 
 ## Encontrar componentes con BFS
 
@@ -189,12 +214,12 @@ int main() {
 
 ## ¿DFS/BFS o Union-Find?
 
-| Escenario | Mejor opción |
-|-----------|-------------|
-| Grafo estático, una sola vez | DFS o BFS |
-| Aristas se agregan dinámicamente | Union-Find |
-| Consultas "¿están conectados?" | Union-Find |
-| Necesitas recorrer la componente | DFS o BFS |
+| Escenario                        | Mejor opción |
+| -------------------------------- | ------------ |
+| Grafo estático, una sola vez     | DFS o BFS    |
+| Aristas se agregan dinámicamente | Union-Find   |
+| Consultas "¿están conectados?"   | Union-Find   |
+| Necesitas recorrer la componente | DFS o BFS    |
 
 ## Ejercicio de práctica
 

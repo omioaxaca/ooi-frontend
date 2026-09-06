@@ -12,10 +12,13 @@ syllabusId: 70
 **Analogía:** Imagina que tienes un libro de cuentas donde registras ingresos diarios. Necesitas frecuentemente saber: "¿Cuánto gané del día 5 al día 20?". Un Fenwick Tree organiza las sumas de forma inteligente para que tanto consultar como actualizar sea rápido.
 
 También llamado **Binary Indexed Tree (BIT)**, es una estructura que permite:
+
 - **Actualizar** un elemento en $O(\log n)$
 - **Consultar sumas de prefijos** en $O(\log n)$
 
-Es más simple y rápido que un Segment Tree, pero solo sirve para operaciones invertibles (como suma).
+Para sumas suele tener poco código y constantes pequeñas. Recuperar un intervalo arbitrario mediante diferencia de prefijos requiere una operación inversa. Existen variantes para otras consultas con restricciones, como mínimos de prefijo con actualizaciones monótonas; no son reemplazos generales de un segment tree.
+
+**Antes de empezar:** repasa sumas acumuladas. El BIT de esta guía usa índices internos desde **1**. Una actualización en cero no avanza, porque `0 & -0` es cero, y puede quedar en un ciclo infinito. Convierte índices externos una sola vez.
 
 ## La idea detrás del BIT
 
@@ -60,7 +63,8 @@ long long query(int l, int r) {
 ```
 
 <Callout type="info">
-`i & (-i)` extrae el bit menos significativo de `i`. Por ejemplo: 6 (110) & -6 (010) = 2 (010). Este truco es la clave de todo el BIT.
+  `i & (-i)` extrae el bit menos significativo de `i`. Por ejemplo: 6 (110) & -6
+  (010) = 2 (010). Este truco es la clave de todo el BIT.
 </Callout>
 
 ### ¿Cómo funciona `update`?
@@ -88,7 +92,9 @@ query(7):  7 → 6 → 4 → 0
 
 ## Ejemplo completo
 
-```cpp
+Entrada: `1 izquierda derecha` consulta un intervalo cerrado; `2 posicion valor` reemplaza un elemento. Se admiten índices de 1 a `n`, con `1 <= n <= 200000`.
+
+```cpp test
 #include <iostream>
 using namespace std;
 
@@ -142,38 +148,77 @@ int main() {
 }
 ```
 
+Entrada:
+
+```text input
+4 3
+1 2 3 4
+1 1 4
+2 2 8
+1 2 3
+```
+
+Salida:
+
+```text output
+10
+11
+```
+
+`update` suma un delta, no asigna un valor. Por eso reemplazar 2 por 8 requiere agregar 6. Cada actualización y consulta cuesta $O(\log n)$; construir mediante inserciones cuesta $O(n\log n)$ y usa $O(n)$ memoria.
+
 ## Contar inversiones con BIT
 
 Una **inversión** es un par $(i, j)$ donde $i \lt j$ pero $v[i] \gt v[j]$.
 
 **Idea:** Procesamos de derecha a izquierda. Para cada elemento, contamos cuántos menores ya vimos (están a su derecha).
 
-```cpp
-long long countInversions(vector<int> &v) {
-    int n = v.size();
-    // Coordenadas comprimidas si los valores son grandes
+La compresión convierte valores arbitrarios, incluidos negativos, en rangos desde 1. Valores iguales comparten rango y no forman inversiones entre sí: consulta hasta `rango - 1`.
 
-    long long inversiones = 0;
-    memset(bit, 0, sizeof(bit));
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
 
-    for (int i = n - 1; i >= 0; i--) {
-        inversiones += query(v[i] - 1);  // Cuántos menores a mi derecha
-        update(v[i], 1);                  // Marcar mi valor
+long long contarInversiones(const vector<int>& valores) {
+    vector<int> coordenadas = valores;
+    sort(coordenadas.begin(), coordenadas.end());
+    coordenadas.erase(unique(coordenadas.begin(), coordenadas.end()), coordenadas.end());
+    vector<int> bit(coordenadas.size() + 1, 0);
+    long long respuesta = 0;
+    for (int posicion = static_cast<int>(valores.size()) - 1; posicion >= 0; posicion--) {
+        int rango = static_cast<int>(lower_bound(coordenadas.begin(), coordenadas.end(), valores[posicion]) - coordenadas.begin()) + 1;
+        for (int indice = rango - 1; indice > 0; indice -= indice & -indice) respuesta += bit[indice];
+        for (int indice = rango; indice < static_cast<int>(bit.size()); indice += indice & -indice) bit[indice]++;
     }
+    return respuesta;
+}
 
-    return inversiones;
+int main() {
+    cout << contarInversiones({3, 1, 2, 2}) << '\n';
+    cout << contarInversiones({0, -1, -1}) << '\n';
 }
 ```
 
+Salida:
+
+```text output
+3
+2
+```
+
+El tiempo es $O(n\log n)$ y el espacio $O(n)$. El contador usa `long long` porque puede haber $n(n-1)/2$ inversiones. **Comprueba:** un arreglo ya ordenado o con todos sus valores iguales produce cero; uno descendente de valores distintos alcanza la cota máxima.
+
 ## BIT vs Segment Tree
 
-| Aspecto | BIT | Segment Tree |
-|---------|-----|-------------|
-| Código | ~10 líneas | ~40 líneas |
-| Constante | Muy rápido | Más lento |
-| Memoria | $n$ | $4n$ |
-| Operaciones | Solo invertibles (suma) | Cualquiera |
-| Lazy | No estándar | Sí |
+| Aspecto                     | BIT                              | Segment Tree                                                |
+| --------------------------- | -------------------------------- | ----------------------------------------------------------- |
+| Código                      | ~10 líneas                       | ~40 líneas                                                  |
+| Constante                   | Muy rápido                       | Más lento                                                   |
+| Memoria                     | $n$                              | $4n$                                                        |
+| Operaciones de esta versión | Sumas por diferencia de prefijos | Combinaciones asociativas con identidad, como suma o mínimo |
+| Lazy                        | No estándar                      | Sí                                                          |
 
 **Regla:** Si solo necesitas sumas, usa BIT. Para mínimo/máximo o lazy, usa Segment Tree.
 

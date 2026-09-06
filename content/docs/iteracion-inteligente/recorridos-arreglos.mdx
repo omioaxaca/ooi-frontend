@@ -1,0 +1,107 @@
+---
+title: "Iteración avanzada en arreglos"
+description: "Resuelve conteos, frecuencias, extremos, segmentos consecutivos, picos y valles con estados pequeños."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "arreglos", "frecuencias", "recorridos"]
+---
+
+## Antes de empezar
+
+Necesitas vectores, ciclos y [diccionarios](/blog/diccionarios-mapas/map-unordered-map). Muchos problemas no requieren una estructura nueva: requieren recordar correctamente lo que ya viste.
+
+## ¿Qué debes recordar?
+
+| Pregunta                                         | Estado durante el recorrido                       |
+| ------------------------------------------------ | ------------------------------------------------- |
+| ¿Cuántos valores son positivos?                  | Un contador que aumenta si se cumple la condición |
+| ¿Cuántas veces aparece cada valor?               | Un diccionario valor-frecuencia                   |
+| ¿Cuál es el mínimo y el máximo?                  | Los extremos del prefijo procesado                |
+| ¿Cuál es el bloque más largo de valores iguales? | Longitud del bloque actual y mejor longitud       |
+| ¿Cuántos picos y valles estrictos hay?           | Comparación con ambos vecinos                     |
+
+Inicializa mínimo y máximo con el primer elemento, no con cero: cero falla como máximo si todos los números son negativos. Esto exige un arreglo no vacío; si el enunciado permite uno vacío, define qué responder antes de leer el primer elemento.
+
+## Traza de un segmento
+
+Para `[2, 2, 5, 1, 1, 1]`, la longitud del bloque actual es `1, 2, 1, 1, 2, 3`. Cuando cambia el valor, el bloque anterior termina y el elemento nuevo inicia un bloque de longitud 1.
+
+Un pico estricto interior cumple que su valor es mayor que sus dos vecinos. Un valle estricto es menor que ambos. Aquí 5 es un pico; los unos empatados no forman un valle estricto. Otras definiciones pueden incluir mesetas o extremos: sigue la del problema.
+
+## C++17
+
+Este ejemplo acepta $n\geq1$. Imprime extremos; cantidad de positivos y mejor bloque; picos y valles; y finalmente las frecuencias ordenadas por valor.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    vector<int> valores(cantidad);
+    for (int& valor : valores) cin >> valor;
+    int minimo = valores[0], maximo = valores[0];
+    int positivos = 0, bloque = 0, mejor = 0;
+    int picos = 0, valles = 0;
+    map<int, int> frecuencia;
+    for (int indice = 0; indice < cantidad; indice++) {
+        int valor = valores[indice];
+        minimo = min(minimo, valor);
+        maximo = max(maximo, valor);
+        if (valor > 0) positivos++;
+        frecuencia[valor]++;
+        if (indice > 0 && valor == valores[indice - 1]) bloque++;
+        else bloque = 1;
+        mejor = max(mejor, bloque);
+        if (indice > 0 && indice + 1 < cantidad) {
+            if (valor > valores[indice - 1] && valor > valores[indice + 1]) picos++;
+            if (valor < valores[indice - 1] && valor < valores[indice + 1]) valles++;
+        }
+    }
+    cout << minimo << ' ' << maximo << '\n';
+    cout << positivos << ' ' << mejor << '\n';
+    cout << picos << ' ' << valles << '\n';
+    for (const auto& entrada : frecuencia) {
+        cout << entrada.first << ':' << entrada.second << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+6
+2 2 5 1 1 1
+```
+
+Salida:
+
+```text output
+1 5
+6 3
+1 0
+1:3
+2:2
+5:1
+```
+
+## Coste y casos borde
+
+Los conteos, extremos y segmentos cuestan $O(n)$ tiempo y espacio constante adicional. El `map` agrega $O(n\log d)$ tiempo y $O(d)$ espacio, donde $d$ es el número de valores distintos. Si los valores están en un rango pequeño conocido, un vector de frecuencias permite actualizaciones $O(1)$, pero no lo indexes con números negativos.
+
+Con uno o dos elementos no hay extremos locales interiores. Revisa también todos iguales, todos negativos y un mejor bloque que termine en el último elemento. Actualizar `mejor` en cada paso evita olvidar ese último bloque.
+
+## Practica
+
+Encuentra la longitud del segmento **estrictamente creciente** más largo de `[1, 3, 2, 4, 6, 6]`.
+
+<details>
+<summary>Respuesta</summary>
+
+La respuesta es 3 por `[2, 4, 6]`. Cambia la condición que prolonga el bloque a `valores[indice] > valores[indice - 1]`. El último 6 rompe el crecimiento estricto. No ordenes el arreglo: perderías la condición de consecutividad original.
+
+</details>

@@ -1,0 +1,114 @@
+---
+title: "Suffix array y LCP"
+description: "Ordena los sufijos mediante rangos duplicados y reutiliza sus prefijos comunes para analizar subcadenas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "suffix array", "LCP", "strings"]
+---
+
+## Antes de empezar
+
+Necesitas orden lexicográfico, pares y comparadores. Un suffix array guarda las posiciones iniciales de los sufijos en orden lexicográfico, sin copiar todos esos sufijos.
+
+Para `banana`, el orden es `a`, `ana`, `anana`, `banana`, `na`, `nana`; por tanto el arreglo es `[5, 3, 1, 0, 4, 2]`. El sufijo vacío no está incluido en esta implementación.
+
+## Duplicar la longitud conocida
+
+Al inicio conocemos el orden de bloques de un carácter. Si conocemos rangos para bloques de longitud $k$, un bloque de longitud $2k$ se describe por el par `(rango[inicio], rango[inicio+k])`.
+
+Ordenamos esos pares y asignamos un rango nuevo a cada par distinto. Para una segunda mitad que sale de la cadena usamos -1, menor que cualquier rango válido. Repetimos con longitudes 1, 2, 4, 8 hasta distinguir todos los sufijos.
+
+Comparar dos rangos cuesta $O(1)$; no usamos `substr` dentro del comparador, que copiaría cadenas y encarecería cada comparación.
+
+## LCP: prefijo común con el sufijo anterior
+
+`lcp[orden]` guarda cuántos caracteres iniciales comparte el sufijo de esa posición con el anterior; `lcp[0]=0`. Kasai recorre los inicios en orden original y conserva una coincidencia que puede disminuir como máximo en uno al avanzar una posición. Eso permite construir LCP en tiempo lineal.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <string>
+#include <utility>
+#include <vector>
+using namespace std;
+
+vector<int> suffixArray(const string& texto) {
+    int cantidad = static_cast<int>(texto.size());
+    vector<int> sufijos(cantidad), rango(cantidad), siguiente(cantidad);
+    iota(sufijos.begin(), sufijos.end(), 0);
+    for (int indice = 0; indice < cantidad; indice++) rango[indice] = static_cast<unsigned char>(texto[indice]);
+    for (int longitud = 1; longitud < cantidad; longitud *= 2) {
+        auto clave = [&](int posicion) {
+            return pair<int, int>{rango[posicion], posicion + longitud < cantidad ? rango[posicion + longitud] : -1};
+        };
+        sort(sufijos.begin(), sufijos.end(), [&](int primero, int segundo) { return clave(primero) < clave(segundo); });
+        siguiente[sufijos[0]] = 0;
+        for (int orden = 1; orden < cantidad; orden++) {
+            siguiente[sufijos[orden]] = siguiente[sufijos[orden - 1]] + (clave(sufijos[orden - 1]) != clave(sufijos[orden]));
+        }
+        rango.swap(siguiente);
+        if (rango[sufijos.back()] == cantidad - 1) break;
+    }
+    return sufijos;
+}
+
+vector<int> construirLCP(const string& texto, const vector<int>& sufijos) {
+    int cantidad = static_cast<int>(texto.size());
+    vector<int> posicion(cantidad), lcp(cantidad, 0);
+    for (int orden = 0; orden < cantidad; orden++) posicion[sufijos[orden]] = orden;
+    int coinciden = 0;
+    for (int inicio = 0; inicio < cantidad; inicio++) {
+        int orden = posicion[inicio];
+        if (orden == 0) { coinciden = 0; continue; }
+        int anterior = sufijos[orden - 1];
+        while (inicio + coinciden < cantidad && anterior + coinciden < cantidad && texto[inicio + coinciden] == texto[anterior + coinciden]) coinciden++;
+        lcp[orden] = coinciden;
+        if (coinciden > 0) coinciden--;
+    }
+    return lcp;
+}
+
+void imprimir(const vector<int>& valores) {
+    for (int indice = 0; indice < static_cast<int>(valores.size()); indice++) {
+        if (indice > 0) cout << ' ';
+        cout << valores[indice];
+    }
+    cout << '\n';
+}
+
+int main() {
+    string texto = "banana";
+    vector<int> sufijos = suffixArray(texto);
+    imprimir(sufijos);
+    imprimir(construirLCP(texto, sufijos));
+}
+```
+
+Salida:
+
+```text output
+5 3 1 0 4 2
+0 1 3 0 0 2
+```
+
+## Coste y usos
+
+Esta versión de duplicación usa `sort` en cada ronda: $O(n\log^2 n)$ tiempo y $O(n)$ memoria. No la confundas con variantes $O(n\log n)$ que ordenan rangos con counting sort. Kasai cuesta $O(n)$ adicional. Suponemos longitudes que caben holgadamente en `int`.
+
+Los sufijos que empiezan con un patrón forman un intervalo contiguo, localizable mediante búsqueda binaria. Con comparaciones directas de un patrón de longitud $m$, esa búsqueda puede costar $O(m\log n)$.
+
+Además, la cantidad de subcadenas distintas es $n(n+1)/2-\sum lcp$: cada sufijo aporta sus prefijos y LCP descuenta los ya presentes en el sufijo anterior. Usa `long long` para ese conteo.
+
+## Practica
+
+Construye los sufijos de `aaa`. ¿Cuántas subcadenas distintas existen?
+
+<details>
+<summary>Respuesta</summary>
+
+El orden es `[2, 1, 0]` y LCP `[0, 1, 2]`. Hay $3\cdot4/2-3=3$ subcadenas distintas: `a`, `aa` y `aaa`. Probar caracteres iguales ayuda a verificar los empates entre rangos.
+
+</details>

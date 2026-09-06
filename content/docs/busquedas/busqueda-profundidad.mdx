@@ -9,26 +9,28 @@ syllabusId: 35
 
 ## La analogía: explorar un laberinto
 
+**Objetivo:** recorrer todos los estados alcanzables sin entrar en un ciclo infinito. Necesitas recursión y una marca de visitado. Marca el estado **antes** de explorar vecinos; de lo contrario una arista de regreso puede volver a invocar el estado todavía pendiente.
+
 Imagina que entras a un laberinto sin mapa. Tu estrategia: en cada bifurcación, **siempre tomas el primer camino** y sigues avanzando. Cuando llegas a un callejón sin salida, **retrocedes** a la última bifurcación y pruebas el siguiente camino. Eso es **DFS** (Depth-First Search): ir lo más profundo posible antes de regresar.
 
 Otra forma de verlo: leer un libro donde cada capítulo tiene sub-capítulos. Lees el capítulo 1, luego su sub-capítulo 1.1, luego 1.1.1, hasta que no hay más sub-capítulos. Entonces regresas al 1.1, pasas a 1.2, y así sucesivamente.
 
 ## BFS vs DFS
 
-| Característica | BFS | DFS |
-|---------------|-----|-----|
-| Estructura | Cola (FIFO) | Pila / Recursión (LIFO) |
-| Exploración | Nivel por nivel | Lo más profundo primero |
-| Camino más corto | ✅ Sí (sin pesos) | ❌ No garantiza |
-| Detectar ciclos | Sí | ✅ Más natural |
-| Componentes conexas | Sí | ✅ Sí |
-| Memoria | Puede ser mucha | Generalmente menos |
+| Característica      | BFS                                | DFS                                          |
+| ------------------- | ---------------------------------- | -------------------------------------------- |
+| Estructura          | Cola (FIFO)                        | Pila / Recursión (LIFO)                      |
+| Exploración         | Nivel por nivel                    | Lo más profundo primero                      |
+| Camino más corto    | ✅ Sí (sin pesos)                  | ❌ No garantiza                              |
+| Detectar ciclos     | Sí                                 | ✅ Más natural                               |
+| Componentes conexas | Sí                                 | ✅ Sí                                        |
+| Memoria adicional   | Hasta $O(V)$ para visitados y cola | Hasta $O(V)$ para visitados y pila recursiva |
 
 ## Implementación recursiva
 
 La forma más natural de escribir DFS es con recursión:
 
-```cpp
+```cpp test
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -46,7 +48,28 @@ void dfs(int nodo) {
         }
     }
 }
+
+int main() {
+    adj[0] = {1, 2};
+    adj[1] = {0, 3};
+    adj[2] = {0, 3};
+    adj[3] = {1, 2};
+    dfs(0);
+    cout << '\n';
+}
 ```
+
+Salida:
+
+```text output
+0 1 3 2
+```
+
+El grafo contiene un ciclo, pero cada vértice se procesa una sola vez. El orden depende del orden de las listas de vecinos: no es una respuesta única del grafo. Un recorrido cuesta $O(V+E)$ tiempo contando inicialización y listas; una cadena puede requerir $O(V)$ llamadas pendientes.
+
+DFS no garantiza que el primer camino hallado sea el más corto. Si necesitas momentos de entrada y salida, una pila iterativa debe guardar también qué vecinos quedan por explorar; cambiar simplemente `queue` por `stack` no reproduce automáticamente todos los eventos de una DFS recursiva.
+
+**Practica:** invierte los vecinos de 0 en el ejemplo y traza el nuevo recorrido. Cambia el orden, pero no el conjunto alcanzable. Reinicia visitados entre búsquedas independientes; para componentes, en cambio, conserva las marcas al pasar al siguiente origen.
 
 **Línea por línea:**
 
@@ -82,12 +105,15 @@ void dfsIterativo(int inicio) {
 ```
 
 <Callout type="info">
-  La diferencia entre BFS y DFS iterativo es solo la estructura: BFS usa **cola** (queue), DFS usa **pila** (stack). El resto del código es casi idéntico.
+  La diferencia entre BFS y DFS iterativo es solo la estructura: BFS usa
+  **cola** (queue), DFS usa **pila** (stack). El resto del código es casi
+  idéntico.
 </Callout>
 
 ## Ejemplo visual
 
 Grafo:
+
 ```
     1
    / \
@@ -225,18 +251,21 @@ bool dfsBipartito(int nodo, int c) {
 <Callout type="warning">
   **1. Olvidar marcar como visitado** — Causa ciclos infinitos y stack overflow.
 
-  **2. Stack overflow en recursión profunda** — En competencias con grafos de hasta $10^5$ nodos en una sola cadena, la recursión puede fallar. Usa la versión iterativa.
+**2. Stack overflow en recursión profunda** — En competencias con grafos de hasta $10^5$ nodos en una sola cadena, la recursión puede fallar. Usa la versión iterativa.
 
-  **3. No reiniciar el arreglo de visitados** — Si ejecutas DFS múltiples veces, asegúrate de limpiar el arreglo.
+**3. No reiniciar el arreglo de visitados** — Si ejecutas DFS múltiples veces, asegúrate de limpiar el arreglo.
+
 </Callout>
 
 ## Ejercicio de práctica
 
 Dada una cuadrícula de N×M con `#` (tierra) y `.` (agua), encuentra:
+
 1. El número de islas (regiones de `#` conectadas horizontal/verticalmente).
 2. El tamaño de la isla más grande.
 
 **Ejemplo:**
+
 ```
 4 5
 . . # . .
@@ -244,7 +273,9 @@ Dada una cuadrícula de N×M con `#` (tierra) y `.` (agua), encuentra:
 . . . # #
 . . . # .
 ```
+
 **Salida:**
+
 ```
 3
 3
@@ -308,4 +339,4 @@ int main() {
 
 ## Siguiente paso
 
-Con BFS y DFS dominados, ya puedes explorar temas más avanzados de grafos como **componentes conexas**, **árboles** y **caminos más cortos**.
+[Búsqueda en amplitud: BFS](/blog/busquedas/busqueda-amplitud).

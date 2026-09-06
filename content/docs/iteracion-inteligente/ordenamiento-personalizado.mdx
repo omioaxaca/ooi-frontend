@@ -1,0 +1,90 @@
+---
+title: "Custom sort con pairs y structs"
+description: "Traduce criterios de desempate a comparadores correctos y conserva los datos asociados."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "sort", "pair", "struct", "comparadores"]
+---
+
+## Antes de empezar
+
+Necesitas `sort`, funciones y [struct y pair](/blog/estructuras-de-datos/struct). Un problema puede pedir ordenar por puntuación, después por tiempo y finalmente por nombre. Los desempates forman parte de la respuesta, no son detalles opcionales.
+
+## La pregunta de un comparador
+
+Una función de comparación recibe dos elementos y responde: **¿el primero debe aparecer estrictamente antes que el segundo?**
+
+Para una clasificación de concurso:
+
+1. Más problemas resueltos va primero.
+2. Con la misma cantidad, menor penalización va primero.
+3. Si ambos criterios empatan, el nombre menor lexicográficamente va primero.
+
+Detente en el primer criterio distinto. Comparar todos con `&&` no establece este orden: una persona podría ganar en el primer criterio aunque perdiera en el segundo.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct Participante {
+    string nombre;
+    int resueltos;
+    int penalizacion;
+};
+
+bool antes(const Participante& primero, const Participante& segundo) {
+    if (primero.resueltos != segundo.resueltos) return primero.resueltos > segundo.resueltos;
+    if (primero.penalizacion != segundo.penalizacion) return primero.penalizacion < segundo.penalizacion;
+    return primero.nombre < segundo.nombre;
+}
+
+int main() {
+    vector<Participante> participantes = {
+        {"Ana", 2, 20}, {"Beto", 3, 40}, {"Carla", 3, 20}
+    };
+    sort(participantes.begin(), participantes.end(), antes);
+    for (const Participante& participante : participantes) cout << participante.nombre << '\n';
+}
+```
+
+Salida:
+
+```text output
+Carla
+Beto
+Ana
+```
+
+Carla gana a Beto por penalización. Beto gana a Ana por cantidad de problemas, aunque su penalización sea mayor. Los campos permanecen juntos: ordenar solamente el vector de puntajes y dejar los nombres inmóviles sería incorrecto.
+
+## Cuando basta un pair
+
+`pair<int, int>` se compara primero por `first` y después por `second`, ambos crecientes. Para ordenar valores y recordar sus posiciones originales, guarda `{valor, indice}` y usa `sort` directamente. Si hay muchos campos o direcciones distintas, un `struct` con una función nombrada comunica mejor la intención.
+
+## Reglas que no puedes romper
+
+`antes(elemento, elemento)` debe ser falso. Usa `<` o `>`, nunca `<=` como criterio de ordenación. Además, si A va antes que B y B antes que C, A debe ir antes que C: es la transitividad. Incumplir el orden débil estricto exigido por `sort` puede producir comportamiento indefinido, no solamente una salida desordenada.
+
+No modifiques los elementos ni dependas de un contador cambiante dentro del comparador. Evita restar enteros para compararlos: la resta puede desbordarse. Compara directamente.
+
+`sort` no preserva necesariamente el orden original de elementos equivalentes. Si el enunciado exige preservarlo, usa `stable_sort` o agrega el índice original como último criterio.
+
+## Coste
+
+`sort` realiza $O(n\log n)$ comparaciones. En este ejemplo una comparación de nombres puede recorrer varios caracteres, así que considera también su longitud. Las referencias constantes evitan copiar los participantes en cada comparación.
+
+## Practica
+
+Ordena tareas por fecha de entrega creciente y, en un empate, duración decreciente. ¿Qué condición va primero? ¿Qué debe devolver el comparador si los dos campos son iguales?
+
+<details>
+<summary>Respuesta</summary>
+
+Primero compara fechas con `<`; solo si empatan compara duraciones con `>`. Si ambos campos empatan devuelve falso. Comprueba el resultado con `{fecha: 2, duración: 5}`, `{2, 8}` y `{1, 9}`: el orden esperado es `{1, 9}`, `{2, 8}`, `{2, 5}`.
+
+</details>

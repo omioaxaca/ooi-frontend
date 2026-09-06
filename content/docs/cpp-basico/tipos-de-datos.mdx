@@ -46,6 +46,32 @@ x = x + 1;     // "Toma el valor de x (5), súmale 1 (6), y guárdalo de nuevo e
 
 En matemáticas, `x = x + 1` no tiene sentido. En programación, es perfectamente normal.
 
+## Elegir el tipo antes de multiplicar
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+  int cantidad = 100000;
+  int precio = 100000;
+  long long total = 1LL * cantidad * precio;
+  double promedio = 7.0 / 2;
+  cout << total << '\n' << promedio << '\n';
+}
+```
+
+Salida:
+
+```text output
+10000000000
+3.5
+```
+
+`1LL` hace que la multiplicación se evalúe como `long long`. Escribir solamente `long long total = cantidad * precio` seguiría multiplicando dos `int` antes de asignar. Para la división, convertir el resultado de `7 / 2` a `double` llega tarde: ya se truncó a 3.
+
+**Autocomprobación:** un contador que empieza en cero debe inicializarse, por ejemplo `int contador = 0;`. Leer una variable local sin inicializar no equivale a leer cero. Prueba además si la **suma de muchos valores** cabe, aunque cada valor individual sí quepa en `int`.
+
 ## Los tipos de datos fundamentales
 
 Así como hay cajas de diferentes tamaños (una caja pequeña para joyas, una mediana para zapatos, una grande para ropa), en C++ hay diferentes **tipos** de variables según lo que necesites guardar.
@@ -62,6 +88,8 @@ int estudiantes = 0;
 
 **Pero `int` tiene un límite.** Solo puede guardar números entre aproximadamente **-2,147 millones** y **2,147 millones** (más exactamente, de $-2^{31}$ a $2^{31}-1$, que es $\pm 2,147,483,647$).
 
+Estos son los límites habituales de un `int` de 32 bits en los jueces, no un tamaño universal impuesto por C++. Puedes consultar `numeric_limits<int>::min()` y `max()` con `<limits>`. El mínimo exacto en 32 bits es -2147483648 y el máximo 2147483647.
+
 ¿Qué pasa si necesitas números más grandes? Usa `long long`:
 
 ```cpp
@@ -69,13 +97,16 @@ long long distancia = 9999999999LL;  // 9 mil millones (no cabe en int)
 long long poblacion = 7800000000LL;  // 7.8 mil millones de personas
 ```
 
-| Tipo | Tamaño | Rango aproximado |
-|------|--------|-----------------|
-| `int` | 4 bytes | $\pm 2.1 \times 10^9$ (2 mil millones) |
+| Tipo        | Tamaño  | Rango aproximado                       |
+| ----------- | ------- | -------------------------------------- |
+| `int`       | 4 bytes | $\pm 2.1 \times 10^9$ (2 mil millones) |
 | `long long` | 8 bytes | $\pm 9.2 \times 10^{18}$ (9 trillones) |
 
 <Callout type="warning">
-  **¡Cuidado con el desbordamiento (overflow)!** Si un `int` supera los 2 mil millones, se "da la vuelta" y se convierte en un número negativo. Este es uno de los errores más comunes en competencias. Si los datos pueden ser grandes, usa `long long`.
+  El desbordamiento de enteros **con signo** tiene comportamiento indefinido. No
+  está garantizado que dé la vuelta ni que produzca un número concreto. Elige el
+  tipo para los cálculos intermedios, no solamente para la variable donde
+  guardarás el resultado.
 </Callout>
 
 **Ejemplo de overflow:**
@@ -83,7 +114,7 @@ long long poblacion = 7800000000LL;  // 7.8 mil millones de personas
 ```cpp
 int x = 2000000000;   // 2 mil millones (cabe en int)
 int y = x + x;        // 4 mil millones (NO cabe en int)
-cout << y << endl;     // Imprime un número negativo sin sentido: -294967296
+cout << y << endl;     // No hay un resultado garantizado.
 ```
 
 ### Números decimales: `float` y `double`
@@ -96,13 +127,15 @@ double precio = 29.99;
 double promedio = 8.5;
 ```
 
-| Tipo | Precisión | Uso |
-|------|----------|-----|
-| `float` | ~7 dígitos | Casi nunca se usa en competencias |
-| `double` | ~15 dígitos | El estándar para decimales |
+| Tipo     | Precisión   | Uso                               |
+| -------- | ----------- | --------------------------------- |
+| `float`  | ~7 dígitos  | Casi nunca se usa en competencias |
+| `double` | ~15 dígitos | El estándar para decimales        |
 
 <Callout type="info">
-  En competencias, siempre usa `double` en lugar de `float`. `float` tiene muy poca precisión y puede causarte respuestas incorrectas. Si necesitas aún más precisión, usa `long double` (~18 dígitos).
+  `double` suele ser una buena opción para cálculos decimales. La precisión de
+  `long double` depende de la plataforma y en algunas coincide con `double`. El
+  tipo correcto y la tolerancia dependen de las restricciones del problema.
 </Callout>
 
 **Cuidado con la precisión decimal:**
@@ -146,7 +179,9 @@ string vacio = "";  // Un string vacío también es válido
 ```
 
 <Callout type="info">
-  Nota la diferencia: los `char` usan comillas **simples** (`'A'`), mientras que los `string` usan comillas **dobles** (`"Hola"`). Confundirlos es un error común.
+  Nota la diferencia: los `char` usan comillas **simples** (`'A'`), mientras que
+  los `string` usan comillas **dobles** (`"Hola"`). Confundirlos es un error
+  común.
 </Callout>
 
 ### Valores lógicos: `bool`
@@ -163,14 +198,14 @@ Internamente, `true` es 1 y `false` es 0. Son fundamentales para las decisiones 
 
 ## Tabla resumen de tipos de datos
 
-| Tipo | ¿Qué guarda? | Ejemplo | Tamaño |
-|------|--------------|---------|--------|
-| `int` | Enteros | `42` | 4 bytes |
-| `long long` | Enteros grandes | `9999999999LL` | 8 bytes |
-| `double` | Decimales | `3.14159` | 8 bytes |
-| `char` | Un carácter | `'A'` | 1 byte |
-| `string` | Texto | `"Hola"` | Variable |
-| `bool` | Verdadero/Falso | `true` | 1 byte |
+| Tipo        | ¿Qué guarda?    | Ejemplo        | Tamaño   |
+| ----------- | --------------- | -------------- | -------- |
+| `int`       | Enteros         | `42`           | 4 bytes  |
+| `long long` | Enteros grandes | `9999999999LL` | 8 bytes  |
+| `double`    | Decimales       | `3.14159`      | 8 bytes  |
+| `char`      | Un carácter     | `'A'`          | 1 byte   |
+| `string`    | Texto           | `"Hola"`       | Variable |
+| `bool`      | Verdadero/Falso | `true`         | 1 byte   |
 
 ## Reglas para nombrar variables
 
@@ -252,7 +287,9 @@ double resultado = (double)a / b;  // resultado vale 3.5
 ```
 
 <Callout type="warning">
-  La **división entre enteros** siempre da un entero (trunca el decimal). `7 / 2` da `3`, no `3.5`. Si necesitas el decimal, convierte al menos uno de los operandos a `double`.
+  La **división entre enteros** siempre da un entero (trunca el decimal). `7 /
+  2` da `3`, no `3.5`. Si necesitas el decimal, convierte al menos uno de los
+  operandos a `double`.
 </Callout>
 
 ## Entrada y salida con variables
@@ -278,6 +315,7 @@ int main() {
 ```
 
 **Ejecución ejemplo:**
+
 ```
 ¿Cómo te llamas? Carlos
 ¿Cuántos años tienes? 16
@@ -287,6 +325,7 @@ Hola, Carlos. Tienes 16 años.
 ## Ejercicio de práctica
 
 Lee el radio de un círculo y calcula su área y perímetro. Recuerda que:
+
 - Área = $\pi \times r^2$
 - Perímetro = $2 \times \pi \times r$
 
@@ -315,6 +354,7 @@ int main() {
 ```
 
 **Ejemplo:** si ingresas `5`, la salida es:
+
 ```
 Área: 78.5398
 Perímetro: 31.4159
@@ -324,4 +364,4 @@ Perímetro: 31.4159
 
 ## Siguiente paso
 
-Aprende sobre **Entrada y Salida** para dominar la lectura de datos y mostrar resultados, algo fundamental en toda competencia.
+[Entrada y salida de datos: STDIN y STDOUT](/blog/cpp-basico/entrada-salida).

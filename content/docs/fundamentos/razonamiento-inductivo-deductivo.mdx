@@ -1,0 +1,75 @@
+---
+title: "Razonamiento inductivo y deductivo"
+description: "Aprende a proponer una regla, buscar contraejemplos y justificar que un algoritmo funciona."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["razonamiento", "demostración", "invariantes"]
+---
+
+## Antes de empezar
+
+Necesitas operaciones aritméticas básicas y distinguir una afirmación de un ejemplo. Todavía no necesitas programar. La meta es separar dos tareas: **descubrir una posible solución** y **demostrar que siempre funciona**.
+
+## Inducir: descubrir una regla a partir de ejemplos
+
+Suma los primeros números impares:
+
+| Cantidad de términos | Suma          | Resultado |
+| -------------------- | ------------- | --------- |
+| 1                    | 1             | 1         |
+| 2                    | 1 + 3         | 4         |
+| 3                    | 1 + 3 + 5     | 9         |
+| 4                    | 1 + 3 + 5 + 7 | 16        |
+
+Los resultados parecen cuadrados. Proponemos la **conjetura**: la suma de los primeros $n$ impares es $n^2$. Este razonamiento inductivo descubre patrones; no garantiza que se mantengan para valores que todavía no probamos.
+
+Por ejemplo, $n^2+n+41$ produce primos para varios valores pequeños de $n$, pero para $n=41$ es divisible entre 41. Mil pruebas exitosas no sustituyen una demostración. Un solo contraejemplo sí basta para refutar una regla universal.
+
+## Deducir: obtener una conclusión desde hechos conocidos
+
+Si un entero es múltiplo de 6, podemos escribirlo como $6k=2(3k)$. Por lo tanto es par. La conclusión se obtiene de la definición de múltiplo, no de revisar una lista de números.
+
+La implicación inversa es falsa: 8 es par y no es múltiplo de 6. Cuando leas «si A, entonces B», no intercambies A y B sin justificarlo.
+
+## Inducción matemática: una demostración, no una suposición
+
+Aunque comparte el nombre, la inducción matemática es un método deductivo. Para demostrar la conjetura de los impares:
+
+1. **Base:** para $n=0$, la suma vacía es 0 y $0^2=0$.
+2. **Hipótesis:** supón que la suma de los primeros $k$ impares es $k^2$.
+3. **Paso:** el siguiente impar es $2k+1$. La nueva suma es $k^2+2k+1=(k+1)^2$.
+
+La base inicia una cadena; el paso garantiza que ningún eslabón falla. La conclusión cubre todos los enteros no negativos, no solamente los de la tabla.
+
+## La conexión con un algoritmo
+
+Imagina este proceso en lenguaje natural:
+
+```text
+suma comienza en 0
+para cada cantidad desde 1 hasta n:
+    agrega el impar 2 * cantidad - 1 a suma
+```
+
+Después de procesar `cantidad` términos, `suma` vale `cantidad * cantidad`. Esta afirmación que se conserva es un **invariante**. Para comprobar un algoritmo pregunta:
+
+1. ¿Es cierto antes de empezar?
+2. ¿Una repetición conserva la afirmación?
+3. ¿Qué permite concluir cuando el proceso termina?
+
+Además debes justificar la terminación: aquí quedan menos términos pendientes en cada repetición. Un proceso puede conservar una propiedad y aun así no terminar.
+
+## Diseña pruebas que intenten refutarte
+
+Para «el mayor elemento siempre está en un extremo», una lista como `[1, 9, 2]` es más útil que diez listas ordenadas. Prueba entradas pequeñas, iguales, negativas si están permitidas y en órdenes distintos. No agregues supuestos que el enunciado no da.
+
+## Practica
+
+Una persona afirma: «Si la suma de dos enteros es par, ambos son pares». ¿Es una demostración probar `2 + 4`? Encuentra un contraejemplo y formula una regla correcta.
+
+<details>
+<summary>Respuesta razonada</summary>
+
+`3 + 5 = 8` refuta la afirmación. La regla correcta es: una suma es par si los dos sumandos tienen la misma paridad. Al escribirlos como $2a+r$ y $2b+s$, con $r,s$ en 0 o 1, la suma tiene residuo $(r+s)\bmod 2$. Ese residuo es cero exactamente cuando $r=s$.
+
+</details>

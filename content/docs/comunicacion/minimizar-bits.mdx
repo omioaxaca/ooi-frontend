@@ -1,0 +1,82 @@
+---
+title: "Minimización de bits"
+description: "Cuenta los resultados distinguibles y codifica solamente la información que el receptor necesita."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "bits", "comunicación", "compresión"]
+---
+
+## Antes de empezar
+
+Repasa [diseño de protocolos](/blog/comunicacion/diseno-protocolos). Un entero de C++ puede ocupar 32 bits, pero eso no significa que siempre debas comunicar 32 bits para describirlo.
+
+## Cuenta estados, no variables
+
+Si el receptor necesita distinguir $M$ posibilidades, un mensaje fijo de $b$ bits ofrece $2^b$ representaciones. Necesitamos $2^b\geq M$, así que el mínimo posible es $\lceil\log_2 M\rceil$.
+
+Para un valor entre 0 y 999 hay 1000 estados: nueve bits distinguen 512 y diez distinguen 1024. Por tanto se necesitan diez. Para un único estado, cero bits bastan si el receptor ya sabe cuál es ese único estado.
+
+Pero primero pregunta qué debe responder el receptor. Si solo necesita saber si el valor es par, existen dos respuestas relevantes y basta un bit. No hay que reconstruir información que el problema nunca pide.
+
+## Empaqueta decisiones relacionadas
+
+Si hay 3 opciones para una variable y 5 para otra, mandar sus representaciones por separado cuesta 2 + 3 = 5 bits. Si ambas deben reconstruirse y todas las combinaciones son válidas, un identificador de 0 a 14 necesita solamente 4 bits.
+
+Si el receptor ya conoce parte del estado, aprovecha esa información compartida. Por ejemplo, si sabe que un número es uno de `[20, 40, 90]`, envía el índice en esa lista, no el número completo.
+
+## C++17: calcular el número de bits sin punto flotante
+
+Para $M>0$, la cantidad de bits de `M - 1` es exactamente la respuesta. Esto evita errores de redondeo cerca de potencias de dos.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int bitsNecesarios(unsigned long long estados) {
+    unsigned long long mayorCodigo = estados - 1;
+    int bits = 0;
+    while (mayorCodigo > 0) {
+        bits++;
+        mayorCodigo >>= 1;
+    }
+    return bits;
+}
+
+int main() {
+    unsigned long long estados;
+    cin >> estados;
+    if (estados == 0) return 0;
+    cout << bitsNecesarios(estados) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+1000
+```
+
+Salida:
+
+```text output
+10
+```
+
+El tiempo es $O(\log M)$ y la memoria adicional es constante. El caso cero se rechaza: no describe un conjunto de estados posibles del protocolo.
+
+## Longitud fija y variable no son el mismo objetivo
+
+Si algunos resultados son más probables, un código variable puede reducir la longitud **promedio** asignándoles mensajes cortos. Eso no garantiza reducir el peor caso. También debe poder decodificarse: por ejemplo, un código prefijo evita que una palabra completa sea prefijo de otra.
+
+No obtienes un bit «gratis» por terminar el mensaje si el modelo cobra la señal de terminación. Tampoco supongas una distribución de probabilidades que el enunciado no proporciona.
+
+## Practica
+
+¿Cuántos bits de longitud fija necesitas para 1, 8, 9 y 257 estados?
+
+<details>
+<summary>Respuesta</summary>
+
+0, 3, 4 y 9. Para 257, ocho bits solo alcanzan para 256 estados. Estos casos justo antes y después de una potencia de dos son buenas pruebas para una implementación.
+
+</details>

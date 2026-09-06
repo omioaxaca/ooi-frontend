@@ -1,0 +1,108 @@
+---
+title: "Divide and conquer DP"
+description: "Reduce candidatos por capa cuando el índice de la mejor transición es monótono."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "DP", "divide and conquer", "Monge"]
+---
+
+## Antes de empezar
+
+Necesitas DP por capas, prefijos y recursión. Primero construye una recurrencia correcta; esta optimización reduce el trabajo para evaluarla, no corrige estados incorrectos.
+
+Partiremos un arreglo no negativo en exactamente $g$ segmentos consecutivos no vacíos. El coste de un segmento es el cuadrado de la suma de sus elementos.
+
+## Recurrencia y cuello de botella
+
+`dp[grupos][fin]` es el menor coste para partir los primeros `fin` elementos en esa cantidad de grupos. Si el último segmento es `[corte, fin)`:
+
+$$dp[t][r]=\min_{t-1\leq k<r}\big(dp[t-1][k]+(P_r-P_k)^2\big).$$
+
+La solución directa cuesta $O(gn^2)$: cada estado prueba todos los cortes. Los prefijos permiten calcular un coste en $O(1)$, pero no reducen por sí solos la cantidad de candidatos.
+
+## La condición que permite optimizar
+
+Sea `opt[fin]` el primer corte óptimo de una capa. Necesitamos que sea no decreciente. Para este coste con valores no negativos, la matriz de costes cumple la desigualdad de Monge: al separar un intervalo en tres partes de sumas $A,B,C$, la diferencia pertinente es $2AC\geq0$. Esto garantiza la monotonía de los mejores cortes.
+
+Calcula primero el estado del punto medio, probando sus cortes permitidos. Si el óptimo es `mejorCorte`, los estados de su izquierda no necesitan candidatos mayores, y los de su derecha no necesitan candidatos menores. Repite recursivamente.
+
+## C++17
+
+Suponemos $1\leq g\leq n$ y valores no negativos cuya suma es como máximo $10^9$, para mantener los cuadrados dentro de `long long`.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const long long INF = 4000000000000000000LL;
+
+void calcular(int inicio, int fin, int candidatoInicio, int candidatoFin,
+              const vector<long long>& anterior, vector<long long>& actual, const vector<long long>& prefijo) {
+    if (inicio > fin) return;
+    int medio = inicio + (fin - inicio) / 2;
+    long long mejor = INF;
+    int mejorCorte = candidatoInicio;
+    for (int corte = candidatoInicio; corte <= min(candidatoFin, medio - 1); corte++) {
+        if (anterior[corte] == INF) continue;
+        long long suma = prefijo[medio] - prefijo[corte];
+        long long coste = anterior[corte] + suma * suma;
+        if (coste < mejor) { mejor = coste; mejorCorte = corte; }
+    }
+    actual[medio] = mejor;
+    calcular(inicio, medio - 1, candidatoInicio, mejorCorte, anterior, actual, prefijo);
+    calcular(medio + 1, fin, mejorCorte, candidatoFin, anterior, actual, prefijo);
+}
+
+int main() {
+    int cantidad, grupos;
+    cin >> cantidad >> grupos;
+    vector<long long> prefijo(cantidad + 1, 0);
+    for (int indice = 1; indice <= cantidad; indice++) {
+        long long valor;
+        cin >> valor;
+        prefijo[indice] = prefijo[indice - 1] + valor;
+    }
+    vector<long long> anterior(cantidad + 1, INF);
+    anterior[0] = 0;
+    for (int grupo = 1; grupo <= grupos; grupo++) {
+        vector<long long> actual(cantidad + 1, INF);
+        calcular(grupo, cantidad, grupo - 1, cantidad - 1, anterior, actual, prefijo);
+        anterior.swap(actual);
+    }
+    cout << anterior[cantidad] << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4 2
+1 2 3 4
+```
+
+Salida:
+
+```text output
+52
+```
+
+Los tres cortes posibles cuestan 82, 58 y 52. La mejor partición es `[1,2,3] | [4]`, de sumas 6 y 4.
+
+## Coste y errores frecuentes
+
+La evaluación de una capa cuesta $O(n\log n)$ con esta técnica, y el total $O(gn\log n)$. Guardamos solo dos capas y prefijos: memoria $O(n)$.
+
+No uses la capa actual como si fuera la anterior: permitirías un número incorrecto de grupos. Los rangos de cortes deben excluir segmentos vacíos. Si cambias el coste o permites negativos, vuelve a demostrar la monotonía; no se conserva automáticamente.
+
+## Practica
+
+Para `[1,2,3,4]`, verifica los casos de un grupo y cuatro grupos. ¿Qué utilidad tiene conservar una implementación cuadrática para entradas pequeñas?
+
+<details>
+<summary>Respuesta</summary>
+
+Un grupo cuesta $10^2=100$; cuatro cuestan $1+4+9+16=30$. La versión cuadrática permite comparar resultados y los índices óptimos en casos pequeños. Encontrar un óptimo que disminuya refuta la condición necesaria antes de confiar en la optimización.
+
+</details>

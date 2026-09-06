@@ -1,0 +1,81 @@
+---
+title: "Razonamiento adversarial"
+description: "Analiza una estrategia suponiendo respuestas difíciles pero siempre compatibles con algún secreto válido."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "adversario", "interactivos", "peor caso"]
+---
+
+## Antes de empezar
+
+Repasa conjuntos de candidatos y cotas inferiores. Un adversario de análisis no puede responder cualquier cosa: debe conservar al menos una entrada compatible con todas las respuestas dadas.
+
+Pensar de esta forma ayuda a detectar estrategias que solo funcionan con entradas favorables. Si una pregunta separa un conjunto en tamaños 1 y 99, el adversario puede escoger la rama de 99 mientras sea consistente.
+
+## Un secreto que no necesitas fijar al inicio de la prueba
+
+Para estudiar el peor caso, comienza con todos los candidatos. Después de cada pregunta conserva una de las partes no vacías. Al terminar, cualquier candidato restante explica toda la transcripción como si hubiera sido el secreto fijo desde el principio.
+
+Eso es distinto de permitir mentiras. Si ya contestó que el secreto es como máximo 5, no puede después responder de manera que obligue a que sea 9. La intersección de restricciones nunca debe quedar vacía.
+
+## Ejemplo: conservar la mitad más grande
+
+En una búsqueda por mitades de 1 a 10, un adversario puede conservar tamaños 5, 3, 2 y 1. Fuerza cuatro preguntas. La cota general es $\lceil\log_2 n\rceil$ para esta estrategia.
+
+El siguiente simulador elige siempre la rama con más candidatos; si empatan, conserva la izquierda. Es útil para este modelo, pero esa regla codiciosa no encuentra necesariamente el peor caso en cualquier juego de consultas.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    int izquierda = 1, derecha = cantidad, preguntas = 0;
+    while (izquierda < derecha) {
+        int medio = izquierda + (derecha - izquierda) / 2;
+        int cantidadSi = medio - izquierda + 1;
+        int cantidadNo = derecha - medio;
+        if (cantidadSi >= cantidadNo) derecha = medio;
+        else izquierda = medio + 1;
+        preguntas++;
+    }
+    cout << preguntas << '\n' << izquierda << '\n';
+}
+```
+
+Entrada:
+
+```text input
+10
+```
+
+Salida:
+
+```text output
+4
+1
+```
+
+El candidato final 1 es compatible con cada respuesta elegida. El tiempo es $O(\log n)$ y el espacio adicional es constante.
+
+## Preguntas para revisar una estrategia
+
+¿Qué respuesta elimina menos candidatos? ¿Podría quedar un caso borde que nunca consultas? ¿Dos candidatos distintos generan siempre las mismas respuestas? ¿Tu algoritmo termina si todos los empates se resuelven contra él?
+
+Para conjuntos pequeños, enumera todos los secretos y compara el máximo número de consultas con el de tu simulador. Un caso aleatorio exitoso no demuestra una garantía de peor caso.
+
+## Aleatoriedad y modelos
+
+Si una solución usa azar, especifica si el adversario fija la entrada antes de ver ese azar o si puede adaptarse a las consultas. Las garantías pueden cambiar. No presupongas que un juez «probablemente» no elegirá una entrada difícil cuando el enunciado pide acertar siempre.
+
+## Practica
+
+Un algoritmo pregunta «¿es 1?», luego «¿es 2?» y así sucesivamente entre $n$ candidatos. ¿Qué respuestas puede dar un adversario y cuántas preguntas fuerza?
+
+<details>
+<summary>Respuesta</summary>
+
+Puede responder no a las primeras $n-1$ posibilidades, dejando únicamente la última. Fuerza $n-1$ preguntas si el algoritmo deduce el último candidato sin consultarlo. Esa transcripción es consistente con que el secreto siempre haya sido $n$.
+
+</details>

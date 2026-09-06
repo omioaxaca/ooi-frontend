@@ -1,17 +1,55 @@
 ---
-title: "Representación de Árboles"
-description: "Aprende las diferentes formas de representar árboles en código"
+title: "Árboles binarios y su representación"
+description: "Distingue un árbol binario de un BST, representa sus hijos y comprende raíz, hojas, altura y profundidad."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "árboles", "representación", "estructura de datos"]
 syllabusId: 50
 ---
 
+## El punto de partida: dos lugares para hijos
+
+Un árbol binario enraizado tiene, para cada nodo, un posible hijo izquierdo y un posible hijo derecho. Puede tener cero, uno o dos hijos. Izquierda y derecha son posiciones distintas: un nodo con solo hijo izquierdo no tiene la misma forma que uno con solo hijo derecho.
+
+No hay una regla automática sobre sus valores. Un **árbol binario de búsqueda (BST)** añade una relación de orden; un **heap** añade otra propiedad diferente. Tampoco todo árbol binario está balanceado: puede ser una cadena de altura $n-1$.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Nodo { int valor, izquierdo, derecho; };
+
+int altura(const vector<Nodo>& arbol, int actual) {
+    if (actual == -1) return -1;
+    return 1 + max(altura(arbol, arbol[actual].izquierdo), altura(arbol, arbol[actual].derecho));
+}
+
+int main() {
+    vector<Nodo> arbol = {{8, 1, 2}, {20, -1, -1}, {3, -1, -1}};
+    cout << altura(arbol, 0) << '\n';
+}
+```
+
+Salida:
+
+```text output
+1
+```
+
+La raíz de valor 8 tiene hijos 20 y 3. Es un árbol binario, pero no un BST. `-1` representa un hijo ausente; se comprueba antes de acceder al vector. Medimos altura en **aristas**, de modo que una hoja tiene altura 0. La función recorre $O(n)$ nodos y usa pila proporcional a la altura; para árboles muy profundos usa un recorrido iterativo.
+
+Un árbol **lleno** tiene cero o dos hijos por nodo; uno **completo** llena niveles de izquierda a derecha salvo quizá el último; uno **perfecto** tiene todos los niveles completos. No son sinónimos.
+
+**Practica:** agrega un hijo al nodo 20. La altura pasa a 2. Si asignas a un hijo el índice de un ancestro, creas un ciclo y la estructura deja de ser un árbol: la función anterior ya no tiene garantizada la terminación.
+
 ## ¿Qué es un árbol?
 
 Un **árbol** es un grafo conectado sin ciclos. Piénsalo como un árbol genealógico: hay un **ancestro** (raíz), sus **hijos**, los hijos de sus hijos (nietos), etc.
 
 **Propiedades clave:**
+
 - Un árbol con N nodos tiene exactamente **N-1 aristas**.
 - Hay exactamente **un camino** entre cualquier par de nodos.
 - Si quitas una arista, se desconecta. Si agregas una, creas un ciclo.
@@ -26,15 +64,15 @@ Un **árbol** es un grafo conectado sin ciclos. Piénsalo como un árbol geneal�
     4 5     6    ← Hojas: 4, 5, 6
 ```
 
-| Término | Significado |
-|---------|-------------|
-| **Raíz** | Nodo superior (1) |
-| **Padre** | Nodo directamente arriba (padre de 4 es 2) |
-| **Hijo** | Nodo directamente abajo (hijos de 2 son 4 y 5) |
-| **Hoja** | Nodo sin hijos (4, 5, 6) |
-| **Profundidad** | Distancia a la raíz (profundidad de 4 es 2) |
-| **Altura** | Distancia máxima a una hoja |
-| **Subárbol** | Un nodo y todos sus descendientes |
+| Término         | Significado                                    |
+| --------------- | ---------------------------------------------- |
+| **Raíz**        | Nodo superior (1)                              |
+| **Padre**       | Nodo directamente arriba (padre de 4 es 2)     |
+| **Hijo**        | Nodo directamente abajo (hijos de 2 son 4 y 5) |
+| **Hoja**        | Nodo sin hijos (4, 5, 6)                       |
+| **Profundidad** | Distancia a la raíz (profundidad de 4 es 2)    |
+| **Altura**      | Distancia máxima a una hoja                    |
+| **Subárbol**    | Un nodo y todos sus descendientes              |
 
 ## Representación 1: Lista de adyacencia
 

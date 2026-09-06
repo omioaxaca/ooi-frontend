@@ -1,11 +1,50 @@
 ---
-title: "Map y Unordered Map"
-description: "Almacena pares clave-valor para búsquedas ultrarrápidas"
+title: "Sets y diccionarios: set, map y unordered_map"
+description: "Distingue pertenencia de asociación clave-valor y elige entre orden garantizado y búsqueda hash."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "map", "unordered_map", "diccionarios", "hash"]
 syllabusId: 36
 ---
+
+## Sets: guardar valores distintos
+
+Un `set` responde «¿aparece este valor?» y mantiene sus elementos ordenados, sin duplicados. Un `map` responde «¿qué dato corresponde a esta clave?». Para contar cuántas veces aparece cada número, necesitas un `map<int, int>`, no solamente un set.
+
+```cpp test
+#include <iostream>
+#include <map>
+#include <set>
+using namespace std;
+
+int main() {
+    set<int> distintos;
+    map<int, int> frecuencia;
+    for (int valor : {4, 2, 4}) {
+        distintos.insert(valor);
+        frecuencia[valor]++;
+    }
+    cout << distintos.size() << ' ' << frecuencia[4] << '\n';
+    auto encontrado = distintos.lower_bound(3);
+    if (encontrado != distintos.end()) cout << *encontrado << '\n';
+    distintos.erase(4);
+    cout << distintos.count(4) << '\n';
+}
+```
+
+Salida:
+
+```text output
+2 2
+4
+0
+```
+
+`insert`, `find`, `count`, `erase(valor)` y los límites de un `set` cuestan $O(\log n)$. `count` devuelve 0 o 1. No desreferencies `end()`: significa que no se encontró un elemento válido. Usa `conjunto.lower_bound(valor)` y no el algoritmo genérico sobre sus iteradores, que puede necesitar un recorrido lineal.
+
+Un `multiset` conserva copias repetidas. `multiset.erase(valor)` elimina **todas** sus copias; para eliminar una sola, busca un iterador y pásalo a `erase` si no es `end()`.
+
+**Comprueba:** insertar 7 tres veces da tamaño 1 en `set`, tamaño 3 en `multiset` y frecuencia 3 si incrementas `map[7]` cada vez. Las tres estructuras resuelven preguntas diferentes.
 
 ## La analogía: un diccionario real
 
@@ -54,7 +93,9 @@ int main() {
 ```
 
 <Callout type="warning">
-  **Cuidado con `[]`**: si accedes a una clave que no existe con `edades["Daniel"]`, C++ **la crea automáticamente** con valor 0. Usa `.count()` o `.find()` para verificar primero.
+  **Cuidado con `[]`**: si accedes a una clave que no existe con
+  `edades["Daniel"]`, C++ **la crea automáticamente** con valor 0. Usa
+  `.count()` o `.find()` para verificar primero.
 </Callout>
 
 ## unordered_map: más rápido pero desordenado
@@ -63,6 +104,8 @@ int main() {
 
 ```cpp
 #include <unordered_map>
+#include <iostream>
+#include <string>
 using namespace std;
 
 int main() {
@@ -82,17 +125,21 @@ int main() {
 
 ## ¿Cuándo usar cuál?
 
-| Característica | `map` | `unordered_map` |
-|---------------|-------|-----------------|
-| Orden | ✅ Ordenado por clave | ❌ Sin orden |
-| Inserción | $O(\log n)$ | $O(1)$ promedio |
-| Búsqueda | $O(\log n)$ | $O(1)$ promedio |
-| Peor caso | $O(\log n)$ | $O(n)$ (colisiones) |
-| Claves soportadas | Cualquiera con `<` | Necesita hash |
-| Recomendación | Cuando necesitas orden | Cuando solo necesitas velocidad |
+| Característica    | `map`                  | `unordered_map`                 |
+| ----------------- | ---------------------- | ------------------------------- |
+| Orden             | ✅ Ordenado por clave  | ❌ Sin orden                    |
+| Inserción         | $O(\log n)$            | $O(1)$ promedio                 |
+| Búsqueda          | $O(\log n)$            | $O(1)$ promedio                 |
+| Peor caso         | $O(\log n)$            | $O(n)$ (colisiones)             |
+| Claves soportadas | Cualquiera con `<`     | Necesita hash                   |
+| Recomendación     | Cuando necesitas orden | Cuando solo necesitas velocidad |
 
 <Callout type="info">
-  En competencias, `map` es la opción **segura**. `unordered_map` es más rápido en promedio, pero en casos extremos puede ser más lento. Si usas `unordered_map` con claves tipo `int` o `string`, funciona bien. Para claves personalizadas (`pair`, structs), usa `map`.
+  `map` ofrece operaciones logarítmicas garantizadas. `unordered_map` puede
+  sufrir muchas colisiones incluso con claves `int` o `string`; su coste
+  constante es promedio, no una garantía de peor caso. Para claves
+  personalizadas necesitas un hash apropiado, o un criterio de orden si eliges
+  `map`.
 </Callout>
 
 ## Aplicación estrella: conteo de frecuencias
@@ -158,11 +205,14 @@ cout << m.rbegin()->first << endl;  // 5 (mayor clave)
 Dado un texto con N palabras, imprime cada palabra y cuántas veces aparece, en orden alfabético.
 
 **Entrada:**
+
 ```
 7
 hola mundo hola como estas hola mundo
 ```
+
 **Salida:**
+
 ```
 como 1
 estas 1
@@ -201,6 +251,6 @@ Usamos `map` porque automáticamente ordena las claves (palabras) en orden alfab
 
 </details>
 
-## Siguiente paso
+## Material complementario
 
-Aprende sobre **Set y Multiset**, las estructuras que almacenan solo claves (sin valores) de forma ordenada.
+Consulta [set y multiset](/blog/diccionarios-mapas/set-multiset) para más ejemplos de operaciones con conjuntos.

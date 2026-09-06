@@ -9,9 +9,10 @@ syllabusId: 71
 
 ## ¿Qué es un Trie?
 
-**Analogía:** Imagina un diccionario organizado como un árbol. La raíz es vacía. Desde ahí, hay una rama para cada primera letra. Desde cada letra, hay ramas para la segunda letra, y así sucesivamente. Para buscar "casa", sigues: c → a → s → a. Si el camino existe, la palabra está en el diccionario.
+**Analogía:** imagina un diccionario organizado como un árbol. La raíz representa el prefijo vacío. Para buscar «casa», sigues sus letras. Que exista el camino solo garantiza que es un **prefijo**; para que sea una palabra completa, el nodo final debe estar marcado como terminal.
 
 Un **Trie** (se pronuncia "trai", viene de re**trie**val) almacena un conjunto de strings donde:
+
 - Cada nodo representa un carácter
 - El camino de la raíz a un nodo forma un prefijo
 - Inserción y búsqueda son $O(L)$ donde L es la longitud del string
@@ -30,10 +31,73 @@ Palabras: car, cat, card, care, dog, do
   d    e
 ```
 
+## Nodos creados según se necesitan
+
+Este ejemplo admite palabras no vacías de letras minúsculas `a` a `z`. Cada nodo inicializa sus hijos a -1. Usamos índices en un vector para no conservar apuntadores o referencias que una realocación podría invalidar.
+
+```cpp test
+#include <array>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct Nodo {
+    array<int, 26> hijos;
+    bool terminal = false;
+    Nodo() { hijos.fill(-1); }
+};
+
+struct Trie {
+    vector<Nodo> nodos = vector<Nodo>(1);
+    void insertar(const string& palabra) {
+        int actual = 0;
+        for (char simbolo : palabra) {
+            int letra = simbolo - 'a';
+            if (nodos[actual].hijos[letra] == -1) {
+                nodos[actual].hijos[letra] = static_cast<int>(nodos.size());
+                nodos.emplace_back();
+            }
+            actual = nodos[actual].hijos[letra];
+        }
+        nodos[actual].terminal = true;
+    }
+    bool buscar(const string& palabra, bool soloPrefijo = false) const {
+        int actual = 0;
+        for (char simbolo : palabra) {
+            actual = nodos[actual].hijos[simbolo - 'a'];
+            if (actual == -1) return false;
+        }
+        return soloPrefijo || nodos[actual].terminal;
+    }
+};
+
+int main() {
+    Trie diccionario;
+    diccionario.insertar("card");
+    cout << diccionario.buscar("car") << ' ' << diccionario.buscar("car", true) << '\n';
+    diccionario.insertar("car");
+    cout << diccionario.buscar("car") << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 1
+1
+```
+
+Insertar o buscar una palabra de longitud $L$ cuesta $O(L)$ con alfabeto fijo. Si la suma de longitudes insertadas es $S$, hay a lo sumo $S+1$ nodos y la tabla de hijos usa $O(26S)$ memoria. No confundas número de palabras con número de nodos.
+
+**Comprueba:** insertar la misma palabra dos veces no cambia un trie usado como conjunto. Si necesitas multiplicidades, guarda contadores terminales. Una letra mayúscula no es un índice válido para `simbolo - 'a'`; normaliza o cambia el alfabeto según el enunciado.
+
 ## Implementación con arreglos
 
+La alternativa fija de abajo supone una suma de longitudes no mayor que 100000. Antes de usar un límite fijo, calcula memoria y verifica que `cnt` nunca lo alcance.
+
 ```cpp
-const int MAXN = 100005 * 30;  // Máximo total de caracteres
+const int MAXN = 100001;
 const int ALPHA = 26;          // Tamaño del alfabeto
 
 int trie[MAXN][ALPHA];   // trie[nodo][letra] = siguiente nodo
@@ -142,7 +206,8 @@ Un uso poderoso: encontrar el **XOR máximo** de un número con cualquier elemen
 **Idea:** Inserta los números bit a bit (del más significativo al menos) en un Trie. Para maximizar XOR, en cada bit intenta ir por el camino opuesto.
 
 ```cpp
-int bitTrie[MAXN * 32][2];
+const int MAXBITNODOS = 1 + 30 * 100000;
+int bitTrie[MAXBITNODOS][2];
 int bitCnt;
 
 void initBit() {
@@ -193,12 +258,14 @@ int maxXor(int num) {
 
 ## Ejemplo completo
 
+Esta versión fija asume prefijos consultados no vacíos y como máximo 100000 caracteres insertados en total. Las inserciones repetidas incrementan sus contadores, a diferencia de la búsqueda como conjunto del ejemplo inicial. El trie de bits anterior asume un conjunto no vacío y valores en `[0, 2^30)`.
+
 ```cpp
 #include <iostream>
 #include <cstring>
 using namespace std;
 
-const int MAXN = 100005 * 30;
+const int MAXN = 100001;
 int trie[MAXN][26];
 bool fin[MAXN];
 int pasos[MAXN];

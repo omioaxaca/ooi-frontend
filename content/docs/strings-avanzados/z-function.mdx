@@ -1,0 +1,93 @@
+---
+title: "Z function"
+description: "Calcula cuánto coincide cada sufijo con el prefijo completo y reutiliza una ventana ya comprobada."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Z function", "strings", "patrones"]
+---
+
+## Antes de empezar
+
+Necesitas strings, intervalos semiabiertos y comparación de prefijos. `z[indice]` es la longitud de la coincidencia entre la cadena completa y el sufijo que comienza en `indice`. Usaremos la convención `z[0] = 0`.
+
+Para `aaaa`, la función es `[0, 3, 2, 1]`. A diferencia de la función prefijo de KMP, Z compara un sufijo que **empieza** en la posición con el comienzo completo de la cadena.
+
+## Reutilizar el intervalo conocido
+
+Mantén `[izquierda, derecha)` como la coincidencia con el prefijo que llega más a la derecha. Si la posición actual cae dentro, ya conocemos parte de su coincidencia: se parece a la posición `indice - izquierda` del prefijo.
+
+Podemos copiar como mínimo el menor entre `z[indice - izquierda]` y `derecha - indice`. Fuera de ese límite todavía no sabemos nada: comparamos caracteres para intentar extenderlo.
+
+Si la nueva coincidencia alcanza más lejos, reemplazamos la ventana. El extremo derecho nunca retrocede.
+
+## C++17: búsqueda de un patrón
+
+Construimos `patron + '#' + texto`. El separador no debe aparecer en ninguno de los dos. Este ejemplo supone cadenas de letras minúsculas y patrón no vacío.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+vector<int> funcionZ(const string& cadena) {
+    int longitud = static_cast<int>(cadena.size());
+    vector<int> coincidencia(longitud, 0);
+    int izquierda = 0, derecha = 0;
+    for (int indice = 1; indice < longitud; indice++) {
+        if (indice < derecha) coincidencia[indice] = min(derecha - indice, coincidencia[indice - izquierda]);
+        while (indice + coincidencia[indice] < longitud && cadena[coincidencia[indice]] == cadena[indice + coincidencia[indice]]) {
+            coincidencia[indice]++;
+        }
+        if (indice + coincidencia[indice] > derecha) {
+            izquierda = indice;
+            derecha = indice + coincidencia[indice];
+        }
+    }
+    return coincidencia;
+}
+
+int main() {
+    string texto = "ababa", patron = "aba";
+    string combinada = patron + '#' + texto;
+    vector<int> coincidencia = funcionZ(combinada);
+    bool primera = true;
+    int tamano = static_cast<int>(patron.size());
+    for (int indice = tamano + 1; indice < static_cast<int>(combinada.size()); indice++) {
+        if (coincidencia[indice] >= tamano) {
+            if (!primera) cout << ' ';
+            cout << indice - tamano - 1;
+            primera = false;
+        }
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 2
+```
+
+## Coste y justificación
+
+Las comparaciones que extienden una ventana avanzan `derecha`, que puede avanzar como máximo el tamaño de la cadena. Las posiciones interiores reutilizan trabajo ya conocido. El algoritmo cuesta $O(n+m)$ tiempo y espacio para la cadena combinada y el arreglo Z.
+
+Si copias un valor Z sin limitarlo por `derecha - indice`, podrías afirmar coincidencias de caracteres nunca comparados. Si mezclas intervalos cerrados y semiabiertos, suelen aparecer errores de una posición.
+
+## Otras aplicaciones
+
+Z permite reconocer prefijos repetidos, buscar periodos y comparar un prefijo con muchas posiciones. Para un periodo candidato $p$, una condición de repetición hasta el final es `z[p] >= longitud - p`; si buscas una repetición exacta de bloques completos, exige además que la longitud sea divisible entre $p$.
+
+## Practica
+
+Para `ababab`, ¿qué valores tienen `z[2]` y `z[4]`? ¿Por qué 2 es un periodo completo?
+
+<details>
+<summary>Respuesta</summary>
+
+Valen 4 y 2. Desde la posición 2 coincide todo lo que queda con el prefijo, y 6 es divisible entre 2. Así la cadena está formada por tres copias de `ab`.
+
+</details>

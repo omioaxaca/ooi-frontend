@@ -9,6 +9,8 @@ syllabusId: 34
 
 ## La analogía: una onda expansiva
 
+**Antes de empezar:** necesitas una cola y un vector de vecinos por estado. No hace falta dominar toda la teoría de grafos: un vértice es un estado y una arista un paso permitido. BFS encuentra el menor número de pasos cuando todos tienen el mismo coste no negativo.
+
 Imagina que dejas caer una piedra en un estanque. Las ondas se expanden en **círculos concéntricos**, tocando primero lo más cercano y después lo más lejano. **BFS** (Breadth-First Search) funciona exactamente así: explora **todos los vecinos** de un nodo antes de pasar al siguiente nivel.
 
 Otra forma de verlo: estás buscando a alguien en un edificio. Primero revisas **todas** las habitaciones del piso actual, y solo después subes al siguiente piso.
@@ -22,7 +24,8 @@ Otra forma de verlo: estás buscando a alguien en un edificio. Primero revisas *
 
 ## Implementación básica
 
-```cpp
+```cpp test
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -51,7 +54,30 @@ void bfs(int inicio) {
         }
     }
 }
+
+int main() {
+    adj[0] = {1, 2};
+    adj[1] = {0, 3};
+    adj[2] = {0, 4};
+    adj[3] = {1, 4};
+    adj[4] = {2, 3};
+    fill(distancia, distancia + 6, -1);
+    bfs(0);
+    cout << distancia[4] << ' ' << distancia[5] << '\n';
+}
 ```
+
+Salida:
+
+```text output
+2 -1
+```
+
+El vértice 4 es alcanzable en dos pasos y el 5 está aislado. La distancia inicial -1 distingue «no alcanzado» de la distancia cero del origen. Marca un vecino cuando lo agregas a la cola, para que dos padres no lo agreguen repetidamente.
+
+Cada estado se encola como máximo una vez y sus aristas se revisan una vez: tiempo $O(V+E)$ y $O(V)$ espacio adicional. Si ejecutas otra búsqueda independiente, reinicia `visitado`, distancias y padres.
+
+**Autocomprobación:** consulta el propio origen, un estado aislado y un destino con dos rutas de longitudes distintas. Si los costes cambian entre aristas, el orden FIFO ya no garantiza el camino de menor coste: usa el algoritmo que corresponda a los pesos.
 
 **Línea por línea:**
 
@@ -71,13 +97,13 @@ Grafo: `0 -- 1 -- 3 -- 4`, `0 -- 2 -- 4`
 
 BFS desde 0:
 
-| Paso | Cola | Procesando | Distancias actualizadas |
-|------|------|------------|------------------------|
-| 1 | [0] | 0 | dist[0]=0 |
-| 2 | [1, 2] | 1 | dist[1]=1 |
-| 3 | [2, 3] | 2 | dist[2]=1 |
-| 4 | [3, 4] | 3 | dist[3]=2 |
-| 5 | [4] | 4 | dist[4]=2 |
+| Paso | Cola   | Procesando | Distancias actualizadas |
+| ---- | ------ | ---------- | ----------------------- |
+| 1    | [0]    | 0          | dist[0]=0               |
+| 2    | [1, 2] | 1          | dist[1]=1               |
+| 3    | [2, 3] | 2          | dist[2]=1               |
+| 4    | [3, 4] | 3          | dist[3]=2               |
+| 5    | [4]    | 4          | dist[4]=2               |
 
 Resultado: el camino más corto de 0 a 4 tiene longitud **2** (por 0→2→4).
 
@@ -150,6 +176,7 @@ int main() {
 ```
 
 **Input de ejemplo:**
+
 ```
 5 5
 S . . . .
@@ -290,4 +317,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende **Búsqueda en Profundidad (DFS)**, la contraparte de BFS que explora lo más lejos posible antes de retroceder.
+[Búsqueda binaria](/blog/busquedas/busqueda-binaria).

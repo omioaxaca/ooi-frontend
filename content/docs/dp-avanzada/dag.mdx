@@ -1,0 +1,103 @@
+---
+title: "Programación dinámica en grafos: DAG"
+description: "Procesa dependencias en orden topológico para contar caminos y calcular recorridos óptimos sin ciclos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "DP", "DAG", "orden topológico", "caminos"]
+---
+
+## Antes de empezar
+
+Repasa [ordenamiento topológico](/blog/grafos-avanzados/ordenamiento-topologico). Un DAG es un grafo dirigido sin ciclos. Existe un orden en el que toda arista va de un vértice anterior a uno posterior: ese orden permite evaluar dependencias una sola vez.
+
+## Dos preguntas, el mismo orden
+
+Desde una fuente queremos contar caminos hasta un destino y encontrar la mayor cantidad de aristas de uno de esos caminos. Define `formas[fuente] = 1` por el camino vacío y `largo[fuente] = 0`. Los demás empiezan con cero formas y longitud inalcanzable.
+
+Por cada arista `actual -> vecino`:
+
+1. Agrega `formas[actual]` a `formas[vecino]`.
+2. Si el actual es alcanzable, intenta mejorar `largo[vecino]` con `largo[actual] + 1`.
+
+La suma cuenta caminos diferentes por su última arista. El máximo elige el mejor predecesor. El orden topológico garantiza que al procesar un vértice ya recibió todas las contribuciones de sus predecesores.
+
+## C++17
+
+Usamos Kahn con grados de entrada. Las formas se calculan módulo $10^9+7$. Aristas paralelas cuentan como elecciones distintas; si el enunciado identifica esos caminos, elimina duplicados.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+int main() {
+    int vertices, aristas, fuente, destino;
+    cin >> vertices >> aristas >> fuente >> destino;
+    vector<vector<int>> vecinos(vertices);
+    vector<int> entrada(vertices, 0);
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, siguiente;
+        cin >> origen >> siguiente;
+        vecinos[origen].push_back(siguiente);
+        entrada[siguiente]++;
+    }
+    queue<int> pendientes;
+    for (int actual = 0; actual < vertices; actual++) if (entrada[actual] == 0) pendientes.push(actual);
+    const long long MOD = 1000000007;
+    vector<long long> formas(vertices, 0);
+    vector<int> largo(vertices, -1);
+    formas[fuente] = 1;
+    largo[fuente] = 0;
+    int procesados = 0;
+    while (!pendientes.empty()) {
+        int actual = pendientes.front(); pendientes.pop();
+        procesados++;
+        for (int vecino : vecinos[actual]) {
+            formas[vecino] = (formas[vecino] + formas[actual]) % MOD;
+            if (largo[actual] != -1) largo[vecino] = max(largo[vecino], largo[actual] + 1);
+            if (--entrada[vecino] == 0) pendientes.push(vecino);
+        }
+    }
+    if (procesados != vertices) cout << "NO ES DAG\n";
+    else cout << formas[destino] << ' ' << largo[destino] << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4 4 0 3
+0 1
+0 2
+1 3
+2 3
+```
+
+Salida:
+
+```text output
+2 2
+```
+
+Los caminos son `0-1-3` y `0-2-3`; ambos usan dos aristas. Si el destino no es alcanzable, la salida será `0 -1`.
+
+## Coste y ciclos
+
+Cada vértice entra una vez a la cola y cada arista se procesa una vez: tiempo y memoria $O(V+E)$. Si no se procesan todos los vértices, existe un ciclo y no podemos afirmar el resultado de esta DP para todo el grafo.
+
+Con pesos, puedes maximizar sumas en un DAG incluso si hay pesos negativos, usando un centinela de inalcanzabilidad que no se confunda con resultados válidos. El problema de camino simple más largo en un grafo general no se resuelve eliminando sin más el chequeo de ciclos.
+
+Condensar SCC produce un DAG, pero no resuelve automáticamente lo que ocurre **dentro** de cada componente. Si cuentas recorridos y existe un ciclo alcanzable que permite llegar al destino, puede haber infinitos recorridos; si cuentas caminos simples, es otro problema.
+
+## Practica
+
+Agrega `0 -> 3` al ejemplo. ¿Qué cambian el conteo y la longitud máxima?
+
+<details>
+<summary>Respuesta</summary>
+
+El conteo pasa a 3 y la longitud máxima permanece en 2. Agregar una opción más corta aumenta el número de caminos sin mejorar el máximo. Si en cambio agregas `3 -> 0`, aparece un ciclo y el programa debe responder `NO ES DAG`.
+
+</details>

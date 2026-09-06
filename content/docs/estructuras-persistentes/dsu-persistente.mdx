@@ -1,0 +1,137 @@
+---
+title: "Persistent disjoint set union"
+description: "Conserva y ramifica versiones de conectividad guardando padres y tamaños en un arreglo persistente."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "DSU", "persistencia", "segment tree"]
+---
+
+## Antes de empezar
+
+Repasa [DSU](/blog/grafos-avanzados/union-find) y [segment tree persistente](/blog/estructuras-persistentes/estructuras-persistentes). Un DSU ordinario modifica padres y tamaños. Aquí queremos consultar versiones antiguas y crear una rama nueva desde cualquiera de ellas.
+
+## Persistencia no es rollback
+
+Rollback guarda un historial para deshacer operaciones, normalmente en orden inverso. Persistencia permite mantener varias versiones accesibles a la vez. Una estructura parcialmente persistente consulta el pasado pero solo modifica la versión más reciente; la implementación de esta guía permite **ramificar** desde cualquier versión.
+
+## Un arreglo persistente de estados
+
+Cada elemento guarda `{padre, tamano}`. Un segment tree persistente permite leer una posición y cambiarla copiando solo el camino a esa hoja. Cada raíz del segment tree representa una versión completa del DSU.
+
+Para encontrar un representante seguimos padres, pero **sin compresión de caminos**, porque comprimir modificaría la versión consultada. La unión por tamaño mantiene profundidad $O(\log n)$.
+
+Para unir dos componentes, cambia el padre de la raíz pequeña y el tamaño de la grande. Son dos actualizaciones persistentes. Las raíces anteriores siguen apuntando a sus nodos originales.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Estado { int padre, tamano; };
+struct Nodo { int izquierdo = -1, derecho = -1; Estado dato{0, 1}; };
+
+struct DSUPersistente {
+    int cantidad, inicial;
+    vector<Nodo> nodos;
+    DSUPersistente(int total) : cantidad(total) { inicial = construir(0, cantidad); }
+    int construir(int inicio, int fin) {
+        int actual = static_cast<int>(nodos.size());
+        nodos.push_back({});
+        if (fin - inicio == 1) nodos[actual].dato = {inicio, 1};
+        else {
+            int medio = inicio + (fin - inicio) / 2;
+            int izquierdo = construir(inicio, medio);
+            int derecho = construir(medio, fin);
+            nodos[actual].izquierdo = izquierdo;
+            nodos[actual].derecho = derecho;
+        }
+        return actual;
+    }
+    Estado leer(int raiz, int posicion) const {
+        int inicio = 0, fin = cantidad;
+        while (fin - inicio > 1) {
+            int medio = inicio + (fin - inicio) / 2;
+            if (posicion < medio) { raiz = nodos[raiz].izquierdo; fin = medio; }
+            else { raiz = nodos[raiz].derecho; inicio = medio; }
+        }
+        return nodos[raiz].dato;
+    }
+    int escribir(int raiz, int inicio, int fin, int posicion, Estado dato) {
+        int nueva = static_cast<int>(nodos.size());
+        Nodo copia = nodos[raiz];
+        nodos.push_back(copia);
+        if (fin - inicio == 1) nodos[nueva].dato = dato;
+        else {
+            int medio = inicio + (fin - inicio) / 2;
+            if (posicion < medio) {
+                int hijo = escribir(copia.izquierdo, inicio, medio, posicion, dato);
+                nodos[nueva].izquierdo = hijo;
+            } else {
+                int hijo = escribir(copia.derecho, medio, fin, posicion, dato);
+                nodos[nueva].derecho = hijo;
+            }
+        }
+        return nueva;
+    }
+    int representante(int version, int elemento) const {
+        while (true) {
+            int padre = leer(version, elemento).padre;
+            if (padre == elemento) return elemento;
+            elemento = padre;
+        }
+    }
+    int unir(int version, int primero, int segundo) {
+        primero = representante(version, primero);
+        segundo = representante(version, segundo);
+        if (primero == segundo) return version;
+        Estado mayor = leer(version, primero), menor = leer(version, segundo);
+        if (mayor.tamano < menor.tamano) { swap(primero, segundo); swap(mayor, menor); }
+        menor.padre = primero;
+        mayor.tamano += menor.tamano;
+        int nueva = escribir(version, 0, cantidad, segundo, menor);
+        return escribir(nueva, 0, cantidad, primero, mayor);
+    }
+    bool conectados(int version, int primero, int segundo) const {
+        return representante(version, primero) == representante(version, segundo);
+    }
+};
+
+int main() {
+    DSUPersistente conjuntos(4);
+    int version0 = conjuntos.inicial;
+    int version1 = conjuntos.unir(version0, 0, 1);
+    int version2 = conjuntos.unir(version1, 1, 2);
+    int rama = conjuntos.unir(version0, 2, 3);
+    cout << conjuntos.conectados(version0, 0, 1) << ' ';
+    cout << conjuntos.conectados(version1, 0, 1) << ' ';
+    cout << conjuntos.conectados(version1, 0, 2) << ' ';
+    cout << conjuntos.conectados(version2, 0, 2) << ' ';
+    cout << conjuntos.conectados(rama, 2, 3) << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 1 0 1 1
+```
+
+## Coste y seguridad de las versiones
+
+Leer un padre cuesta $O(\log n)$ y seguimos hasta $O(\log n)$ padres: `find`, conectividad y unión cuestan $O(\log^2 n)$. Cada unión exitosa crea $O(\log n)$ nodos nuevos. Con $u$ uniones, el espacio es $O(n+u\log n)$.
+
+El ejemplo exige al menos un elemento e índices válidos. Guardamos índices de nodos, no referencias a elementos del vector: agregar nodos puede realocar su memoria e invalidar referencias. Una consulta no modifica nada, y una unión dentro de la misma componente puede reutilizar la raíz de la versión anterior.
+
+## Practica
+
+Después de construir `rama` desde `version0`, ¿están conectados 0 y 1 dentro de esa rama? ¿La unión altera `version2`?
+
+<details>
+<summary>Respuesta</summary>
+
+No están conectados: la rama parte del estado inicial, no de `version1`. Tampoco cambia `version2`. Comprobar ramas hermanas y versiones anteriores es esencial; una estructura que solo responde correctamente sobre la última versión no demuestra persistencia.
+
+</details>

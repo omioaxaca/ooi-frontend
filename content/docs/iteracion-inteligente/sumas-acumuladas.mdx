@@ -1,0 +1,94 @@
+---
+title: "Sumas acumuladas: prefix sum"
+description: "Preprocesa un arreglo una vez y responde sumas de intervalos sin volver a recorrerlos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "prefix sum", "rangos", "preprocesamiento"]
+---
+
+## Antes de empezar
+
+Necesitas vectores y acumuladores. Supón que recibes un arreglo fijo y muchas preguntas: «¿cuánto suman los elementos de este intervalo?». Recorrer cada intervalo cuesta hasta $O(n)$ por pregunta. Reutilizaremos las sumas ya calculadas.
+
+## Un prefijo extra simplifica los bordes
+
+Definimos `prefijo[cantidad]` como la suma de los primeros `cantidad` elementos. Por eso `prefijo[0] = 0` y el vector de prefijos tiene tamaño $n+1$.
+
+La construcción es:
+
+$$P_{i+1}=P_i+a_i.$$
+
+La suma del intervalo **semiabierto** `[izquierda, derecha)`, que incluye la izquierda y excluye la derecha, es:
+
+$$P_{derecha}-P_{izquierda}.$$
+
+El prefijo largo incluye elementos que no queremos, pero el prefijo corto contiene exactamente esos elementos. Restarlos deja solamente el intervalo pedido. El argumento funciona también con valores negativos.
+
+## Ejemplo razonado
+
+Para `[2, -1, 4, 3, 1]`, los prefijos son `[0, 2, 1, 5, 8, 9]`. El intervalo `[1, 5)` contiene `[-1, 4, 3, 1]`: su suma es `9 - 2 = 7`. El intervalo vacío `[2, 2)` vale `1 - 1 = 0`.
+
+No mezcles convenciones. Si la entrada usa posiciones desde 1 e intervalos cerrados `[inicio, fin]`, la fórmula es `prefijo[fin] - prefijo[inicio - 1]`.
+
+## C++17
+
+Entrada: $n$, número de consultas, los $n$ valores y consultas con $0\leq izquierda\leq derecha\leq n$. Las sumas deben caber en `long long`.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad, consultas;
+    cin >> cantidad >> consultas;
+    vector<long long> prefijo(cantidad + 1, 0);
+    for (int indice = 0; indice < cantidad; indice++) {
+        long long valor;
+        cin >> valor;
+        prefijo[indice + 1] = prefijo[indice] + valor;
+    }
+    while (consultas--) {
+        int izquierda, derecha;
+        cin >> izquierda >> derecha;
+        cout << prefijo[derecha] - prefijo[izquierda] << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+5 3
+2 -1 4 3 1
+0 3
+1 5
+2 2
+```
+
+Salida:
+
+```text output
+5
+7
+0
+```
+
+## Coste y límites
+
+Construir cuesta $O(n)$ tiempo y espacio; cada consulta cuesta $O(1)$. El total es $O(n+q)$, frente a $O(nq)$ de la solución directa.
+
+Si cambias un elemento después del preprocesamiento, todos los prefijos posteriores quedan desactualizados. Esta técnica básica es para datos estáticos. Más adelante, Fenwick y segment tree permitirán modificaciones eficientes.
+
+También puedes acumular indicadores: para contar pares, agrega 1 cuando el valor es par y 0 cuando no. La misma resta responderá cuántos pares hay en un intervalo. No puedes recuperar el mínimo de un intervalo restando mínimos de prefijos: el mínimo no tiene esa operación inversa.
+
+## Practica
+
+Construye prefijos de la cantidad de ceros en `[0, 3, 0, 0, 2]`. ¿Cuántos ceros hay en `[1, 4)`?
+
+<details>
+<summary>Respuesta</summary>
+
+Los prefijos son `[0, 1, 1, 2, 3, 3]`. La consulta devuelve `prefijo[4] - prefijo[1] = 3 - 1 = 2`. Compara también `[0, 5)`, que contiene tres ceros, y cualquier intervalo vacío, que contiene cero.
+
+</details>

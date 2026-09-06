@@ -1,0 +1,79 @@
+---
+title: "Diseño de protocolos"
+description: "Define qué sabe cada participante, cómo codificar un mensaje y por qué el receptor puede interpretarlo sin ambigüedad."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "comunicación", "protocolos", "codificación"]
+---
+
+## Antes de empezar
+
+Necesitas [representaciones en distintas bases](/blog/matematicas/bases-numericas). En un problema de comunicación, dos participantes poseen información diferente y deben colaborar usando mensajes limitados. A veces se implementan dos funciones que llama el juez, no un programa tradicional de entrada y salida.
+
+## Escribe el contrato antes del código
+
+Anota qué conoce el emisor, qué conoce el receptor, qué debe reconstruirse y qué se cobra: bits, mensajes o rondas. Aclara también quién habla primero, cómo se conoce la longitud de un mensaje y si se permiten errores.
+
+Nuestro modelo: el emisor conoce una celda de una cuadrícula de 3 filas y 5 columnas. Ambos conocen esas dimensiones y usan índices desde cero. El receptor debe recuperar la celda usando **exactamente cuatro bits**, enviados del más significativo al menos significativo.
+
+## Una codificación sin ambigüedad
+
+Asigna a la celda el identificador `fila * 5 + columna`, entre 0 y 14. El receptor recupera `fila = identificador / 5` y `columna = identificador % 5`.
+
+La división entera y el residuo reconstruyen de forma única el cociente y el resto. Dos celdas diferentes no comparten identificador. Los 15 estados caben en 16 mensajes de cuatro bits; `1111` queda reservado como inválido.
+
+La celda `(2, 3)` tiene identificador 13 y mensaje `1101`. El receptor reconstruye el entero leyendo cada bit: 1, 3, 6, 13; después obtiene `13 / 5 = 2` y `13 % 5 = 3`.
+
+## C++17: simulación local del emisor y receptor
+
+```cpp test
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    int fila, columna;
+    cin >> fila >> columna;
+    int identificador = fila * 5 + columna;
+    string mensaje;
+    for (int posicion = 3; posicion >= 0; posicion--) {
+        mensaje.push_back('0' + ((identificador >> posicion) & 1));
+    }
+    int recibido = 0;
+    for (char bit : mensaje) recibido = recibido * 2 + (bit - '0');
+    cout << mensaje << '\n';
+    if (recibido < 15) cout << recibido / 5 << ' ' << recibido % 5 << '\n';
+}
+```
+
+Entrada:
+
+```text input
+2 3
+```
+
+Salida:
+
+```text output
+1101
+2 3
+```
+
+El ejemplo supone coordenadas válidas y un canal que entrega los cuatro bits correctamente. En un concurso debes sustituir la simulación por la interfaz exacta del enunciado; imprimir un string no equivale necesariamente a enviar cuatro bits mediante esa interfaz.
+
+## Coste y errores frecuentes
+
+Usamos cuatro bits, una ronda y tiempo constante para esta cuadrícula fija. Para $R\cdot C$ celdas, se necesitan $\lceil\log_2(RC)\rceil$ bits con longitud fija.
+
+No supongas que el receptor conoce una variable local del emisor. No cambies el orden de los bits entre codificación y decodificación. Si el mensaje tiene longitud variable, explica cómo se identifica su final: esa información también puede tener coste.
+
+## Practica
+
+Diseña el mismo protocolo para una cuadrícula de 4 por 4. ¿Cuántos bits necesitas y qué representa `1111`?
+
+<details>
+<summary>Respuesta</summary>
+
+Cuatro bits bastan para 16 estados. El identificador es `fila * 4 + columna`; `1111` vale 15 y representa `(3, 3)`. En esta cuadrícula ya no queda un mensaje inválido reservado.
+
+</details>

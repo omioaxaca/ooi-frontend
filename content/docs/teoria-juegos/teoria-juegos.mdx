@@ -1,6 +1,6 @@
 ---
-title: "Teoría de Juegos"
-description: "Juegos combinatorios, posiciones ganadoras y perdedoras, y el teorema de Sprague-Grundy"
+title: "Teorema de Sprague-Grundy"
+description: "Combina juegos imparciales independientes mediante XOR y comprueba las condiciones del teorema."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "teoría de juegos", "nim", "sprague-grundy", "competencias"]
@@ -9,22 +9,26 @@ syllabusId: 73
 
 ## ¿Qué es la teoría de juegos combinatoria?
 
-**Analogía:** Imagina que juegas piedra, papel o tijera — eso es un juego de **azar**. Ahora imagina ajedrez: puedes analizar cada posición y determinar si hay una estrategia que **garantice** ganar. La teoría de juegos estudia esos juegos donde no hay azar, ambos jugadores ven todo, y gana quien haga el último movimiento válido.
+Aquí estudiamos juegos por turnos, sin azar y con información completa. Sprague-Grundy se aplica al caso **imparcial y de regla normal** que siempre termina: ambos jugadores tienen los mismos movimientos disponibles desde una posición, y pierde quien no puede mover. No se aplica directamente a cualquier juego, a juegos con empates o a reglas misère.
 
 En competencias, los juegos típicos tienen estas reglas:
+
 1. Dos jugadores se alternan turnos
 2. Ambos tienen información completa (no hay cartas ocultas)
 3. No hay azar (no hay dados)
 4. El jugador que **no puede mover** pierde
 5. El juego siempre termina
+6. Los movimientos legales desde una posición no dependen de la identidad del jugador
 
 ## Posiciones ganadoras y perdedoras
 
 Cada posición del juego es:
+
 - **Posición ganadora (W):** El jugador que le toca mover tiene una estrategia para ganar.
 - **Posición perdedora (L):** El jugador que le toca mover pierde si el oponente juega bien.
 
 **Reglas clave:**
+
 - Si **todas** las posiciones a las que puedo ir son W → estoy en L (no puedo escapar).
 - Si **alguna** posición a la que puedo ir es L → estoy en W (mando al oponente a perder).
 
@@ -54,6 +58,7 @@ bool gana(int n) {
 ## Juego de Nim
 
 El juego más importante de la teoría de juegos:
+
 - Hay varias pilas de piedras.
 - Cada turno, eliges una pila y quitas al menos 1 piedra de ella.
 - Pierde quien no pueda mover.
@@ -85,17 +90,13 @@ Pilas: 3, 4, 5
 XOR: 3 ^ 4 ^ 5 = 011 ^ 100 ^ 101 = 010 = 2 ≠ 0
 → Gana el primer jugador
 
-Estrategia: quitar 2 de la pila de 5 → pilas: 3, 4, 3
-XOR: 3 ^ 4 ^ 3 = 4 ^ 0 = 4... Hmm, recalculemos:
-3 ^ 3 = 0, 0 ^ 4 = 4. No.
-
-Mejor: quitar 2 de la pila de 3 → pilas: 1, 4, 5
+Estrategia: quitar 2 de la pila de 3 → pilas: 1, 4, 5
 XOR: 1 ^ 4 ^ 5 = 001 ^ 100 ^ 101 = 000 = 0 ✓
 ```
 
 ## Sprague-Grundy
 
-El teorema de Sprague-Grundy generaliza Nim a **cualquier juego**. Cada posición tiene un **valor de Grundy** (nimber):
+El teorema de Sprague-Grundy relaciona los juegos imparciales finitos de regla normal con Nim. Cada posición tiene un **valor de Grundy** (nimber):
 
 $$g(p) = \text{mex}(\{g(p') : p' \text{ es un movimiento desde } p\})$$
 
@@ -143,11 +144,17 @@ int grundy(int n, vector<int> &movimientos) {
 
 ### Juegos compuestos
 
+La recursión directa anterior repite estados y puede ser exponencial; sirve para trazar ejemplos pequeños. La tabla de DP de abajo, o la guía de [Grundy](/blog/teoria-juegos/grundy), evita esas repeticiones.
+
 Si tienes **varios juegos independientes** (como varias pilas), el Grundy total es el XOR de los valores individuales:
 
 $$G_{total} = g_1 \oplus g_2 \oplus ... \oplus g_k$$
 
 Esto es exactamente el Teorema de Nim generalizado.
+
+La independencia exige que un movimiento modifique **exactamente un componente**, sin cambiar las opciones de los demás. Si una jugada modifica dos pilas, compartir recursos limita las otras jugadas o el turno depende del componente elegido, no puedes aplicar XOR sin una nueva justificación.
+
+Para entender la prueba, recuerda que ningún sucesor tiene el mismo Grundy que su estado, y que todos los valores menores que su Grundy sí aparecen entre los sucesores. Desde XOR cero, cambiar un único nimber deja XOR no cero. Desde XOR no cero, el argumento del bit más alto de Nim encuentra un componente cuyo nimber puede reducirse a un valor menor para dejar XOR cero; la propiedad de mex garantiza que ese movimiento existe.
 
 ```cpp
 int grundyTotal(vector<int> &juegos) {
@@ -181,7 +188,9 @@ void calcularGrundy(int maxN, vector<int> &movs) {
 ```
 
 <Callout type="info">
-Siempre calcula los primeros valores de Grundy e intenta encontrar un **patrón**. Muchos juegos tienen patrones periódicos.
+  Calcular valores pequeños ayuda a proponer un patrón, pero no demuestra que
+  continúe. Justifica cualquier fórmula mediante las reglas de transición o una
+  prueba de periodicidad antes de usarla para tamaños grandes.
 </Callout>
 
 ## Problema ejemplo
@@ -233,6 +242,7 @@ Dos jugadores alternan. Hay N piedras. Puedes quitar cualquier potencia de 2 (1,
 <summary>Ver solución</summary>
 
 Calculamos Grundy:
+
 ```
 g(0) = 0
 g(1) = mex({g(0)}) = mex({0}) = 1

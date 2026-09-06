@@ -9,9 +9,49 @@ syllabusId: 7
 
 ## ¿Por qué es tan importante la entrada y salida?
 
+**Objetivo:** traducir el formato del enunciado a lecturas y escrituras exactas. `cin` lee la entrada estándar (**STDIN**) y `cout` escribe la salida estándar (**STDOUT**). En el juez esos flujos suelen estar conectados a archivos o tuberías, no a una persona: no imprimas preguntas como «Dame un número» salvo que el formato lo pida.
+
 En programación competitiva, tu programa es como un **empleado en una ventanilla**: le dan un papel con datos (entrada), procesa esos datos, y devuelve un resultado (salida). Si no lees correctamente los datos o no imprimes el resultado en el formato exacto, el juez automático te marcará como incorrecto, **aunque tu lógica sea perfecta**.
 
-Imagina que te piden sumar dos números. Tu programa da la respuesta correcta, pero agrega un espacio extra al final o un mensaje como "El resultado es: 8". El juez espera solo "8". Respuesta incorrecta. Por eso, dominar la entrada y salida es **fundamental**.
+Si el juez espera `8`, agregar «El resultado es:» puede producir una respuesta incorrecta. Algunos jueces toleran ciertos espacios y otros comparan más estrictamente; no dependas de esa tolerancia. Respeta el formato especificado.
+
+## Un número seguido de una línea completa
+
+`cin >>` omite espacios iniciales y lee un token. `getline` lee hasta el siguiente salto de línea y sí conserva espacios dentro del texto. Si el nombre comienza en la **línea siguiente** a un número, elimina primero el resto de la línea del número:
+
+```cpp test
+#include <iostream>
+#include <limits>
+#include <string>
+using namespace std;
+
+int main() {
+    int intentos;
+    cin >> intentos;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    string nombre;
+    getline(cin, nombre);
+    cout << nombre << '\n' << intentos << '\n';
+}
+```
+
+Entrada:
+
+```text input
+3
+Ana Maria
+```
+
+Salida:
+
+```text output
+Ana Maria
+3
+```
+
+`ignore()` sin argumentos descarta solo un carácter; podría no bastar si quedan espacios antes del salto. La versión mostrada supone que no necesitas otros datos de esa misma línea. `getline(cin >> ws, nombre)` es otra opción si puedes omitir espacios iniciales y líneas vacías; no la uses si esos espacios forman parte de los datos.
+
+**Autocomprobación:** ¿qué pasaría si usaras `cin >> nombre`? Solo obtendrías `Ana`. Si no recibes entrada válida, `cin` activa un estado de error; un ciclo hasta EOF debe comprobar `while (cin >> valor)`, no asumir que siempre existe otro dato.
 
 ## Salida con `cout`
 
@@ -75,7 +115,10 @@ cout << "Línea 3\n";         // Equivalente al anterior
 ```
 
 <Callout type="warning">
-  En competencias, usa `'\n'` en lugar de `endl`. La diferencia de velocidad puede ser significativa cuando imprimes miles de líneas. Si usas el template de competencia con `#define endl '\n'`, entonces puedes escribir `endl` y automáticamente será rápido.
+  Usa `'\n'` para saltos normales y `endl` o `flush` cuando necesites vaciar el
+  búfer, como en una consulta interactiva. No redefinas `endl` con una macro:
+  cambiarías su significado y podrías bloquear un protocolo que espera ese
+  vaciado.
 </Callout>
 
 ### Formato de decimales
@@ -139,11 +182,13 @@ cin >> a >> b >> c;  // Lee tres números
 ```
 
 Esto funciona tanto si el usuario escribe `5 3 7` (en una línea) como si escribe:
+
 ```
 5
 3
 7
 ```
+
 (en tres líneas). `cin` ignora automáticamente los espacios y saltos de línea entre valores.
 
 ### Leer una línea completa con `getline`
@@ -181,6 +226,7 @@ getline(cin, nombre);   // Lee el '\n' restante ¡y termina inmediatamente!
 ```
 
 Si el usuario escribe:
+
 ```
 15
 María
@@ -313,12 +359,15 @@ Por defecto, C++ sincroniza `cin`/`cout` con `scanf`/`printf` (funciones de C). 
 Por defecto, cada vez que usas `cin`, primero se vacía `cout` (por si había algo pendiente de mostrar). En competencias, esto es innecesario y consume tiempo. `cin.tie(NULL)` desactiva este comportamiento.
 
 <Callout type="warning">
-  Después de usar `ios_base::sync_with_stdio(false)`, **NO uses** `scanf`/`printf` (funciones de C) mezcladas con `cin`/`cout`. Elige uno u otro.
+  Después de usar `ios_base::sync_with_stdio(false)`, **NO uses**
+  `scanf`/`printf` (funciones de C) mezcladas con `cin`/`cout`. Elige uno u
+  otro.
 </Callout>
 
 ### ¿Cuánta diferencia hace?
 
 Para leer 1 millón de números:
+
 - Sin optimización: ~1.5 segundos
 - Con optimización: ~0.15 segundos
 
@@ -340,17 +389,19 @@ int main() {
 }
 ```
 
-| Especificador | Tipo |
-|---------------|------|
-| `%d` | `int` |
-| `%lld` | `long long` |
-| `%f` | `float` |
-| `%lf` | `double` |
-| `%c` | `char` |
-| `%s` | cadena de C (char[]) |
+| Especificador | Tipo                 |
+| ------------- | -------------------- |
+| `%d`          | `int`                |
+| `%lld`        | `long long`          |
+| `%f`          | `float`              |
+| `%lf`         | `double`             |
+| `%c`          | `char`               |
+| `%s`          | cadena de C (char[]) |
 
 <Callout type="info">
-  No necesitas memorizar `scanf`/`printf` si usas `cin`/`cout` con las optimizaciones. Son igualmente rápidos. Pero si los encuentras en soluciones de otros, ahora sabes qué significan.
+  No necesitas memorizar `scanf`/`printf` si usas `cin`/`cout` con las
+  optimizaciones. Son igualmente rápidos. Pero si los encuentras en soluciones
+  de otros, ahora sabes qué significan.
 </Callout>
 
 ## Ejemplo completo: promedio de calificaciones
@@ -358,12 +409,14 @@ int main() {
 **Problema:** Lee un número N, seguido de N calificaciones. Imprime el promedio con 2 decimales.
 
 **Entrada:**
+
 ```
 4
 85 92 78 95
 ```
 
 **Salida:**
+
 ```
 87.50
 ```
@@ -395,6 +448,7 @@ int main() {
 ```
 
 **Paso a paso:**
+
 1. Leemos `n = 4`.
 2. Leemos calificaciones una por una: 85, 92, 78, 95.
 3. Las sumamos: `suma = 85 + 92 + 78 + 95 = 350`.
@@ -440,6 +494,7 @@ Lee dos números enteros y muestra su suma, resta, multiplicación y división (
 
 **Entrada:** `15 4`
 **Salida:**
+
 ```
 19
 11
@@ -474,4 +529,4 @@ Nota el `(double)a / b` en la última línea: convertimos `a` a `double` para ob
 
 ## Siguiente paso
 
-Aprende sobre los **Operadores Aritméticos** para dominar las operaciones matemáticas fundamentales en C++.
+[Jerarquía, operadores aritméticos, relacionales, lógicos y pre/post incremento](/blog/cpp-basico/operadores-aritmeticos).

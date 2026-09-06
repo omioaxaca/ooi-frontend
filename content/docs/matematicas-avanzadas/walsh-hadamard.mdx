@@ -1,0 +1,94 @@
+---
+title: "Walsh-Hadamard transform"
+description: "Calcula convoluciones de índices combinados con XOR y distingue sus mariposas de las de OR, AND y FFT."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "FWHT", "XOR", "convolución", "bitmask"]
+---
+
+## Antes de empezar
+
+Necesitas máscaras de bits, XOR y el esquema transformar-multiplicar-invertir de [FFT/NTT](/blog/matematicas-avanzadas/fft-ntt). Ahora no queremos agrupar productos por suma de índices, sino por su XOR:
+
+$$C[k]=\sum_{i\oplus j=k} A[i]B[j].$$
+
+Esto aparece al contar pares de máscaras cuya combinación XOR tiene una propiedad. No es la multiplicación ordinaria de polinomios.
+
+## Una mariposa por bit
+
+Para un par de valores $(a,b)$ asociados a índices que difieren en un bit, la transformación XOR produce $(a+b,a-b)$. Repetimos por todos los bits, con bloques de tamaños 2, 4, 8, etc.
+
+Aplicar dos veces la mariposa devuelve $(2a,2b)$. Después de procesar todos los bits, aplicar dos veces la transformación completa multiplica cada dato por $N$. Por eso la inversa repite las mismas operaciones y divide al final entre $N$.
+
+En el dominio transformado, la convolución XOR se vuelve multiplicación punto a punto. Esta identidad permite sustituir $O(N^2)$ pares por $O(N\log N)$ operaciones.
+
+## Ejemplo de conteo
+
+Sean `A=[1,2,0,0]` y `B=[3,4,0,0]`. Para XOR cero combinamos índices iguales: `1*3 + 2*4 = 11`. Para XOR uno combinamos 0 con 1 y 1 con 0: `1*4 + 2*3 = 10`.
+
+## C++17
+
+Los arreglos tienen la misma longitud positiva potencia de dos. Todos los intermedios deben caber en `long long`; en la convolución exacta mostrada, la división final es exacta.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void transformar(vector<long long>& valores, bool inversa) {
+    int cantidad = static_cast<int>(valores.size());
+    for (int mitad = 1; mitad < cantidad; mitad *= 2) {
+        for (int inicio = 0; inicio < cantidad; inicio += 2 * mitad) {
+            for (int posicion = 0; posicion < mitad; posicion++) {
+                long long primero = valores[inicio + posicion];
+                long long segundo = valores[inicio + posicion + mitad];
+                valores[inicio + posicion] = primero + segundo;
+                valores[inicio + posicion + mitad] = primero - segundo;
+            }
+        }
+    }
+    if (inversa) for (long long& valor : valores) valor /= cantidad;
+}
+
+int main() {
+    vector<long long> primero = {1, 2, 0, 0}, segundo = {3, 4, 0, 0};
+    transformar(primero, false);
+    transformar(segundo, false);
+    for (int indice = 0; indice < 4; indice++) primero[indice] *= segundo[indice];
+    transformar(primero, true);
+    for (int indice = 0; indice < 4; indice++) {
+        if (indice > 0) cout << ' ';
+        cout << primero[indice];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+11 10 0 0
+```
+
+## XOR, OR y AND no usan la misma inversa
+
+Para convolución **OR**, la transformación zeta sobre subconjuntos agrega la mitad baja a la alta en cada bit; la inversa resta esa misma contribución. Para **AND**, agrega la mitad alta a la baja. Estas transformaciones no usan la mariposa de suma y diferencia de XOR ni su división final por $N$.
+
+Elige la operación leyendo cómo se combinan **los índices** en el problema. Un operador XOR sobre los coeficientes en vez de multiplicarlos describiría otra tarea.
+
+## Coste y aritmética modular
+
+La transformación usa $O(N\log N)$ tiempo y modifica el vector en su lugar. El espacio total es $O(N)$ para los arreglos. Para un alfabeto de máscaras de $b$ bits, $N=2^b$: aumentar unos pocos bits puede multiplicar mucho la memoria.
+
+Si trabajas módulo un primo impar, normaliza las restas y multiplica por el inverso modular de $N$ en vez de dividir como entero. Módulo 2, ese inverso no existe para longitudes mayores que 1. Que el resultado final sea pequeño tampoco garantiza que los productos intermedios quepan en 64 bits.
+
+## Practica
+
+Si A y B tienen un único 1 en índices 3 y 5, respectivamente, ¿dónde aparece el único 1 de la convolución XOR? ¿Y en la convolución ordinaria?
+
+<details>
+<summary>Respuesta</summary>
+
+En el índice `3 ^ 5 = 6` para XOR y en `3 + 5 = 8` para la ordinaria. Esta prueba pequeña distingue inmediatamente cuál transformación corresponde al problema.
+
+</details>

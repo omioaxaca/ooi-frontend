@@ -1,0 +1,96 @@
+---
+title: "Memorización top-down y tabulación bottom-up"
+description: "Implementa una misma recurrencia en dos órdenes y distingue estados pendientes, imposibles y resueltos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "DP", "memoization", "tabulación"]
+---
+
+## Antes de empezar
+
+Repasa [fundamentos de DP](/blog/programacion-dinamica/introduccion-dp). Antes de elegir recursión o ciclos, define un estado, sus transiciones y sus casos base. Top-down y bottom-up son formas de evaluar la misma dependencia, no dos soluciones matemáticas diferentes.
+
+## Una recurrencia común
+
+Con monedas de valores positivos que puedes usar ilimitadamente, queremos formar una cantidad usando el menor número de monedas. Define `mejor[monto]` como ese mínimo. Para monto cero no usamos monedas. Para otro monto probamos la última moneda:
+
+$$mejor[monto]=1+\min_{moneda\leq monto} mejor[monto-moneda].$$
+
+Los estados imposibles tienen valor infinito, no cero. Una moneda de valor cero crearía una dependencia del estado consigo mismo; por eso las denominaciones deben ser positivas.
+
+## Top-down: resolver lo que hace falta
+
+La función pide los subproblemas necesarios y guarda cada resultado. `-1` significa «todavía no calculado» y `INF` significa «calculado, pero imposible». No confundas estos dos estados.
+
+## Bottom-up: respetar el orden de dependencias
+
+Como restamos una moneda positiva, cada dependencia tiene un monto menor. Podemos llenar la tabla desde cero hasta el objetivo. Así evitamos la pila de llamadas y vemos directamente el orden de cálculo.
+
+Para monedas `[1, 3, 4]`, los mínimos para montos de 0 a 6 son `[0, 1, 2, 1, 1, 2, 2]`. Elegir siempre la moneda más grande daría `4 + 1 + 1`; la DP encuentra `3 + 3`.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const int INF = 1000000000;
+
+int resolver(int monto, const vector<int>& monedas, vector<int>& memoria) {
+    if (monto == 0) return 0;
+    if (memoria[monto] != -1) return memoria[monto];
+    int mejor = INF;
+    for (int moneda : monedas) {
+        if (moneda <= monto) mejor = min(mejor, 1 + resolver(monto - moneda, monedas, memoria));
+    }
+    return memoria[monto] = mejor;
+}
+
+int main() {
+    int objetivo;
+    cin >> objetivo;
+    vector<int> monedas = {1, 3, 4};
+    vector<int> memoria(objetivo + 1, -1);
+    int topDown = resolver(objetivo, monedas, memoria);
+    vector<int> tabla(objetivo + 1, INF);
+    tabla[0] = 0;
+    for (int monto = 1; monto <= objetivo; monto++) {
+        for (int moneda : monedas) {
+            if (moneda <= monto) tabla[monto] = min(tabla[monto], tabla[monto - moneda] + 1);
+        }
+    }
+    cout << (topDown == INF ? -1 : topDown) << ' ';
+    cout << (tabla[objetivo] == INF ? -1 : tabla[objetivo]) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+6
+```
+
+Salida:
+
+```text output
+2 2
+```
+
+## Coste y elección
+
+Con objetivo $S$ y $k$ denominaciones, ambas formas cuestan $O(Sk)$ tiempo y $O(S)$ tabla. Top-down también puede usar $O(S)$ de pila y desbordarla para cantidades grandes: usa entradas pequeñas al experimentar y prefiere bottom-up si la profundidad sería grande.
+
+Top-down puede evitar estados inalcanzables; bottom-up suele tener menor sobrecarga. Ninguna arregla un estado incompleto. Si cada moneda solo se pudiera usar una vez, necesitarías representar qué monedas están disponibles, o un orden de actualización que lo respete.
+
+## Practica
+
+Cambia las monedas por `[2, 4]` y prueba objetivos 0, 3 y 6. ¿Qué respuestas deben coincidir en las dos implementaciones?
+
+<details>
+<summary>Respuesta</summary>
+
+0, -1 y 2. El objetivo 3 es imposible; no debe confundirse con un estado pendiente. Para reconstruir las monedas usadas, guarda también cuál transición produjo cada mínimo y recorre esas decisiones desde el objetivo.
+
+</details>

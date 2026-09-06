@@ -9,6 +9,49 @@ syllabusId: 27
 
 ## El problema de la recursión ingenua
 
+**Antes de empezar:** repasa estados recursivos. Una memoria es válida solo si su clave incluye toda la información que determina la respuesta. Si cambian las monedas permitidas, obstáculos u otros datos del problema, quizá debas reiniciar la tabla.
+
+## Una versión completa con límites explícitos
+
+Usamos -1 como «pendiente» porque los resultados de Fibonacci son no negativos. La tabla se crea una vez y se pasa por referencia; crear una tabla nueva en cada llamada no compartiría los resultados.
+
+```cpp test
+#include <iostream>
+#include <vector>
+using namespace std;
+
+long long fibonacci(int indice, vector<long long>& memoria) {
+    if (indice <= 1) return indice;
+    if (memoria[indice] != -1) return memoria[indice];
+    memoria[indice] = fibonacci(indice - 1, memoria) + fibonacci(indice - 2, memoria);
+    return memoria[indice];
+}
+
+int main() {
+    int indice;
+    cin >> indice;
+    if (indice < 0 || indice > 92) return 0;
+    vector<long long> memoria(indice + 1, -1);
+    cout << fibonacci(indice, memoria) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+10
+```
+
+Salida:
+
+```text output
+55
+```
+
+Fibonacci exacto hasta índice 92 cabe en `long long`; índices mayores no. La tabla y la pila usan $O(n)$ espacio y el trabajo es $O(n)$. Para profundidades grandes, tabular de menor a mayor evita el límite de la pila. Las versiones de conteo con `int` mostradas como fragmentos más abajo solo sirven mientras sus respuestas quepan; usa módulo cuando el problema lo requiera.
+
+**Autocomprobación:** si un resultado válido pudiera ser -1, necesitarías una marca separada como `calculado`, no ese mismo centinela. Guardar una respuesta antes de que sus dependencias terminen tampoco resuelve ciclos entre estados.
+
 Recordemos la función de Fibonacci recursiva:
 
 ```cpp
@@ -93,14 +136,14 @@ fib(5)
 └── fib(3) = 2      ← ¡Ya guardado! O(1)
 ```
 
-De $O(2^n)$ pasamos a $O(n)$: cada valor se calcula **exactamente una vez**.
+De $O(2^n)$ pasamos a $O(n)$: cada estado no base se desarrolla una vez y las consultas posteriores reutilizan su resultado.
 
 ## Cuándo usar memorización
 
 La memorización funciona cuando se cumplen dos condiciones:
 
-1. **Subproblemas repetidos**: El mismo subproblema se resuelve múltiples veces.
-2. **Estructura óptima**: La solución del problema se construye a partir de soluciones de subproblemas.
+1. **Estados repetidos:** la misma pregunta aparece varias veces y reutilizar su respuesta evita trabajo.
+2. **Respuesta estable para una clave completa:** el mismo estado con los mismos datos debe devolver lo mismo. No es necesario que sea un problema de optimización; también puedes memorizar conteos o decisiones.
 
 Esto es la base de la **Programación Dinámica** (que veremos más adelante).
 
@@ -116,6 +159,7 @@ n=4: 5 formas
 ```
 
 **Sin memorización** (lento):
+
 ```cpp
 int formas(int n) {
     if (n <= 1) return 1;
@@ -124,6 +168,7 @@ int formas(int n) {
 ```
 
 **Con memorización** (rápido):
+
 ```cpp
 int memo[100001];
 
@@ -232,4 +277,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre la **Complejidad de la Recursión** para analizar cuánto tiempo y memoria usa tu función recursiva.
+[Estructuras y pares: struct, vector de structs y pair](/blog/estructuras-de-datos/struct).

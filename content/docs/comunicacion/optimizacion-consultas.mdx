@@ -1,0 +1,81 @@
+---
+title: "Optimización de consultas"
+description: "Diseña preguntas que descarten muchos candidatos y demuestra una cota para el presupuesto del juez."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "consultas", "búsqueda binaria", "comunicación"]
+---
+
+## Antes de empezar
+
+Necesitas búsqueda binaria y saber qué información devuelve una consulta. El tiempo de CPU puede ser pequeño y aun así una solución fallar por preguntar demasiadas veces. En estos problemas el presupuesto de consultas es un recurso independiente.
+
+## Preguntar por un grupo
+
+Hay una posición marcada entre 1 y $n$. El juez permite preguntar si está en el intervalo `[1, medio]`. Preguntar una posición a la vez necesita hasta $n-1$ preguntas. Preguntar por aproximadamente la mitad permite descartar aproximadamente la mitad de los candidatos con cualquiera de las respuestas.
+
+Mantén `[izquierda, derecha]` como el conjunto de candidatos posibles. Si la respuesta es sí, el marcado está como máximo en `medio`; si es no, está después. No elimines `medio` de ambas ramas ni lo conserves en ambas.
+
+## Traza y simulación local en C++17
+
+Para diez posiciones y marcado en 7, los puntos medios son 5, 8, 7 y 6. Las respuestas son no, sí, sí y no. El intervalo termina en `[7, 7]`.
+
+Este programa conoce el secreto **solamente para simular al juez**. El algoritmo recibe respuestas mediante la función `consultar`, como haría con una interfaz real.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+bool consultar(int medio, int secreto) {
+    return secreto <= medio;
+}
+
+int main() {
+    int cantidad, secreto;
+    cin >> cantidad >> secreto;
+    int izquierda = 1, derecha = cantidad, consultas = 0;
+    while (izquierda < derecha) {
+        int medio = izquierda + (derecha - izquierda) / 2;
+        bool respuesta = consultar(medio, secreto);
+        consultas++;
+        if (respuesta) derecha = medio;
+        else izquierda = medio + 1;
+    }
+    cout << izquierda << ' ' << consultas << '\n';
+}
+```
+
+Entrada:
+
+```text input
+10 7
+```
+
+Salida:
+
+```text output
+7 4
+```
+
+## Demuestra el presupuesto
+
+Después de una pregunta quedan como máximo $\lceil n/2\rceil$ candidatos. Tras $q$ preguntas quedan como máximo $\lceil n/2^q\rceil$. Por eso $\lceil\log_2 n\rceil$ consultas bastan, y con un candidato inicial no hace falta ninguna.
+
+La simulación cuesta $O(\log n)$ tiempo y $O(1)$ memoria. El coste real también depende de la interfaz y del trabajo necesario para construir cada consulta.
+
+## No toda pregunta equilibrada está permitida
+
+No puedes reemplazar una consulta de intervalo por una consulta sobre un conjunto arbitrario si la API no la ofrece. A veces el resultado tiene varios valores posibles, no solo sí y no. Otras veces una consulta modifica el estado: entonces no puedes repetirla ni guardarla en una caché como si fuera una función pura.
+
+Evita preguntar algo que las respuestas anteriores ya determinan. Si el oráculo es determinista y no cambia, reutilizar una respuesta idéntica puede ahorrar consultas, pero no sustituye una estrategia con una buena cota.
+
+## Practica
+
+Para 1000 posiciones, ¿alcanzan nueve preguntas binarias en el peor caso?
+
+<details>
+<summary>Respuesta</summary>
+
+No: nueve respuestas binarias distinguen como máximo 512 casos. Diez sí bastan con esta consulta de prefijos y la búsqueda binaria descrita. El conteo da una necesidad; el algoritmo demuestra que puede alcanzarse.
+
+</details>

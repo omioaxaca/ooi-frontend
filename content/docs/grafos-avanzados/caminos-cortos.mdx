@@ -1,13 +1,13 @@
 ---
-title: "Caminos más Cortos"
-description: "Algoritmos de Dijkstra, Bellman-Ford y Floyd-Warshall para encontrar rutas óptimas"
+title: "Floyd-Warshall, Bellman-Ford y A*"
+description: "Elige un algoritmo según los pesos, la cantidad de orígenes y la disponibilidad de una heurística válida."
 date: "2026-02-09"
 author: "OOI Oaxaca"
 tags: ["c++", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "caminos cortos"]
 syllabusId: 61
 ---
 
-## Dijkstra: caminos desde un origen
+## Repaso: Dijkstra desde un origen
 
 Para grafos con **pesos no negativos**. Encuentra el camino más corto desde un nodo a todos los demás.
 
@@ -68,13 +68,13 @@ int main() {
 
 **Complejidad:** $O((V + E) \log V)$
 
-<Callout type="warning">
-  Dijkstra **NO funciona** con pesos negativos.
-</Callout>
+<Callout type="warning">Dijkstra **NO funciona** con pesos negativos.</Callout>
 
 ## Bellman-Ford: pesos negativos permitidos
 
 Funciona con pesos negativos y detecta ciclos negativos.
+
+Si no hay ciclos negativos alcanzables, un camino mínimo puede ser simple y usar como máximo $V-1$ aristas. Por eso bastan $V-1$ rondas de relajaciones. Una mejora adicional prueba que hay un ciclo negativo **alcanzable desde el origen**. Para saber qué destinos quedan sin distancia mínima finita, propaga desde los vértices afectados; un ciclo en otra componente no invalida automáticamente una consulta concreta.
 
 ```cpp
 struct Arista {
@@ -114,37 +114,128 @@ bool bellmanFord(int origen, int n, vector<Arista> &aristas) {
 
 Encuentra la distancia más corta entre **todos** los pares de nodos. Ideal para grafos pequeños ($n \leq 500$).
 
-```cpp
-long long dist[505][505];
+Antes de procesar un intermedio, la tabla representa caminos que usan solo los intermediarios anteriores. Es importante que el ciclo de intermediarios sea el exterior. Inicializa pares sin arista con infinito, no con cero, y conserva el menor peso si hay aristas paralelas.
 
-void floydWarshall(int n) {
-    // Inicializar: dist[i][j] = peso de arista o INF
-    for (int i = 1; i <= n; i++) dist[i][i] = 0;
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
 
-    for (int k = 1; k <= n; k++) {
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (dist[i][k] != INF && dist[k][j] != INF) {
-                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+int main() {
+    int vertices, aristas;
+    cin >> vertices >> aristas;
+    const long long INF = 1000000000000000000LL;
+    vector<vector<long long>> distancia(vertices, vector<long long>(vertices, INF));
+    for (int actual = 0; actual < vertices; actual++) distancia[actual][actual] = 0;
+    for (int indice = 0; indice < aristas; indice++) {
+        int origen, destino;
+        long long peso;
+        cin >> origen >> destino >> peso;
+        distancia[origen][destino] = min(distancia[origen][destino], peso);
+    }
+    for (int intermedio = 0; intermedio < vertices; intermedio++) {
+        for (int origen = 0; origen < vertices; origen++) {
+            for (int destino = 0; destino < vertices; destino++) {
+                if (distancia[origen][intermedio] != INF && distancia[intermedio][destino] != INF) {
+                    distancia[origen][destino] = min(distancia[origen][destino], distancia[origen][intermedio] + distancia[intermedio][destino]);
                 }
             }
         }
     }
+    for (int actual = 0; actual < vertices; actual++) {
+        if (distancia[actual][actual] < 0) { cout << "CICLO NEGATIVO\n"; return 0; }
+    }
+    cout << (distancia[0][vertices - 1] == INF ? -1 : distancia[0][vertices - 1]) << '\n';
 }
 ```
+
+Entrada de un grafo dirigido:
+
+```text input
+4 4
+0 1 4
+1 2 -2
+0 2 5
+2 3 3
+```
+
+Salida:
+
+```text output
+5
+```
+
+El programa avisa si detecta cualquier ciclo negativo; en otro caso responde de 0 al último vértice. Supone un grafo no vacío y pesos pequeños suficientes para que todas las sumas intermedias quepan. Con ciclos negativos, los valores pueden disminuir mucho durante la ejecución; para una biblioteca general añade límites numéricos explícitos.
 
 **Complejidad:** $O(n^3)$
 
 **Idea:** Para cada nodo intermedio $k$, verifica si pasar por $k$ mejora el camino de $i$ a $j$.
 
+## A\*: distancia real más estimación restante
+
+A\* prioriza `g(vertice) + h(vertice)`, donde `g` es el coste descubierto desde el origen y `h` estima lo que falta. La heurística es **admisible** si nunca sobreestima el coste restante y **consistente** si `h(origen) <= peso + h(destino)` en cada arista, con cero en la meta.
+
+En una cuadrícula con movimientos ortogonales de coste 1, Manhattan es consistente incluso con obstáculos: ignorarlos solo puede subestimar. Si permites diagonales baratas o teletransportes, esa misma heurística podría dejar de ser válida.
+
+```cpp test
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <queue>
+#include <string>
+#include <tuple>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<string> mapa = {"....", ".##.", "...."};
+    int filas = static_cast<int>(mapa.size()), columnas = static_cast<int>(mapa[0].size());
+    auto heuristica = [&](int fila, int columna) { return abs(filas - 1 - fila) + abs(columnas - 1 - columna); };
+    vector<vector<int>> distancia(filas, vector<int>(columnas, 1000000000));
+    using Estado = tuple<int, int, int, int>;
+    priority_queue<Estado, vector<Estado>, greater<Estado>> pendientes;
+    distancia[0][0] = 0;
+    pendientes.push({heuristica(0, 0), 0, 0, 0});
+    int cambioFila[] = {-1, 1, 0, 0}, cambioColumna[] = {0, 0, -1, 1};
+    while (!pendientes.empty()) {
+        auto [estimado, coste, fila, columna] = pendientes.top(); pendientes.pop();
+        if (coste != distancia[fila][columna]) continue;
+        if (fila == filas - 1 && columna == columnas - 1) { cout << coste << '\n'; return 0; }
+        for (int direccion = 0; direccion < 4; direccion++) {
+            int nuevaFila = fila + cambioFila[direccion], nuevaColumna = columna + cambioColumna[direccion];
+            if (nuevaFila < 0 || nuevaFila >= filas || nuevaColumna < 0 || nuevaColumna >= columnas) continue;
+            if (mapa[nuevaFila][nuevaColumna] == '#') continue;
+            int nuevoCoste = coste + 1;
+            if (nuevoCoste < distancia[nuevaFila][nuevaColumna]) {
+                distancia[nuevaFila][nuevaColumna] = nuevoCoste;
+                pendientes.push({nuevoCoste + heuristica(nuevaFila, nuevaColumna), nuevoCoste, nuevaFila, nuevaColumna});
+            }
+        }
+    }
+    cout << -1 << '\n';
+}
+```
+
+Salida:
+
+```text output
+5
+```
+
+Guardamos `g`, no `g+h`, en la tabla de distancias. Con heurística consistente, extraer la meta con su distancia vigente permite terminar. Una heurística admisible pero inconsistente puede exigir reabrir estados; cerrar un vértice para siempre sin esa condición puede fallar.
+
+A\* con `h=0` se convierte en Dijkstra. Una buena heurística puede explorar menos vértices, pero no garantiza una mejora asintótica: en un grafo simple con heurística consistente y coste constante para evaluarla, el peor caso sigue siendo $O((V+E)\log V)$.
+
 ## ¿Cuál usar?
 
-| Algoritmo | Pesos negativos | Complejidad | Uso |
-|-----------|----------------|-------------|-----|
-| **BFS** | No (sin pesos) | $O(V+E)$ | Grafos sin pesos |
-| **Dijkstra** | No | $O((V+E)\log V)$ | Un origen, pesos ≥ 0 |
-| **Bellman-Ford** | Sí | $O(VE)$ | Pesos negativos |
-| **Floyd-Warshall** | Sí | $O(n^3)$ | Todos contra todos, $n$ pequeño |
+| Algoritmo          | Pesos negativos     | Complejidad                                                        | Uso                                 |
+| ------------------ | ------------------- | ------------------------------------------------------------------ | ----------------------------------- |
+| **BFS**            | No (sin pesos)      | $O(V+E)$                                                           | Grafos sin pesos                    |
+| **Dijkstra**       | No                  | $O((V+E)\log V)$                                                   | Un origen, pesos ≥ 0                |
+| **Bellman-Ford**   | Sí                  | $O(VE)$                                                            | Pesos negativos                     |
+| **Floyd-Warshall** | Sí                  | $O(n^3)$                                                           | Todos contra todos, $n$ pequeño     |
+| **A\***            | No en esta variante | Depende de la heurística; peor caso como Dijkstra con consistencia | Un destino y una cota inferior útil |
 
 ## Ejercicio de práctica
 

@@ -1,0 +1,106 @@
+---
+title: "Dijkstra"
+description: "Encuentra caminos mínimos con pesos no negativos mediante relajaciones y una cola de prioridad."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Dijkstra", "caminos mínimos", "priority_queue"]
+---
+
+## Antes de empezar
+
+Repasa listas de adyacencia, [BFS](/blog/grafos/representacion-recorridos) y [colas de prioridad](/blog/estructuras-avanzadas/colas-prioridad). BFS minimiza número de aristas; si cada arista tiene un coste diferente, un camino con menos aristas puede ser más caro.
+
+Dijkstra requiere pesos **no negativos**. Cero sí está permitido. Si puede haber pesos negativos, revisa Bellman-Ford en el nivel Verde.
+
+## Relajar una arista
+
+`distancia[vertice]` guarda el mejor coste descubierto. Inicialmente solo el origen tiene distancia cero. Una arista de `actual` a `vecino` permite proponer `distancia[actual] + peso`. Si mejora el valor, lo actualizamos y agregamos una entrada a la cola.
+
+Siempre sacamos la menor distancia pendiente. Si esa entrada coincide con la distancia actual del vértice, su distancia ya es óptima: cualquier camino todavía pendiente partiría de una distancia no menor y, con pesos no negativos, no puede mejorarla pasando después por otros vértices.
+
+## Entradas antiguas
+
+La STL no permite disminuir directamente una clave de `priority_queue`. Insertamos una entrada nueva cuando mejora la distancia. Al extraer una entrada cuyo coste ya no coincide con `distancia[actual]`, la descartamos.
+
+No marques un vértice definitivamente al **insertarlo**. En `0 -> 1` de coste 8, `0 -> 2` de coste 2 y `2 -> 1` de coste 1, la primera propuesta para 1 cuesta 8, pero la óptima cuesta 3.
+
+## C++17
+
+Entrada: grafo dirigido no vacío, número de aristas, origen y aristas `desde hasta peso`. Los vértices comienzan en cero. Suponemos que cualquier distancia finita es menor que `INF`.
+
+```cpp test
+#include <functional>
+#include <iostream>
+#include <limits>
+#include <queue>
+#include <utility>
+#include <vector>
+using namespace std;
+
+int main() {
+    int vertices, aristas, origen;
+    cin >> vertices >> aristas >> origen;
+    vector<vector<pair<int, long long>>> vecinos(vertices);
+    for (int indice = 0; indice < aristas; indice++) {
+        int desde, hasta;
+        long long peso;
+        cin >> desde >> hasta >> peso;
+        vecinos[desde].push_back({hasta, peso});
+    }
+    const long long INF = numeric_limits<long long>::max() / 4;
+    vector<long long> distancia(vertices, INF);
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> pendientes;
+    distancia[origen] = 0;
+    pendientes.push({0, origen});
+    while (!pendientes.empty()) {
+        auto [coste, actual] = pendientes.top();
+        pendientes.pop();
+        if (coste != distancia[actual]) continue;
+        for (auto [vecino, peso] : vecinos[actual]) {
+            if (peso <= INF - coste && coste + peso < distancia[vecino]) {
+                distancia[vecino] = coste + peso;
+                pendientes.push({distancia[vecino], vecino});
+            }
+        }
+    }
+    for (int vertice = 0; vertice < vertices; vertice++) {
+        if (vertice > 0) cout << ' ';
+        cout << (distancia[vertice] == INF ? -1 : distancia[vertice]);
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+5 5 0
+0 1 8
+0 2 2
+2 1 1
+1 3 2
+2 3 7
+```
+
+Salida:
+
+```text output
+0 3 2 5 -1
+```
+
+## Coste y variantes
+
+En un grafo simple, esta implementación cuesta $O((n+m)\log(n+1))$ tiempo y $O(n+m)$ memoria. Con aristas paralelas arbitrarias, la cola puede tener $O(m)$ entradas y una cota general usa $\log(m+1)$. No sumes costes a un infinito sin comprobar límites.
+
+Para un grafo no dirigido agrega también la arista inversa. Para reconstruir un camino, guarda el padre cada vez que una relajación mejora una distancia y recórrelo desde el destino; un vértice inalcanzable no tiene ese camino.
+
+## Practica
+
+En el ejemplo, cambia el coste de `0 -> 1` a cero. ¿Cuáles son las distancias de 1 y 3? ¿Necesita cambiar el algoritmo?
+
+<details>
+<summary>Respuesta</summary>
+
+Pasan a ser 0 y 2. No hay que cambiar el algoritmo porque cero es no negativo. Una arista de peso negativo sí invalidaría la demostración de Dijkstra.
+
+</details>

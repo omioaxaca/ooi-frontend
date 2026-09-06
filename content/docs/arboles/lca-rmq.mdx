@@ -1,0 +1,120 @@
+---
+title: "LCA mediante Euler tour y RMQ"
+description: "Reduce consultas de ancestro común a mínimos de profundidad en un recorrido que registra los regresos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "LCA", "Euler tour", "RMQ", "sparse table"]
+---
+
+## Antes de empezar
+
+Esta es la segunda guía de LCA del temario. Repasa [binary lifting](/blog/arboles/lca-binary-lifting) y [sparse table](/blog/estructuras-avanzadas/rmq). Ahora queremos consultas $O(1)$ sobre un árbol que no cambia.
+
+## Un Euler tour que incluye regresos
+
+Registra el vértice al entrar y vuelve a registrarlo cada vez que regresas de un hijo. Para aristas `0-1`, `0-2`, `1-3`, `1-4`, una secuencia posible es `0,1,3,1,4,1,0,2,0`.
+
+No es simplemente el preorden de $n$ elementos. Este recorrido tiene $2n-1$ entradas porque cada arista se atraviesa al bajar y al subir. Guarda la primera aparición de cada vértice y su profundidad.
+
+## Por qué aparece el LCA como mínimo
+
+Entre las primeras apariciones de dos vértices, el recorrido sube hasta su ancestro común más bajo y baja a la otra rama. No sube por encima de ese ancestro antes de alcanzar la segunda aparición inicial. Por eso el vértice de menor profundidad en ese intervalo es el LCA.
+
+Entre las primeras apariciones de 3 y 4, el segmento es `3,1,4`, con profundidades `2,1,2`: responde 1. No debes minimizar el número del vértice; sus etiquetas son arbitrarias.
+
+## C++17
+
+El ejemplo usa DFS recursiva para hacer visible el regreso de cada hijo. Supone un árbol no vacío, raíz 0 y profundidad moderada.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void recorrer(int actual, int padre, const vector<vector<int>>& vecinos,
+              vector<int>& profundidad, vector<int>& primera, vector<int>& euler) {
+    primera[actual] = static_cast<int>(euler.size());
+    euler.push_back(actual);
+    for (int vecino : vecinos[actual]) {
+        if (vecino == padre) continue;
+        profundidad[vecino] = profundidad[actual] + 1;
+        recorrer(vecino, actual, vecinos, profundidad, primera, euler);
+        euler.push_back(actual);
+    }
+}
+
+int main() {
+    int cantidad, consultas;
+    cin >> cantidad >> consultas;
+    vector<vector<int>> vecinos(cantidad);
+    for (int indice = 1; indice < cantidad; indice++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        vecinos[origen].push_back(destino);
+        vecinos[destino].push_back(origen);
+    }
+    vector<int> profundidad(cantidad, 0), primera(cantidad), euler;
+    recorrer(0, -1, vecinos, profundidad, primera, euler);
+    int longitud = static_cast<int>(euler.size());
+    vector<int> logaritmo(longitud + 1, 0);
+    for (int tamano = 2; tamano <= longitud; tamano++) logaritmo[tamano] = logaritmo[tamano / 2] + 1;
+    vector<vector<int>> tabla(logaritmo[longitud] + 1, vector<int>(longitud));
+    tabla[0] = euler;
+    for (int nivel = 1; nivel < static_cast<int>(tabla.size()); nivel++) {
+        for (int inicio = 0; inicio + (1 << nivel) <= longitud; inicio++) {
+            int primero = tabla[nivel - 1][inicio];
+            int segundo = tabla[nivel - 1][inicio + (1 << (nivel - 1))];
+            tabla[nivel][inicio] = profundidad[primero] <= profundidad[segundo] ? primero : segundo;
+        }
+    }
+    while (consultas--) {
+        int primero, segundo;
+        cin >> primero >> segundo;
+        int izquierda = primera[primero], derecha = primera[segundo];
+        if (izquierda > derecha) swap(izquierda, derecha);
+        int nivel = logaritmo[derecha - izquierda + 1];
+        int candidatoA = tabla[nivel][izquierda];
+        int candidatoB = tabla[nivel][derecha - (1 << nivel) + 1];
+        cout << (profundidad[candidatoA] <= profundidad[candidatoB] ? candidatoA : candidatoB) << '\n';
+    }
+}
+```
+
+Entrada:
+
+```text input
+5 3
+0 1
+0 2
+1 3
+1 4
+3 4
+2 4
+4 4
+```
+
+Salida:
+
+```text output
+1
+0
+4
+```
+
+## Coste y elección de técnica
+
+El recorrido cuesta $O(n)$ y la tabla $O(n\log n)$ tiempo y memoria. Cada consulta es $O(1)$. Binary lifting usa espacio del mismo orden y consulta $O(\log n)$, pero también permite subir una cantidad específica de ancestros.
+
+Una cadena puede provocar $O(n)$ profundidad recursiva. Para árboles grandes usa una pila de eventos de entrada y regreso, o el preprocesamiento iterativo de binary lifting. Si el árbol cambia de estructura, ninguna de estas tablas estáticas se actualiza automáticamente.
+
+## Practica
+
+¿Por qué el preorden simple `[0,1,3,4,2]` no sirve para responder el LCA de 3 y 4 con un mínimo de profundidad?
+
+<details>
+<summary>Respuesta</summary>
+
+El intervalo entre ellos contiene solamente 3 y 4, ambos de profundidad 2. Falta el regreso al ancestro 1. La repetición de vértices en el Euler tour no es redundante: es la información que hace válida la reducción.
+
+</details>

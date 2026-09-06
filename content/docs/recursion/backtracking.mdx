@@ -1,0 +1,93 @@
+---
+title: "Backtracking"
+description: "Construye soluciones decisión por decisión y deshaz cada cambio para explorar las alternativas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "backtracking", "recursión", "búsqueda exhaustiva"]
+---
+
+## Antes de empezar
+
+Necesitas caso base, referencias y [diseño de estado](/blog/recursion/visualizacion-estado). Backtracking recorre un árbol de decisiones: construye una solución parcial, prueba una opción y regresa para intentar otra.
+
+Nuestro problema será generar cadenas de longitud $n$ formadas por `0` y `1`, sin dos unos consecutivos. Comenzaremos con $0\leq n\leq20$; imprimir todas las respuestas puede ser costoso.
+
+## Elegir, explorar, deshacer
+
+El estado es la cadena parcial `actual`. Su longitud dice qué posición llenaremos. Antes de cada llamada, `actual` debe ser un prefijo válido.
+
+1. Si ya tiene longitud $n$, encontramos una respuesta.
+2. Probamos agregar `0`, que nunca introduce dos unos seguidos.
+3. Probamos agregar `1` solamente si el último carácter no es `1`.
+4. Después de explorar una opción, retiramos el carácter agregado.
+
+El cuarto paso restaura el estado. Sin él, la siguiente alternativa comenzaría con los cambios de la anterior.
+
+## Un ejemplo pequeño
+
+Para $n=2$, desde el prefijo vacío elegimos primero `0`. De allí salen `00` y `01`. Regresamos al prefijo vacío y elegimos `1`. De allí sale `10`; la opción `11` se descarta antes de construir una respuesta inválida.
+
+Cada cadena final tiene una secuencia única de decisiones, así que no imprimimos duplicados. También exploramos toda cadena válida: su siguiente carácter siempre será una opción permitida.
+
+## C++17
+
+```cpp test
+#include <iostream>
+#include <string>
+using namespace std;
+
+void generar(int longitud, string& actual) {
+    if (static_cast<int>(actual.size()) == longitud) {
+        cout << actual << '\n';
+        return;
+    }
+    for (char opcion : {'0', '1'}) {
+        if (opcion == '1' && !actual.empty() && actual.back() == '1') continue;
+        actual.push_back(opcion);
+        generar(longitud, actual);
+        actual.pop_back();
+    }
+}
+
+int main() {
+    int longitud;
+    cin >> longitud;
+    string actual;
+    generar(longitud, actual);
+}
+```
+
+Entrada:
+
+```text input
+3
+```
+
+Salida:
+
+```text output
+000
+001
+010
+100
+101
+```
+
+## Coste y errores frecuentes
+
+Sin restricciones habría $2^n$ hojas. Una cota superior del tiempo, incluyendo imprimir cadenas de longitud $n$, es $O(n2^n)$. La poda reduce las ramas de este problema, pero no convierte cualquier búsqueda exhaustiva en un algoritmo eficiente. La cadena y la pila requieren $O(n)$ espacio si no guardas todas las respuestas.
+
+No consultes `actual.back()` cuando la cadena está vacía. No hagas `pop_back()` si esa rama no hizo antes `push_back()`. El `continue` descarta una opción; un `return` en ese lugar abandonaría todas las opciones restantes.
+
+Para $n=0$ existe una solución: la cadena vacía. El programa imprime una línea vacía, no «cero soluciones».
+
+## Practica
+
+Genera cadenas que tengan exactamente dos unos y no contengan `11`. Resuelve primero $n=4$ a mano.
+
+<details>
+<summary>Respuesta y diseño del estado</summary>
+
+Las respuestas son `0101`, `1001` y `1010`. Puedes agregar un parámetro `unosUsados`, incrementarlo al elegir `1` y aceptar una hoja solo si vale 2. Si supera 2, esa rama ya no puede servir. Otra poda válida es descartar una rama si aun llenando las posiciones restantes con unos no alcanzarías 2.
+
+</details>

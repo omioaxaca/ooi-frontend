@@ -1,0 +1,145 @@
+---
+title: "Pollard rho"
+description: "Factoriza enteros grandes combinando prueba de primalidad, sucesiones modulares y detección probabilística de factores."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Pollard rho", "Miller-Rabin", "factorización"]
+---
+
+## Antes de empezar
+
+Necesitas GCD, exponenciación modular y [factorización](/blog/matematicas/divisores-factorizacion). Probar divisores hasta $\sqrt n$ puede ser demasiado lento para enteros de 64 bits. Pollard rho busca un divisor no trivial sin probarlos uno por uno.
+
+## Una colisión módulo un factor desconocido
+
+Genera una sucesión $x_{siguiente}=(x^2+c)\bmod n$. Si dos términos coinciden módulo un factor primo $p$ de $n$, su diferencia es divisible por $p$. Calcular `gcd(diferencia, n)` puede revelar ese factor sin conocerlo previamente.
+
+Usamos dos recorridos: uno avanza una vez por ronda y otro dos veces, como en detección de ciclos. Si el GCD vale 1 seguimos; si está estrictamente entre 1 y $n$, encontramos un factor; si vale $n$, la prueba no separó un factor y reiniciamos con otros parámetros.
+
+El factor encontrado no tiene por qué ser primo. Factorizamos recursivamente ambas partes y antes de intentar rho comprobamos si el número ya es primo.
+
+## Miller-Rabin para 64 bits
+
+Miller-Rabin escribe $n-1=d2^s$ con $d$ impar y prueba potencias modulares de bases. Para enteros sin signo de 64 bits, el conjunto de bases mostrado abajo hace la prueba determinista en ese rango. Eso no convierte a Pollard rho en determinista: la búsqueda de factores sigue teniendo tiempo probabilístico.
+
+## C++ con GCC o Clang
+
+Este ejemplo usa `unsigned __int128` para multiplicar dos enteros de 64 bits sin perder bits antes del módulo. Es una **extensión de GCC y Clang**, no un tipo de ISO C++17 ni una función disponible automáticamente en MSVC. Para otro compilador necesitas una multiplicación modular portable o una biblioteca de enteros grandes.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <random>
+#include <vector>
+using namespace std;
+
+using Entero = unsigned long long;
+using Ancho = unsigned __int128;
+
+Entero multiplicar(Entero primero, Entero segundo, Entero modulo) {
+    return static_cast<Ancho>(primero) * segundo % modulo;
+}
+
+Entero potencia(Entero base, Entero exponente, Entero modulo) {
+    Entero resultado = 1;
+    while (exponente > 0) {
+        if (exponente & 1) resultado = multiplicar(resultado, base, modulo);
+        base = multiplicar(base, base, modulo);
+        exponente >>= 1;
+    }
+    return resultado;
+}
+
+bool primo(Entero numero) {
+    if (numero < 2) return false;
+    for (Entero pequeno : {2ULL, 3ULL, 5ULL, 7ULL, 11ULL, 13ULL, 17ULL, 19ULL, 23ULL, 29ULL, 31ULL, 37ULL}) {
+        if (numero % pequeno == 0) return numero == pequeno;
+    }
+    Entero impar = numero - 1;
+    int veces = 0;
+    while ((impar & 1) == 0) { impar >>= 1; veces++; }
+    for (Entero base : {2ULL, 325ULL, 9375ULL, 28178ULL, 450775ULL, 9780504ULL, 1795265022ULL}) {
+        if (base % numero == 0) continue;
+        Entero valor = potencia(base % numero, impar, numero);
+        if (valor == 1 || valor == numero - 1) continue;
+        bool acepta = false;
+        for (int repeticion = 1; repeticion < veces; repeticion++) {
+            valor = multiplicar(valor, valor, numero);
+            if (valor == numero - 1) { acepta = true; break; }
+        }
+        if (!acepta) return false;
+    }
+    return true;
+}
+
+mt19937_64 azar(12345);
+
+Entero rho(Entero numero) {
+    if (numero % 2 == 0) return 2;
+    if (numero % 3 == 0) return 3;
+    while (true) {
+        Entero constante = uniform_int_distribution<Entero>(1, numero - 1)(azar);
+        Entero lento = uniform_int_distribution<Entero>(2, numero - 2)(azar);
+        Entero rapido = lento, divisor = 1;
+        auto avanzar = [&](Entero valor) -> Entero { return (static_cast<Ancho>(valor) * valor + constante) % numero; };
+        for (int intento = 0; intento < 200000 && divisor == 1; intento++) {
+            lento = avanzar(lento);
+            rapido = avanzar(avanzar(rapido));
+            divisor = gcd(lento > rapido ? lento - rapido : rapido - lento, numero);
+        }
+        if (divisor > 1 && divisor < numero) return divisor;
+    }
+}
+
+void factorizar(Entero numero, vector<Entero>& factores) {
+    if (numero == 1) return;
+    if (primo(numero)) { factores.push_back(numero); return; }
+    Entero divisor = rho(numero);
+    factorizar(divisor, factores);
+    factorizar(numero / divisor, factores);
+}
+
+int main() {
+    Entero numero;
+    cin >> numero;
+    if (numero == 0) return 0;
+    vector<Entero> factores;
+    factorizar(numero, factores);
+    sort(factores.begin(), factores.end());
+    for (int indice = 0; indice < static_cast<int>(factores.size()); indice++) {
+        if (indice > 0) cout << ' ';
+        cout << factores[indice];
+    }
+    cout << '\n';
+}
+```
+
+Entrada:
+
+```text input
+8051
+```
+
+Salida:
+
+```text output
+83 97
+```
+
+## Coste y errores frecuentes
+
+El análisis probabilístico típico espera alrededor de $O(\sqrt p)$ iteraciones para descubrir un factor primo $p$, bajo un comportamiento similar al de una sucesión aleatoria; frecuentemente se expresa como $O(n^{1/4})$ para factores balanceados. No es una cota garantizada de peor caso. Cada ronda también paga multiplicaciones modulares y GCD.
+
+Reiniciar es parte del algoritmo, no evidencia de que el número sea primo. Verifica primalidad antes de rho y nunca aceptes 1 ni el propio número como una factorización útil. La semilla fija facilita reproducir este ejemplo.
+
+## Practica
+
+Factoriza 1, un primo pequeño, 49 y 561. Comprueba que todos los factores impresos son primos y que su producto reconstruye la entrada usando un tipo suficientemente ancho.
+
+<details>
+<summary>Respuesta</summary>
+
+1 no tiene factores primos; un primo se imprime una vez; 49 produce `7 7`; 561 produce `3 11 17`. Los cuadrados y pseudoprimos sirven para comprobar partes distintas de la implementación.
+
+</details>

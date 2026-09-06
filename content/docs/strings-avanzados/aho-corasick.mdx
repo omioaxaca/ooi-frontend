@@ -1,0 +1,122 @@
+---
+title: "Aho-Corasick"
+description: "Busca muchos patrones simultáneamente combinando un trie, enlaces de fallo y transiciones compartidas."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "Aho-Corasick", "trie", "strings", "autómata"]
+---
+
+## Antes de empezar
+
+Necesitas [trie](/blog/estructuras-avanzadas/trie), BFS y la idea de reutilizar sufijos de KMP. Ejecutar una búsqueda independiente por cada patrón puede recorrer el texto demasiadas veces. Aho-Corasick comparte esos recorridos.
+
+## Trie más enlaces de fallo
+
+Cada nodo representa un prefijo de algún patrón. Al leer una letra, avanzamos por la transición correspondiente. Si el prefijo no puede continuar, un **enlace de fallo** lleva al mayor sufijo propio que también existe como prefijo en el trie.
+
+Construimos esos enlaces en BFS: cuando procesamos un nodo, ya conocemos las transiciones de los nodos de menor profundidad a los que puede fallar. Completamos las transiciones ausentes para que después cada carácter requiera un solo movimiento.
+
+## No perder patrones que son sufijos de otros
+
+Al llegar al final de `she`, también hemos leído una aparición de `he`. Por eso un nodo no solo aporta los patrones que terminan exactamente en él: también aporta los que terminan en su enlace de fallo.
+
+El ejemplo cuenta el total de apariciones, incluidas las superpuestas. Con patrones `he`, `she`, `his`, `hers` y texto `ahishers`, aparecen cuatro: `his`, `she`, `he` y `hers`.
+
+## C++17
+
+Todos los patrones son no vacíos y tanto patrones como texto contienen únicamente letras `a` a `z`. Inserta todos los patrones antes de construir el autómata.
+
+```cpp test
+#include <array>
+#include <iostream>
+#include <queue>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct Nodo {
+    array<int, 26> siguiente;
+    int fallo = 0;
+    long long finales = 0;
+    Nodo() { siguiente.fill(-1); }
+};
+
+struct AhoCorasick {
+    vector<Nodo> nodos = vector<Nodo>(1);
+    void insertar(const string& patron) {
+        int actual = 0;
+        for (char simbolo : patron) {
+            int letra = simbolo - 'a';
+            if (nodos[actual].siguiente[letra] == -1) {
+                nodos[actual].siguiente[letra] = static_cast<int>(nodos.size());
+                nodos.emplace_back();
+            }
+            actual = nodos[actual].siguiente[letra];
+        }
+        nodos[actual].finales++;
+    }
+    void construir() {
+        queue<int> pendientes;
+        for (int letra = 0; letra < 26; letra++) {
+            int hijo = nodos[0].siguiente[letra];
+            if (hijo == -1) nodos[0].siguiente[letra] = 0;
+            else pendientes.push(hijo);
+        }
+        while (!pendientes.empty()) {
+            int actual = pendientes.front();
+            pendientes.pop();
+            int respaldo = nodos[actual].fallo;
+            nodos[actual].finales += nodos[respaldo].finales;
+            for (int letra = 0; letra < 26; letra++) {
+                int hijo = nodos[actual].siguiente[letra];
+                if (hijo == -1) nodos[actual].siguiente[letra] = nodos[respaldo].siguiente[letra];
+                else {
+                    nodos[hijo].fallo = nodos[respaldo].siguiente[letra];
+                    pendientes.push(hijo);
+                }
+            }
+        }
+    }
+    long long contar(const string& texto) const {
+        int actual = 0;
+        long long respuesta = 0;
+        for (char simbolo : texto) {
+            actual = nodos[actual].siguiente[simbolo - 'a'];
+            respuesta += nodos[actual].finales;
+        }
+        return respuesta;
+    }
+};
+
+int main() {
+    AhoCorasick automata;
+    for (const string& patron : {string("he"), string("she"), string("his"), string("hers")}) automata.insertar(patron);
+    automata.construir();
+    cout << automata.contar("ahishers") << '\n';
+}
+```
+
+Salida:
+
+```text output
+4
+```
+
+## Coste y variantes
+
+Si la suma de longitudes de los patrones es $L$, hay como máximo $L+1$ nodos. Construir cuesta $O(26L)$ tiempo y memoria; recorrer un texto de longitud $n$ para obtener este conteo total cuesta $O(n)$. El alfabeto fijo es importante: una tabla por cada símbolo sería costosa para alfabetos grandes.
+
+Reportar **cada aparición** necesita además tiempo proporcional a la salida. Contar apariciones por patrón puede hacerse acumulando visitas a nodos y propagándolas hacia los enlaces de fallo en orden BFS inverso. Este programa solo devuelve el total.
+
+Patrones repetidos se cuentan como entradas distintas porque incrementan `finales` varias veces. Si el problema pide patrones únicos, elimina duplicados antes de insertarlos. No agregues patrones después de completar transiciones ni construyas dos veces sobre el mismo autómata sin reiniciarlo.
+
+## Practica
+
+Con patrones `a` y `aa`, ¿cuántas apariciones hay en `aaa`?
+
+<details>
+<summary>Respuesta</summary>
+
+Cinco: tres de `a` y dos de `aa`. En el segundo y tercer carácter se encuentran simultáneamente ambos patrones gracias a los enlaces de fallo.
+
+</details>

@@ -1,0 +1,85 @@
+---
+title: "CDQ divide and conquer"
+description: "Divide eventos por su orden original y cuenta las contribuciones que cruzan entre mitades."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "offline", "CDQ", "divide and conquer"]
+---
+
+## Antes de empezar
+
+Necesitas recursión, ordenamiento y arreglos. **Offline** significa que puedes conocer y reorganizar los datos o consultas antes de responder. No es lo mismo que un concurso de **solo salida**, donde se entregan archivos de respuestas para entradas publicadas. Conservamos la agrupación del temario, pero estas técnicas sirven también en problemas normales.
+
+## Una primera aplicación de CDQ
+
+Contaremos parejas de posiciones $i<j$ para las que $a_i\leq a_j$. La solución directa revisa $O(n^2)$ parejas. Podemos ver cada posición como un evento en el tiempo: una posición anterior contribuye a otra posterior si también cumple la condición sobre su valor.
+
+Divide el intervalo de posiciones en dos mitades. Toda pareja válida cae en una de tres clases disjuntas:
+
+1. Ambas posiciones en la izquierda.
+2. Ambas posiciones en la derecha.
+3. La primera en la izquierda y la segunda en la derecha.
+
+La recursión cuenta las dos primeras clases. Para la tercera, si ordenamos ambas mitades por valor, dos punteros cuentan en tiempo lineal cuántos valores izquierdos son menores o iguales a cada valor derecho. Después fusionamos las mitades ordenadas para que el padre pueda hacer lo mismo.
+
+## Ejemplo razonado
+
+En `[3, 1 | 2, 2]`, la mitad izquierda aporta cero parejas internas y la derecha una. Las mitades ordenadas son `[1, 3]` y `[2, 2]`. Cada 2 recibe una contribución del 1 izquierdo: dos cruces. Total: tres parejas.
+
+No estamos ordenando todo el arreglo antes de dividirlo: eso destruiría la condición de tiempo $i<j$. Cada segmento recursivo conserva el conjunto de posiciones originales que le corresponde, aunque su interior termine ordenado por valor.
+
+## C++17
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+long long cdq(vector<int>& valores, vector<int>& auxiliar, int inicio, int fin) {
+    if (fin - inicio <= 1) return 0;
+    int medio = inicio + (fin - inicio) / 2;
+    long long respuesta = cdq(valores, auxiliar, inicio, medio)
+                        + cdq(valores, auxiliar, medio, fin);
+    int izquierdo = inicio;
+    for (int derecho = medio; derecho < fin; derecho++) {
+        while (izquierdo < medio && valores[izquierdo] <= valores[derecho]) izquierdo++;
+        respuesta += izquierdo - inicio;
+    }
+    merge(valores.begin() + inicio, valores.begin() + medio,
+          valores.begin() + medio, valores.begin() + fin, auxiliar.begin() + inicio);
+    copy(auxiliar.begin() + inicio, auxiliar.begin() + fin, valores.begin() + inicio);
+    return respuesta;
+}
+
+int main() {
+    vector<int> valores = {3, 1, 2, 2};
+    vector<int> auxiliar(valores.size());
+    cout << cdq(valores, auxiliar, 0, static_cast<int>(valores.size())) << '\n';
+}
+```
+
+Salida:
+
+```text output
+3
+```
+
+## Coste y extensión a más dimensiones
+
+Cada nivel realiza trabajo lineal de conteo y fusión. Hay $O(\log n)$ niveles: tiempo $O(n\log n)$, espacio $O(n)$ auxiliar y $O(\log n)$ de pila. El conteo puede llegar a $n(n-1)/2$, por eso usamos `long long`.
+
+En problemas de dominancia de tres dimensiones, una coordenada fija el orden, otra se barre durante la combinación y una estructura de prefijos, como Fenwick, cuenta la tercera. Esto suele producir $O(n\log^2 n)$; requiere definir empates, comprimir coordenadas y deshacer las actualizaciones temporales.
+
+En una DP donde la izquierda **actualiza valores necesarios para resolver la derecha**, el orden cambia a «resolver izquierda, transferir contribuciones, resolver derecha». No copies el orden del ejemplo de conteo sin revisar las dependencias.
+
+## Practica
+
+¿Qué cambio cuenta parejas con $a_i<a_j$? ¿Qué respuestas esperas para `[2, 2, 2]` en ambas versiones?
+
+<details>
+<summary>Respuesta</summary>
+
+Cambia `<=` por `<` en el conteo cruzado. La versión no estricta devuelve 3 y la estricta 0. Los empates son parte de la definición de la consulta, no un detalle de implementación.
+
+</details>

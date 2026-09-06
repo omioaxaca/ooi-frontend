@@ -9,19 +9,50 @@ syllabusId: 39
 
 ## La analogía: un tren
 
+**Antes de empezar:** repasa apuntadores y `nullptr`. Una lista guarda enlaces entre nodos; no ofrece acceso aleatorio como un vector. Cambiar enlaces puede costar tiempo constante, pero **encontrar dónde cambiarlos** puede requerir recorrer toda la lista.
+
 Imagina un tren. Cada vagón tiene dos cosas: la **carga** (datos) y un **enganche** al siguiente vagón (puntero). Para llegar al tercer vagón, debes pasar por el primero y el segundo. No puedes saltar directo como en un arreglo. Eso es una **lista enlazada**.
 
 ## ¿Por qué no usar siempre arreglos?
 
-| Operación | Arreglo | Lista Enlazada |
-|-----------|---------|----------------|
-| Acceder al i-ésimo elemento | $O(1)$ ✅ | $O(n)$ ❌ |
-| Insertar al inicio | $O(n)$ ❌ | $O(1)$ ✅ |
-| Insertar al final | $O(1)$ (vector) | $O(1)$ (con cola) |
-| Insertar en medio | $O(n)$ ❌ | $O(1)$ (con iterador) ✅ |
-| Borrar en medio | $O(n)$ ❌ | $O(1)$ (con iterador) ✅ |
+| Operación                   | Arreglo                    | Lista Enlazada                             |
+| --------------------------- | -------------------------- | ------------------------------------------ |
+| Acceder al i-ésimo elemento | $O(1)$ ✅                  | $O(n)$ ❌                                  |
+| Insertar al inicio          | $O(n)$ ❌                  | $O(1)$ ✅                                  |
+| Insertar al final           | $O(1)$ amortizado (vector) | $O(1)$ si conservas un apuntador al último |
+| Insertar en medio           | $O(n)$ ❌                  | $O(1)$ (con iterador) ✅                   |
+| Borrar en medio             | $O(n)$ ❌                  | $O(1)$ (con iterador) ✅                   |
 
-Las listas enlazadas brillan cuando necesitas **insertar o borrar** elementos frecuentemente en posiciones arbitrarias.
+Las listas son útiles cuando ya tienes las posiciones de inserción o borrado. En una lista simplemente enlazada necesitas conocer también el predecesor para borrar un nodo general. En una doblemente enlazada puedes actualizar sus dos vecinos. Para recorridos y acceso por índice, `vector` suele ser más simple y aprovechar mejor la memoria contigua.
+
+## Un ejemplo con la biblioteca estándar
+
+`std::list` es doblemente enlazada y administra la memoria de sus nodos. `erase` invalida el iterador borrado y devuelve el del siguiente elemento.
+
+```cpp test
+#include <iostream>
+#include <iterator>
+#include <list>
+using namespace std;
+
+int main() {
+    list<int> valores = {10, 30};
+    auto posicion = next(valores.begin());
+    posicion = valores.insert(posicion, 20);
+    posicion = valores.erase(posicion);
+    cout << valores.front() << ' ' << *posicion << '\n';
+}
+```
+
+Salida:
+
+```text output
+10 30
+```
+
+Insertamos antes del 30 y luego borramos el 20. No uses el iterador antiguo del nodo eliminado. `next(iterador, distancia)` sobre una lista recorre enlaces: cuesta tiempo proporcional a esa distancia.
+
+**Autocomprobación:** borrar la cabeza cambia el apuntador inicial; borrar el último puede cambiar también la cola si la guardas. En una implementación manual, conserva el siguiente nodo antes de hacer `delete` y nunca vuelvas a leer el nodo liberado.
 
 ## Estructura de un nodo
 
@@ -35,6 +66,7 @@ struct Nodo {
 ```
 
 **Visualización:**
+
 ```
 [dato|sig] → [dato|sig] → [dato|sig] → nullptr
   10   →      20   →      30   →    ∅
@@ -223,12 +255,16 @@ int main() {
 ```
 
 <Callout type="info">
-  En competencias de programación, rara vez implementas listas enlazadas desde cero. Generalmente usas `std::list` o, mejor aún, simulaciones con arreglos. Sin embargo, entender cómo funcionan es crucial para resolver problemas que involucran manipulación de nodos.
+  En competencias de programación, rara vez implementas listas enlazadas desde
+  cero. Generalmente usas `std::list` o, mejor aún, simulaciones con arreglos.
+  Sin embargo, entender cómo funcionan es crucial para resolver problemas que
+  involucran manipulación de nodos.
 </Callout>
 
 ## Ejercicio de práctica
 
 Implementa una lista enlazada que soporte:
+
 1. Insertar un número al final
 2. Borrar la primera aparición de un número
 3. Imprimir todos los elementos
@@ -303,4 +339,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende a **invertir una lista enlazada**, uno de los problemas clásicos más importantes en entrevistas y competencias.
+[Árboles binarios](/blog/arboles/representacion-arboles).

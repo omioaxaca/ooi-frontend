@@ -1,0 +1,87 @@
+---
+title: "Hashing de cadenas"
+description: "Construye huellas de subcadenas en tiempo constante y entiende qué garantías pierdes al aceptar colisiones."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "strings", "hashing", "rolling hash"]
+---
+
+## Antes de empezar
+
+Necesitas strings, prefijos y aritmética modular. Un hash resume una cadena en un entero pequeño. Cadenas distintas pueden compartir ese entero: eso es una **colisión**. Hashes distintos prueban desigualdad; hashes iguales no prueban igualdad.
+
+## Un polinomio que se extiende al final
+
+Asigna un valor numérico a cada carácter y define:
+
+$$H[0]=0,\qquad H[i+1]=(H[i]B+codigo(s_i))\bmod M.$$
+
+Guarda también $potencia[k]=B^k\bmod M$. La huella de `[izquierda, derecha)` es:
+
+$$\big(H[derecha]-H[izquierda]B^{derecha-izquierda}\big)\bmod M.$$
+
+Multiplicar el prefijo corto por la potencia alinea sus posiciones con las del largo; restarlo elimina los caracteres anteriores. Esta orientación no necesita inversos modulares.
+
+## Ejemplo: comparar dos apariciones
+
+En `abacaba`, los intervalos `[0,3)` y `[4,7)` contienen `aba`. Tienen la misma longitud y el mismo hash. Para una respuesta **exacta**, el ejemplo verifica también sus caracteres.
+
+## C++17
+
+```cpp test
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct HashCadena {
+    static constexpr long long MOD = 1000000007;
+    static constexpr long long BASE = 911382323;
+    vector<long long> prefijo, potencia;
+    HashCadena(const string& texto) : prefijo(texto.size() + 1, 0), potencia(texto.size() + 1, 1) {
+        for (int indice = 0; indice < static_cast<int>(texto.size()); indice++) {
+            int codigo = static_cast<unsigned char>(texto[indice]) + 1;
+            prefijo[indice + 1] = (prefijo[indice] * BASE + codigo) % MOD;
+            potencia[indice + 1] = potencia[indice] * BASE % MOD;
+        }
+    }
+    long long rango(int izquierda, int derecha) const {
+        return (prefijo[derecha] - prefijo[izquierda] * potencia[derecha - izquierda] % MOD + MOD) % MOD;
+    }
+};
+
+int main() {
+    string texto = "abacaba";
+    HashCadena huella(texto);
+    bool mismaHuella = huella.rango(0, 3) == huella.rango(4, 7);
+    bool mismosCaracteres = texto.compare(0, 3, texto, 4, 3) == 0;
+    cout << mismaHuella << ' ' << mismosCaracteres << '\n';
+}
+```
+
+Salida:
+
+```text output
+1 1
+```
+
+## Coste y garantías
+
+Preprocesar cuesta $O(n)$ tiempo y espacio. Obtener una huella cuesta $O(1)$. Verificar igualdad por caracteres cuesta hasta la longitud de la subcadena: hacer esa verificación muchas veces puede perder la ventaja temporal.
+
+Los productos del ejemplo caben en `long long` porque los factores son menores que el módulo, cercano a $10^9$. Cambiar a un módulo de 64 bits exige una multiplicación modular que no se desborde.
+
+Dos hashes independientes reducen el riesgo de colisión, pero no lo eliminan matemáticamente. Una base fija no ofrece protección frente a entradas preparadas contra ella. Si necesitas garantía determinista y tiempo lineal de búsqueda, usa KMP o Z, que aparecen más adelante.
+
+Compara longitudes además de hashes. Normaliza residuos negativos antes de compararlos. Este código procesa bytes: en texto UTF-8 un carácter visible puede ocupar varios bytes; los problemas de concursos suelen especificar un alfabeto como letras minúsculas.
+
+## Practica
+
+¿Qué puedes concluir si dos subcadenas de la misma longitud tienen hashes distintos? ¿Y si coinciden en dos módulos?
+
+<details>
+<summary>Respuesta</summary>
+
+Hashes distintos implican que las cadenas son distintas. Coincidir en dos módulos sigue siendo evidencia probabilística, no una demostración de igualdad; para certeza, verifica los caracteres o usa una estructura determinista adecuada.
+
+</details>

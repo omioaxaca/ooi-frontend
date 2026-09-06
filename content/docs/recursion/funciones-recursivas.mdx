@@ -9,6 +9,8 @@ syllabusId: 26
 
 ## ¿Qué es la recursión?
 
+**Objetivo:** explicar qué resuelve una llamada, cuándo responde directamente y qué cantidad disminuye hasta llegar a ese caso. Saber que una función se llama a sí misma no basta para garantizar que termine.
+
 Imagina que estás en una fila para comprar boletos y quieres saber cuántas personas hay delante de ti. Le preguntas a la persona de enfrente: "¿Cuántas personas hay delante de ti?". Esa persona le pregunta lo mismo a la siguiente, y así sucesivamente. La primera persona de la fila dice "¡Ninguna!" (caso base), y la respuesta se va propagando de regreso: "Una", "Dos", "Tres"...
 
 Eso es recursión: **una función que se llama a sí misma** para resolver un problema más pequeño, hasta llegar a un caso tan simple que se resuelve directamente.
@@ -45,14 +47,39 @@ void cuentaRegresiva(int n) {
 El factorial de $n$ (escrito $n!$) es: $n! = n \times (n-1) \times (n-2) \times ... \times 2 \times 1$
 
 Podemos definirlo recursivamente:
+
 - **Caso base:** $0! = 1$
 - **Caso recursivo:** $n! = n \times (n-1)!$
 
-```cpp
-long long factorial(int n) {
-    if (n == 0) return 1;        // Caso base
-    return n * factorial(n - 1);  // Caso recursivo
+El ejemplo calcula factorial exacto únicamente para $0\leq n\leq20$, de modo que cabe en `long long`. Un argumento negativo no se acercaría al caso base al restarle uno.
+
+```cpp test
+#include <iostream>
+using namespace std;
+
+long long factorial(int numero) {
+    if (numero == 0) return 1;
+    return numero * factorial(numero - 1);
 }
+
+int main() {
+    int numero;
+    cin >> numero;
+    if (numero < 0 || numero > 20) return 0;
+    cout << factorial(numero) << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4
+```
+
+Salida:
+
+```text output
+24
 ```
 
 **¿Cómo funciona `factorial(4)`?**
@@ -88,8 +115,13 @@ factorial(4) → retorna 4 * 6 = 24
 ```
 
 <Callout type="warning">
-  La pila de llamadas tiene un tamaño limitado (generalmente ~1MB, suficiente para ~10,000-100,000 llamadas). Si la recursión es demasiado profunda, obtendrás un **Stack Overflow** (desbordamiento de pila). Para esos casos, necesitas convertir la recursión a un ciclo iterativo o usar memorización.
+  La pila tiene un límite que depende del entorno y de cuánto guarda cada
+  llamada. Una recursión profunda puede desbordarla. La memorización reduce
+  estados repetidos, pero no elimina necesariamente la profundidad: para
+  evitarla usa una versión iterativa o una pila explícita cuando corresponda.
 </Callout>
+
+Factorial hace $n+1$ llamadas y mantiene hasta $n+1$ pendientes: tiempo y espacio adicional $O(n)$. **Comprueba:** `factorial(0)` debe devolver 1, no 0. Un caso base correcto también debe devolver el elemento neutro que necesita la operación al regresar.
 
 ## Más ejemplos de recursión
 
@@ -107,7 +139,9 @@ int fibonacci(int n) {
 ```
 
 <Callout type="warning">
-  ¡Esta implementación es **muy lenta**! `fibonacci(40)` tarda varios segundos porque recalcula los mismos valores muchas veces. La solución es la **memorización**, que veremos en la siguiente lección.
+  ¡Esta implementación es **muy lenta**! `fibonacci(40)` tarda varios segundos
+  porque recalcula los mismos valores muchas veces. La solución es la
+  **memorización**, que veremos en la siguiente lección.
 </Callout>
 
 ### Potencia
@@ -180,12 +214,12 @@ void hanoi(int n, char origen, char destino, char auxiliar) {
 
 Todo lo que se puede hacer con recursión se puede hacer con ciclos, y viceversa. La pregunta es: ¿cuál es más natural para el problema?
 
-| Recursión | Iteración |
-|-----------|-----------|
+| Recursión                               | Iteración                               |
+| --------------------------------------- | --------------------------------------- |
 | Más intuitiva para problemas divisibles | Más eficiente (sin overhead de la pila) |
-| Necesaria para árboles y grafos | Preferida para cálculos simples |
-| Riesgo de stack overflow | Sin ese riesgo |
-| Código más corto y elegante | A veces más código |
+| Necesaria para árboles y grafos         | Preferida para cálculos simples         |
+| Riesgo de stack overflow                | Sin ese riesgo                          |
+| Código más corto y elegante             | A veces más código                      |
 
 ```cpp
 // Factorial iterativo
@@ -263,4 +297,4 @@ int main() {
 
 ## Siguiente paso
 
-Aprende sobre **Memorización** para hacer la recursión mucho más eficiente evitando recalcular valores.
+[Árbol de llamadas, diseño de estado y recursión sobre arreglos](/blog/recursion/visualizacion-estado).

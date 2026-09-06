@@ -1,0 +1,99 @@
+---
+title: "Números en diferentes bases"
+description: "Convierte representaciones con divisiones sucesivas y reconstruye el valor mediante multiplicación y suma."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "bases", "binario", "aritmética"]
+---
+
+## Antes de empezar
+
+Necesitas división entera, módulo y strings. Un número es una cantidad; `42`, `101010` en base 2 y `2A` en base 16 son distintas representaciones de esa misma cantidad.
+
+## El valor de una posición
+
+En base $b$, cada dígito vale entre 0 y $b-1$. La representación `203` en base 5 vale $2\cdot5^2+0\cdot5+3=53$. Un dígito 7 no sería válido en esa base.
+
+Para leer dígitos de izquierda a derecha, comienza en cero y repite `valor = valor * base + digito`. Cada paso desplaza las posiciones anteriores una potencia de la base. No necesitas calcular potencias con `pow`.
+
+Para convertir en la dirección contraria, `numero % base` obtiene el último dígito y `numero / base` elimina ese dígito. Los residuos aparecen al revés: debes invertirlos al final.
+
+## Traza: 42 a binario
+
+Las divisiones entre 2 producen residuos `0, 1, 0, 1, 0, 1`. Leídos al revés dan `101010`. Al reconstruir: `0 -> 1 -> 2 -> 5 -> 10 -> 21 -> 42`.
+
+## C++17
+
+Este programa acepta enteros no negativos de `long long` y bases de 2 a 36. Para dígitos desde diez usa letras mayúsculas.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <limits>
+#include <string>
+using namespace std;
+
+string convertir(long long numero, int base) {
+    const string alfabeto = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    string resultado;
+    do {
+        resultado.push_back(alfabeto[numero % base]);
+        numero /= base;
+    } while (numero > 0);
+    reverse(resultado.begin(), resultado.end());
+    return resultado;
+}
+
+bool interpretar(const string& texto, int base, long long& valor) {
+    const string alfabeto = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    valor = 0;
+    if (texto.empty() || base < 2 || base > 36) return false;
+    for (char simbolo : texto) {
+        size_t digito = alfabeto.find(simbolo);
+        if (digito >= static_cast<size_t>(base)) return false;
+        if (valor > (numeric_limits<long long>::max() - static_cast<int>(digito)) / base) return false;
+        valor = valor * base + static_cast<int>(digito);
+    }
+    return true;
+}
+
+int main() {
+    long long numero;
+    int base;
+    cin >> numero >> base;
+    if (numero < 0 || base < 2 || base > 36) return 0;
+    string texto = convertir(numero, base);
+    long long recuperado;
+    if (interpretar(texto, base, recuperado)) cout << texto << '\n' << recuperado << '\n';
+}
+```
+
+Entrada:
+
+```text input
+42 2
+```
+
+Salida:
+
+```text output
+101010
+42
+```
+
+## Coste y límites
+
+Con $d$ dígitos, convertir cuesta $O(d)$ tiempo y espacio para la cadena. Para un valor positivo, $d=\lfloor\log_b numero\rfloor+1$. Cero necesita una representación de un dígito; el `do while` evita producir una cadena vacía.
+
+La comprobación de desbordamiento se hace **antes** de multiplicar. Si ya desbordaste un entero con signo, no puedes detectar confiablemente el error observando el resultado. Este ejemplo no interpreta signos, prefijos como `0x` ni letras minúsculas; serían reglas adicionales de entrada.
+
+## Practica
+
+Convierte `1011` de base 2 a decimal y `53` de decimal a base 5. ¿Es válida la cadena `102` en base 2?
+
+<details>
+<summary>Respuesta</summary>
+
+`1011` vale 11. El número decimal 53 se representa como `203` en base 5. `102` no es binario porque contiene un dígito fuera del intervalo permitido. Cambiar la base no cambia el valor, solamente su escritura.
+
+</details>

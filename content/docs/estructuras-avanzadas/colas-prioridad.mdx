@@ -1,0 +1,87 @@
+---
+title: "Colas de prioridad"
+description: "Extrae repetidamente el mayor o el menor elemento sin mantener toda la colección ordenada."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "priority_queue", "heap", "STL"]
+---
+
+## Antes de empezar
+
+Necesitas [pilas y colas](/blog/pilas-y-colas/pilas-concepto) y comparadores. Una cola FIFO atiende según la llegada; una cola de prioridad atiende según una clave. Agregar un elemento más urgente puede cambiar inmediatamente quién sale primero.
+
+## La interfaz de C++
+
+`priority_queue<int>` permite consultar el **mayor** con `top()`. `push(valor)` agrega y `pop()` elimina el tope sin devolverlo. Para sacar el menor usamos `priority_queue<int, vector<int>, greater<int>>` con `<functional>`.
+
+`top` cuesta $O(1)$; insertar y eliminar cuestan $O(\log n)$, con $O(n)$ almacenamiento. La estructura organiza los datos como un heap, que estudiarás después. No significa que todos los elementos estén ordenados ni permite buscar un valor arbitrario eficientemente.
+
+## Ejemplo: unir segmentos
+
+Tenemos longitudes 4, 3, 2 y 6. Unir dos segmentos cuesta la suma de sus longitudes y genera un segmento de esa longitud. Queremos minimizar la suma de costes.
+
+La estrategia es unir repetidamente los dos más pequeños: `2 + 3 = 5`, luego `4 + 5 = 9`, finalmente `6 + 9 = 15`. El coste total es `5 + 9 + 15 = 29`.
+
+La regla se justifica mediante un árbol de fusiones: cada longitud paga una vez por cada ancestro. En un árbol óptimo pueden colocarse las dos longitudes menores como hojas hermanas de máxima profundidad sin aumentar el coste. Contraer ese par reduce el problema al mismo tipo de problema con un segmento menos.
+
+## C++17
+
+```cpp test
+#include <functional>
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+int main() {
+    int cantidad;
+    cin >> cantidad;
+    priority_queue<long long, vector<long long>, greater<long long>> pendientes;
+    for (int indice = 0; indice < cantidad; indice++) {
+        long long longitud;
+        cin >> longitud;
+        pendientes.push(longitud);
+    }
+    long long coste = 0;
+    while (pendientes.size() >= 2) {
+        long long primero = pendientes.top();
+        pendientes.pop();
+        long long segundo = pendientes.top();
+        pendientes.pop();
+        long long unido = primero + segundo;
+        coste += unido;
+        pendientes.push(unido);
+    }
+    cout << coste << '\n';
+}
+```
+
+Entrada:
+
+```text input
+4
+4 3 2 6
+```
+
+Salida:
+
+```text output
+29
+```
+
+## Coste y supuestos
+
+Hay $n-1$ fusiones para $n\geq1$, cada una con operaciones logarítmicas: tiempo $O(n\log n)$ y espacio $O(n)$. Las longitudes son no negativas y todas las sumas deben caber en `long long`. Con cero o un segmento, no hay fusiones y el coste es cero.
+
+No consultes `top()` de una cola vacía. Una cola de prioridad de pares compara primero la primera componente y luego la segunda; decide si ese desempate coincide con el problema. Si necesitas cambiar prioridades, la STL no ofrece una operación directa de disminuir clave: a veces se insertan nuevas entradas y se descartan las antiguas, como en Dijkstra.
+
+## Practica
+
+¿Qué coste obtienes con longitudes `[1, 1, 10]`? ¿Por qué unir primero 1 y 10 es peor?
+
+<details>
+<summary>Respuesta</summary>
+
+Unir 1 y 1 cuesta 2; unir 2 y 10 cuesta 12: total 14. Si unes 1 y 10 primero, pagas 11 y después 12: total 23. El segmento largo se cobra demasiadas veces.
+
+</details>

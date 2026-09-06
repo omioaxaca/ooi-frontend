@@ -39,6 +39,8 @@ $C(10, 3) = \frac{10!}{3! \times 7!} = \frac{720}{6} = 120$
 
 ### Cálculo con factoriales modulares
 
+Este método exige un módulo primo y `0 <= n < MAXN < MOD`: así los factoriales almacenados no son cero módulo `MOD` y tienen inverso. No lo apliques directamente cuando `n >= MOD` o cuando el módulo sea compuesto.
+
 ```cpp
 const int MOD = 1e9 + 7;
 const int MAXN = 1000005;
@@ -68,13 +70,13 @@ long long C(int n, int k) {
 
 ### Cálculo con el Triángulo de Pascal
 
-Sin módulo, para valores pequeños:
+Sin módulo, limitamos el ejemplo a filas de 0 a 60 para que todos los valores quepan en `long long`. Una tabla exacta hasta 1000 desbordaría el tipo:
 
 ```cpp
-long long C[1005][1005];
+long long C[61][61];
 
 void pascal() {
-    for (int i = 0; i <= 1000; i++) {
+    for (int i = 0; i <= 60; i++) {
         C[i][0] = 1;
         for (int j = 1; j <= i; j++) {
             C[i][j] = C[i-1][j-1] + C[i-1][j];
@@ -84,6 +86,48 @@ void pascal() {
 ```
 
 Basado en la identidad: $\binom{n}{k} = \binom{n-1}{k-1} + \binom{n-1}{k}$
+
+## Fuerza bruta y prueba de primalidad
+
+Contar y generar son tareas distintas. Si piden cuántas permutaciones de unos dígitos forman números primos, no basta con $n!$: debes examinar una propiedad de cada candidato. Para pocos dígitos puedes generar permutaciones distintas y probar divisores hasta la raíz.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <string>
+using namespace std;
+
+bool esPrimo(int numero) {
+    if (numero < 2) return false;
+    for (int divisor = 2; divisor <= numero / divisor; divisor++) {
+        if (numero % divisor == 0) return false;
+    }
+    return true;
+}
+
+int main() {
+    string digitos = "113";
+    sort(digitos.begin(), digitos.end());
+    do {
+        if (digitos[0] != '0') {
+            int numero = stoi(digitos);
+            if (esPrimo(numero)) cout << numero << '\n';
+        }
+    } while (next_permutation(digitos.begin(), digitos.end()));
+}
+```
+
+Salida:
+
+```text output
+113
+131
+311
+```
+
+El ejemplo evita duplicados comenzando ordenado y evita números con ceros iniciales. Supone que los candidatos caben en `int`. Con $d$ dígitos y valor máximo $V$, una cota es $O(d!\,(d+\sqrt V))$: sirve para entradas pequeñas, no para decenas de dígitos.
+
+**Practica:** con los dígitos `1, 2, 3`, ninguna permutación es prima porque la suma de dígitos es 6 y todos los candidatos son múltiplos de 3 mayores que 3. Una observación matemática puede descartar toda la generación.
 
 ## Propiedades útiles
 

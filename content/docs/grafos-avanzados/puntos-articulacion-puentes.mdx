@@ -9,50 +9,55 @@ syllabusId: 65
 
 ## ¿Qué son?
 
-- **Punto de articulación:** Un nodo cuya eliminación desconecta el grafo.
-- **Puente:** Una arista cuya eliminación desconecta el grafo.
+- **Punto de articulación:** un vértice cuya eliminación, junto con sus aristas incidentes, aumenta el número de componentes conexas.
+- **Puente:** una arista cuya eliminación aumenta ese número.
+
+La definición también sirve si el grafo ya era desconectado. Eliminar un vértice aislado no lo convierte en articulación. Necesitas DFS, tiempos de entrada y la idea de regresar a un ancestro sin usar la arista por la que llegaste.
 
 **Analogía:** En una red eléctrica, un punto de articulación es una subestación cuya falla deja sin luz a parte de la ciudad. Un puente es un cable único cuya rotura desconecta zonas.
 
 ## Algoritmo de Tarjan
 
 Usa DFS con dos arreglos:
+
 - `tin[u]`: tiempo de descubrimiento de u.
 - `low[u]`: menor `tin` alcanzable desde el subárbol de u usando aristas de retroceso.
 
-```cpp
+```cpp test
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <set>
+#include <utility>
 using namespace std;
 
 const int MAXN = 100005;
-vector<int> adj[MAXN];
+vector<pair<int, int>> adj[MAXN];
 int tin[MAXN], low[MAXN], timer_val = 0;
 bool vis[MAXN];
 set<int> articulaciones;
 vector<pair<int,int>> puentes;
 
-void dfs(int u, int padre) {
+void dfs(int u, int aristaPadre) {
     vis[u] = true;
     tin[u] = low[u] = timer_val++;
     int hijos = 0;
 
-    for (int v : adj[u]) {
-        if (v == padre) continue;
+    for (auto [v, id] : adj[u]) {
+        if (id == aristaPadre) continue;
 
         if (vis[v]) {
             low[u] = min(low[u], tin[v]);
         } else {
             hijos++;
-            dfs(v, u);
+            dfs(v, id);
             low[u] = min(low[u], low[v]);
 
             // Punto de articulación
-            if (padre == -1 && hijos > 1) {
+            if (aristaPadre == -1 && hijos > 1) {
                 articulaciones.insert(u);
             }
-            if (padre != -1 && low[v] >= tin[u]) {
+            if (aristaPadre != -1 && low[v] >= tin[u]) {
                 articulaciones.insert(u);
             }
 
@@ -71,35 +76,58 @@ int main() {
     for (int i = 0; i < m; i++) {
         int u, v;
         cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+        adj[u].push_back({v, i});
+        adj[v].push_back({u, i});
     }
 
     for (int i = 1; i <= n; i++) {
         if (!vis[i]) dfs(i, -1);
     }
 
-    cout << "Puntos de articulación: ";
-    for (int v : articulaciones) cout << v << " ";
+    cout << "Puntos de articulación:";
+    for (int v : articulaciones) cout << " " << v;
     cout << endl;
 
-    cout << "Puentes: ";
-    for (auto [u, v] : puentes) cout << "(" << u << "," << v << ") ";
+    cout << "Puentes:";
+    for (auto [u, v] : puentes) cout << " (" << u << "," << v << ")";
     cout << endl;
 
     return 0;
 }
 ```
 
-**Complejidad:** $O(V + E)$
+Entrada con dos aristas paralelas:
+
+```text input
+3 3
+1 2
+1 2
+2 3
+```
+
+Salida:
+
+```text output
+Puntos de articulación: 2
+Puentes: (2,3)
+```
+
+La segunda arista `1-2` impide que la primera sea un puente. Omitir todas las aristas hacia el vértice padre sería incorrecto; omitimos únicamente el ID de la arista de llegada.
+
+La DFS cuesta $O(V+E)$; guardar articulaciones en un `set` agrega un factor logarítmico a esas inserciones. Para una versión estrictamente lineal, usa marcas booleanas por vértice y recórrelas al final. La memoria es $O(V+E)$ y la pila recursiva puede crecer hasta $O(V)$.
 
 ### Condiciones
 
 **Puente** (u, v): `low[v] > tin[u]` — el subárbol de v no puede "regresar" más arriba de u.
 
 **Punto de articulación** u:
+
 - Si u es la raíz del DFS: tiene **más de un hijo** en el árbol DFS.
 - Si no es la raíz: existe un hijo v donde `low[v] >= tin[u]`.
+
+La desigualdad es distinta: regresar exactamente al padre evita que la **arista** sea puente, pero al borrar el **padre** esa ruta también desaparece. La raíz requiere al menos dos hijos **del árbol DFS**, no simplemente dos vecinos. En un triángulo, una raíz con dos vecinos puede tener un solo hijo DFS y no ser articulación.
+
+**Autocomprobación:** una cadena de tres vértices tiene una articulación y dos puentes; un triángulo no tiene ninguno. Prueba además un vértice aislado y componentes separadas. Recuerda reiniciar tiempos, marcas y resultados al procesar otro caso independiente.
 
 ## Ejercicio de práctica
 

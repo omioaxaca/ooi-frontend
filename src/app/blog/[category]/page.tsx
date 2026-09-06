@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/nav-bar";
 import {
   getNavigationStructure,
-  getPostsByCategory,
+  getStudyNavigation,
   getCategories,
 } from "@/lib/mdx";
 import { DocsSidebar, DocsMobileSidebar } from "@/components/docs-sidebar";
@@ -69,7 +69,10 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
   const categories = getNavigationStructure();
-  const posts = getPostsByCategory(category);
+  const levels = getStudyNavigation();
+  const posts = levels
+    .flatMap((level) => level.categories.flatMap((section) => section.posts))
+    .filter((post) => post.category === category);
 
   // Find current category info
   const currentCategory = categories.find((c) => c.slug === category);
@@ -84,12 +87,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <main className="flex-grow container mx-auto px-4 pt-24 pb-8">
         <div className="flex gap-8">
           {/* Sidebar */}
-          <DocsSidebar categories={categories} />
+          <DocsSidebar levels={levels} />
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Mobile Sidebar */}
-            <DocsMobileSidebar categories={categories} />
+            <DocsMobileSidebar levels={levels} />
 
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6">

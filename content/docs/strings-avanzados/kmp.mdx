@@ -1,0 +1,96 @@
+---
+title: "KMP y la función prefijo"
+description: "Reutiliza prefijos que también son sufijos para buscar un patrón sin retroceder en el texto."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "KMP", "strings", "función prefijo"]
+---
+
+## Antes de empezar
+
+Necesitas strings e índices de arreglos. KMP busca todas las apariciones de un patrón en tiempo lineal y **sin colisiones**. Su pregunta central es: cuando falla la siguiente comparación, ¿qué parte de lo ya comparado sigue siendo útil?
+
+## Un prefijo que también es sufijo
+
+`prefijo[indice]` es la longitud del mayor prefijo **propio** de la cadena que también es sufijo de la parte que termina en `indice`. Propio significa que no tomamos la cadena completa.
+
+Para `ababa`, los valores son `[0, 0, 1, 2, 3]`. Al terminar `ababa`, el prefijo `aba` coincide con el sufijo `aba`.
+
+Si llevamos `coinciden` caracteres del patrón y el siguiente falla, probamos `prefijo[coinciden - 1]`. Ese es el siguiente sufijo conocido que podría ser el comienzo de otra coincidencia. Repetimos hasta encontrar una comparación válida o llegar a cero.
+
+## C++17
+
+```cpp test
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+vector<int> funcionPrefijo(const string& cadena) {
+    vector<int> prefijo(cadena.size(), 0);
+    for (int indice = 1; indice < static_cast<int>(cadena.size()); indice++) {
+        int coinciden = prefijo[indice - 1];
+        while (coinciden > 0 && cadena[indice] != cadena[coinciden]) coinciden = prefijo[coinciden - 1];
+        if (cadena[indice] == cadena[coinciden]) coinciden++;
+        prefijo[indice] = coinciden;
+    }
+    return prefijo;
+}
+
+vector<int> buscar(const string& texto, const string& patron) {
+    vector<int> respuesta;
+    if (patron.empty()) {
+        for (int posicion = 0; posicion <= static_cast<int>(texto.size()); posicion++) respuesta.push_back(posicion);
+        return respuesta;
+    }
+    vector<int> prefijo = funcionPrefijo(patron);
+    int coinciden = 0;
+    for (int posicion = 0; posicion < static_cast<int>(texto.size()); posicion++) {
+        while (coinciden > 0 && texto[posicion] != patron[coinciden]) coinciden = prefijo[coinciden - 1];
+        if (texto[posicion] == patron[coinciden]) coinciden++;
+        if (coinciden == static_cast<int>(patron.size())) {
+            respuesta.push_back(posicion - coinciden + 1);
+            coinciden = prefijo[coinciden - 1];
+        }
+    }
+    return respuesta;
+}
+
+int main() {
+    vector<int> posiciones = buscar("ababa", "aba");
+    for (int indice = 0; indice < static_cast<int>(posiciones.size()); indice++) {
+        if (indice > 0) cout << ' ';
+        cout << posiciones[indice];
+    }
+    cout << '\n';
+}
+```
+
+Salida:
+
+```text output
+0 2
+```
+
+Después de encontrar `aba` en la posición 0, no reiniciamos a cero: el sufijo `a` ya es un prefijo del patrón. Conservar longitud 1 permite encontrar la aparición superpuesta de la posición 2.
+
+## Por qué el while no vuelve cuadrático al algoritmo
+
+La posición del texto nunca retrocede. La longitud `coinciden` aumenta como máximo una vez por carácter; los saltos del `while` la disminuyen. No puede disminuir más veces de las que antes aumentó. El mismo argumento sirve para construir la función prefijo.
+
+El total es $O(n+m)$ tiempo, $O(m)$ memoria para el patrón y espacio adicional para las posiciones encontradas. Es una garantía determinista, no un promedio basado en hashes.
+
+## Casos borde
+
+Tras una coincidencia completa debes actualizar `coinciden` antes de comparar otro carácter, para no acceder a `patron[patron.size()]`. Un patrón más largo simplemente no se encuentra. Aquí el patrón vacío aparece en todas las fronteras del texto; si el problema lo prohíbe, puedes simplificar ese caso.
+
+## Practica
+
+Calcula la función prefijo de `aaaa` y las coincidencias de `aa` en esa cadena.
+
+<details>
+<summary>Respuesta</summary>
+
+La función prefijo es `[0, 1, 2, 3]`. Las coincidencias comienzan en 0, 1 y 2. Resetear a cero después de cada respuesta perdería la de posición 1.
+
+</details>

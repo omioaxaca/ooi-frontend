@@ -7,7 +7,10 @@
     "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:docs": "node --experimental-strip-types --test tests/docs-navigation.test.mjs && node scripts/check-docs.mjs",
+    "test:docs:cpp": "node scripts/check-docs.mjs --cpp && node --test tests/docs-cpp-regression.test.mjs",
+    "audit:docs": "node --experimental-strip-types scripts/audit-docs.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

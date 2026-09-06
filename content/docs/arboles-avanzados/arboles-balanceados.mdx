@@ -1,0 +1,125 @@
+---
+title: "Árboles balanceados: AVL, red-black y treaps"
+description: "Comprende cómo controlar la altura de un BST y construye un treap con operaciones split y merge."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "BST", "AVL", "red-black", "treap"]
+---
+
+## Antes de empezar
+
+Repasa [BST](/blog/arboles/arboles-busqueda-binaria) y heaps. Insertar claves crecientes en un BST sin balancear produce una cadena: buscar cuesta $O(n)$. Balancear busca mantener la altura logarítmica sin romper el orden de las claves.
+
+## Tres formas de controlar la altura
+
+| Estructura | Invariante adicional                                                                          | Garantía                                    |
+| ---------- | --------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| AVL        | Las alturas de los dos hijos difieren como máximo en uno                                      | Altura $O(\log n)$ en peor caso             |
+| Red-black  | Sin dos rojos consecutivos; igual cantidad de negros en caminos hacia hojas nulas; raíz negra | Altura a lo sumo $2\log_2(n+1)$             |
+| Treap      | BST por clave y heap por una prioridad aleatoria independiente                                | Altura $O(\log n)$ esperada, no garantizada |
+
+AVL corrige desequilibrios mediante rotaciones simples o dobles. Una rotación derecha sube al hijo izquierdo y hace que el nodo anterior pase a su derecha; el subárbol intermedio cambia de padre sin alterar el orden inorden. Los casos izquierda-derecha y derecha-izquierda requieren dos rotaciones.
+
+Red-black permite desequilibrios mayores y restaura su invariante con recoloreos y rotaciones. `std::set` y `std::map` ofrecen operaciones logarítmicas garantizadas; muchas implementaciones usan red-black trees, pero el estándar no exige esa implementación interna.
+
+## Treap mediante split y merge
+
+`split(raiz, clave)` separa claves menores que `clave` de las mayores o iguales. `merge(izquierdo, derecho)` exige que toda clave izquierda sea menor que toda clave derecha y elige como raíz la prioridad mayor. Solo cambia un camino del árbol.
+
+Para insertar una clave ausente, dividimos, creamos el nodo y unimos las tres partes. Esta versión representa un conjunto: ignora duplicados.
+
+## C++17
+
+```cpp test
+#include <cstdint>
+#include <iostream>
+#include <random>
+using namespace std;
+
+struct Nodo {
+    int clave;
+    uint32_t prioridad;
+    Nodo* izquierdo = nullptr;
+    Nodo* derecho = nullptr;
+    Nodo(int valor, uint32_t azar) : clave(valor), prioridad(azar) {}
+};
+
+void dividir(Nodo* raiz, int clave, Nodo*& izquierdo, Nodo*& derecho) {
+    if (raiz == nullptr) { izquierdo = derecho = nullptr; return; }
+    if (raiz->clave < clave) {
+        izquierdo = raiz;
+        dividir(raiz->derecho, clave, raiz->derecho, derecho);
+    } else {
+        derecho = raiz;
+        dividir(raiz->izquierdo, clave, izquierdo, raiz->izquierdo);
+    }
+}
+
+Nodo* unir(Nodo* izquierdo, Nodo* derecho) {
+    if (izquierdo == nullptr) return derecho;
+    if (derecho == nullptr) return izquierdo;
+    if (izquierdo->prioridad > derecho->prioridad) {
+        izquierdo->derecho = unir(izquierdo->derecho, derecho);
+        return izquierdo;
+    }
+    derecho->izquierdo = unir(izquierdo, derecho->izquierdo);
+    return derecho;
+}
+
+bool contiene(Nodo* raiz, int clave) {
+    while (raiz != nullptr) {
+        if (raiz->clave == clave) return true;
+        raiz = clave < raiz->clave ? raiz->izquierdo : raiz->derecho;
+    }
+    return false;
+}
+
+void insertar(Nodo*& raiz, int clave, mt19937& azar) {
+    if (contiene(raiz, clave)) return;
+    Nodo* izquierdo;
+    Nodo* derecho;
+    dividir(raiz, clave, izquierdo, derecho);
+    raiz = unir(unir(izquierdo, new Nodo(clave, azar())), derecho);
+}
+
+void liberar(Nodo* raiz) {
+    if (raiz == nullptr) return;
+    liberar(raiz->izquierdo);
+    liberar(raiz->derecho);
+    delete raiz;
+}
+
+int main() {
+    mt19937 azar(12345);
+    Nodo* raiz = nullptr;
+    insertar(raiz, 5, azar);
+    insertar(raiz, 2, azar);
+    insertar(raiz, 8, azar);
+    insertar(raiz, 5, azar);
+    cout << contiene(raiz, 2) << ' ' << contiene(raiz, 7) << '\n';
+    liberar(raiz);
+}
+```
+
+Salida:
+
+```text output
+1 0
+```
+
+## Coste y decisiones prácticas
+
+Con prioridades aleatorias independientes de las claves, buscar, dividir, unir e insertar cuestan $O(\log n)$ esperado. El peor caso sigue siendo $O(n)$ y puede provocar recursión profunda. La semilla fija hace reproducible el ejemplo; no ofrece una garantía frente a entradas adversariales que conozcan la secuencia.
+
+Usa `set` o `map` cuando sus operaciones basten. Implementar un treap tiene sentido si necesitas tamaños de subárbol, orden estadístico o secuencias implícitas con `split` por posición. Debes actualizar esos metadatos después de cambiar hijos.
+
+## Practica
+
+¿Por qué no puedes llamar `unir` sobre un árbol con claves `{1, 7}` y otro con `{3, 9}`?
+
+<details>
+<summary>Respuesta</summary>
+
+No se cumple que todas las claves izquierdas sean menores que todas las derechas: 7 es mayor que 3. `merge` no es una unión arbitraria de conjuntos. Violar esa precondición rompe el BST aunque las prioridades sigan formando un heap.
+
+</details>

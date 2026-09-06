@@ -9,6 +9,10 @@ syllabusId: 44
 
 ## Divisores de un número
 
+**Antes de empezar:** trabajamos con enteros positivos. El 1 tiene un divisor positivo y ninguna factorización prima no vacía. Cero no entra en este modelo: todo entero positivo divide a cero, así que no tiene una lista finita de divisores positivos.
+
+Un divisor elige independientemente el exponente de cada primo entre cero y el exponente presente en el número. Por eso, si $n=2^3\cdot3\cdot5$, la cantidad de divisores es $(3+1)(1+1)(1+1)=16$, no la suma de exponentes.
+
 Un **divisor** de N es un número que divide a N sin dejar residuo. Ejemplo: los divisores de 12 son {1, 2, 3, 4, 6, 12}.
 
 ### Encontrar todos los divisores: $O(\sqrt{n})$
@@ -16,7 +20,7 @@ Un **divisor** de N es un número que divide a N sin dejar residuo. Ejemplo: los
 ```cpp
 vector<int> divisores(int n) {
     vector<int> divs;
-    for (int i = 1; i * i <= n; i++) {
+    for (int i = 1; i <= n / i; i++) {
         if (n % i == 0) {
             divs.push_back(i);
             if (i != n / i) {
@@ -33,12 +37,14 @@ vector<int> divisores(int n) {
 
 Ejemplo para n=36: encontramos (1,36), (2,18), (3,12), (4,9), (6,6).
 
+La pareja `(6,6)` aporta un solo divisor distinto. El recorrido cuesta $O(\sqrt n)$; ordenar los $d$ divisores añade $O(d\log d)$ y guardarlos ocupa $O(d)$. La condición por división evita desbordar el cuadrado del candidato.
+
 ### Contar divisores
 
 ```cpp
 int contarDivisores(int n) {
     int cuenta = 0;
-    for (int i = 1; i * i <= n; i++) {
+    for (int i = 1; i <= n / i; i++) {
         if (n % i == 0) {
             cuenta++;
             if (i != n / i) cuenta++;
@@ -56,7 +62,7 @@ Descomponer un número en sus **factores primos**. Ejemplo: $60 = 2^2 \times 3 \
 vector<pair<int,int>> factorizar(int n) {
     vector<pair<int,int>> factores;  // {primo, exponente}
 
-    for (int i = 2; i * i <= n; i++) {
+    for (int i = 2; i <= n / i; i++) {
         if (n % i == 0) {
             int exp = 0;
             while (n % i == 0) {
@@ -77,6 +83,7 @@ vector<pair<int,int>> factorizar(int n) {
 ### Ejemplo
 
 `factorizar(360)`:
+
 - $360 / 2 = 180, / 2 = 90, / 2 = 45$ → factor {2, 3}
 - $45 / 3 = 15, / 3 = 5$ → factor {3, 2}
 - $5 / 5 = 1$ → factor {5, 1}
@@ -154,6 +161,7 @@ Dado un número N, imprime su factorización prima y la cantidad total de diviso
 
 **Entrada:** `120`
 **Salida:**
+
 ```
 2^3 * 3 * 5
 Divisores: 16
@@ -162,8 +170,9 @@ Divisores: 16
 <details>
 <summary>Ver solución</summary>
 
-```cpp
+```cpp test
 #include <iostream>
+#include <utility>
 #include <vector>
 using namespace std;
 
@@ -173,7 +182,7 @@ int main() {
 
     vector<pair<int,int>> factores;
     int temp = n;
-    for (int i = 2; i * i <= temp; i++) {
+    for (int i = 2; i <= temp / i; i++) {
         if (temp % i == 0) {
             int e = 0;
             while (temp % i == 0) { temp /= i; e++; }
@@ -198,5 +207,20 @@ int main() {
     return 0;
 }
 ```
+
+Entrada:
+
+```text input
+120
+```
+
+Salida:
+
+```text output
+2^3 * 3 * 5
+Divisores: 16
+```
+
+**Autocomprobación:** prueba un primo, un cuadrado y 1. Los conteos son 2, un número impar de divisores, y 1, respectivamente. En SPF solo puedes factorizar valores dentro del límite preprocesado; no reserves una tabla hasta un número de 64 bits enorme.
 
 </details>

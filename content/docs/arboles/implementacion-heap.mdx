@@ -9,6 +9,8 @@ syllabusId: 53
 
 ## ¿Qué es un Heap?
 
+**Objetivo:** mantener el extremo prioritario sin ordenar toda la colección. Un heap binario llena todos los niveles salvo quizá el último, que se llena de izquierda a derecha. Permite padres iguales a sus hijos; la propiedad no exige comparaciones estrictas.
+
 Un **heap** (montículo) es un árbol binario **casi completo** donde cada padre es mayor (max-heap) o menor (min-heap) que sus hijos.
 
 **Analogía:** Imagina una pirámide donde el jefe más importante está arriba, y cada empleado está arriba de los menos importantes que él. El CEO (raíz) es siempre el más importante.
@@ -39,11 +41,11 @@ Cada padre ≤ sus hijos. La raíz es el **mínimo**.
 
 ## ¿Por qué usar un Heap?
 
-| Operación | Heap | Arreglo ordenado | Arreglo no ordenado |
-|-----------|------|-------------------|---------------------|
-| Insertar | $O(\log n)$ | $O(n)$ | $O(1)$ |
-| Obtener máx/mín | $O(1)$ | $O(1)$ | $O(n)$ |
-| Eliminar máx/mín | $O(\log n)$ | $O(1)$ o $O(n)$ | $O(n)$ |
+| Operación        | Heap        | Arreglo ordenado | Arreglo no ordenado |
+| ---------------- | ----------- | ---------------- | ------------------- |
+| Insertar         | $O(\log n)$ | $O(n)$           | $O(1)$              |
+| Obtener máx/mín  | $O(1)$      | $O(1)$           | $O(n)$              |
+| Eliminar máx/mín | $O(\log n)$ | $O(1)$ o $O(n)$  | $O(n)$              |
 
 El heap es perfecto cuando necesitas acceder repetidamente al mayor o menor elemento.
 
@@ -57,13 +59,21 @@ Valor:  50  30  40  10  20  15
 ```
 
 Para un nodo en el índice `i`:
+
 - **Padre:** `(i - 1) / 2`
 - **Hijo izquierdo:** `2 * i + 1`
 - **Hijo derecho:** `2 * i + 2`
 
 ## Implementación manual (max-heap)
 
-```cpp
+Los métodos `maximo` y `eliminarMaximo` exigen que el heap no esté vacío. Comprueba esa condición con `vacio` antes de llamarlos.
+
+```cpp test
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
 class MaxHeap {
     vector<int> heap;
 
@@ -113,7 +123,25 @@ public:
     int tamano() { return heap.size(); }
     bool vacio() { return heap.empty(); }
 };
+
+int main() {
+    MaxHeap pendientes;
+    for (int valor : {10, 30, 20}) pendientes.insertar(valor);
+    while (!pendientes.vacio()) {
+        cout << pendientes.maximo() << ' ';
+        pendientes.eliminarMaximo();
+    }
+    cout << '\n';
+}
 ```
+
+Salida:
+
+```text output
+30 20 10
+```
+
+Solo las relaciones padre-hijo están ordenadas. Dos hermanos pueden aparecer en cualquier orden relativo. Después de insertar, únicamente el camino del nuevo nodo a la raíz puede violar la propiedad; después de eliminar, solo puede violarse en el camino que baja desde la raíz. Ambos tienen longitud $O(\log n)$.
 
 ### Insertar: "subir"
 
@@ -152,6 +180,8 @@ cout << minPQ.top() << endl;  // 10
 ```
 
 ## Heapsort
+
+Construir un heap bajando desde los últimos padres cuesta $O(n)$: la mayoría de nodos está cerca de las hojas y baja muy poco. Construirlo con $n$ inserciones independientes cuesta $O(n\log n)$. Extraer todos los máximos cuesta $O(n\log n)$ en ambos casos.
 
 Ordena un arreglo construyendo un heap y extrayendo el máximo repetidamente. Complejidad: $O(n \log n)$.
 
@@ -204,9 +234,12 @@ for (int x : v) {
 
 Mantén dos heaps: un max-heap para la mitad inferior y un min-heap para la superior.
 
+**Autocomprobación:** prueba valores iguales y un único elemento. Tras extraer el único elemento no debes acceder a la raíz. El heap de esta guía es una estructura de datos; no es el área de memoria dinámica también llamada heap.
+
 ## Ejercicio de práctica
 
 Implementa un sistema que soporte:
+
 1. Insertar un número
 2. Obtener el mínimo actual
 3. Eliminar el mínimo

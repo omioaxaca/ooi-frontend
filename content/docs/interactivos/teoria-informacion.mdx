@@ -1,0 +1,73 @@
+---
+title: "Fundamentos de teoría de la información"
+description: "Relaciona incertidumbre, entropía y preguntas sin confundir rendimiento esperado con garantía de peor caso."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "información", "entropía", "interactivos"]
+---
+
+## Antes de empezar
+
+Necesitas probabilidades básicas, logaritmos y [árboles de decisión](/blog/interactivos/arboles-decision). La información recibida depende de cuánto reduce nuestra incertidumbre. Una respuesta que ya conocíamos no aporta información nueva.
+
+## Casos equiprobables
+
+Con ocho secretos igualmente probables, hacen falta al menos tres respuestas binarias en el peor caso. Cada pregunta perfectamente equilibrada reduce a la mitad el conjunto: 8, 4, 2, 1.
+
+Preguntar «¿el secreto está entre 1 y 7?» no divide de forma equilibrada. Si la respuesta es sí, todavía quedan siete posibilidades. La pregunta tiene dos respuestas posibles, pero no garantiza eliminar la mitad de la incertidumbre.
+
+## Entropía: incertidumbre promedio
+
+Si el secreto $i$ tiene probabilidad $p_i$, la entropía en bits es:
+
+$$H=-\sum_{i:p_i>0}p_i\log_2 p_i.$$
+
+En un modelo de preguntas binarias que identifica el secreto sin error, $H$ es una cota inferior para el número **esperado** de respuestas. No es una garantía de peor caso ni se redondea automáticamente hacia arriba para obtener el promedio óptimo.
+
+Con probabilidades $1/2,1/4,1/8,1/8$, obtenemos $H=1.75$. Un código prefijo `0`, `10`, `110`, `111` tiene longitud promedio $0.5\cdot1+0.25\cdot2+0.125\cdot3+0.125\cdot3=1.75$, pero su peor longitud es 3.
+
+Un código fijo de dos bits para los cuatro estados tiene peor caso 2 y promedio 2. No hay contradicción: cada código optimiza un criterio diferente.
+
+## C++17: calcular una entropía
+
+```cpp test
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<double> probabilidades = {0.5, 0.25, 0.125, 0.125};
+    double entropia = 0;
+    for (double probabilidad : probabilidades) {
+        if (probabilidad > 0) entropia -= probabilidad * log2(probabilidad);
+    }
+    cout << fixed << setprecision(2) << entropia << '\n';
+}
+```
+
+Salida:
+
+```text output
+1.75
+```
+
+El cálculo cuesta $O(M)$ tiempo y usa espacio adicional constante aparte de las probabilidades. La entrada conceptual debe tener probabilidades no negativas que sumen 1. El término con probabilidad cero se omite para no evaluar `log2(0)`.
+
+## Cuándo sirve en una competencia
+
+Sirve para evaluar estrategias cuando el modelo proporciona una distribución o permite optimizar un coste esperado. También motiva hacer preguntas equilibradas según **probabilidad**, no necesariamente según cantidad de candidatos.
+
+Si el juez elige el peor caso o no da una distribución, no puedes asumir que los secretos son aleatorios uniformes. Además, un código teórico solo se convierte en preguntas si la interfaz permite las particiones que ese código necesita.
+
+## Practica
+
+¿Cuál es la entropía de cuatro estados equiprobables? ¿Y de un estado seguro con probabilidad 1?
+
+<details>
+<summary>Respuesta</summary>
+
+Dos bits y cero bits, respectivamente. Si ya sabes con certeza el estado, no necesitas preguntar. Esto no elimina costes fijos que el protocolo pueda exigir para entregar la respuesta final.
+
+</details>

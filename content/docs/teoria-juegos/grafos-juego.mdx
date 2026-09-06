@@ -1,0 +1,117 @@
+---
+title: "Game graphs"
+description: "Clasifica estados ganadores, perdedores y de empate mediante propagación retrógrada, incluso cuando hay ciclos."
+date: "2026-09-06"
+author: "OOI Oaxaca"
+tags: ["c++", "juegos", "grafos", "retroanálisis", "empates"]
+---
+
+## Antes de empezar
+
+Necesitas grafos dirigidos, colas y posiciones ganadoras/perdedoras. Un vértice representa un estado y una arista un movimiento legal. La clasificación siempre se refiere al jugador que tiene el turno en ese estado.
+
+Si las reglas de movimiento dependen de qué jugador actúa, incluye el turno en el estado. No mezcles dos situaciones con movimientos distintos solo porque tengan el mismo tablero.
+
+## Cuando el juego puede repetirse
+
+En un DAG puedes resolver desde los estados terminales mediante DP. Si hay ciclos, una DFS que vuelva a encontrar un estado no puede declararlo automáticamente perdedor ni asignarle Grundy cero.
+
+Usaremos regla normal: no poder mover implica perder. Además, una partida infinita cuenta como empate. Con esas reglas, algunos estados pueden permitir evitar la derrota para siempre sin forzar una victoria.
+
+## Propagar certezas hacia atrás
+
+Comienza marcando como perdedores los vértices sin salidas. Procesa sus predecesores:
+
+1. Si un estado tiene una transición a un perdedor, es ganador.
+2. Si todas sus transiciones llevan a ganadores, es perdedor.
+3. Si todavía no sabemos ninguna de esas cosas, espera.
+
+Un contador por estado registra cuántos sucesores no han sido confirmados ganadores. Cuando llega a cero, no queda una salida que evite entregar una posición ganadora al rival.
+
+## C++17
+
+Al terminar la propagación, los estados sin clasificar son empates bajo la regla indicada.
+
+```cpp test
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+int main() {
+    int estados, movimientos;
+    cin >> estados >> movimientos;
+    vector<vector<int>> anteriores(estados);
+    vector<int> restantes(estados, 0), resultado(estados, -1);
+    for (int indice = 0; indice < movimientos; indice++) {
+        int origen, destino;
+        cin >> origen >> destino;
+        anteriores[destino].push_back(origen);
+        restantes[origen]++;
+    }
+    queue<int> pendientes;
+    for (int estado = 0; estado < estados; estado++) {
+        if (restantes[estado] == 0) { resultado[estado] = 0; pendientes.push(estado); }
+    }
+    while (!pendientes.empty()) {
+        int actual = pendientes.front(); pendientes.pop();
+        for (int anterior : anteriores[actual]) {
+            if (resultado[anterior] != -1) continue;
+            if (resultado[actual] == 0) {
+                resultado[anterior] = 1;
+                pendientes.push(anterior);
+            } else {
+                restantes[anterior]--;
+                if (restantes[anterior] == 0) {
+                    resultado[anterior] = 0;
+                    pendientes.push(anterior);
+                }
+            }
+        }
+    }
+    for (int estado : resultado) {
+        if (estado == 1) cout << "GANADORA\n";
+        else if (estado == 0) cout << "PERDEDORA\n";
+        else cout << "EMPATE\n";
+    }
+}
+```
+
+Entrada:
+
+```text input
+5 4
+0 1
+1 2
+3 4
+4 3
+```
+
+Salida:
+
+```text output
+PERDEDORA
+GANADORA
+PERDEDORA
+EMPATE
+EMPATE
+```
+
+El estado 2 es terminal y pierde. Desde 1 podemos entregarlo al rival, por eso 1 gana. Desde 0 solo podemos entregar 1 y perdemos. Los estados 3 y 4 se repiten indefinidamente.
+
+## Por qué los pendientes son empates
+
+Un estado no clasificado no tiene sucesor perdedor, pues entonces ya sería ganador. Tampoco tiene todos sus sucesores ganadores, pues entonces ya sería perdedor. Por tanto conserva al menos un sucesor no clasificado. Ambos jugadores pueden permanecer en esa región para evitar perder; ninguno puede forzar una victoria ya certificada.
+
+Cada estado entra una vez a la cola y cada arista se procesa una vez: tiempo y memoria $O(V+E)$. Una regla de repetición que declare derrota o una condición de victoria especial requiere otro modelo, no esta misma clasificación sin cambios.
+
+## Practica
+
+Agrega una arista de 3 al terminal 2. ¿Qué pasa con 3 y 4?
+
+<details>
+<summary>Respuesta</summary>
+
+3 se vuelve ganador porque puede mover a 2. Entonces 4 se vuelve perdedor porque su única salida es 3. Tener un ciclo no garantiza empate: importan las salidas disponibles.
+
+</details>
