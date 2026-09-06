@@ -404,13 +404,10 @@ export default function CalendarPage() {
 
   // Get safe syllabus description
   const getSyllabusDescription = (lesson: ClassLesson) => {
-    return (
-      lesson?.description ||
-      (lesson?.syllabi &&
-        lesson.syllabi.length > 0 &&
-        lesson.syllabi[0]?.description) ||
-      "No hay descripción disponible."
-    );
+    if (lesson?.syllabi && lesson.syllabi.length > 0 && lesson.syllabi[0]?.description) {
+      return lesson.syllabi[0].description;
+    }
+    return "No hay descripción disponible.";
   };
 
   // Get safe teacher name
