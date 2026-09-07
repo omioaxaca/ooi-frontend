@@ -160,6 +160,41 @@ html, body {
   @apply bg-transparent p-0;
 }
 
+.mdx-content pre {
+  max-width: 100%;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.mdx-content .hljs-keyword,
+.mdx-content .hljs-selector-tag,
+.mdx-content .hljs-literal {
+  color: #ff7b72;
+}
+
+.mdx-content .hljs-string,
+.mdx-content .hljs-regexp {
+  color: #a5d6ff;
+}
+
+.mdx-content .hljs-number,
+.mdx-content .hljs-built_in,
+.mdx-content .hljs-type {
+  color: #79c0ff;
+}
+
+.mdx-content .hljs-title {
+  color: #d2a8ff;
+}
+
+.mdx-content .hljs-comment {
+  color: #a0a8b2;
+}
+
+.mdx-content .hljs-meta {
+  color: #ffa657;
+}
+
 /* Details/summary styling for exercises */
 .mdx-content details {
   @apply my-4 rounded-lg border border-border bg-muted/30 p-4;

@@ -1,93 +1,12 @@
-import qs from "qs";
-import type {
-  Syllabus,
-  SyllabusLevel,
-  SyllabusByCategory,
-} from "@/types/dashboard/syllabus";
-import axiosInstance from "./authService";
+import type { Syllabus, SyllabusLevel, SyllabusByCategory } from "@/types/dashboard/syllabus";
+import { groupStudyTopics } from "@/lib/study-content";
+import { fetchStudyData } from "./studyService";
 
-/**
- * Fetches all syllabi filtered by level from the backend
- * @param level - The syllabus level (Principiante, Intermedio, Avanzado)
- * @returns Array of syllabi for the given level
- */
-export const fetchSyllabiByLevel = async (
-  level: SyllabusLevel,
-): Promise<Syllabus[]> => {
-  try {
-    const query = qs.stringify(
-      {
-        fields: "*",
-        filters: {
-          level: {
-            $eq: level,
-          },
-        },
-        populate: {
-          category: {
-            fields: "*",
-          },
-          youtubeLinks: {
-            fields: "*",
-          },
-          pdfLinks: {
-            fields: "*",
-          },
-        },
-        sort: ["rank:asc", "title:asc"],
-        pagination: {
-          pageSize: 1000,
-        },
-      },
-      {
-        encodeValuesOnly: true,
-      },
-    );
+export const fetchSyllabiByLevel = (level: SyllabusLevel): Promise<Syllabus[]> =>
+  fetchStudyData(`curriculum?level=${encodeURIComponent(level)}`);
 
-    const response = await axiosInstance.get(`/api/syllabi?${query}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(`Error fetching syllabi for level ${level}:`, error);
-    throw error;
-  }
-};
+export const groupSyllabiByCategory = (syllabi: Syllabus[]): SyllabusByCategory[] =>
+  groupStudyTopics(syllabi).map((group) => ({ category: group.category, syllabi: group.topics }));
 
-/**
- * Groups syllabi by their category
- * @param syllabi - Array of syllabi to group
- * @returns Array of SyllabusByCategory objects
- */
-export const groupSyllabiByCategory = (
-  syllabi: Syllabus[],
-): SyllabusByCategory[] => {
-  const categoryMap = new Map<string, SyllabusByCategory>();
-
-  for (const syllabus of syllabi) {
-    if (!syllabus.category) continue;
-
-    const key = syllabus.category.documentId || String(syllabus.category.id);
-
-    if (!categoryMap.has(key)) {
-      categoryMap.set(key, {
-        category: syllabus.category,
-        syllabi: [],
-      });
-    }
-
-    categoryMap.get(key)!.syllabi.push(syllabus);
-  }
-
-  return Array.from(categoryMap.values());
-};
-
-/**
- * Fetches syllabi by level and returns them grouped by category
- * @param level - The syllabus level
- * @returns Array of SyllabusByCategory objects
- */
-export const fetchSyllabiByLevelGrouped = async (
-  level: SyllabusLevel,
-): Promise<SyllabusByCategory[]> => {
-  const syllabi = await fetchSyllabiByLevel(level);
-  return groupSyllabiByCategory(syllabi);
-};
+export const fetchSyllabiByLevelGrouped = async (level: SyllabusLevel): Promise<SyllabusByCategory[]> =>
+  groupSyllabiByCategory(await fetchSyllabiByLevel(level));

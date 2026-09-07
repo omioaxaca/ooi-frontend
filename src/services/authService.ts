@@ -1,8 +1,15 @@
 import axios from "axios";
-import * as localStorageUtils from "@/utils/localStorage";
+import * as localStorageUtils from "../utils/localStorage.ts";
+import { dashboardReturnPath } from "../lib/study-assets.ts";
 import { jwtDecode } from "jwt-decode";
 
 const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
+
+function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  const next = dashboardReturnPath(window.location.pathname + window.location.search + window.location.hash);
+  window.location.href = `/login?next=${encodeURIComponent(next)}`;
+}
 
 interface DecodedToken {
   exp: number;
@@ -42,6 +49,7 @@ const axiosInstance = axios.create({
 // Add request interceptor
 axiosInstance.interceptors.request.use(
   async (config) => {
+    if (typeof window === "undefined") return config;
     const token = localStorageUtils.getItem<string>("token");
 
     if (token) {
@@ -51,7 +59,7 @@ axiosInstance.interceptors.request.use(
           config.headers.Authorization = `Bearer ${newToken}`;
         } catch (error) {
           // If refresh fails, redirect to login
-          window.location.href = "/login";
+          redirectToLogin();
           return Promise.reject(error);
         }
       } else {
@@ -70,10 +78,11 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (typeof window === "undefined") return Promise.reject(error);
     const originalRequest = error.config;
 
     // If the error is 401 and we haven't tried to refresh the token yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
@@ -82,7 +91,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         // If refresh fails, redirect to login
-        window.location.href = "/login";
+        redirectToLogin();
         return Promise.reject(refreshError);
       }
     }

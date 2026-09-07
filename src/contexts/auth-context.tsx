@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import * as localStorage from "@/utils/localStorage"
+import { dashboardReturnPath } from "@/lib/study-assets"
 import { User, NewUser, LoggedUser, UpdateUser } from "@/types/user"
 import { 
   login as loginService,
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const loggedUser = await loginService(email, password)
       saveLoggedUserLocally(loggedUser)
       // Redirect to dashboard
-      router.push("/dashboard")
+      router.push(dashboardReturnPath(new URLSearchParams(window.location.search).get("next")))
     } catch (error) {
       console.error("Login failed:", error)
       throw error

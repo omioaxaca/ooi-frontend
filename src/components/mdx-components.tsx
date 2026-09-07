@@ -1,13 +1,10 @@
-import * as runtime from "react/jsx-runtime";
-import { compile, run } from "@mdx-js/mdx";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
+import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ComponentPropsWithoutRef } from "react";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeSlug from "rehype-slug";
-import rehypeKatex from "rehype-katex";
+import type { RenderedContent } from "@/lib/safe-mdx";
 
 // Custom components for MDX
 const components = {
@@ -113,7 +110,7 @@ const components = {
   img: ({ className, alt, src, ...props }: ComponentPropsWithoutRef<"img">) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      className={cn("rounded-lg border border-border my-6", className)}
+      className={cn("max-w-full h-auto rounded-lg border border-border my-6", className)}
       alt={alt}
       src={src}
       {...props}
@@ -235,26 +232,16 @@ const components = {
 };
 
 interface MDXContentProps {
-  source: string;
+  content: RenderedContent;
 }
 
-export async function MDXContent({ source }: MDXContentProps) {
-  // Compile MDX to JavaScript
-  const code = await compile(source, {
-    outputFormat: "function-body",
-    remarkPlugins: [remarkGfm, remarkMath],
-    rehypePlugins: [rehypeSlug, rehypeKatex],
-  });
-
-  // Run the compiled code
-  const { default: MDXComponent } = await run(String(code), {
-    ...runtime,
-    baseUrl: import.meta.url,
-  });
-
+export function MDXContent({ content }: MDXContentProps) {
   return (
-    <div className="mdx-content">
-      <MDXComponent components={components} />
+    <div className="mdx-content min-w-0 break-words [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden">
+      {toJsxRuntime(content.tree, {
+        Fragment, jsx, jsxs,
+        components: { ...components, "ooi-callout": components.Callout, "ooi-steps": components.Steps, "ooi-step": components.Step },
+      })}
     </div>
   );
 }

@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Study Content
+
+The dashboard syllabus reads its topics, study guides, and practice problems from Strapi 5 through an authenticated, read-only Next.js API layer. Local MDX files are reference material, not a runtime fallback.
+
+See [the Strapi study-content integration](docs/strapi-study-content.md) for routes, required permissions, ordering limitations, security behavior, and manual checks. Run `npm run test:study` for focused migration tests.
+
 ## Getting Started
 
 First, run the development server:

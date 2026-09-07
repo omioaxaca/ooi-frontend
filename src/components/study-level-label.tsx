@@ -1,5 +1,3 @@
-import type { StudyLevel } from "@/lib/mdx";
-
 const colors = {
   AZUL: "bg-blue-600",
   AMARILLO: "bg-yellow-400 ring-1 ring-yellow-600/40",
@@ -10,7 +8,7 @@ const colors = {
 export function StudyLevelLabel({
   level,
 }: {
-  level: Pick<StudyLevel, "color" | "name">;
+  level: { color: "AZUL" | "AMARILLO" | "VERDE" | "MISC"; name: string };
 }) {
   return (
     <span className="inline-flex items-center gap-2">

@@ -55,9 +55,9 @@ if (process.argv.includes("--sync-next")) {
 }
 
 const lines = [
-  "# Auditoria del temario",
+  "# Auditoria del temario local de referencia",
   "",
-  "La fuente de verdad es [_config.json](_config.json): el orden de sus niveles, categorias y temas es el orden de lectura. Los IDs antiguos y las fechas no intervienen en esa ruta.",
+  "Este inventario describe el material local de referencia de [_config.json](_config.json), no el contenido publicado en Strapi. El dashboard obtiene temas, relaciones, orden y cuerpos del backend; ni este inventario ni los IDs antiguos intervienen en las consultas de lectura.",
   "",
   "Las carpetas y URLs originales se conservan. Cada fila del temario tiene una guia principal; los articulos complementarios y las ampliaciones no asignadas aparecen una sola vez en MISC, despues de Verde. No se elimino ningun articulo original.",
   "",
@@ -89,7 +89,7 @@ lines.push(
   "## Mantenimiento y validacion",
   "",
   "- Node 22.6 o posterior permite ejecutar los tests TypeScript con eliminacion de tipos; la validacion se desarrollo con Node 24.",
-  "- `npm run test:docs` comprueba navegacion, URLs, cobertura, compilacion MDX y enlaces internos.",
+  "- `npm run test:docs` comprueba la navegacion y el contenido del archivo local de referencia. `npm run test:study` comprueba el contrato Strapi, paginacion, relaciones, URLs historicas y renderizado seguro que usa el dashboard.",
   "- `npm run test:docs:cpp` compila y ejecuta bloques `cpp test` contra sus bloques `text input` y `text output`, y compara algoritmos de mayor riesgo con soluciones de referencia. Requiere `c++` o la variable CXX; usa archivos temporales y no inicia la aplicacion.",
   "- Las regresiones cubren cortes exhaustivos frente a Dinic/HLPP, asignaciones frente a flujo de coste minimo, simulacion de Mo con cambios, LCA/HLD, DP sin optimizar, ramas de DSU persistente, NTT frente a multiplicacion directa y factorizacion de 64 bits.",
   "- Los fragmentos didacticos sin la marca `test` no se consideran programas completos ni se compilan automaticamente. Una compilacion MDX no certifica correccion matematica.",
@@ -125,5 +125,5 @@ fs.writeFileSync(
   `${lines.join("\n").trimEnd()}\n`,
 );
 console.log(
-  "Updated content/docs/SYLLABUS_AUDIT.md from the published syllabus.",
+  "Updated content/docs/SYLLABUS_AUDIT.md from the local reference syllabus.",
 );
