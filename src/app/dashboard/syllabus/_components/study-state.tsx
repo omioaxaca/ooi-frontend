@@ -18,18 +18,35 @@ export function StudyLoading() {
   );
 }
 
-export function StudyError({ error, retry }: { error: StudyRequestError; retry: () => void }) {
+export function StudyError({
+  error,
+  retry,
+}: {
+  error: StudyRequestError;
+  retry: () => void;
+}) {
   const missing = error.status === 404;
   return (
-    <div role="alert" className="space-y-4 rounded-lg border border-red-200 p-6">
+    <div
+      role="alert"
+      className="space-y-4 rounded-lg border border-red-200 p-6"
+    >
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
         {missing ? "Contenido no encontrado" : "No se pudo cargar el contenido"}
       </h2>
       <p className="text-sm text-muted-foreground">{error.message}</p>
       <div className="flex flex-wrap gap-3">
-        <Button variant="outline" onClick={retry}><RefreshCw className="h-4 w-4" />Reintentar</Button>
-        <Button variant="ghost" asChild><Link href="/dashboard/syllabus"><ArrowLeft className="h-4 w-4" />Volver al temario</Link></Button>
+        <Button variant="outline" onClick={retry}>
+          <RefreshCw className="h-4 w-4" />
+          Reintentar
+        </Button>
+        <Button variant="ghost" asChild>
+          <Link href="/dashboard/syllabus">
+            <ArrowLeft className="h-4 w-4" />
+            Volver al temario
+          </Link>
+        </Button>
       </div>
     </div>
   );

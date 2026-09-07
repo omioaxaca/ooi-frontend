@@ -1,188 +1,207 @@
-"use client"
+"use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import * as localStorage from "@/utils/localStorage"
-import { dashboardReturnPath } from "@/lib/study-assets"
-import { User, NewUser, LoggedUser, UpdateUser } from "@/types/user"
-import { 
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import * as localStorage from "@/utils/localStorage";
+import { dashboardReturnPath } from "@/lib/study-assets";
+import { User, NewUser, LoggedUser, UpdateUser } from "@/types/user";
+import {
   login as loginService,
   signup as signupService,
   updateUser as updateUserService,
-  updateAvatar as updateAvatarService
-} from "@/services/userService"
+  updateAvatar as updateAvatarService,
+} from "@/services/userService";
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (newUser: NewUser) => Promise<void>
-  logout: () => void
-  isAuthenticated: () => boolean
-  token: string | null
-  isAdmin: () => boolean
-  isStudent: () => boolean
-  isTeacher: () => boolean
-  updateUser: (user: UpdateUser) => Promise<void>
-  updateAvatar: (avatar: File) => Promise<void>
+  user: User | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (newUser: NewUser) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: () => boolean;
+  token: string | null;
+  isAdmin: () => boolean;
+  isStudent: () => boolean;
+  isTeacher: () => boolean;
+  updateUser: (user: UpdateUser) => Promise<void>;
+  updateAvatar: (avatar: File) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const user = localStorage.getItem<User>("user")
+        const user = localStorage.getItem<User>("user");
         if (user) {
-          setUser(user)
+          setUser(user);
         }
       } catch (error) {
-        console.error("Failed to load user data:", error)
+        console.error("Failed to load user data:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadUser()
-  }, [])
+    loadUser();
+  }, []);
 
-  // SignUp Function 
+  // SignUp Function
   const signup = async (newUser: NewUser) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const loggedUser = await signupService(newUser)
-      saveLoggedUserLocally(loggedUser)
+      const loggedUser = await signupService(newUser);
+      saveLoggedUserLocally(loggedUser);
       // Redirect to dashboard
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Signup failed:", error)
-      throw error
-    } finally { 
-      setIsLoading(false)
+      console.error("Signup failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   // Login function
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Call Strapi API to authenticate user
-      const loggedUser = await loginService(email, password)
-      saveLoggedUserLocally(loggedUser)
+      const loggedUser = await loginService(email, password);
+      saveLoggedUserLocally(loggedUser);
       // Redirect to dashboard
-      router.push(dashboardReturnPath(new URLSearchParams(window.location.search).get("next")))
+      router.push(
+        dashboardReturnPath(
+          new URLSearchParams(window.location.search).get("next"),
+        ),
+      );
     } catch (error) {
-      console.error("Login failed:", error)
-      throw error
+      console.error("Login failed:", error);
+      throw error;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Logout function
   const logout = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
-    localStorage.removeItem("refreshToken")
-    setUser(null)
-    router.push("/")
-  }
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    setUser(null);
+    router.push("/");
+  };
 
   // Update user function
   const updateUser = async (newUserData: UpdateUser) => {
-    setIsLoading(true)
+    setIsLoading(true);
     if (!user) {
-      throw new Error("User not found")
+      throw new Error("User not found");
     } else {
-      const userId = user.id.toString()
+      const userId = user.id.toString();
       try {
-        const updatedUser = await updateUserService(userId, newUserData)
-        saveUserLocally(updatedUser)
+        const updatedUser = await updateUserService(userId, newUserData);
+        saveUserLocally(updatedUser);
       } catch (error) {
-        console.error("Error updating user:", error)
-        throw error
+        console.error("Error updating user:", error);
+        throw error;
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
-  }
+  };
 
   const updateAvatar = async (avatar: File) => {
-    setIsLoading(true)
+    setIsLoading(true);
     if (!user) {
-      throw new Error("User not found")
-      setIsLoading(false)
+      throw new Error("User not found");
+      setIsLoading(false);
     } else {
-      const userId = user.id.toString()
+      const userId = user.id.toString();
       try {
-        const updatedUser = await updateAvatarService(userId, avatar)
-        saveUserLocally(updatedUser)
+        const updatedUser = await updateAvatarService(userId, avatar);
+        saveUserLocally(updatedUser);
       } catch (error) {
-        console.error("Error updating avatar:", error)
-        throw error
+        console.error("Error updating avatar:", error);
+        throw error;
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
-  }
+  };
 
   const saveLoggedUserLocally = (loggedUser: LoggedUser) => {
-    localStorage.setItem("token", loggedUser.jwt)
+    localStorage.setItem("token", loggedUser.jwt);
     if (loggedUser.refreshToken) {
-      localStorage.setItem("refreshToken", loggedUser.refreshToken)
+      localStorage.setItem("refreshToken", loggedUser.refreshToken);
     }
-    saveUserLocally(loggedUser.user)
-  }
+    saveUserLocally(loggedUser.user);
+  };
 
   const saveUserLocally = (user: User) => {
-    localStorage.setItem("user", JSON.stringify(user))
-    setUser(user)
-  }
+    localStorage.setItem("user", JSON.stringify(user));
+    setUser(user);
+  };
 
-  // isAuthenticated Function 
+  // isAuthenticated Function
   const isAuthenticated = () => {
-    const token = localStorage.getItem<string>("token")
-    return token !== null
-  }
+    const token = localStorage.getItem<string>("token");
+    return token !== null;
+  };
 
-  // token function 
-  const token = localStorage.getItem<string>("token") || null
+  // token function
+  const token = localStorage.getItem<string>("token") || null;
 
-  // isAdmin function 
+  // isAdmin function
   const isAdmin = () => {
-    const user = localStorage.getItem<User>("user")
-    return user?.roleType === "ADMIN"
-  }
+    const user = localStorage.getItem<User>("user");
+    return user?.roleType === "ADMIN";
+  };
 
-  // isStudent function 
+  // isStudent function
   const isStudent = () => {
-    const user = localStorage.getItem<User>("user")
-    return user?.roleType === "STUDENT"
-  }
+    const user = localStorage.getItem<User>("user");
+    return user?.roleType === "STUDENT";
+  };
 
   // is Teacher function
   const isTeacher = () => {
-    const user = localStorage.getItem<User>("user")
-    return user?.roleType === "PROFESSOR"
-  } 
+    const user = localStorage.getItem<User>("user");
+    return user?.roleType === "PROFESSOR";
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, isAuthenticated, token, isAdmin, isStudent, isTeacher, signup, updateUser, updateAvatar }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        logout,
+        isAuthenticated,
+        token,
+        isAdmin,
+        isStudent,
+        isTeacher,
+        signup,
+        updateUser,
+        updateAvatar,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
-} 
+  return context;
+}

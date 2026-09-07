@@ -12,7 +12,7 @@ const components = {
     <h1
       className={cn(
         "mt-8 scroll-m-20 text-4xl font-bold tracking-tight text-foreground",
-        className
+        className,
       )}
       {...props}
     />
@@ -21,7 +21,7 @@ const components = {
     <h2
       className={cn(
         "mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -30,7 +30,7 @@ const components = {
     <h3
       className={cn(
         "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight",
-        className
+        className,
       )}
       {...props}
     />
@@ -39,7 +39,7 @@ const components = {
     <h4
       className={cn(
         "mt-8 scroll-m-20 text-xl font-semibold tracking-tight",
-        className
+        className,
       )}
       {...props}
     />
@@ -48,7 +48,7 @@ const components = {
     <h5
       className={cn(
         "mt-8 scroll-m-20 text-lg font-semibold tracking-tight",
-        className
+        className,
       )}
       {...props}
     />
@@ -57,7 +57,7 @@ const components = {
     <h6
       className={cn(
         "mt-8 scroll-m-20 text-base font-semibold tracking-tight",
-        className
+        className,
       )}
       {...props}
     />
@@ -68,7 +68,10 @@ const components = {
       return (
         <Link
           href={href}
-          className={cn("font-medium text-primary underline underline-offset-4", className)}
+          className={cn(
+            "font-medium text-primary underline underline-offset-4",
+            className,
+          )}
           {...props}
         />
       );
@@ -78,7 +81,10 @@ const components = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className={cn("font-medium text-primary underline underline-offset-4", className)}
+        className={cn(
+          "font-medium text-primary underline underline-offset-4",
+          className,
+        )}
         {...props}
       />
     );
@@ -98,11 +104,14 @@ const components = {
   li: ({ className, ...props }: ComponentPropsWithoutRef<"li">) => (
     <li className={cn("mt-2", className)} {...props} />
   ),
-  blockquote: ({ className, ...props }: ComponentPropsWithoutRef<"blockquote">) => (
+  blockquote: ({
+    className,
+    ...props
+  }: ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
       className={cn(
         "mt-6 border-l-4 border-primary/50 pl-6 italic text-muted-foreground",
-        className
+        className,
       )}
       {...props}
     />
@@ -110,7 +119,10 @@ const components = {
   img: ({ className, alt, src, ...props }: ComponentPropsWithoutRef<"img">) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      className={cn("max-w-full h-auto rounded-lg border border-border my-6", className)}
+      className={cn(
+        "max-w-full h-auto rounded-lg border border-border my-6",
+        className,
+      )}
       alt={alt}
       src={src}
       {...props}
@@ -123,13 +135,19 @@ const components = {
     </div>
   ),
   tr: ({ className, ...props }: ComponentPropsWithoutRef<"tr">) => (
-    <tr className={cn("m-0 border-t border-border p-0 even:bg-muted/50", className)} {...props} />
+    <tr
+      className={cn(
+        "m-0 border-t border-border p-0 even:bg-muted/50",
+        className,
+      )}
+      {...props}
+    />
   ),
   th: ({ className, ...props }: ComponentPropsWithoutRef<"th">) => (
     <th
       className={cn(
         "border border-border bg-muted/50 px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right",
-        className
+        className,
       )}
       {...props}
     />
@@ -138,7 +156,7 @@ const components = {
     <td
       className={cn(
         "border border-border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
-        className
+        className,
       )}
       {...props}
     />
@@ -147,7 +165,7 @@ const components = {
     <pre
       className={cn(
         "mb-4 mt-6 overflow-x-auto rounded-lg border border-border bg-zinc-950 p-4 dark:bg-zinc-900",
-        className
+        className,
       )}
       data-code-block="true"
       {...props}
@@ -166,7 +184,7 @@ const components = {
         <code
           className={cn(
             "relative rounded font-mono text-sm bg-zinc-800 px-[0.4rem] py-[0.2rem] text-white",
-            className
+            className,
           )}
           {...props}
         />
@@ -176,10 +194,7 @@ const components = {
     // For code blocks (inside pre)
     return (
       <code
-        className={cn(
-          "relative font-mono text-sm text-zinc-50",
-          className
-        )}
+        className={cn("relative font-mono text-sm text-zinc-50", className)}
         {...props}
       />
     );
@@ -239,8 +254,15 @@ export function MDXContent({ content }: MDXContentProps) {
   return (
     <div className="mdx-content min-w-0 break-words [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden">
       {toJsxRuntime(content.tree, {
-        Fragment, jsx, jsxs,
-        components: { ...components, "ooi-callout": components.Callout, "ooi-steps": components.Steps, "ooi-step": components.Step },
+        Fragment,
+        jsx,
+        jsxs,
+        components: {
+          ...components,
+          "ooi-callout": components.Callout,
+          "ooi-steps": components.Steps,
+          "ooi-step": components.Step,
+        },
       })}
     </div>
   );

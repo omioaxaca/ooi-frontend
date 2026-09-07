@@ -1,4 +1,9 @@
-import type { StudyCategory, StudyLevelValue, TopicSummary, TopicContent } from "@/lib/study-content";
+import type {
+  StudyCategory,
+  StudyLevelValue,
+  TopicSummary,
+  TopicContent,
+} from "@/lib/study-content";
 
 export type SyllabusCategory = StudyCategory;
 export type SyllabusLevel = StudyLevelValue;

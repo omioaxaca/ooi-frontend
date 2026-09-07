@@ -19,10 +19,12 @@ export function useStudyResource<T>(path: string | null) {
     setState({ path, attempt, data: null, error: null, loading: true });
     fetchStudyData<T>(path, controller.signal).then(
       (data) => {
-        if (!controller.signal.aborted) setState({ path, attempt, data, error: null, loading: false });
+        if (!controller.signal.aborted)
+          setState({ path, attempt, data, error: null, loading: false });
       },
       (error: StudyRequestError) => {
-        if (!controller.signal.aborted) setState({ path, attempt, data: null, error, loading: false });
+        if (!controller.signal.aborted)
+          setState({ path, attempt, data: null, error, loading: false });
       },
     );
     return () => controller.abort();

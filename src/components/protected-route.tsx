@@ -15,7 +15,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!isLoading && !authenticated) {
-      const next = window.location.pathname + window.location.search + window.location.hash;
+      const next =
+        window.location.pathname +
+        window.location.search +
+        window.location.hash;
       router.replace(`/login?next=${encodeURIComponent(next)}`);
     }
   }, [authenticated, isLoading, router]);
@@ -31,4 +34,4 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // If authenticated, render children
   return <>{children}</>;
-} 
+}

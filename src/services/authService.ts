@@ -7,7 +7,9 @@ const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
 function redirectToLogin() {
   if (typeof window === "undefined") return;
-  const next = dashboardReturnPath(window.location.pathname + window.location.search + window.location.hash);
+  const next = dashboardReturnPath(
+    window.location.pathname + window.location.search + window.location.hash,
+  );
   window.location.href = `/login?next=${encodeURIComponent(next)}`;
 }
 
@@ -82,7 +84,11 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     // If the error is 401 and we haven't tried to refresh the token yet
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
       try {
